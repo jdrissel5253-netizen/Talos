@@ -13,6 +13,9 @@ import CandidateRanking from './components/CandidateRanking';
 import CandidateMessages from './components/CandidateMessages';
 import TalentPool from './components/TalentPool';
 import TalentPoolManager from './components/TalentPoolManager';
+import TalentPoolHome from './components/TalentPoolHome';
+import JobSelectionScreen from './components/JobSelectionScreen';
+import CandidateListScreen from './components/CandidateListScreen';
 import HVACInsights from './components/HVACInsights';
 import ResumeAnalysis from './components/ResumeAnalysis';
 import BatchResumeAnalysis from './components/BatchResumeAnalysis';
@@ -80,7 +83,10 @@ function App() {
             <Route path="/job-description-writer" element={<JobDescriptionWriter />} />
             <Route path="/candidate-ranking" element={<CandidateRanking />} />
             <Route path="/candidate-messages" element={<CandidateMessages />} />
-            <Route path="/talent-pool" element={<TalentPool />} />
+            <Route path="/talent-pool" element={<TalentPoolHome />} />
+            <Route path="/talent-pool/jobs" element={<JobSelectionScreen />} />
+            <Route path="/talent-pool/candidates" element={<CandidateListScreen />} />
+            <Route path="/talent-pool-old" element={<TalentPool />} />
             <Route path="/talent-pool-manager" element={<TalentPoolManager />} />
             <Route path="/hvac-insights" element={<HVACInsights />} />
           </Routes>

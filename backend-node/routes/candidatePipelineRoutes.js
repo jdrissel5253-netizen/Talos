@@ -279,6 +279,56 @@ router.get('/:id/communications', async (req, res) => {
 });
 
 /**
+ * PUT /api/pipeline/:id/contact-status
+ * Update the contacted/uncontacted status for a candidate
+ */
+router.put('/:id/contact-status', async (req, res) => {
+    try {
+        const pipelineId = parseInt(req.params.id);
+        const { isContacted, contactedVia } = req.body;
+
+        const updated = await candidatePipelineService.updateContactStatus(
+            pipelineId,
+            isContacted,
+            contactedVia
+        );
+
+        res.json({
+            status: 'success',
+            data: { pipeline: updated }
+        });
+    } catch (error) {
+        console.error('Error updating contact status:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to update contact status'
+        });
+    }
+});
+
+/**
+ * GET /api/pipeline/candidate/:candidateId/job-matches
+ * Re-evaluate a candidate against all jobs and return ranked matches
+ */
+router.get('/candidate/:candidateId/job-matches', async (req, res) => {
+    try {
+        const candidateId = parseInt(req.params.candidateId);
+        const jobMatches = await candidatePipelineService.evaluateCandidateAcrossAllJobs(candidateId);
+
+        res.json({
+            status: 'success',
+            data: { matches: jobMatches }
+        });
+    } catch (error) {
+        console.error('Error evaluating candidate job matches:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to evaluate job matches'
+        });
+    }
+});
+
+/**
  * Helper: Generate automated SMS outreach using Claude Haiku
  */
 async function generateOutreachSMS(jobTitle, jobLocation, schedulingLink) {

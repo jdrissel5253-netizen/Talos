@@ -439,6 +439,10 @@ const candidatePipelineService = {
             query += ' AND cp.tier = ?';
             params.push(filters.tier);
         }
+        if (filters.job_id) {
+            query += ' AND cp.job_id = ?';
+            params.push(filters.job_id);
+        }
         if (filters.position) {
             query += ' AND j.position_type = ?';
             params.push(filters.position);
@@ -537,6 +541,100 @@ const candidatePipelineService = {
                 return acc;
             }, {})
         };
+    },
+
+    async updateContactStatus(candidatePipelineId, isContacted, contactedVia = null) {
+        let query, params;
+
+        if (isContacted) {
+            query = `UPDATE candidate_pipeline
+                     SET contacted_via = ?, contacted_at = CURRENT_TIMESTAMP
+                     WHERE id = ? RETURNING *`;
+            params = [contactedVia || 'manual', candidatePipelineId];
+        } else {
+            query = `UPDATE candidate_pipeline
+                     SET contacted_via = NULL, contacted_at = NULL
+                     WHERE id = ? RETURNING *`;
+            params = [candidatePipelineId];
+        }
+
+        const result = await db.query(query, params);
+        return result.rows[0];
+    },
+
+    async evaluateCandidateAcrossAllJobs(candidateId) {
+        // Get candidate analysis
+        const candidateResult = await db.query(
+            `SELECT c.*, a.* FROM candidates c
+             LEFT JOIN analyses a ON c.id = a.candidate_id
+             WHERE c.id = ?`,
+            [candidateId]
+        );
+
+        if (candidateResult.rows.length === 0) {
+            throw new Error('Candidate not found');
+        }
+
+        const candidate = candidateResult.rows[0];
+
+        // Get all active jobs
+        const jobsResult = await db.query(
+            `SELECT * FROM jobs WHERE status = 'active' ORDER BY title`
+        );
+
+        const jobs = jobsResult.rows;
+
+        // Calculate match scores for each job
+        const matches = jobs.map(job => {
+            const score = candidate.overall_score || 0;
+            const yearsExp = candidate.years_of_experience || 0;
+            const requiredYears = job.required_years_experience || 0;
+
+            // Calculate tier
+            let tier, adjustedScore;
+            if (score >= 80) {
+                tier = 'green';
+                adjustedScore = score;
+            } else if (score >= 50) {
+                tier = 'yellow';
+                adjustedScore = score;
+            } else {
+                tier = 'red';
+                adjustedScore = score;
+            }
+
+            // Adjust for experience match
+            if (yearsExp >= requiredYears) {
+                adjustedScore += 5;
+            } else if (yearsExp < requiredYears * 0.5) {
+                adjustedScore -= 10;
+            }
+
+            // Adjust for vehicle requirement
+            if (job.vehicle_required && candidate.vehicle_status === 'no_vehicle') {
+                adjustedScore -= 10;
+            }
+
+            // Cap at 100
+            adjustedScore = Math.min(100, Math.max(0, adjustedScore));
+
+            return {
+                job_id: job.id,
+                job_title: job.title,
+                job_location: job.location,
+                position_type: job.position_type,
+                required_years_experience: job.required_years_experience,
+                match_score: Math.round(adjustedScore),
+                tier: tier,
+                years_experience_diff: yearsExp - requiredYears,
+                vehicle_required: job.vehicle_required
+            };
+        });
+
+        // Sort by match score descending
+        matches.sort((a, b) => b.match_score - a.match_score);
+
+        return matches;
     }
 };
 
