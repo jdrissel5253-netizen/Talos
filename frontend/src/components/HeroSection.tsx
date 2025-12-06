@@ -1,0 +1,269 @@
+import React from 'react';
+import styled from 'styled-components';
+
+const HeroContainer = styled.section`
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #000000;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+`;
+
+const BackgroundVideo = styled.video`
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  opacity: 0.15;
+  z-index: 0;
+`;
+
+const VideoOverlay = styled.div`
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(26, 26, 26, 0.7) 100%);
+  z-index: 1;
+`;
+
+const HeroLayout = styled.div`
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+  position: relative;
+`;
+
+const TickerContainer = styled.div`
+  width: 100%;
+  max-width: 600px;
+  height: 60px;
+  background: #1a1a1a;
+  border: 2px solid #4ade80;
+  border-radius: 8px;
+  overflow: hidden;
+  position: relative;
+  margin-bottom: 3rem;
+  display: flex;
+  align-items: center;
+`;
+
+const TickerTrack = styled.div`
+  display: flex;
+  gap: 3rem;
+  animation: scroll 30s linear infinite;
+  white-space: nowrap;
+  padding: 0 1rem;
+
+  @keyframes scroll {
+    0% {
+      transform: translateX(0);
+    }
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+`;
+
+const PositionItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: #e0e0e0;
+  font-size: 1rem;
+  font-weight: 500;
+  white-space: nowrap;
+`;
+
+const HeroContent = styled.div`
+  max-width: 800px;
+  text-align: center;
+  z-index: 2;
+  position: relative;
+  margin: 0 auto;
+`;
+
+const HeroTitle = styled.h1`
+  font-size: 3.5rem;
+  font-weight: 700;
+  color: #e0e0e0;
+  margin-bottom: 2rem;
+  line-height: 1.2;
+  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+
+  @media (max-width: 480px) {
+    font-size: 2rem;
+  }
+`;
+
+const HeroSubtitle = styled.p`
+  font-size: 1.25rem;
+  color: #e0e0e0;
+  margin-bottom: 3rem;
+  line-height: 1.6;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+
+  @media (max-width: 768px) {
+    font-size: 1.1rem;
+  }
+`;
+
+const CTAButton = styled.button`
+  background-color: #4ade80;
+  border: none;
+  color: white;
+  padding: 1rem 2.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+
+  &:hover {
+    background-color: #4ade80;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+`;
+
+const TrustIndicators = styled.div`
+  margin-top: 4rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 3rem;
+  flex-wrap: wrap;
+  opacity: 0.7;
+
+  @media (max-width: 768px) {
+    gap: 2rem;
+    margin-top: 3rem;
+  }
+`;
+
+const TrustBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #e0e0e0;
+  font-size: 0.9rem;
+  font-weight: 500;
+`;
+
+const CheckIcon = styled.div`
+  width: 20px;
+  height: 20px;
+  background-color: #4ade80;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 0.75rem;
+  font-weight: bold;
+
+  &::after {
+    content: '✓';
+  }
+`;
+
+interface HeroSectionProps {
+  onDemoClick: () => void;
+}
+
+const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
+  const allPositions = [
+    'HVAC Technician',
+    'Lead Service Technician',
+    'Installation Technician',
+    'Refrigeration Technician',
+    'Residential HVAC Tech',
+    'Commercial HVAC Tech',
+    'HVAC Apprentice',
+    'Service Manager',
+    'Field Supervisor',
+    'Project Manager',
+    'Dispatcher',
+    'Customer Service Rep',
+    'Office Manager',
+    'Sales Representative',
+    'Estimator',
+    'Comfort Advisor',
+    'Warehouse Manager',
+    'Parts Coordinator',
+    'Administrative Assistant',
+    'Accounts Receivable'
+  ];
+
+  return (
+    <HeroContainer>
+      <BackgroundVideo autoPlay loop muted playsInline>
+        <source src="/hvac-background.mp4" type="video/mp4" />
+      </BackgroundVideo>
+      <VideoOverlay />
+      <HeroLayout>
+        <TickerContainer>
+          <TickerTrack>
+            {[...allPositions, ...allPositions].map((position, index) => (
+              <PositionItem key={index}>
+                <CheckIcon />
+                {position}
+              </PositionItem>
+            ))}
+          </TickerTrack>
+        </TickerContainer>
+
+        <HeroContent>
+          <HeroTitle>
+            The key to finding reliable technicians
+          </HeroTitle>
+          <HeroSubtitle>
+            Streamline your HVAC hiring process with automated sourcing,
+            job board posting, and intelligent candidate ranking.
+            Find the right talent faster.
+          </HeroSubtitle>
+          <CTAButton onClick={onDemoClick}>
+            Get Demo
+          </CTAButton>
+
+          <TrustIndicators>
+            <TrustBadge>
+              <CheckIcon />
+              15+ Job Boards
+            </TrustBadge>
+            <TrustBadge>
+              <CheckIcon />
+              AI-Powered Matching
+            </TrustBadge>
+            <TrustBadge>
+              <CheckIcon />
+              HVAC-Specialized
+            </TrustBadge>
+          </TrustIndicators>
+        </HeroContent>
+      </HeroLayout>
+    </HeroContainer>
+  );
+};
+
+export default HeroSection;

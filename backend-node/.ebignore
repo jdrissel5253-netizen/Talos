@@ -1,0 +1,7 @@
+node_modules/
+.env
+uploads/
+talos.db
+.git/
+database/init-db.js
+database/view-data.js

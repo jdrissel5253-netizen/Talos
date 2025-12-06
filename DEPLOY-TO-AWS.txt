@@ -1,0 +1,14 @@
+=====================================================
+HOW TO DEPLOY TALOS TO AWS - TELL CLAUDE THIS:
+=====================================================
+
+"Deploy my Talos backend to AWS using App Runner or Railway.
+
+Location: C:\Users\13019\talos-website\backend-node
+Database: PostgreSQL RDS already running
+Status: Code works perfectly locally, just needs cloud deployment
+
+Use the simplest method that will actually work.
+The better-sqlite3 issue is already fixed."
+
+=====================================================

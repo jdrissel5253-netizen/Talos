@@ -1,0 +1,33 @@
+{
+  "name": "talos-backend-node",
+  "version": "1.0.0",
+  "description": "Talos Backend API Server (Node.js version)",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.68.0",
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^1.20.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^4.18.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^2.0.2",
+    "pdf-parse": "^2.1.7",
+    "pg": "^8.16.3"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^12.4.1"
+  },
+  "keywords": [
+    "talos",
+    "hvac",
+    "hiring",
+    "api"
+  ],
+  "author": "Talos",
+  "license": "MIT"
+}

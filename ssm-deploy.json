@@ -1,0 +1,19 @@
+{
+  "commands": [
+    "cd /home/ec2-user",
+    "sudo -u ec2-user npm install --production",
+    "sudo npm install -g pm2",
+    "echo 'NODE_ENV=production' > .env",
+    "echo 'PORT=8080' >> .env",
+    "echo 'DB_HOST=talos-db.cktooy4kca01.us-east-1.rds.amazonaws.com' >> .env",
+    "echo 'DB_PORT=5432' >> .env",
+    "echo 'DB_NAME=talos_db' >> .env",
+    "echo 'DB_USER=talos_admin' >> .env",
+    "echo 'DB_PASSWORD=TalosAdmin2024!Secure' >> .env",
+    "chown ec2-user:ec2-user .env",
+    "sudo -u ec2-user bash -c 'cd /home/ec2-user && pm2 delete all || true && pm2 start server.js --name talos-backend && pm2 save'",
+    "env PATH=$PATH:/usr/bin pm2 startup systemd -u ec2-user --hp /home/ec2-user",
+    "systemctl enable pm2-ec2-user",
+    "pm2 list"
+  ]
+}
