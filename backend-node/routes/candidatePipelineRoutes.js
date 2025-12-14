@@ -130,47 +130,59 @@ router.post('/bulk-update', async (req, res) => {
 
 /**
  * POST /api/pipeline/:id/message
- * Send automated message to candidate
+ * Send template-based message to candidate
  */
 router.post('/:id/message', async (req, res) => {
     try {
         const pipelineId = parseInt(req.params.id);
-        const { messageType, jobTitle, jobLocation, schedulingLink } = req.body;
-        // messageType: 'sms', 'email', 'rejection_email'
+        const {
+            communicationType,      // 'email' | 'sms'
+            messageContent,         // Pre-rendered message from frontend
+            messageSubject,         // Email subject (optional)
+            category,               // 'contact' | 'rejection'
+            templateType,           // 'video' | 'phone' | 'in-person'
+            templateTone,           // 'conversational' | 'friendly' | 'professional'
+            isNudge,               // boolean
+            schedulingLink,        // URL
+            candidateName,         // string
+            jobTitle               // string
+        } = req.body;
 
-        let messageContent;
-
-        if (messageType === 'rejection_email') {
-            messageContent = await generateRejectionEmail(jobTitle);
-        } else if (messageType === 'sms') {
-            messageContent = await generateOutreachSMS(jobTitle, jobLocation, schedulingLink);
-        } else if (messageType === 'email') {
-            messageContent = await generateOutreachEmail(jobTitle, jobLocation, schedulingLink);
-        } else {
+        if (!messageContent) {
             return res.status(400).json({
                 status: 'error',
-                message: 'Invalid message type'
+                message: 'Message content is required'
             });
         }
 
-        // Log the communication
+        if (!communicationType || !['email', 'sms'].includes(communicationType)) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Valid communication type is required (email or sms)'
+            });
+        }
+
+        // Log the communication with template metadata
         const commLog = await candidatePipelineService.logCommunication(
             pipelineId,
-            messageType,
-            messageContent
+            communicationType,
+            messageContent,
+            {
+                templateType,
+                templateTone,
+                isNudge,
+                schedulingLink,
+                category
+            }
         );
 
-        // Update pipeline status to 'contacted' if not a rejection
-        if (messageType !== 'rejection_email') {
-            await candidatePipelineService.updateStatus(pipelineId, 'contacted');
-        } else {
-            await candidatePipelineService.updateStatus(pipelineId, 'rejected');
-        }
+        // Status is already updated in logCommunication method
 
         res.json({
             status: 'success',
             data: {
                 message: messageContent,
+                subject: messageSubject,
                 communicationLog: commLog
             }
         });
@@ -179,6 +191,30 @@ router.post('/:id/message', async (req, res) => {
         res.status(500).json({
             status: 'error',
             message: 'Failed to send message'
+        });
+    }
+});
+
+/**
+ * POST /api/pipeline/:id/reject
+ * Reject candidate without sending a message (silent rejection)
+ */
+router.post('/:id/reject', async (req, res) => {
+    try {
+        const pipelineId = parseInt(req.params.id);
+
+        // Update pipeline_status to 'rejected'
+        await candidatePipelineService.updateStatus(pipelineId, 'rejected');
+
+        res.json({
+            status: 'success',
+            message: 'Candidate rejected successfully'
+        });
+    } catch (error) {
+        console.error('Error rejecting candidate:', error);
+        res.status(500).json({
+            status: 'error',
+            message: 'Failed to reject candidate'
         });
     }
 });

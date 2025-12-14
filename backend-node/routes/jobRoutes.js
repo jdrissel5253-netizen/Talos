@@ -69,7 +69,7 @@ router.get('/:id', async (req, res) => {
 
 /**
  * POST /api/jobs
- * Create a new job posting
+ * Create a new job posting with AI-generated description
  */
 router.post('/', async (req, res) => {
     try {
@@ -78,15 +78,42 @@ router.post('/', async (req, res) => {
 
         const jobData = {
             title: req.body.title,
+            company_name: req.body.company_name,
             description: req.body.description,
             location: req.body.location,
+            job_location_type: req.body.job_location_type,
+            city: req.body.city,
+            zip_code: req.body.zip_code,
+            job_type: req.body.job_type,
             required_years_experience: req.body.required_years_experience,
             vehicle_required: req.body.vehicle_required,
             position_type: req.body.position_type,
             salary_min: req.body.salary_min,
             salary_max: req.body.salary_max,
+            pay_range_min: req.body.pay_range_min,
+            pay_range_max: req.body.pay_range_max,
+            pay_type: req.body.pay_type,
+            expected_hours: req.body.expected_hours,
+            work_schedule: req.body.work_schedule,
+            benefits: JSON.stringify(req.body.benefits || []),
+            key_responsibilities: JSON.stringify(req.body.key_responsibilities || []),
+            qualifications_years: req.body.qualifications_years,
+            qualifications_certifications: JSON.stringify(req.body.qualifications_certifications || []),
+            qualifications_other: req.body.qualifications_other,
+            education_requirements: req.body.education_requirements,
+            other_relevant_titles: JSON.stringify(req.body.other_relevant_titles || []),
+            advancement_opportunities: req.body.advancement_opportunities,
+            advancement_timeline: req.body.advancement_timeline,
+            company_culture: req.body.company_culture,
             flexible_on_title: req.body.flexible_on_title !== false // Default to true
         };
+
+        // Generate AI job description
+        if (req.body.key_responsibilities && req.body.key_responsibilities.length >= 3) {
+            const aiDescription = await generateJobDescription(jobData);
+            jobData.ai_generated_description = aiDescription;
+            jobData.description = aiDescription; // Use AI description as main description
+        }
 
         const job = await jobService.create(userId, jobData);
 
@@ -308,6 +335,118 @@ Keep it professional, concise, and actionable.`;
         console.error('Error generating AI summary:', error);
         // Return a fallback summary
         return `Candidate scored ${analysis.overall_score}/100 (${tier} tier) for ${job.title}. Has ${analysis.years_of_experience} years of experience. ${analysis.hiring_recommendation.replace(/_/g, ' ')}.`;
+    }
+}
+
+/**
+ * Helper function: Generate SEO-optimized job description using Claude
+ */
+async function generateJobDescription(jobData) {
+    try {
+        const responsibilities = JSON.parse(jobData.key_responsibilities || '[]');
+        const benefits = JSON.parse(jobData.benefits || '[]');
+        const otherTitles = JSON.parse(jobData.other_relevant_titles || '[]');
+        const certifications = JSON.parse(jobData.qualifications_certifications || '[]');
+
+        const prompt = `You are an expert job description writer specializing in creating compelling, SEO-optimized HVAC job postings.
+
+Create a professional, engaging job description for the following position:
+
+BASIC INFORMATION:
+- Job Title: ${jobData.title}
+- Company: ${jobData.company_name || 'Our company'}
+- Location: ${jobData.city ? jobData.city + ', ' : ''}${jobData.zip_code || ''} (${jobData.job_location_type || 'On-site'})
+- Job Type: ${jobData.job_type}
+- Pay Range: ${jobData.pay_range_min ? '$' + jobData.pay_range_min + ' - $' + jobData.pay_range_max + ' per ' + jobData.pay_type.replace('ly', '') : 'Competitive'}
+- Expected Hours: ${jobData.expected_hours || 'Full-time'}
+- Work Schedule: ${jobData.work_schedule || 'To be discussed'}
+
+KEY RESPONSIBILITIES (provided by employer):
+${responsibilities.map((r, i) => `${i + 1}. ${r}`).join('\n')}
+
+QUALIFICATIONS:
+- Experience Required: ${jobData.qualifications_years || jobData.required_years_experience || 0} years
+- Education: ${jobData.education_requirements || 'Not specified'}
+- Certifications: ${certifications.length > 0 ? certifications.join(', ') : 'Not required'}
+${jobData.qualifications_other ? '- Additional: ' + jobData.qualifications_other : ''}
+
+BENEFITS:
+${benefits.length > 0 ? benefits.map(b => '- ' + b).join('\n') : '- Competitive benefits package'}
+
+${jobData.advancement_opportunities ? 'CAREER ADVANCEMENT:\n- Advancement opportunities available' + (jobData.advancement_timeline ? ' (Timeline: ' + jobData.advancement_timeline + ')' : '') : ''}
+
+${jobData.company_culture ? 'COMPANY CULTURE:\n' + jobData.company_culture : ''}
+
+${otherTitles.length > 0 ? 'RELATED POSITIONS CONSIDERED:\n' + otherTitles.join(', ') : ''}
+
+Generate a compelling, professional job description following this EXACT FORMAT:
+
+Pay: $[min] - $[max] per [hour/year]
+
+Job description:
+
+Overview
+[Write 3-4 sentences that sell the role and opportunity. Make it engaging and aspirational. Highlight what makes this position special and what the candidate will achieve. Use strong action words and emphasize impact, leadership, or expertise depending on the seniority level.]
+
+What You'll Do
+[Expand the 3 key responsibilities provided into 6-8 detailed bullet points. Add relevant industry-specific tasks and responsibilities typical for this HVAC position. Each bullet should be specific and action-oriented. Include technical skills, customer interaction, safety protocols, equipment, systems, and any specialized work relevant to the role.]
+
+Basic Qualifications
+[List 4-6 essential requirements including:
+- Years of experience requirement
+- Required certifications (e.g., EPA Universal, state licenses)
+- Core technical skills and competencies
+- Education requirements
+- License and driving requirements if applicable
+Use bullet points starting with clear, direct statements.]
+
+Preferred Qualifications
+[List 3-5 nice-to-have qualifications that would make a candidate stand out:
+- Advanced certifications or specialized training
+- Experience with specific systems or technologies (BAS, VRF, chillers, etc.)
+- Leadership or project management experience
+- Additional technical expertise
+- Soft skills like communication or client management
+Only include if there are meaningful preferred qualifications; can be brief if role is entry-level.]
+
+Why You'll Love It Here
+[Write 2-3 sentences about company culture, values, growth opportunities, or what makes the company a great place to work. Then list the benefits:]
+
+Our benefits include:
+[List each benefit on its own line with a dash, using the exact benefits provided]
+
+Job Type: [Full-time/Part-time/etc.]
+
+Benefits:
+[List the benefits again in a simpler format for job board compatibility]
+
+Work Location: In person
+
+IMPORTANT GUIDELINES:
+1. Match the tone and seniority to the job title (e.g., Lead/Senior roles should sound more advanced and leadership-focused)
+2. Use HVAC industry-specific terminology naturally
+3. Make the Overview section compelling and aspirational
+4. In "What You'll Do", be specific about technical tasks, systems, tools, and responsibilities
+5. Keep language professional but engaging
+6. Don't use placeholder text - generate real, specific content based on the job information provided
+7. The description should feel tailored to this specific HVAC role, not generic`;
+
+        const message = await anthropic.messages.create({
+            model: "claude-sonnet-4-5-20250929",
+            max_tokens: 2000,
+            temperature: 0.7,
+            messages: [{
+                role: "user",
+                content: prompt
+            }]
+        });
+
+        return message.content[0].text;
+    } catch (error) {
+        console.error('Error generating job description:', error);
+        // Return a basic fallback description
+        const responsibilities = JSON.parse(jobData.key_responsibilities || '[]');
+        return `${jobData.title}\n\nWe are seeking a qualified ${jobData.title} to join our team.\n\nKey Responsibilities:\n${responsibilities.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n\nQualifications:\n- ${jobData.qualifications_years || 0} years of experience\n- ${jobData.education_requirements || 'Relevant education'}\n\nApply today to join our team!`;
     }
 }
 

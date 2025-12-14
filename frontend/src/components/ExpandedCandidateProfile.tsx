@@ -123,6 +123,45 @@ const MetaValue = styled.div`
   font-weight: 500;
 `;
 
+const ActionsRow = styled.div`
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+`;
+
+const ActionButton = styled.button`
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    background: #2563eb;
+  }
+`;
+
+const ContactDropdown = styled.select<{ isContacted: boolean }>`
+  padding: 10px 14px;
+  border-radius: 8px;
+  border: 2px solid ${props => props.isContacted ? '#10b981' : '#d1d5db'};
+  background: ${props => props.isContacted ? '#d1fae5' : 'white'};
+  color: ${props => props.isContacted ? '#065f46' : '#374151'};
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: ${props => props.isContacted ? '#059669' : '#9ca3af'};
+  }
+`;
+
 interface Candidate {
   pipeline_id: number;
   tier_score: number;
@@ -138,9 +177,17 @@ interface Candidate {
 
 interface ExpandedCandidateProfileProps {
   candidate: Candidate;
+  onEmailClick?: (pipelineId: number) => void;
+  onTextClick?: (pipelineId: number) => void;
+  onContactStatusChange?: (pipelineId: number, value: string) => void;
 }
 
-const ExpandedCandidateProfile: React.FC<ExpandedCandidateProfileProps> = ({ candidate }) => {
+const ExpandedCandidateProfile: React.FC<ExpandedCandidateProfileProps> = ({
+  candidate,
+  onEmailClick,
+  onTextClick,
+  onContactStatusChange
+}) => {
   return (
     <ProfileContainer onClick={e => e.stopPropagation()}>
       <Section>
@@ -151,6 +198,34 @@ const ExpandedCandidateProfile: React.FC<ExpandedCandidateProfileProps> = ({ can
           {candidate.tier_score} / 100
         </ScoreDisplay>
       </Section>
+
+      {(onEmailClick || onTextClick || onContactStatusChange) && (
+        <Section>
+          <SectionTitle>📬 Contact Actions</SectionTitle>
+          <ActionsRow>
+            {onEmailClick && (
+              <ActionButton onClick={() => onEmailClick(candidate.pipeline_id)}>
+                📧 Send Email
+              </ActionButton>
+            )}
+            {onTextClick && (
+              <ActionButton onClick={() => onTextClick(candidate.pipeline_id)}>
+                💬 Send Text
+              </ActionButton>
+            )}
+            {onContactStatusChange && (
+              <ContactDropdown
+                isContacted={!!candidate.contacted_via}
+                value={candidate.contacted_via ? 'contacted' : 'uncontacted'}
+                onChange={(e) => onContactStatusChange(candidate.pipeline_id, e.target.value)}
+              >
+                <option value="uncontacted">Uncontacted</option>
+                <option value="contacted">Contacted</option>
+              </ContactDropdown>
+            )}
+          </ActionsRow>
+        </Section>
+      )}
 
       {candidate.ai_summary && (
         <Section>

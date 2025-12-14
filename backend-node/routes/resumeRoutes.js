@@ -2,9 +2,78 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const { analyzeResume } = require('../services/resumeAnalyzer');
-const { batchService, candidateService, analysisService } = require('../services/databaseService');
+const { batchService, candidateService, analysisService, jobService, candidatePipelineService } = require('../services/databaseService');
 
 const router = express.Router();
+
+// Helper function to get or create the default "General Talent Pool" job
+async function getOrCreateGeneralTalentPoolJob(userId) {
+    try {
+        // Try to find existing General Talent Pool job
+        const jobs = await jobService.findByUserId(userId);
+        let generalJob = jobs.find(job => job.title === 'General Talent Pool');
+
+        if (!generalJob) {
+            // Create the General Talent Pool job if it doesn't exist
+            generalJob = await jobService.create(userId, {
+                title: 'General Talent Pool',
+                description: 'Default talent pool for all uploaded resumes',
+                location: 'All Locations',
+                required_years_experience: 0,
+                vehicle_required: false,
+                position_type: 'General',
+                flexible_on_title: true
+            });
+            console.log('Created General Talent Pool job:', generalJob.id);
+        }
+
+        return generalJob;
+    } catch (error) {
+        console.error('Error getting/creating General Talent Pool job:', error);
+        throw error;
+    }
+}
+
+// Helper function to add candidate to General Talent Pool
+async function addCandidateToTalentPool(candidateId, analysis, evaluatedPosition) {
+    try {
+        const userId = 1; // Default user ID
+        const generalJob = await getOrCreateGeneralTalentPoolJob(userId);
+
+        // Calculate tier based on score
+        const score = analysis.overallScore;
+        let tier, star_rating;
+
+        if (score >= 80) {
+            tier = 'green';
+            star_rating = 4.0 + (score - 80) / 20; // 4.0 to 5.0
+        } else if (score >= 50) {
+            tier = 'yellow';
+            star_rating = 2.0 + (score - 50) / 30 * 1.9; // 2.0 to 3.9
+        } else {
+            tier = 'red';
+            star_rating = score / 50 * 1.5; // 0 to 1.5
+        }
+
+        const pipelineData = {
+            tier,
+            tier_score: Math.round(score),
+            star_rating: Math.round(star_rating * 10) / 10,
+            give_them_a_chance: score >= 70 && score < 80,
+            vehicle_status: 'unknown',
+            ai_summary: analysis.summary || 'Resume analyzed and added to talent pool',
+            internal_notes: 'Auto-added to talent pool',
+            tags: [],
+            evaluated_position: evaluatedPosition || 'General'
+        };
+
+        await candidatePipelineService.addToJob(candidateId, generalJob.id, pipelineData);
+        console.log(`Added candidate ${candidateId} to General Talent Pool (evaluated for: ${evaluatedPosition})`);
+    } catch (error) {
+        console.error('Error adding candidate to talent pool:', error);
+        // Don't throw - we don't want to fail the upload if talent pool addition fails
+    }
+}
 
 // Map frontend position values to backend position names
 function mapPositionValue(positionValue) {
@@ -80,13 +149,33 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
         const requiredYearsExperience = parseFloat(req.body.requiredYearsExperience) || 2;
         const flexibleOnTitle = req.body.flexibleOnTitle !== 'false'; // Default to true
 
+        // For now, use a default user ID (we'll add real auth later)
+        const userId = 1;
+
+        // Create a batch record for tracking
+        const batchName = `Single Upload ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
+        const batch = await batchService.create(userId, batchName, 1);
+
+        // Create candidate record
+        const candidate = await candidateService.create(batch.id, req.file.originalname, req.file.path);
+
         // Analyze the resume using AI with the selected position
         const analysis = await analyzeResume(req.file.path, position, requiredYearsExperience, flexibleOnTitle);
+
+        // Save analysis to database
+        await analysisService.create(candidate.id, analysis);
+
+        // Update candidate status to completed
+        await candidateService.updateStatus(candidate.id, 'completed');
+
+        // Automatically add to General Talent Pool
+        await addCandidateToTalentPool(candidate.id, analysis, position);
 
         res.json({
             status: 'success',
             message: 'Resume analyzed successfully',
             data: {
+                candidateId: candidate.id,
                 filename: req.file.originalname,
                 analysis: analysis
             }
@@ -148,6 +237,9 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
 
                 // Update candidate status to completed
                 await candidateService.updateStatus(candidate.id, 'completed');
+
+                // Automatically add to General Talent Pool
+                await addCandidateToTalentPool(candidate.id, analysis, position);
 
                 results.push({
                     id: candidate.id,

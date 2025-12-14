@@ -1,160 +1,192 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { config } from '../config';
 
 const Container = styled.div`
-  max-width: 1200px;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 40px 20px;
+  padding: 24px 32px;
+  background: #0a0a0a;
+  min-height: calc(100vh - 80px);
 `;
 
 const Header = styled.div`
-  margin-bottom: 32px;
+  background: #1a1a1a;
+  border-radius: 12px;
+  padding: 24px 32px;
+  margin-bottom: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid #2a2a2a;
+`;
+
+const HeaderTop = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 20px;
 `;
 
 const BackButton = styled.button`
-  background: #f3f4f6;
-  border: none;
-  border-radius: 8px;
+  background: #2a2a2a;
+  border: 1px solid #3a3a3a;
+  border-radius: 6px;
   padding: 8px 16px;
   font-size: 14px;
-  color: #374151;
+  color: #e5e7eb;
   cursor: pointer;
-  margin-bottom: 16px;
-  transition: background 0.2s;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 
   &:hover {
-    background: #e5e7eb;
+    background: #3a3a3a;
+    border-color: #4a4a4a;
   }
 `;
 
+const TitleSection = styled.div`
+  flex: 1;
+`;
+
 const Title = styled.h1`
-  font-size: 28px;
+  font-size: 24px;
   font-weight: 700;
-  color: #1a1a1a;
-  margin-bottom: 8px;
+  color: #f9fafb;
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 12px;
 `;
 
 const TierBadge = styled.span<{ tier: string }>`
-  display: inline-block;
-  padding: 4px 12px;
-  border-radius: 12px;
-  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 13px;
   font-weight: 600;
   background: ${props =>
-    props.tier === 'green' ? '#10b981' :
-    props.tier === 'yellow' ? '#f59e0b' :
-    '#ef4444'
+    props.tier === 'green' ? '#d1fae5' :
+    props.tier === 'yellow' ? '#fef3c7' :
+    '#fee2e2'
   };
-  color: white;
-  margin-left: 12px;
+  color: ${props =>
+    props.tier === 'green' ? '#065f46' :
+    props.tier === 'yellow' ? '#92400e' :
+    '#991b1b'
+  };
 `;
 
 const Subtitle = styled.p`
-  font-size: 16px;
-  color: #666;
-  margin-top: 8px;
+  font-size: 14px;
+  color: #9ca3af;
+  margin: 0;
 `;
 
-const JobsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-  gap: 20px;
-`;
-
-const JobCard = styled.div`
-  background: white;
-  border: 2px solid #e5e7eb;
+const ContentCard = styled.div`
+  background: #1a1a1a;
   border-radius: 12px;
-  padding: 24px;
+  padding: 32px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  border: 1px solid #2a2a2a;
+`;
+
+const SectionLabel = styled.label`
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin-bottom: 12px;
+`;
+
+const PositionSelect = styled.select`
+  width: 100%;
+  padding: 12px 16px;
+  font-size: 15px;
+  border: 2px solid #2a2a2a;
+  border-radius: 8px;
+  background: #0a0a0a;
+  color: #f9fafb;
   cursor: pointer;
   transition: all 0.2s;
 
   &:hover {
+    border-color: #3a3a3a;
+  }
+
+  &:focus {
+    outline: none;
     border-color: #3b82f6;
-    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.1);
-    transform: translateY(-2px);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  option {
+    background: #1a1a1a;
+    color: #f9fafb;
   }
 `;
 
-const JobTitle = styled.h3`
-  font-size: 20px;
+const ViewButton = styled.button`
+  width: 100%;
+  margin-top: 20px;
+  padding: 12px 24px;
+  font-size: 15px;
   font-weight: 600;
-  color: #1a1a1a;
-  margin-bottom: 8px;
-`;
+  color: white;
+  background: #3b82f6;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
 
-const JobLocation = styled.p`
-  font-size: 14px;
-  color: #6b7280;
-  margin-bottom: 12px;
-`;
+  &:hover:not(:disabled) {
+    background: #2563eb;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  }
 
-const JobMeta = styled.div`
-  display: flex;
-  gap: 16px;
-  font-size: 13px;
-  color: #9ca3af;
-`;
-
-const LoadingMessage = styled.div`
-  text-align: center;
-  padding: 40px;
-  color: #6b7280;
+  &:disabled {
+    background: #4a4a4a;
+    color: #6b7280;
+    cursor: not-allowed;
+  }
 `;
 
 const ErrorMessage = styled.div`
-  background: #fee2e2;
-  border: 1px solid #fecaca;
+  background: #2a1a1a;
+  border: 1px solid #4a2a2a;
   border-radius: 8px;
   padding: 16px;
-  color: #991b1b;
+  color: #fca5a5;
   margin-bottom: 20px;
 `;
-
-interface Job {
-  id: number;
-  title: string;
-  location: string;
-  position_type: string;
-  required_years_experience: number;
-  status: string;
-}
 
 const JobSelectionScreen: React.FC = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const tier = searchParams.get('tier') as 'green' | 'yellow' | 'red' | null;
+  const [selectedPosition, setSelectedPosition] = useState<string>('');
 
-  const [jobs, setJobs] = useState<Job[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const positions = [
+    'Lead HVAC Technician',
+    'HVAC Service Technician',
+    'HVAC Dispatcher',
+    'Administrative Assistant',
+    'Customer Service Representative',
+    'HVAC Installer',
+    'Lead HVAC Installer',
+    'Maintenance Technician',
+    'Warehouse Associate',
+    'Bookkeeper',
+    'HVAC Sales Representative',
+    'HVAC Service Manager',
+    'Apprentice'
+  ];
 
-  useEffect(() => {
-    fetchJobs();
-  }, []);
-
-  const fetchJobs = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch(`${config.apiUrl}/api/jobs?userId=1`);
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch jobs');
-      }
-
-      const data = await response.json();
-      setJobs(data.data.jobs.filter((job: Job) => job.status === 'active'));
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
-    } finally {
-      setLoading(false);
+  const handleViewCandidates = () => {
+    if (selectedPosition) {
+      navigate(`/talent-pool/candidates?tier=${tier}&position=${encodeURIComponent(selectedPosition)}`);
     }
-  };
-
-  const handleJobClick = (jobId: number) => {
-    navigate(`/talent-pool/candidates?tier=${tier}&jobId=${jobId}`);
   };
 
   const handleBack = () => {
@@ -166,13 +198,22 @@ const JobSelectionScreen: React.FC = () => {
     return tier.charAt(0).toUpperCase() + tier.slice(1) + ' Tier';
   };
 
+  const getTierIcon = (tier: string | null) => {
+    if (tier === 'green') return '🟢';
+    if (tier === 'yellow') return '🟡';
+    if (tier === 'red') return '🔴';
+    return '⚪';
+  };
+
   if (!tier) {
     return (
       <Container>
-        <ErrorMessage>
-          Invalid tier selection. Please go back and select a tier.
-        </ErrorMessage>
-        <BackButton onClick={handleBack}>← Back to Talent Pool</BackButton>
+        <ContentCard>
+          <ErrorMessage>
+            Invalid tier selection. Please go back and select a tier.
+          </ErrorMessage>
+          <BackButton onClick={handleBack}>← Back to Talent Pool</BackButton>
+        </ContentCard>
       </Container>
     );
   }
@@ -180,43 +221,43 @@ const JobSelectionScreen: React.FC = () => {
   return (
     <Container>
       <Header>
-        <BackButton onClick={handleBack}>← Back to Talent Pool</BackButton>
-        <Title>
-          Select a Job Position
-          <TierBadge tier={tier}>{getTierLabel(tier)}</TierBadge>
-        </Title>
-        <Subtitle>Choose a job to view matching candidates</Subtitle>
+        <HeaderTop>
+          <BackButton onClick={handleBack}>← Back</BackButton>
+          <TitleSection>
+            <Title>
+              Select Position
+              <TierBadge tier={tier}>
+                {getTierIcon(tier)} {getTierLabel(tier)}
+              </TierBadge>
+            </Title>
+            <Subtitle>Choose a position to view matching candidates</Subtitle>
+          </TitleSection>
+        </HeaderTop>
       </Header>
 
-      {loading && <LoadingMessage>Loading jobs...</LoadingMessage>}
-
-      {error && (
-        <ErrorMessage>
-          Error loading jobs: {error}
-        </ErrorMessage>
-      )}
-
-      {!loading && !error && jobs.length === 0 && (
-        <LoadingMessage>
-          No active jobs found. Please create a job first.
-        </LoadingMessage>
-      )}
-
-      {!loading && !error && jobs.length > 0 && (
-        <JobsGrid>
-          {jobs.map(job => (
-            <JobCard key={job.id} onClick={() => handleJobClick(job.id)}>
-              <JobTitle>{job.title}</JobTitle>
-              <JobLocation>📍 {job.location}</JobLocation>
-              <JobMeta>
-                <span>{job.position_type}</span>
-                <span>•</span>
-                <span>{job.required_years_experience}+ years</span>
-              </JobMeta>
-            </JobCard>
+      <ContentCard>
+        <SectionLabel htmlFor="position-select">
+          Position Type
+        </SectionLabel>
+        <PositionSelect
+          id="position-select"
+          value={selectedPosition}
+          onChange={(e) => setSelectedPosition(e.target.value)}
+        >
+          <option value="">-- Select a Position --</option>
+          {positions.map(position => (
+            <option key={position} value={position}>
+              {position}
+            </option>
           ))}
-        </JobsGrid>
-      )}
+        </PositionSelect>
+        <ViewButton
+          onClick={handleViewCandidates}
+          disabled={!selectedPosition}
+        >
+          View {selectedPosition || 'Candidates'}
+        </ViewButton>
+      </ContentCard>
     </Container>
   );
 };

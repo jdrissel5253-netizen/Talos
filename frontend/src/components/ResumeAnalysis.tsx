@@ -588,6 +588,9 @@ const ResumeAnalysis: React.FC = () => {
 
       if (data.status === 'success') {
         setAnalysisResult(data.data.analysis);
+        if (data.data.candidateId) {
+          setCandidateId(data.data.candidateId);
+        }
       } else {
         alert('Error analyzing resume: ' + data.message);
       }

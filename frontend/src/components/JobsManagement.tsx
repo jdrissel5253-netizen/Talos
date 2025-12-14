@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import { config } from '../config';
+import AddJobForm from './AddJobForm';
 
 // Types
 interface Job {
@@ -88,6 +90,29 @@ const PanelTitle = styled.h2`
     font-size: 1.5rem;
     color: #4ade80;
     margin-bottom: 1rem;
+`;
+
+const BackButton = styled.button`
+    background: #333333;
+    color: #e0e0e0;
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+    margin-bottom: 0.75rem;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+
+    &:hover {
+        background: #4ade80;
+        color: white;
+        transform: translateY(-1px);
+    }
 `;
 
 const AddJobButton = styled.button`
@@ -453,6 +478,9 @@ const JobsManagement: React.FC = () => {
     const [filterTier, setFilterTier] = useState<string>('all');
     const [sortBy, setSortBy] = useState<string>('tier_score');
     const [messageDropdownOpen, setMessageDropdownOpen] = useState<number | null>(null);
+    const [showAddJobForm, setShowAddJobForm] = useState(false);
+
+    const navigate = useNavigate();
 
     // Load jobs on mount
     useEffect(() => {
@@ -594,7 +622,18 @@ const JobsManagement: React.FC = () => {
     };
 
     return (
-        <PageContainer>
+        <>
+            {showAddJobForm && (
+                <AddJobForm
+                    onClose={() => setShowAddJobForm(false)}
+                    onJobCreated={() => {
+                        loadJobs();
+                        setShowAddJobForm(false);
+                    }}
+                />
+            )}
+
+            <PageContainer>
             <LeftPanel isCollapsed={isLeftPanelCollapsed}>
                 <CollapseButton onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}>
                     {isLeftPanelCollapsed ? '▶' : '◀'}
@@ -604,7 +643,10 @@ const JobsManagement: React.FC = () => {
                     <>
                         <PanelHeader>
                             <PanelTitle>My Jobs</PanelTitle>
-                            <AddJobButton onClick={() => alert('Job creation form coming soon!')}>
+                            <BackButton onClick={() => navigate('/batch-resume-analysis')}>
+                                ← Back to Resume Evaluator
+                            </BackButton>
+                            <AddJobButton onClick={() => setShowAddJobForm(true)}>
                                 + Add New Job
                             </AddJobButton>
                         </PanelHeader>
@@ -1099,6 +1141,7 @@ const JobsManagement: React.FC = () => {
                 )}
             </MainContent>
         </PageContainer>
+        </>
     );
 };
 

@@ -204,26 +204,51 @@ const analysisService = {
  */
 const jobService = {
     async create(userId, jobData) {
-        const {
-            title,
-            description,
-            location,
-            required_years_experience,
-            vehicle_required,
-            position_type,
-            salary_min,
-            salary_max,
-            flexible_on_title
-        } = jobData;
-
         const result = await db.query(
             `INSERT INTO jobs (
-                user_id, title, description, location, required_years_experience,
-                vehicle_required, position_type, salary_min, salary_max, flexible_on_title, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
-            [userId, title, description, location, required_years_experience || 0,
-             vehicle_required ? 1 : 0, position_type, salary_min, salary_max,
-             flexible_on_title !== false ? 1 : 0, 'active']
+                user_id, title, company_name, description, location, job_location_type,
+                city, zip_code, job_type, required_years_experience, vehicle_required,
+                position_type, salary_min, salary_max, pay_range_min, pay_range_max,
+                pay_type, expected_hours, work_schedule, benefits, key_responsibilities,
+                qualifications_years, qualifications_certifications, qualifications_other,
+                education_requirements, other_relevant_titles, advancement_opportunities,
+                advancement_timeline, company_culture, ai_generated_description,
+                flexible_on_title, status
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+            [
+                userId,
+                jobData.title,
+                jobData.company_name,
+                jobData.description,
+                jobData.location,
+                jobData.job_location_type,
+                jobData.city,
+                jobData.zip_code,
+                jobData.job_type,
+                jobData.required_years_experience || 0,
+                jobData.vehicle_required ? 1 : 0,
+                jobData.position_type,
+                jobData.salary_min,
+                jobData.salary_max,
+                jobData.pay_range_min,
+                jobData.pay_range_max,
+                jobData.pay_type,
+                jobData.expected_hours,
+                jobData.work_schedule,
+                jobData.benefits,
+                jobData.key_responsibilities,
+                jobData.qualifications_years,
+                jobData.qualifications_certifications,
+                jobData.qualifications_other,
+                jobData.education_requirements,
+                jobData.other_relevant_titles,
+                jobData.advancement_opportunities ? 1 : 0,
+                jobData.advancement_timeline,
+                jobData.company_culture,
+                jobData.ai_generated_description,
+                jobData.flexible_on_title !== false ? 1 : 0,
+                'active'
+            ]
         );
         return result.rows[0];
     },
@@ -280,25 +305,27 @@ const candidatePipelineService = {
             vehicle_status,
             ai_summary,
             internal_notes,
-            tags
+            tags,
+            evaluated_position
         } = pipelineData;
 
         const result = await db.query(
             `INSERT INTO candidate_pipeline (
                 candidate_id, job_id, pipeline_status, tier, tier_score, star_rating,
-                give_them_a_chance, vehicle_status, ai_summary, internal_notes, tags
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                give_them_a_chance, vehicle_status, ai_summary, internal_notes, tags, evaluated_position
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(candidate_id, job_id) DO UPDATE SET
                 tier = excluded.tier,
                 tier_score = excluded.tier_score,
                 star_rating = excluded.star_rating,
                 give_them_a_chance = excluded.give_them_a_chance,
                 vehicle_status = excluded.vehicle_status,
-                ai_summary = excluded.ai_summary
+                ai_summary = excluded.ai_summary,
+                evaluated_position = excluded.evaluated_position
             RETURNING *`,
             [candidateId, jobId, 'new', tier, tier_score, star_rating,
              give_them_a_chance ? 1 : 0, vehicle_status, ai_summary,
-             internal_notes, toJSON(tags)]
+             internal_notes, toJSON(tags), evaluated_position]
         );
         return result.rows[0];
     },
@@ -365,21 +392,48 @@ const candidatePipelineService = {
         }));
     },
 
-    async logCommunication(candidatePipelineId, communicationType, messageContent) {
+    async logCommunication(candidatePipelineId, communicationType, messageContent, metadata = {}) {
+        const {
+            templateType,
+            templateTone,
+            isNudge,
+            schedulingLink,
+            category
+        } = metadata;
+
         const result = await db.query(
             `INSERT INTO communication_log (
-                candidate_pipeline_id, communication_type, message_content
-            ) VALUES (?, ?, ?) RETURNING *`,
-            [candidatePipelineId, communicationType, messageContent]
+                candidate_pipeline_id,
+                communication_type,
+                message_content,
+                template_type,
+                template_tone,
+                is_nudge,
+                scheduling_link
+            ) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+            [
+                candidatePipelineId,
+                communicationType,
+                messageContent,
+                templateType || null,
+                templateTone || null,
+                isNudge ? 1 : 0,
+                schedulingLink || null
+            ]
         );
 
-        // Update candidate_pipeline with contact info
+        // Determine new pipeline status based on category
+        const newStatus = category === 'rejection' ? 'rejected' : 'contacted';
+
+        // Update candidate_pipeline with contact info and status
         await db.query(
             `UPDATE candidate_pipeline
-             SET contacted_via = ?, contacted_at = CURRENT_TIMESTAMP,
-                 last_message_sent = ?
+             SET contacted_via = ?,
+                 contacted_at = CURRENT_TIMESTAMP,
+                 last_message_sent = ?,
+                 pipeline_status = ?
              WHERE id = ?`,
-            [communicationType, messageContent, candidatePipelineId]
+            [communicationType, messageContent, newStatus, candidatePipelineId]
         );
 
         return result.rows[0];
@@ -410,10 +464,11 @@ const candidatePipelineService = {
                 cp.ai_summary,
                 cp.contacted_via,
                 cp.contacted_at,
+                cp.evaluated_position,
                 c.filename,
                 c.file_path,
                 c.status as candidate_status,
-                c.uploaded_at,
+                c.upload_date,
                 a.overall_score,
                 a.score_out_of_10,
                 a.summary,
@@ -444,7 +499,7 @@ const candidatePipelineService = {
             params.push(filters.job_id);
         }
         if (filters.position) {
-            query += ' AND j.position_type = ?';
+            query += ' AND cp.evaluated_position = ?';
             params.push(filters.position);
         }
         if (filters.minScore !== undefined) {

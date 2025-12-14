@@ -1,5 +1,4 @@
 @echo off
-cd /d "C:\Users\13019\talos-website\frontend"
+cd /d "C:\Users\jdris\Documents\Talos\frontend"
 echo Starting Talos Frontend...
 npm start
-pause
