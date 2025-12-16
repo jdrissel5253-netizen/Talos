@@ -83,7 +83,8 @@ function App() {
             <Route path="/job-description-writer" element={<JobDescriptionWriter />} />
             <Route path="/candidate-ranking" element={<CandidateRanking />} />
             <Route path="/candidate-messages" element={<CandidateMessages />} />
-            <Route path="/talent-pool" element={<TalentPoolHome />} />
+            <Route path="/talent-pool" element={<TalentPool />} />
+            <Route path="/talent-pool-dashboard" element={<TalentPoolHome />} />
             <Route path="/talent-pool/jobs" element={<JobSelectionScreen />} />
             <Route path="/talent-pool/candidates" element={<CandidateListScreen />} />
             <Route path="/talent-pool-old" element={<TalentPool />} />

@@ -269,7 +269,7 @@ const CandidateRanking: React.FC = () => {
 
           <ContentSection>
             <p style={{ fontSize: '1.125rem', color: '#333', lineHeight: '1.8', textAlign: 'center', marginBottom: '2rem' }}>
-              Talos doesn't just find candidates—it ranks them. Every applicant is scored out of 10 and sorted into three tiers: Green, Yellow, or Red. This way, you know exactly who's worth your time.
+              Talos doesn't just find candidates—it ranks them. Every applicant is scored out of 100 and sorted into three tiers: Green, Yellow, or Red. This way, you know exactly who's worth your time.
             </p>
 
             <FeatureBox>
@@ -282,111 +282,118 @@ const CandidateRanking: React.FC = () => {
               <TierCard tierColor="#22c55e">
                 <TierIcon>🟢</TierIcon>
                 <TierName tierColor="#22c55e">Green Tier</TierName>
-                <TierScore tierColor="#22c55e">8-10 Score</TierScore>
+                <TierScore tierColor="#22c55e">80-100 Score</TierScore>
                 <TierDescription>
                   Top-tier candidates who are highly likely to be successful hires. These candidates should be your first priority for interviews.
                 </TierDescription>
                 <TierFeatures>
-                  <TierFeature>Extensive HVAC experience</TierFeature>
-                  <TierFeature>Relevant certifications</TierFeature>
-                  <TierFeature>Strong work history</TierFeature>
-                  <TierFeature>Geographic match</TierFeature>
-                  <TierFeature>Salary expectations aligned</TierFeature>
+                  <TierFeature>Highest match across all evaluation criteria</TierFeature>
+                  <TierFeature>Strong indicators of long-term success</TierFeature>
+                  <TierFeature>Minimal risk factors identified</TierFeature>
+                  <TierFeature>Ready to interview immediately</TierFeature>
+                  <TierFeature>Best ROI on your hiring time</TierFeature>
                 </TierFeatures>
               </TierCard>
 
               <TierCard tierColor="#eab308">
                 <TierIcon>🟡</TierIcon>
                 <TierName tierColor="#eab308">Yellow Tier</TierName>
-                <TierScore tierColor="#eab308">5-7 Score</TierScore>
+                <TierScore tierColor="#eab308">50-79 Score</TierScore>
                 <TierDescription>
                   Solid candidates with potential who may need additional screening or could be good fits with some training.
                 </TierDescription>
                 <TierFeatures>
-                  <TierFeature>Some HVAC experience</TierFeature>
-                  <TierFeature>Basic certifications</TierFeature>
-                  <TierFeature>Decent work history</TierFeature>
-                  <TierFeature>May need additional training</TierFeature>
-                  <TierFeature>Good cultural fit potential</TierFeature>
+                  <TierFeature>Moderate match with some trade-offs</TierFeature>
+                  <TierFeature>Potential for growth and development</TierFeature>
+                  <TierFeature>Worth deeper evaluation if Green tier exhausted</TierFeature>
+                  <TierFeature>May excel with proper onboarding</TierFeature>
+                  <TierFeature>Good backup candidate pool</TierFeature>
                 </TierFeatures>
               </TierCard>
 
               <TierCard tierColor="#ef4444">
                 <TierIcon>🔴</TierIcon>
                 <TierName tierColor="#ef4444">Red Tier</TierName>
-                <TierScore tierColor="#ef4444">1-4 Score</TierScore>
+                <TierScore tierColor="#ef4444">0-49 Score</TierScore>
                 <TierDescription>
                   Candidates who don't meet basic requirements or show concerning patterns. Consider only if desperately needed.
                 </TierDescription>
                 <TierFeatures>
-                  <TierFeature>Limited or no HVAC experience</TierFeature>
-                  <TierFeature>Missing required certifications</TierFeature>
-                  <TierFeature>Gaps in work history</TierFeature>
-                  <TierFeature>Location mismatch</TierFeature>
-                  <TierFeature>Salary expectations misaligned</TierFeature>
+                  <TierFeature>Low match across multiple factors</TierFeature>
+                  <TierFeature>Significant gaps in qualifications</TierFeature>
+                  <TierFeature>Higher risk of turnover or poor fit</TierFeature>
+                  <TierFeature>Requires extensive training investment</TierFeature>
+                  <TierFeature>Consider only as last resort</TierFeature>
                 </TierFeatures>
               </TierCard>
             </TierSection>
           </ContentSection>
 
           <ContentSection>
-            <ScoringTitle>How We Score Candidates</ScoringTitle>
+            <ScoringTitle>Our Intelligent Evaluation Process</ScoringTitle>
+
+            <p style={{ fontSize: '1.125rem', color: '#e0e0e0', lineHeight: '1.8', textAlign: 'center', marginBottom: '3rem', maxWidth: '900px', margin: '0 auto 3rem' }}>
+              Our proprietary AI algorithm analyzes multiple data points from each candidate's resume, application, and background. The system evaluates technical qualifications, professional experience, and job-specific criteria to generate a comprehensive score from 0-100. This multi-factor assessment ensures you see the complete picture of each candidate's potential fit.
+            </p>
 
             <ScoringGrid>
               <ScoringCard>
                 <ScoringIcon>🎓</ScoringIcon>
-                <ScoringCriterion>HVAC Experience</ScoringCriterion>
-                <ScoringWeight>Weight: 25%</ScoringWeight>
-                <p style={{ color: '#666', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                  Years of hands-on HVAC experience, complexity of systems worked on
+                <ScoringCriterion>HVAC Experience Assessment</ScoringCriterion>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                  Our AI evaluates years of hands-on HVAC experience, the complexity of systems candidates have worked on, and their progression through increasingly challenging roles. The algorithm identifies patterns that indicate deep expertise and practical knowledge.
                 </p>
               </ScoringCard>
 
               <ScoringCard>
                 <ScoringIcon>📜</ScoringIcon>
-                <ScoringCriterion>Certifications</ScoringCriterion>
-                <ScoringWeight>Weight: 20%</ScoringWeight>
-                <p style={{ color: '#666', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                  EPA 608, NATE, manufacturer certifications, state licenses
+                <ScoringCriterion>Credentials & Certifications</ScoringCriterion>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                  The system scans for relevant certifications including EPA 608, NATE credentials, manufacturer-specific training, and state licenses. It also evaluates the recency and relevance of each certification to your specific job requirements.
                 </p>
               </ScoringCard>
 
               <ScoringCard>
                 <ScoringIcon>📊</ScoringIcon>
-                <ScoringCriterion>Work History</ScoringCriterion>
-                <ScoringWeight>Weight: 20%</ScoringWeight>
-                <p style={{ color: '#666', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                  Job stability, progression, reasons for leaving previous positions
+                <ScoringCriterion>Employment Track Record</ScoringCriterion>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                  Our algorithm analyzes job stability, career progression patterns, tenure at previous positions, and the context around role changes. This helps identify candidates with strong commitment and upward mobility.
                 </p>
               </ScoringCard>
 
               <ScoringCard>
                 <ScoringIcon>🔧</ScoringIcon>
-                <ScoringCriterion>Technical Skills</ScoringCriterion>
-                <ScoringWeight>Weight: 15%</ScoringWeight>
-                <p style={{ color: '#666', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                  Specific HVAC skills, equipment familiarity, troubleshooting ability
+                <ScoringCriterion>Technical Competencies</ScoringCriterion>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                  The AI evaluates specific HVAC skills mentioned in resumes, equipment familiarity, diagnostic abilities, and troubleshooting experience. It matches these competencies against your job description to find the best technical fits.
                 </p>
               </ScoringCard>
 
               <ScoringCard>
                 <ScoringIcon>📍</ScoringIcon>
-                <ScoringCriterion>Location Match</ScoringCriterion>
-                <ScoringWeight>Weight: 10%</ScoringWeight>
-                <p style={{ color: '#666', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                  Proximity to job site, willingness to travel, local market knowledge
+                <ScoringCriterion>Geographic Compatibility</ScoringCriterion>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                  Location analysis includes proximity to your job sites, commute feasibility, relocation indicators, travel willingness, and local market experience. This helps predict long-term retention and daily logistics.
                 </p>
               </ScoringCard>
 
               <ScoringCard>
                 <ScoringIcon>💰</ScoringIcon>
-                <ScoringCriterion>Salary Alignment</ScoringCriterion>
-                <ScoringWeight>Weight: 10%</ScoringWeight>
-                <p style={{ color: '#666', fontSize: '0.875rem', marginTop: '0.5rem' }}>
-                  Salary expectations vs. budget, benefits expectations, flexibility
+                <ScoringCriterion>Compensation Expectations</ScoringCriterion>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem', marginTop: '0.5rem' }}>
+                  The system compares stated salary expectations, benefits requirements, and compensation history against your budget and market rates. This ensures alignment before you invest time in interviews.
                 </p>
               </ScoringCard>
             </ScoringGrid>
+
+            <div style={{ marginTop: '3rem', padding: '2rem', background: '#000000', borderRadius: '12px', border: '2px solid #4ade80' }}>
+              <h4 style={{ fontSize: '1.25rem', fontWeight: '700', color: '#4ade80', marginBottom: '1rem', textAlign: 'center' }}>
+                Proprietary Scoring Formula
+              </h4>
+              <p style={{ color: '#e0e0e0', lineHeight: '1.8', textAlign: 'center', margin: 0 }}>
+                Each evaluation criterion is weighted based on extensive industry research and hiring outcome data. Our proprietary algorithm combines these weighted factors using advanced machine learning to generate accurate, predictive candidate scores. The exact formula and weights are continuously refined to improve hiring success rates.
+              </p>
+            </div>
           </ContentSection>
 
           <ContentSection>

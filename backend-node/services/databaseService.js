@@ -123,8 +123,26 @@ const analysisService = {
             strengths,
             weaknesses,
             recommendations,
-            hiringRecommendation
+            hiringRecommendation,
+            // New format fields
+            keyStrengths,
+            concerns,
+            recommendationSummary,
+            totalRelevantYears
         } = analysisData;
+
+        // Handle both old and new formats
+        // If new format (keyStrengths exists), use it; otherwise use old format
+        const finalStrengths = keyStrengths || strengths || [];
+        const finalWeaknesses = concerns || weaknesses || [];
+        const finalRecommendations = recommendationSummary ? [recommendationSummary] : (recommendations || []);
+        const finalSummary = summary || recommendationSummary || 'Resume analyzed';
+
+        // Provide defaults for old format fields that may not exist in new format
+        const tech = technicalSkills || { score: overallScore || 0, found: [], missing: [], feedback: '' };
+        const certs = certifications || { score: 0, found: [], recommended: [], feedback: '' };
+        const exp = experience || { score: overallScore || 0, yearsOfExperience: totalRelevantYears || 0, relevantExperience: [], feedback: '' };
+        const pres = presentationQuality || { score: overallScore || 0, strengths: [], improvements: [], feedback: '' };
 
         const result = await db.query(
             `INSERT INTO analyses (
@@ -143,12 +161,12 @@ const analysisService = {
                 ?, ?, ?, ?
             ) RETURNING *`,
             [
-                candidateId, overallScore, scoreOutOf10, summary,
-                technicalSkills.score, toJSON(technicalSkills.found), toJSON(technicalSkills.missing), technicalSkills.feedback,
-                certifications.score, toJSON(certifications.found), toJSON(certifications.recommended), certifications.feedback,
-                experience.score, experience.yearsOfExperience, toJSON(experience.relevantExperience), experience.feedback,
-                presentationQuality.score, toJSON(presentationQuality.strengths), toJSON(presentationQuality.improvements), presentationQuality.feedback,
-                toJSON(strengths), toJSON(weaknesses), toJSON(recommendations), hiringRecommendation
+                candidateId, overallScore, scoreOutOf10, finalSummary,
+                tech.score, toJSON(tech.found), toJSON(tech.missing), tech.feedback,
+                certs.score, toJSON(certs.found), toJSON(certs.recommended), certs.feedback,
+                exp.score, exp.yearsOfExperience, toJSON(exp.relevantExperience), exp.feedback,
+                pres.score, toJSON(pres.strengths), toJSON(pres.improvements), pres.feedback,
+                toJSON(finalStrengths), toJSON(finalWeaknesses), toJSON(finalRecommendations), hiringRecommendation
             ]
         );
         return result.rows[0];
@@ -464,7 +482,6 @@ const candidatePipelineService = {
                 cp.ai_summary,
                 cp.contacted_via,
                 cp.contacted_at,
-                cp.evaluated_position,
                 c.filename,
                 c.file_path,
                 c.status as candidate_status,
@@ -499,7 +516,7 @@ const candidatePipelineService = {
             params.push(filters.job_id);
         }
         if (filters.position) {
-            query += ' AND cp.evaluated_position = ?';
+            query += ' AND j.position_type = ?';
             params.push(filters.position);
         }
         if (filters.minScore !== undefined) {

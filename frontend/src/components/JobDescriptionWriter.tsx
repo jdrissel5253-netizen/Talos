@@ -253,33 +253,33 @@ const JobDescriptionWriter: React.FC = () => {
               <ProcessSteps>
                 <ProcessStep>
                   <StepNumber>1</StepNumber>
-                  <StepTitle>Input Job Details</StepTitle>
+                  <StepTitle>Smart Input Processing</StepTitle>
                   <StepDescription>
-                    Provide basic information: position type, experience level, location, and any specific requirements.
+                    Our AI analyzes your job requirements and company information to understand exactly what kind of candidate you need.
                   </StepDescription>
                 </ProcessStep>
 
                 <ProcessStep>
                   <StepNumber>2</StepNumber>
-                  <StepTitle>AI Generates Description</StepTitle>
+                  <StepTitle>Intelligent Content Generation</StepTitle>
                   <StepDescription>
-                    Our HVAC-trained AI creates a compelling job description using industry-specific language and requirements.
+                    Advanced algorithms trained on successful HVAC job postings craft compelling, industry-specific descriptions that resonate with qualified candidates.
                   </StepDescription>
                 </ProcessStep>
 
                 <ProcessStep>
                   <StepNumber>3</StepNumber>
-                  <StepTitle>Customize & Refine</StepTitle>
+                  <StepTitle>Optimization & Refinement</StepTitle>
                   <StepDescription>
-                    Review and adjust the tone, add company-specific details, or modify requirements to match your needs.
+                    The system refines language, tone, and structure based on data from thousands of high-performing HVAC job listings to maximize candidate engagement.
                   </StepDescription>
                 </ProcessStep>
 
                 <ProcessStep>
                   <StepNumber>4</StepNumber>
-                  <StepTitle>Post Instantly</StepTitle>
+                  <StepTitle>Multi-Channel Distribution</StepTitle>
                   <StepDescription>
-                    Once satisfied, post your optimized job description to multiple job boards with a single click.
+                    Your polished job description is formatted and ready for seamless distribution across all major job platforms with optimized visibility.
                   </StepDescription>
                 </ProcessStep>
               </ProcessSteps>

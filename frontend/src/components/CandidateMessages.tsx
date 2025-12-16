@@ -160,45 +160,57 @@ const CandidateMessages: React.FC = () => {
               <MessageTypeCard>
                 <MessageIcon>📅</MessageIcon>
                 <MessageTitle>Interview Invitations</MessageTitle>
-                <p style={{ color: '#666', textAlign: 'center', marginBottom: '1rem' }}>
-                  Professional interview scheduling with all necessary details
+                <p style={{ color: '#e0e0e0', lineHeight: '1.8', marginBottom: '1rem' }}>
+                  Our AI crafts personalized interview invitations that balance professionalism with warmth. Messages automatically highlight relevant candidate qualifications, suggest optimal meeting times based on scheduling patterns, and include all necessary logistical details formatted for maximum response rates.
                 </p>
-                <MessageExample>
-                  "Hi [Name], Thank you for your interest in the HVAC Technician position at [Company]. Based on your impressive background in residential HVAC systems, we'd like to schedule an interview. Are you available this Thursday at 2 PM for a 30-minute discussion about the role and your experience? We're located at [Address]. Please confirm your availability. Best regards, [Your Name]"
-                </MessageExample>
+                <ul style={{ color: '#e0e0e0', lineHeight: '1.8', textAlign: 'left', paddingLeft: '1.5rem' }}>
+                  <li>Personalized opening based on candidate background</li>
+                  <li>Strategic timing suggestions for higher acceptance rates</li>
+                  <li>Optimized call-to-action for quick confirmations</li>
+                  <li>Professional tone that reflects your company culture</li>
+                </ul>
               </MessageTypeCard>
 
               <MessageTypeCard>
                 <MessageIcon>📞</MessageIcon>
                 <MessageTitle>Phone Screen Requests</MessageTitle>
-                <p style={{ color: '#666', textAlign: 'center', marginBottom: '1rem' }}>
-                  Quick phone screening invitations to qualify candidates
+                <p style={{ color: '#e0e0e0', lineHeight: '1.8', marginBottom: '1rem' }}>
+                  Generate concise, engaging phone screen invitations that respect candidates' time while generating curiosity. Our system analyzes candidate profiles to emphasize the most relevant aspects of the opportunity, increasing screening call acceptance rates.
                 </p>
-                <MessageExample>
-                  "Hello [Name], Your HVAC experience caught our attention for the [Position] role. We'd like to have a brief 15-minute phone conversation to discuss your background and answer any initial questions you might have. When would be a convenient time for you this week? You can reach me directly at [Phone] or reply with your preferred times. Looking forward to speaking with you!"
-                </MessageExample>
+                <ul style={{ color: '#e0e0e0', lineHeight: '1.8', textAlign: 'left', paddingLeft: '1.5rem' }}>
+                  <li>Brief format optimized for busy professionals</li>
+                  <li>Highlight key opportunity factors for each candidate</li>
+                  <li>Flexible scheduling language to maximize responses</li>
+                  <li>Clear expectations for call duration and format</li>
+                </ul>
               </MessageTypeCard>
 
               <MessageTypeCard>
                 <MessageIcon>✅</MessageIcon>
-                <MessageTitle>Follow-Up Messages</MessageTitle>
-                <p style={{ color: '#666', textAlign: 'center', marginBottom: '1rem' }}>
-                  Professional follow-ups after interviews or applications
+                <MessageTitle>Follow-Up Communications</MessageTitle>
+                <p style={{ color: '#e0e0e0', lineHeight: '1.8', marginBottom: '1rem' }}>
+                  Maintain candidate engagement with thoughtfully timed follow-up messages. The system references specific conversation points from interviews and applications, demonstrating genuine interest while keeping top candidates engaged throughout your hiring process.
                 </p>
-                <MessageExample>
-                  "Hi [Name], Thank you for taking the time to interview for the HVAC Service Technician position yesterday. We were impressed with your experience in commercial HVAC maintenance and your approach to customer service. We're currently reviewing all candidates and expect to make a decision by [Date]. We'll be in touch soon with next steps. Thanks again for your interest in joining our team!"
-                </MessageExample>
+                <ul style={{ color: '#e0e0e0', lineHeight: '1.8', textAlign: 'left', paddingLeft: '1.5rem' }}>
+                  <li>Personalized callbacks to interview discussions</li>
+                  <li>Timeline updates that manage candidate expectations</li>
+                  <li>Enthusiasm indicators to keep top candidates interested</li>
+                  <li>Strategic messaging to prevent candidate drop-off</li>
+                </ul>
               </MessageTypeCard>
 
               <MessageTypeCard>
                 <MessageIcon>❌</MessageIcon>
                 <MessageTitle>Professional Rejections</MessageTitle>
-                <p style={{ color: '#666', textAlign: 'center', marginBottom: '1rem' }}>
-                  Respectful rejection messages that maintain your reputation
+                <p style={{ color: '#e0e0e0', lineHeight: '1.8', marginBottom: '1rem' }}>
+                  Deliver tactful rejection messages that preserve your employer brand and maintain positive candidate relationships. Messages are crafted to provide closure while leaving the door open for future opportunities, protecting your company's reputation in the talent market.
                 </p>
-                <MessageExample>
-                  "Dear [Name], Thank you for your interest in the HVAC Technician position and for the time you invested in our interview process. After careful consideration, we've decided to move forward with another candidate whose experience more closely matches our current needs. We were impressed with your background and encourage you to apply for future openings that may be a better fit. We'll keep your resume on file. Best of luck in your job search!"
-                </MessageExample>
+                <ul style={{ color: '#e0e0e0', lineHeight: '1.8', textAlign: 'left', paddingLeft: '1.5rem' }}>
+                  <li>Respectful language that maintains candidate dignity</li>
+                  <li>Appreciation for time invested in the process</li>
+                  <li>Future opportunity language for qualified candidates</li>
+                  <li>Tone calibrated to interview stage and candidate quality</li>
+                </ul>
               </MessageTypeCard>
             </MessageTypeGrid>
           </ContentSection>

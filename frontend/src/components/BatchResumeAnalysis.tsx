@@ -429,14 +429,18 @@ interface CandidateResult {
     isOverqualified?: boolean;
     overqualificationReason?: string | null;
     summary: string;
-    technicalSkills: any;
-    certifications: any;
-    experience: any;
-    presentationQuality: any;
-    strengths: string[];
-    weaknesses: string[];
-    recommendations: string[];
-    hiringRecommendation: string;
+    technicalSkills?: any;
+    certifications?: any;
+    experience?: any;
+    presentationQuality?: any;
+    strengths?: string[];
+    weaknesses?: string[];
+    recommendations?: string[];
+    hiringRecommendation?: string;
+    // New format fields
+    keyStrengths?: string[];
+    concerns?: string[];
+    recommendationSummary?: string;
   };
   error?: string;
 }
@@ -558,7 +562,7 @@ const BatchResumeAnalysis: React.FC = () => {
           <NavButton onClick={() => navigate('/jobs-management')}>
             💼 View My Jobs
           </NavButton>
-          <NavButton onClick={() => navigate('/talent-pool')}>
+          <NavButton onClick={() => navigate('/talent-pool-dashboard')}>
             👥 View Talent Pool
           </NavButton>
         </NavButtonsContainer>
@@ -776,69 +780,73 @@ const BatchResumeAnalysis: React.FC = () => {
                               </DetailContent>
                             </DetailSection>
                           )}
-                          <DetailGrid>
-                            <DetailSection>
-                              <DetailTitle>
-                                Technical Skills
-                                <DetailScore>{candidate.analysis.technicalSkills.score}/100</DetailScore>
-                              </DetailTitle>
-                              <DetailContent>
-                                <strong>Found:</strong>
-                                <List>
-                                  {candidate.analysis.technicalSkills.found.slice(0, 3).map((skill: string, idx: number) => (
-                                    <ListItem key={idx}>{skill}</ListItem>
-                                  ))}
-                                </List>
-                              </DetailContent>
-                            </DetailSection>
 
-                            <DetailSection>
-                              <DetailTitle>
-                                Certifications
-                                <DetailScore>{candidate.analysis.certifications.score}/100</DetailScore>
-                              </DetailTitle>
-                              <DetailContent>
-                                {candidate.analysis.certifications.found.length > 0 ? (
+                          {/* Only show detailed breakdown if old format data exists */}
+                          {candidate.analysis.technicalSkills && (
+                            <DetailGrid>
+                              <DetailSection>
+                                <DetailTitle>
+                                  Technical Skills
+                                  <DetailScore>{candidate.analysis.technicalSkills?.score || 0}/100</DetailScore>
+                                </DetailTitle>
+                                <DetailContent>
+                                  <strong>Found:</strong>
                                   <List>
-                                    {candidate.analysis.certifications.found.map((cert: string, idx: number) => (
-                                      <ListItem key={idx}>{cert}</ListItem>
+                                    {(candidate.analysis.technicalSkills?.found || []).slice(0, 3).map((skill: string, idx: number) => (
+                                      <ListItem key={idx}>{skill}</ListItem>
                                     ))}
                                   </List>
-                                ) : (
-                                  <p>No certifications found</p>
-                                )}
-                              </DetailContent>
-                            </DetailSection>
+                                </DetailContent>
+                              </DetailSection>
 
-                            <DetailSection>
-                              <DetailTitle>
-                                Experience
-                                <DetailScore>{candidate.analysis.experience.score}/100</DetailScore>
-                              </DetailTitle>
-                              <DetailContent>
-                                <p><strong>Years:</strong> {candidate.analysis.experience.yearsOfExperience}</p>
-                                <p style={{ fontSize: '0.75rem', marginTop: '0.5rem' }}>
-                                  {candidate.analysis.experience.feedback}
-                                </p>
-                              </DetailContent>
-                            </DetailSection>
+                              <DetailSection>
+                                <DetailTitle>
+                                  Certifications
+                                  <DetailScore>{candidate.analysis.certifications?.score || 0}/100</DetailScore>
+                                </DetailTitle>
+                                <DetailContent>
+                                  {(candidate.analysis.certifications?.found || []).length > 0 ? (
+                                    <List>
+                                      {candidate.analysis.certifications.found.map((cert: string, idx: number) => (
+                                        <ListItem key={idx}>{cert}</ListItem>
+                                      ))}
+                                    </List>
+                                  ) : (
+                                    <p>No certifications found</p>
+                                  )}
+                                </DetailContent>
+                              </DetailSection>
 
-                            <DetailSection>
-                              <DetailTitle>
-                                Presentation
-                                <DetailScore>{candidate.analysis.presentationQuality.score}/100</DetailScore>
-                              </DetailTitle>
-                              <DetailContent>
-                                <p>{candidate.analysis.presentationQuality.feedback}</p>
-                              </DetailContent>
-                            </DetailSection>
-                          </DetailGrid>
+                              <DetailSection>
+                                <DetailTitle>
+                                  Experience
+                                  <DetailScore>{candidate.analysis.experience?.score || 0}/100</DetailScore>
+                                </DetailTitle>
+                                <DetailContent>
+                                  <p><strong>Years:</strong> {candidate.analysis.experience?.yearsOfExperience || 0}</p>
+                                  <p style={{ fontSize: '0.75rem', marginTop: '0.5rem' }}>
+                                    {candidate.analysis.experience?.feedback || ''}
+                                  </p>
+                                </DetailContent>
+                              </DetailSection>
+
+                              <DetailSection>
+                                <DetailTitle>
+                                  Presentation
+                                  <DetailScore>{candidate.analysis.presentationQuality?.score || 0}/100</DetailScore>
+                                </DetailTitle>
+                                <DetailContent>
+                                  <p>{candidate.analysis.presentationQuality?.feedback || ''}</p>
+                                </DetailContent>
+                              </DetailSection>
+                            </DetailGrid>
+                          )}
 
                           <DetailSection>
                             <DetailTitle>Key Strengths</DetailTitle>
                             <DetailContent>
                               <List>
-                                {candidate.analysis.strengths.map((strength, idx) => (
+                                {(candidate.analysis.keyStrengths || candidate.analysis.strengths || []).map((strength, idx) => (
                                   <ListItem key={idx}>{strength}</ListItem>
                                 ))}
                               </List>
@@ -846,21 +854,40 @@ const BatchResumeAnalysis: React.FC = () => {
                           </DetailSection>
 
                           <DetailSection style={{ marginTop: '1rem' }}>
-                            <DetailTitle>Recommendations</DetailTitle>
+                            <DetailTitle>Areas for Development</DetailTitle>
                             <DetailContent>
                               <List>
-                                {candidate.analysis.recommendations.map((rec, idx) => (
-                                  <ListItem key={idx}>{rec}</ListItem>
+                                {(candidate.analysis.concerns || candidate.analysis.weaknesses || []).map((item, idx) => (
+                                  <ListItem key={idx}>{item}</ListItem>
                                 ))}
                               </List>
                             </DetailContent>
                           </DetailSection>
 
-                          <RecommendationBadge type={getRecommendationType(candidate.analysis.hiringRecommendation)}>
-                            <RecommendationText>
-                              Hiring Recommendation: {candidate.analysis.hiringRecommendation.replace(/_/g, ' ')}
-                            </RecommendationText>
-                          </RecommendationBadge>
+                          {(candidate.analysis.recommendations || candidate.analysis.recommendationSummary) && (
+                            <DetailSection style={{ marginTop: '1rem' }}>
+                              <DetailTitle>Recommendations</DetailTitle>
+                              <DetailContent>
+                                {candidate.analysis.recommendationSummary ? (
+                                  <p>{candidate.analysis.recommendationSummary}</p>
+                                ) : (
+                                  <List>
+                                    {(candidate.analysis.recommendations || []).map((rec, idx) => (
+                                      <ListItem key={idx}>{rec}</ListItem>
+                                    ))}
+                                  </List>
+                                )}
+                              </DetailContent>
+                            </DetailSection>
+                          )}
+
+                          {candidate.analysis.hiringRecommendation && (
+                            <RecommendationBadge type={getRecommendationType(candidate.analysis.hiringRecommendation)}>
+                              <RecommendationText>
+                                Hiring Recommendation: {candidate.analysis.hiringRecommendation.replace(/_/g, ' ')}
+                              </RecommendationText>
+                            </RecommendationBadge>
+                          )}
                         </CandidateDetails>
                       )}
                     </CandidateCard>

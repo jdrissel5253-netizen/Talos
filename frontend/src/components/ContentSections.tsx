@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 
+// Content sections for the landing page
 const SectionContainer = styled.div`
   padding: 4rem 2rem;
   max-width: 1200px;
@@ -285,6 +286,210 @@ const ExpandIcon = styled.span<{ isOpen: boolean }>`
   }
 `;
 
+// New Value Props Styled Components
+const ValueHeroContainer = styled.div`
+  text-align: center;
+  max-width: 900px;
+  margin: 0 auto 4rem;
+`;
+
+const ValueHeroHeadline = styled.h2`
+  font-size: 3rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin-bottom: 1.5rem;
+  line-height: 1.2;
+
+  @media (max-width: 768px) {
+    font-size: 2rem;
+  }
+`;
+
+const ValueHeroSubheadline = styled.p`
+  font-size: 1.5rem;
+  color: #e0e0e0;
+  line-height: 1.6;
+  margin-bottom: 2.5rem;
+  font-weight: 400;
+
+  @media (max-width: 768px) {
+    font-size: 1.25rem;
+  }
+`;
+
+const ValueFrameworkBox = styled.div`
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  border: 2px solid #4ade80;
+  border-radius: 12px;
+  padding: 2.5rem;
+  box-shadow: 0 8px 32px rgba(74, 222, 128, 0.15);
+`;
+
+const FrameworkBadge = styled.div`
+  display: inline-block;
+  background: #4ade80;
+  color: #000000;
+  padding: 0.5rem 1.5rem;
+  border-radius: 24px;
+  font-weight: 700;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+`;
+
+const FrameworkDescription = styled.p`
+  font-size: 1.125rem;
+  color: #ffffff;
+  line-height: 1.8;
+  margin: 0;
+`;
+
+const ValueGoalsContainer = styled.div`
+  max-width: 700px;
+  margin: 0 auto 4rem;
+  background: #1a1a1a;
+  padding: 3rem;
+  border-radius: 16px;
+  border-left: 6px solid #4ade80;
+`;
+
+const ValueGoalsTitle = styled.h3`
+  font-size: 2rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 2rem;
+  text-align: center;
+
+  @media (max-width: 768px) {
+    font-size: 1.5rem;
+  }
+`;
+
+const ValueGoalsList = styled.div`
+  margin-bottom: 2.5rem;
+`;
+
+const ValueGoalItem = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+  padding: 1rem;
+  background: #000000;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+
+  &:hover {
+    transform: translateX(8px);
+    background: #0a0a0a;
+  }
+`;
+
+const GoalCheckmark = styled.div`
+  width: 32px;
+  height: 32px;
+  background: #4ade80;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  font-weight: 800;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+`;
+
+const GoalText = styled.p`
+  font-size: 1.25rem;
+  color: #e0e0e0;
+  margin: 0;
+  font-weight: 500;
+
+  @media (max-width: 768px) {
+    font-size: 1.125rem;
+  }
+`;
+
+const ValueCTA = styled.div`
+  text-align: center;
+  padding-top: 1.5rem;
+  border-top: 2px solid #333333;
+`;
+
+const CTAText = styled.h4`
+  font-size: 2.25rem;
+  font-weight: 800;
+  color: #4ade80;
+  margin-bottom: 0.75rem;
+
+  @media (max-width: 768px) {
+    font-size: 1.75rem;
+  }
+`;
+
+const CTASubtext = styled.p`
+  font-size: 1.125rem;
+  color: #b0b0b0;
+  margin: 0;
+  font-style: italic;
+`;
+
+const ValueStatsContainer = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  max-width: 1100px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const StatCard = styled.div`
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  padding: 2.5rem 2rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 2px solid transparent;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: #4ade80;
+    transform: translateY(-8px);
+    box-shadow: 0 12px 40px rgba(74, 222, 128, 0.2);
+  }
+`;
+
+const StatNumber = styled.div`
+  font-size: 3.5rem;
+  font-weight: 800;
+  color: #4ade80;
+  margin-bottom: 0.5rem;
+  line-height: 1;
+
+  @media (max-width: 768px) {
+    font-size: 2.5rem;
+  }
+`;
+
+const StatLabel = styled.div`
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+`;
+
+const StatDescription = styled.p`
+  font-size: 0.9375rem;
+  color: #b0b0b0;
+  line-height: 1.5;
+  margin: 0;
+`;
+
 const ContentSections: React.FC = () => {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
@@ -337,38 +542,75 @@ const ContentSections: React.FC = () => {
     <>
       <ValuePropsSection>
         <SectionContainer>
-          <SectionTitle>What Talos Brings to the Table</SectionTitle>
-          <ValuePropsGrid>
-            <ValuePropCard>
-              <ValuePropIcon>🔧</ValuePropIcon>
-              <ValuePropTitle>Lead Service Technician? Been there, filled that</ValuePropTitle>
-              <ValuePropDescription>
-                Posted to job board within minutes • Marketed to the right candidates •
-                Graded by Talos • Revenue growth
-              </ValuePropDescription>
-            </ValuePropCard>
+          <ValueHeroContainer>
+            <ValueHeroHeadline>
+              Smarter Hiring for HVAC Companies
+            </ValueHeroHeadline>
+            <ValueHeroSubheadline>
+              Stop losing great candidates to slow processes and inefficient screening.
+              Talos gives you the tools to hire faster, smarter, and with confidence.
+            </ValueHeroSubheadline>
 
-            <ValuePropCard>
-              <ValuePropIcon>📚</ValuePropIcon>
-              <ValuePropTitle>Vast Candidate Database</ValuePropTitle>
-              <ValuePropDescription>
-                Talos maintains an extensive database of candidates organized into graded tiers,
-                ensuring you always have access to pre-qualified talent ranked by their skills,
-                experience, and fit for your HVAC positions.
-              </ValuePropDescription>
-            </ValuePropCard>
+            <ValueFrameworkBox>
+              <FrameworkBadge>Our Approach</FrameworkBadge>
+              <FrameworkDescription>
+                We combine AI-powered automation with HVAC industry expertise to eliminate
+                the bottlenecks in your hiring process—from writing job descriptions to ranking
+                candidates to managing your talent pipeline.
+              </FrameworkDescription>
+            </ValueFrameworkBox>
+          </ValueHeroContainer>
 
-            <ValuePropCard>
-              <ValuePropIcon>📰</ValuePropIcon>
-              <ValuePropTitle>Want the latest HVAC news?</ValuePropTitle>
-              <ValuePropDescription>
-                Talos's Knowledge Hub is your comprehensive resource for everything HVAC.
-                Stay ahead with the latest industry trends, seasonal hiring strategies,
-                business growth tips, regulatory updates, and expert insights to help
-                your HVAC company thrive in a competitive market.
-              </ValuePropDescription>
-            </ValuePropCard>
-          </ValuePropsGrid>
+          <ValueGoalsContainer>
+            <ValueGoalsTitle>What You Get with Talos</ValueGoalsTitle>
+            <ValueGoalsList>
+              <ValueGoalItem>
+                <GoalCheckmark>✓</GoalCheckmark>
+                <GoalText>AI-generated job descriptions that attract qualified technicians</GoalText>
+              </ValueGoalItem>
+              <ValueGoalItem>
+                <GoalCheckmark>✓</GoalCheckmark>
+                <GoalText>Instant candidate ranking and scoring to identify top talent</GoalText>
+              </ValueGoalItem>
+              <ValueGoalItem>
+                <GoalCheckmark>✓</GoalCheckmark>
+                <GoalText>Automated posting to 15+ job boards with one click</GoalText>
+              </ValueGoalItem>
+              <ValueGoalItem>
+                <GoalCheckmark>✓</GoalCheckmark>
+                <GoalText>Private talent pool to track and revisit candidates over time</GoalText>
+              </ValueGoalItem>
+            </ValueGoalsList>
+
+            <ValueCTA>
+              <CTAText>Stop settling for average hires</CTAText>
+              <CTASubtext>Find the right technicians, every time</CTASubtext>
+            </ValueCTA>
+          </ValueGoalsContainer>
+
+          <ValueStatsContainer>
+            <StatCard>
+              <StatNumber>85%</StatNumber>
+              <StatLabel>Faster</StatLabel>
+              <StatDescription>
+                Time from job posting to qualified candidate shortlist
+              </StatDescription>
+            </StatCard>
+            <StatCard>
+              <StatNumber>10x</StatNumber>
+              <StatLabel>More Reach</StatLabel>
+              <StatDescription>
+                Candidates reached through multi-platform posting
+              </StatDescription>
+            </StatCard>
+            <StatCard>
+              <StatNumber>90%</StatNumber>
+              <StatLabel>Accuracy</StatLabel>
+              <StatDescription>
+                AI ranking matches hiring manager preferences
+              </StatDescription>
+            </StatCard>
+          </ValueStatsContainer>
         </SectionContainer>
       </ValuePropsSection>
 

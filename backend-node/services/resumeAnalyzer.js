@@ -813,8 +813,9 @@ Industry Knowledge (bonus, not required):
 
 === JOB STABILITY ===
 
-- NOT JOB HOPPY: Long tenures (2+ years per employer) or few employers
-- JOB HOPPY: Many employers with short tenures (under 1 year each)
+- NOT JOB HOPPY: Stable employment (2+ years per employer)
+- JOB HOPPY: Multiple jobs under 1.5 years each
+- NOTE: Dispatcher roles require familiarity with company operations, service areas, and technician teams - stability is critical
 
 === LOCATION/DISTANCE ===
 
@@ -1462,8 +1463,9 @@ Certifications (bonus, not required):
 
 === JOB STABILITY ===
 
-- NOT JOB HOPPY: Long tenures (2+ years per employer) or few employers
-- JOB HOPPY: Many employers with short tenures (under 1 year each)
+- NOT JOB HOPPY: Stable employment (2+ years per employer)
+- JOB HOPPY: Multiple jobs under 1.5 years each
+- NOTE: Dispatcher roles require familiarity with company operations, service areas, and technician teams - stability is critical
 - NOTE: Sales roles often involve commission changes or better opportunities - moderate job movement is acceptable
 
 === LOCATION/DISTANCE ===
@@ -1825,8 +1827,9 @@ Certifications (bonus, not required):
 
 === JOB STABILITY ===
 
-- NOT JOB HOPPY: Long tenures (2+ years per employer) or few employers
-- JOB HOPPY: Many employers with short tenures (under 1 year each)
+- NOT JOB HOPPY: Stable employment (2+ years per employer)
+- JOB HOPPY: Multiple jobs under 1.5 years each
+- NOTE: Dispatcher roles require familiarity with company operations, service areas, and technician teams - stability is critical
 
 === LOCATION/DISTANCE ===
 
@@ -1982,8 +1985,9 @@ Certifications (bonus, not required):
 
 === JOB STABILITY ===
 
-- NOT JOB HOPPY: Long tenures (2+ years per employer) or few employers
-- JOB HOPPY: Many employers with short tenures (under 1 year each)
+- NOT JOB HOPPY: Stable employment (2+ years per employer)
+- JOB HOPPY: Multiple jobs under 1.5 years each
+- NOTE: Office/customer service roles need time to learn systems, build relationships, and demonstrate value - stability is highly valued
 
 === LOCATION/DISTANCE ===
 
@@ -2556,24 +2560,36 @@ STEP 6: EVALUATE WORK GAPS
    b) Overlapping jobs = NO GAP
    c) Classify as: NO WORK GAP / SMALL WORK GAP / LARGE WORK GAP
 
-STEP 7: EVALUATE JOB STABILITY
-   a) Count number of employers and tenure length
-   b) Classify as: NOT JOB HOPPY / JOB HOPPY
+STEP 7: EVALUATE JOB STABILITY (CRITICAL - BE STRICT FOR OFFICE ROLES)
+   a) List EACH job with exact tenure in months
+   b) Count how many jobs lasted UNDER 1 YEAR (12 months)
+   c) JOB HOPPY if ANY of these apply:
+      - 2+ jobs lasted less than 1 year (12 months) - AUTOMATIC job hoppy
+      - Pattern of leaving jobs quickly
+      - Multiple short tenures showing instability
+   d) NOT JOB HOPPY if:
+      - Only 0-1 jobs under 1 year
+      - Most jobs are 1.5+ years each
+      - Stable employment pattern overall
+   e) REMEMBER: Office/customer service roles need time to learn systems and build value - 2 jobs under 1 year is a red flag
+   f) Classify as: NOT JOB HOPPY / JOB HOPPY
 
 STEP 8: CALCULATE DISTANCE
    a) Use candidate location and job location
    b) Classify as: WITHIN 30 MILES / 30-50 MILES / OVER 50 MILES
 
-STEP 9: APPLY SCORING MATRIX
-   a) Find the exact matching row in the scoring matrix based on:
+STEP 9: APPLY SCORING MATRIX (MUST USE EXACT MATRIX ROW)
+   a) Find the EXACT matching row in the scoring matrix based on ALL factors:
       - Experience Tier (REQUIRED / CLOSE TO REQUIRED / NOT CLOSE TO REQUIRED)
       - Resume Quality (GOOD / MID / POOR)
       - Certifications (LISTED / NOT LISTED)
       - Work Gap (NO / SMALL / LARGE)
       - Job Stability (NOT JOB HOPPY / JOB HOPPY)
       - Distance (WITHIN 30 MILES / 30-50 MILES / OVER 50 MILES)
-   b) Use the MIDDLE of the score range for that row
-   c) Adjust slightly within the range based on other positive/negative factors
+   b) Use the MIDDLE of the score range for that exact row
+   c) Adjust ONLY slightly (+/- 2 points max) within the range based on strong positives/negatives
+   d) NEVER score outside the range for your matrix row
+   e) Document which exact matrix row you used in "scoringMatrixRow" field
 
 REQUIRED JSON OUTPUT FORMAT:
 {
@@ -2658,24 +2674,36 @@ STEP 6: EVALUATE WORK GAPS
    b) Overlapping jobs = NO GAP
    c) Classify as: NO WORK GAP / SMALL WORK GAP / LARGE WORK GAP
 
-STEP 7: EVALUATE JOB STABILITY
-   a) Count number of employers and tenure length
-   b) Classify as: NOT JOB HOPPY / JOB HOPPY
+STEP 7: EVALUATE JOB STABILITY (CRITICAL - BE STRICT FOR OFFICE ROLES)
+   a) List EACH job with exact tenure in months
+   b) Count how many jobs lasted UNDER 1 YEAR (12 months)
+   c) JOB HOPPY if ANY of these apply:
+      - 2+ jobs lasted less than 1 year (12 months) - AUTOMATIC job hoppy
+      - Pattern of leaving jobs quickly
+      - Multiple short tenures showing instability
+   d) NOT JOB HOPPY if:
+      - Only 0-1 jobs under 1 year
+      - Most jobs are 1.5+ years each
+      - Stable employment pattern overall
+   e) REMEMBER: Administrative roles need time to learn company systems and procedures - 2 jobs under 1 year is a red flag
+   f) Classify as: NOT JOB HOPPY / JOB HOPPY
 
 STEP 8: CALCULATE DISTANCE
    a) Use candidate location and job location
    b) Classify as: WITHIN 30 MILES / 30-50 MILES / OVER 50 MILES
 
-STEP 9: APPLY SCORING MATRIX
-   a) Find the exact matching row in the scoring matrix based on:
+STEP 9: APPLY SCORING MATRIX (MUST USE EXACT MATRIX ROW)
+   a) Find the EXACT matching row in the scoring matrix based on ALL factors:
       - Experience Tier (REQUIRED / CLOSE TO REQUIRED / NOT CLOSE TO REQUIRED)
       - Resume Quality (GOOD / MID / POOR)
       - Certifications (LISTED / NOT LISTED)
       - Work Gap (NO / SMALL / LARGE)
       - Job Stability (NOT JOB HOPPY / JOB HOPPY)
       - Distance (WITHIN 30 MILES / 30-50 MILES / OVER 50 MILES)
-   b) Use the MIDDLE of the score range for that row
-   c) Adjust slightly within the range based on other positive/negative factors
+   b) Use the MIDDLE of the score range for that exact row
+   c) Adjust ONLY slightly (+/- 2 points max) within the range based on strong positives/negatives
+   d) NEVER score outside the range for your matrix row
+   e) Document which exact matrix row you used in "scoringMatrixRow" field
 
 REQUIRED JSON OUTPUT FORMAT:
 {
@@ -2755,9 +2783,19 @@ STEP 5: CHECK FOR WORK GAPS
    d) SMALL WORK GAP = 6 months to 1 year
    e) LARGE WORK GAP = Over 1 year
 
-STEP 6: ASSESS JOB STABILITY
-   a) NOT JOB HOPPY = Long tenures (2+ years per employer)
-   b) JOB HOPPY = Many employers with short tenures (under 1 year each)
+STEP 6: ASSESS JOB STABILITY (CRITICAL - BE STRICT FOR DISPATCHER ROLES)
+   a) List EACH job with exact tenure in months
+   b) Count how many jobs lasted UNDER 1 YEAR (12 months)
+   c) JOB HOPPY if ANY of these apply:
+      - 2+ jobs lasted less than 1 year (12 months) - AUTOMATIC job hoppy
+      - Pattern of leaving jobs quickly
+      - Multiple short tenures showing instability
+   d) NOT JOB HOPPY if:
+      - Only 0-1 jobs under 1 year
+      - Most jobs are 1.5+ years each
+      - Stable employment pattern overall
+   e) REMEMBER: Dispatchers need time to learn service areas, technician teams, and company operations - 2 jobs under 1 year is a red flag
+   f) Classify as: NOT JOB HOPPY / JOB HOPPY
 
 STEP 7: CHECK FOR OVERQUALIFICATION
    a) Compare candidate's most recent or highest job title to the Dispatcher position

@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { config } from '../config';
 import AddJobForm from './AddJobForm';
+import ContactRejectionModal from './ContactRejectionModal';
+import { extractCandidateName } from '../utils/templateHelpers';
 
 // Types
 interface Job {
@@ -433,7 +435,7 @@ const DropdownContent = styled.div<{ isOpen: boolean }>`
     box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
     border-radius: 6px;
     z-index: 1;
-    right: 0;
+    left: 0;
     top: 100%;
     margin-top: 0.5rem;
     border: 2px solid #333333;
@@ -479,6 +481,10 @@ const JobsManagement: React.FC = () => {
     const [sortBy, setSortBy] = useState<string>('tier_score');
     const [messageDropdownOpen, setMessageDropdownOpen] = useState<number | null>(null);
     const [showAddJobForm, setShowAddJobForm] = useState(false);
+    const [contactModalOpen, setContactModalOpen] = useState(false);
+    const [selectedCandidateForContact, setSelectedCandidateForContact] = useState<{ pipelineId: number; name: string; position: string; } | null>(null);
+    const [contactMode, setContactMode] = useState<'contact' | 'rejection'>('contact');
+    const [contactCommunicationType, setContactCommunicationType] = useState<'email' | 'sms'>('email');
 
     const navigate = useNavigate();
 
@@ -573,28 +579,41 @@ const JobsManagement: React.FC = () => {
         }
     };
 
-    const handleSendMessage = async (candidatePipelineId: number, messageType: string) => {
-        try {
-            const response = await fetch(`${config.apiUrl}/api/pipeline/${candidatePipelineId}/message`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    messageType,
-                    jobTitle: selectedJob?.title,
-                    jobLocation: selectedJob?.location,
-                    schedulingLink: 'https://calendly.com/your-link' // TODO: Make this configurable
-                })
-            });
+    const handleSendMessage = (candidatePipelineId: number, messageType: string) => {
+        // Find the candidate
+        const candidate = candidates.find(c => c.id === candidatePipelineId);
+        if (!candidate) return;
 
-            if (response.ok) {
-                alert('Message sent successfully!');
-                setMessageDropdownOpen(null);
-                if (selectedJob) {
-                    loadCandidates(selectedJob.id);
-                }
-            }
-        } catch (error) {
-            console.error('Error sending message:', error);
+        // Extract candidate name from filename
+        const candidateName = extractCandidateName(candidate.filename || 'Candidate');
+
+        // Set up modal state
+        setSelectedCandidateForContact({
+            pipelineId: candidatePipelineId,
+            name: candidateName,
+            position: selectedJob?.title || 'Position'
+        });
+
+        // Determine mode and communication type
+        if (messageType === 'rejection_email') {
+            setContactMode('rejection');
+            setContactCommunicationType('email');
+        } else {
+            setContactMode('contact');
+            setContactCommunicationType(messageType === 'sms' ? 'sms' : 'email');
+        }
+
+        // Close dropdown and open modal
+        setMessageDropdownOpen(null);
+        setContactModalOpen(true);
+    };
+
+    const handleContactSuccess = () => {
+        setContactModalOpen(false);
+        setSelectedCandidateForContact(null);
+        // Reload candidates to reflect updated status
+        if (selectedJob) {
+            loadCandidates(selectedJob.id);
         }
     };
 
@@ -780,7 +799,7 @@ const JobsManagement: React.FC = () => {
                                                                     checked={selectedCandidates.has(candidate.id)}
                                                                     onChange={() => toggleCandidateSelection(candidate.id)}
                                                                 />
-                                                                {candidate.filename.replace('.pdf', '')}
+                                                                {candidate.filename?.replace('.pdf', '') || 'Unknown'}
                                                                 <StarRating>{getStars(candidate.star_rating)}</StarRating>
                                                                 {candidate.give_them_a_chance && (
                                                                     <Badge>Give Them a Chance</Badge>
@@ -794,7 +813,7 @@ const JobsManagement: React.FC = () => {
 
                                                     <MetaRow>
                                                         <span>📅 {candidate.years_of_experience} years exp</span>
-                                                        <span>🚗 {candidate.vehicle_status.replace('_', ' ')}</span>
+                                                        <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
                                                         <span>📜 {candidate.certifications_found?.length || 0} certs</span>
                                                     </MetaRow>
 
@@ -819,13 +838,13 @@ const JobsManagement: React.FC = () => {
                                                             </ActionIcon>
                                                             <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
                                                                 <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
-                                                                    📱 Send SMS
+                                                                    📱 SMS
                                                                 </DropdownItem>
                                                                 <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
-                                                                    📧 Send Email
+                                                                    📧 Email
                                                                 </DropdownItem>
                                                                 <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
-                                                                    ✗ Send Rejection
+                                                                    ✗ Rejection
                                                                 </DropdownItem>
                                                             </DropdownContent>
                                                         </MessageDropdown>
@@ -872,7 +891,7 @@ const JobsManagement: React.FC = () => {
                                                                     checked={selectedCandidates.has(candidate.id)}
                                                                     onChange={() => toggleCandidateSelection(candidate.id)}
                                                                 />
-                                                                {candidate.filename.replace('.pdf', '')}
+                                                                {candidate.filename?.replace('.pdf', '') || 'Unknown'}
                                                                 <StarRating>{getStars(candidate.star_rating)}</StarRating>
                                                                 {candidate.give_them_a_chance && (
                                                                     <Badge>Give Them a Chance</Badge>
@@ -886,7 +905,7 @@ const JobsManagement: React.FC = () => {
 
                                                     <MetaRow>
                                                         <span>📅 {candidate.years_of_experience} years exp</span>
-                                                        <span>🚗 {candidate.vehicle_status.replace('_', ' ')}</span>
+                                                        <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
                                                         <span>📜 {candidate.certifications_found?.length || 0} certs</span>
                                                     </MetaRow>
 
@@ -911,13 +930,13 @@ const JobsManagement: React.FC = () => {
                                                             </ActionIcon>
                                                             <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
                                                                 <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
-                                                                    📱 Send SMS
+                                                                    📱 SMS
                                                                 </DropdownItem>
                                                                 <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
-                                                                    📧 Send Email
+                                                                    📧 Email
                                                                 </DropdownItem>
                                                                 <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
-                                                                    ✗ Send Rejection
+                                                                    ✗ Rejection
                                                                 </DropdownItem>
                                                             </DropdownContent>
                                                         </MessageDropdown>
@@ -964,7 +983,7 @@ const JobsManagement: React.FC = () => {
                                                                     checked={selectedCandidates.has(candidate.id)}
                                                                     onChange={() => toggleCandidateSelection(candidate.id)}
                                                                 />
-                                                                {candidate.filename.replace('.pdf', '')}
+                                                                {candidate.filename?.replace('.pdf', '') || 'Unknown'}
                                                                 <StarRating>{getStars(candidate.star_rating)}</StarRating>
                                                             </CandidateName>
                                                         </CandidateInfo>
@@ -975,7 +994,7 @@ const JobsManagement: React.FC = () => {
 
                                                     <MetaRow>
                                                         <span>📅 {candidate.years_of_experience} years exp</span>
-                                                        <span>🚗 {candidate.vehicle_status.replace('_', ' ')}</span>
+                                                        <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
                                                         <span>📜 {candidate.certifications_found?.length || 0} certs</span>
                                                     </MetaRow>
 
@@ -1000,13 +1019,13 @@ const JobsManagement: React.FC = () => {
                                                             </ActionIcon>
                                                             <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
                                                                 <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
-                                                                    📱 Send SMS
+                                                                    📱 SMS
                                                                 </DropdownItem>
                                                                 <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
-                                                                    📧 Send Email
+                                                                    📧 Email
                                                                 </DropdownItem>
                                                                 <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
-                                                                    ✗ Send Rejection
+                                                                    ✗ Rejection
                                                                 </DropdownItem>
                                                             </DropdownContent>
                                                         </MessageDropdown>
@@ -1055,7 +1074,7 @@ const JobsManagement: React.FC = () => {
                                                             checked={selectedCandidates.has(candidate.id)}
                                                             onChange={() => toggleCandidateSelection(candidate.id)}
                                                         />
-                                                        {candidate.filename.replace('.pdf', '')}
+                                                        {candidate.filename?.replace('.pdf', '') || 'Unknown'}
                                                         <StarRating>{getStars(candidate.star_rating)}</StarRating>
                                                         {candidate.give_them_a_chance && (
                                                             <Badge>Give Them a Chance</Badge>
@@ -1069,7 +1088,7 @@ const JobsManagement: React.FC = () => {
 
                                             <MetaRow>
                                                 <span>📅 {candidate.years_of_experience} years exp</span>
-                                                <span>🚗 {candidate.vehicle_status.replace('_', ' ')}</span>
+                                                <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
                                                 <span>📜 {candidate.certifications_found?.length || 0} certs</span>
                                             </MetaRow>
 
@@ -1094,13 +1113,13 @@ const JobsManagement: React.FC = () => {
                                                     </ActionIcon>
                                                     <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
                                                         <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
-                                                            📱 Send SMS
+                                                            📱 SMS
                                                         </DropdownItem>
                                                         <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
-                                                            📧 Send Email
+                                                            📧 Email
                                                         </DropdownItem>
                                                         <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
-                                                            ✗ Send Rejection
+                                                            ✗ Rejection
                                                         </DropdownItem>
                                                     </DropdownContent>
                                                 </MessageDropdown>
@@ -1141,6 +1160,21 @@ const JobsManagement: React.FC = () => {
                 )}
             </MainContent>
         </PageContainer>
+
+        {/* Contact/Rejection Modal */}
+        {selectedCandidateForContact && (
+            <ContactRejectionModal
+                isOpen={contactModalOpen}
+                onClose={() => {
+                    setContactModalOpen(false);
+                    setSelectedCandidateForContact(null);
+                }}
+                candidate={selectedCandidateForContact}
+                initialMode={contactMode}
+                initialCommunicationType={contactCommunicationType}
+                onSuccess={handleContactSuccess}
+            />
+        )}
         </>
     );
 };

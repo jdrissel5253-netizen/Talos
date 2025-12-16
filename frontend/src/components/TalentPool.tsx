@@ -171,71 +171,71 @@ const TalentPool: React.FC = () => {
             </FeatureBox>
 
             <h3 style={{ fontSize: '1.75rem', fontWeight: '700', color: '#4ade80', textAlign: 'center', margin: '3rem 0 2rem' }}>
-              Powerful Search & Filter Options
+              Intelligent Candidate Organization
             </h3>
 
             <FilterGrid>
               <FilterCard>
                 <FilterIcon>🎯</FilterIcon>
-                <FilterTitle>By Tier Rating</FilterTitle>
-                <p style={{ color: '#666', fontSize: '0.875rem' }}>
-                  Green, Yellow, or Red tier candidates
+                <FilterTitle>Smart Tier Segmentation</FilterTitle>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
+                  Candidates automatically organized by performance scoring for instant prioritization
                 </p>
               </FilterCard>
 
               <FilterCard>
                 <FilterIcon>📊</FilterIcon>
-                <FilterTitle>By Score Range</FilterTitle>
-                <p style={{ color: '#666', fontSize: '0.875rem' }}>
-                  Filter by specific score ranges (1-10)
+                <FilterTitle>Dynamic Score Analysis</FilterTitle>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
+                  Advanced filtering algorithms surface the most qualified candidates first
                 </p>
               </FilterCard>
 
               <FilterCard>
                 <FilterIcon>📍</FilterIcon>
-                <FilterTitle>By Location</FilterTitle>
-                <p style={{ color: '#666', fontSize: '0.875rem' }}>
-                  City, state, or radius from job site
+                <FilterTitle>Geographic Intelligence</FilterTitle>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
+                  Sophisticated location matching optimizes for commute feasibility and local experience
                 </p>
               </FilterCard>
 
               <FilterCard>
                 <FilterIcon>🔧</FilterIcon>
-                <FilterTitle>By Experience Level</FilterTitle>
-                <p style={{ color: '#666', fontSize: '0.875rem' }}>
-                  Entry-level, experienced, or senior
+                <FilterTitle>Experience Profiling</FilterTitle>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
+                  AI-powered classification of candidate seniority and skill progression patterns
                 </p>
               </FilterCard>
 
               <FilterCard>
                 <FilterIcon>📜</FilterIcon>
-                <FilterTitle>By Certifications</FilterTitle>
-                <p style={{ color: '#666', fontSize: '0.875rem' }}>
-                  EPA 608, NATE, manufacturer certs
+                <FilterTitle>Credential Verification</FilterTitle>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
+                  Automated detection and categorization of industry certifications and licenses
                 </p>
               </FilterCard>
 
               <FilterCard>
                 <FilterIcon>💰</FilterIcon>
-                <FilterTitle>By Salary Range</FilterTitle>
-                <p style={{ color: '#666', fontSize: '0.875rem' }}>
-                  Match budget expectations
+                <FilterTitle>Compensation Alignment</FilterTitle>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
+                  Strategic matching of candidate expectations with your budget parameters
                 </p>
               </FilterCard>
 
               <FilterCard>
                 <FilterIcon>🏠</FilterIcon>
-                <FilterTitle>By Specialization</FilterTitle>
-                <p style={{ color: '#666', fontSize: '0.875rem' }}>
-                  Residential, commercial, service
+                <FilterTitle>Specialization Mapping</FilterTitle>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
+                  Intelligent categorization of HVAC expertise across market segments
                 </p>
               </FilterCard>
 
               <FilterCard>
                 <FilterIcon>📅</FilterIcon>
-                <FilterTitle>By Availability</FilterTitle>
-                <p style={{ color: '#666', fontSize: '0.875rem' }}>
-                  Immediate, 2-week notice, future
+                <FilterTitle>Availability Tracking</FilterTitle>
+                <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
+                  Real-time monitoring of candidate availability status and start date flexibility
                 </p>
               </FilterCard>
             </FilterGrid>
@@ -249,56 +249,56 @@ const TalentPool: React.FC = () => {
             <FeaturesList>
               <FeatureCard>
                 <FeatureIcon>🔒</FeatureIcon>
-                <FeatureTitle>Private & Secure</FeatureTitle>
-                <p style={{ color: '#666', lineHeight: '1.6' }}>
-                  Your talent pool is completely private to your company. No other employers can see or access your candidates.
+                <FeatureTitle>Enterprise-Grade Security</FeatureTitle>
+                <p style={{ color: '#e0e0e0', lineHeight: '1.6' }}>
+                  Bank-level encryption and access controls ensure your proprietary candidate pipeline remains completely confidential and protected from competitors.
                 </p>
               </FeatureCard>
 
               <FeatureCard>
                 <FeatureIcon>🔄</FeatureIcon>
-                <FeatureTitle>Automatic Updates</FeatureTitle>
-                <p style={{ color: '#666', lineHeight: '1.6' }}>
-                  Candidate profiles are automatically updated as they gain new experience, certifications, or change availability.
+                <FeatureTitle>Living Database Intelligence</FeatureTitle>
+                <p style={{ color: '#e0e0e0', lineHeight: '1.6' }}>
+                  Advanced data integration continuously enriches candidate profiles with updated qualifications, market movements, and availability signals.
                 </p>
               </FeatureCard>
 
               <FeatureCard>
                 <FeatureIcon>📝</FeatureIcon>
-                <FeatureTitle>Notes & Tags</FeatureTitle>
-                <p style={{ color: '#666', lineHeight: '1.6' }}>
-                  Add internal notes, interview feedback, and custom tags to track your interactions with each candidate.
+                <FeatureTitle>Collaborative Workflow Tools</FeatureTitle>
+                <p style={{ color: '#e0e0e0', lineHeight: '1.6' }}>
+                  Sophisticated annotation systems enable your team to share insights, track engagement history, and maintain institutional knowledge on each candidate.
                 </p>
               </FeatureCard>
 
               <FeatureCard>
                 <FeatureIcon>📈</FeatureIcon>
-                <FeatureTitle>Performance Tracking</FeatureTitle>
-                <p style={{ color: '#666', lineHeight: '1.6' }}>
-                  Track which candidates you've hired and their success rates to improve future candidate selection.
+                <FeatureTitle>Predictive Analytics Engine</FeatureTitle>
+                <p style={{ color: '#e0e0e0', lineHeight: '1.6' }}>
+                  Machine learning algorithms analyze hiring outcomes to continuously refine candidate quality predictions and optimize your selection criteria.
                 </p>
               </FeatureCard>
 
               <FeatureCard>
                 <FeatureIcon>🔔</FeatureIcon>
-                <FeatureTitle>Smart Alerts</FeatureTitle>
-                <p style={{ color: '#666', lineHeight: '1.6' }}>
-                  Get notified when high-scoring candidates become available or when your talent pool needs refreshing.
+                <FeatureTitle>Proactive Opportunity Alerts</FeatureTitle>
+                <p style={{ color: '#e0e0e0', lineHeight: '1.6' }}>
+                  Intelligent monitoring systems identify optimal timing for candidate outreach and signal when your pipeline requires strategic refreshment.
                 </p>
               </FeatureCard>
 
               <FeatureCard>
                 <FeatureIcon>📊</FeatureIcon>
-                <FeatureTitle>Export & Reports</FeatureTitle>
-                <p style={{ color: '#666', lineHeight: '1.6' }}>
-                  Export candidate data, generate reports, and analyze your talent pipeline for strategic planning.
+                <FeatureTitle>Strategic Intelligence Reports</FeatureTitle>
+                <p style={{ color: '#e0e0e0', lineHeight: '1.6' }}>
+                  Comprehensive analytics dashboards provide actionable insights into talent market trends, competitive positioning, and pipeline health metrics.
                 </p>
               </FeatureCard>
             </FeaturesList>
           </ContentSection>
 
           <CTAButton onClick={() => setIsDemoModalOpen(true)}>
-            Explore Your Talent Pool
+            See the Talent Pool in Action
           </CTAButton>
         </ContentWrapper>
       </PageContainer>
