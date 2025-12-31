@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { CheckCircle } from 'lucide-react';
+import AirflowAnimation from './AirflowAnimation';
 
 const HeroContainer = styled.section`
   min-height: 100vh;
@@ -13,26 +14,9 @@ const HeroContainer = styled.section`
   overflow: hidden;
 `;
 
-const BackgroundVideo = styled.video`
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.15;
-  z-index: 0;
-`;
 
-const VideoOverlay = styled.div`
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(135deg, rgba(0, 0, 0, 0.7) 0%, rgba(26, 26, 26, 0.7) 100%);
-  z-index: 1;
-`;
+
+
 
 const HeroLayout = styled.div`
   display: flex;
@@ -141,10 +125,7 @@ interface HeroSectionProps {
 const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
   return (
     <HeroContainer>
-      <BackgroundVideo autoPlay loop muted playsInline>
-        <source src="/hvac-background.mp4" type="video/mp4" />
-      </BackgroundVideo>
-      <VideoOverlay />
+      <AirflowAnimation />
       <HeroLayout>
         <HeroContent>
           <HeroTitle>
