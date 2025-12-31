@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { Check, Zap, Target, Users, Globe, Database, Newspaper } from 'lucide-react';
 
 // Content sections for the landing page
 const SectionContainer = styled.div`
@@ -172,18 +173,7 @@ const FeatureItem = styled.li`
   line-height: 1.6;
 
   &:before {
-    content: '✓';
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    background-color: #4ade80;
-    border-radius: 50%;
-    color: #000000;
-    font-weight: bold;
-    flex-shrink: 0;
-    margin-top: 2px;
+    content: none;
   }
 `;
 
@@ -565,19 +555,19 @@ const ContentSections: React.FC = () => {
             <ValueGoalsTitle>What You Get with Talos</ValueGoalsTitle>
             <ValueGoalsList>
               <ValueGoalItem>
-                <GoalCheckmark>✓</GoalCheckmark>
+                <GoalCheckmark><Check size={20} strokeWidth={3} /></GoalCheckmark>
                 <GoalText>AI-generated job descriptions that attract qualified technicians</GoalText>
               </ValueGoalItem>
               <ValueGoalItem>
-                <GoalCheckmark>✓</GoalCheckmark>
+                <GoalCheckmark><Check size={20} strokeWidth={3} /></GoalCheckmark>
                 <GoalText>Instant candidate ranking and scoring to identify top talent</GoalText>
               </ValueGoalItem>
               <ValueGoalItem>
-                <GoalCheckmark>✓</GoalCheckmark>
+                <GoalCheckmark><Check size={20} strokeWidth={3} /></GoalCheckmark>
                 <GoalText>Automated posting to 15+ job boards with one click</GoalText>
               </ValueGoalItem>
               <ValueGoalItem>
-                <GoalCheckmark>✓</GoalCheckmark>
+                <GoalCheckmark><Check size={20} strokeWidth={3} /></GoalCheckmark>
                 <GoalText>Private talent pool to track and revisit candidates over time</GoalText>
               </ValueGoalItem>
             </ValueGoalsList>
@@ -645,15 +635,27 @@ const ContentSections: React.FC = () => {
                 </DetailText>
                 <FeatureList>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Automatically optimizes for SEO and job board algorithms to increase visibility
                   </FeatureItem>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Includes HVAC-specific technical requirements, certifications, and skills
                   </FeatureItem>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Customizes tone and language to attract top-tier talent in your market
                   </FeatureItem>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Generates multiple variations so you can A/B test what works best
                   </FeatureItem>
                 </FeatureList>
@@ -668,15 +670,27 @@ const ContentSections: React.FC = () => {
                 </DetailText>
                 <FeatureList>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Automatic formatting adjustments for each job board's specific requirements
                   </FeatureItem>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Optional sponsored posting on premium platforms like Indeed for maximum reach
                   </FeatureItem>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Simultaneous posting across all platforms saves hours of manual work
                   </FeatureItem>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Unified dashboard to manage all your postings from one central location
                   </FeatureItem>
                 </FeatureList>
@@ -693,19 +707,34 @@ const ContentSections: React.FC = () => {
                 </DetailText>
                 <FeatureList>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Geo-targeted distribution to candidates in your service area
                   </FeatureItem>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Skills-based filtering to reach technicians with EPA certifications, HVAC licenses,
                     and relevant experience levels
                   </FeatureItem>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Direct outreach to our curated database of pre-screened HVAC professionals
                   </FeatureItem>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Smart timing to post when quality candidates are most actively searching
                   </FeatureItem>
                   <FeatureItem>
+                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
+                      <Check size={14} color="black" strokeWidth={3} />
+                    </div>
                     Automated follow-ups and engagement to keep top candidates interested in your positions
                   </FeatureItem>
                 </FeatureList>

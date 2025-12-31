@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { CheckCircle } from 'lucide-react';
 
 const HeroContainer = styled.section`
   min-height: 100vh;
@@ -43,46 +44,7 @@ const HeroLayout = styled.div`
   position: relative;
 `;
 
-const TickerContainer = styled.div`
-  width: 100%;
-  max-width: 600px;
-  height: 60px;
-  background: #1a1a1a;
-  border: 2px solid #4ade80;
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  margin-bottom: 3rem;
-  display: flex;
-  align-items: center;
-`;
 
-const TickerTrack = styled.div`
-  display: flex;
-  gap: 3rem;
-  animation: scroll 30s linear infinite;
-  white-space: nowrap;
-  padding: 0 1rem;
-
-  @keyframes scroll {
-    0% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(-50%);
-    }
-  }
-`;
-
-const PositionItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  color: #e0e0e0;
-  font-size: 1rem;
-  font-weight: 500;
-  white-space: nowrap;
-`;
 
 const HeroContent = styled.div`
   max-width: 800px;
@@ -170,51 +132,13 @@ const TrustBadge = styled.div`
   font-weight: 500;
 `;
 
-const CheckIcon = styled.div`
-  width: 20px;
-  height: 20px;
-  background-color: #4ade80;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: white;
-  font-size: 0.75rem;
-  font-weight: bold;
 
-  &::after {
-    content: '✓';
-  }
-`;
 
 interface HeroSectionProps {
   onDemoClick: () => void;
 }
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
-  const allPositions = [
-    'HVAC Technician',
-    'Lead Service Technician',
-    'Installation Technician',
-    'Refrigeration Technician',
-    'Residential HVAC Tech',
-    'Commercial HVAC Tech',
-    'HVAC Apprentice',
-    'Service Manager',
-    'Field Supervisor',
-    'Project Manager',
-    'Dispatcher',
-    'Customer Service Rep',
-    'Office Manager',
-    'Sales Representative',
-    'Estimator',
-    'Comfort Advisor',
-    'Warehouse Manager',
-    'Parts Coordinator',
-    'Administrative Assistant',
-    'Accounts Receivable'
-  ];
-
   return (
     <HeroContainer>
       <BackgroundVideo autoPlay loop muted playsInline>
@@ -222,17 +146,6 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
       </BackgroundVideo>
       <VideoOverlay />
       <HeroLayout>
-        <TickerContainer>
-          <TickerTrack>
-            {[...allPositions, ...allPositions].map((position, index) => (
-              <PositionItem key={index}>
-                <CheckIcon />
-                {position}
-              </PositionItem>
-            ))}
-          </TickerTrack>
-        </TickerContainer>
-
         <HeroContent>
           <HeroTitle>
             The key to finding reliable technicians
@@ -248,15 +161,15 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
 
           <TrustIndicators>
             <TrustBadge>
-              <CheckIcon />
+              <CheckCircle size={18} color="#4ade80" />
               15+ Job Boards
             </TrustBadge>
             <TrustBadge>
-              <CheckIcon />
+              <CheckCircle size={18} color="#4ade80" />
               AI-Powered Matching
             </TrustBadge>
             <TrustBadge>
-              <CheckIcon />
+              <CheckCircle size={18} color="#4ade80" />
               HVAC-Specialized
             </TrustBadge>
           </TrustIndicators>

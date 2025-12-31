@@ -7,14 +7,9 @@ const HeaderContainer = styled.header`
   justify-content: space-between;
   align-items: center;
   padding: 1rem 2rem;
-  background-color: #000000;
-  border-bottom: 1px solid #333333;
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 1000;
-  box-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(8px);
+  background-color: rgba(0, 0, 0, 0.9);
 `;
 
 const LogoContainer = styled.div`
@@ -37,9 +32,10 @@ const LogoText = styled.span`
   font-size: 2rem;
   font-weight: bold;
   color: #ffffff;
-  text-shadow: 2px 2px 0px #4ade80;
+  font-weight: 800;
+  color: #ffffff;
+  letter-spacing: -0.02em;
 `;
-
 const Navigation = styled.nav`
   display: flex;
   align-items: center;

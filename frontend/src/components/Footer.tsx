@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Linkedin, Twitter, Facebook } from 'lucide-react';
 
 const FooterContainer = styled.footer`
   background-color: #1a1a1a;
@@ -109,9 +110,9 @@ const Footer: React.FC = () => {
               job board integration.
             </FooterDescription>
             <SocialLinks>
-              <SocialLink href="#" aria-label="LinkedIn">💼</SocialLink>
-              <SocialLink href="#" aria-label="Twitter">🐦</SocialLink>
-              <SocialLink href="#" aria-label="Facebook">📘</SocialLink>
+              <SocialLink href="#" aria-label="LinkedIn"><Linkedin size={20} /></SocialLink>
+              <SocialLink href="#" aria-label="Twitter"><Twitter size={20} /></SocialLink>
+              <SocialLink href="#" aria-label="Facebook"><Facebook size={20} /></SocialLink>
             </SocialLinks>
           </FooterSection>
 
