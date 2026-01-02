@@ -4,6 +4,7 @@ import styled, { createGlobalStyle } from 'styled-components';
 import Header from './components/Header';
 import Footer from './components/Footer';
 import ScrollToTop from './components/ScrollToTop';
+import AirflowAnimation from './components/AirflowAnimation';
 import Home from './components/Home';
 import Login from './components/Login';
 import WhyTalos from './components/WhyTalos';
@@ -71,6 +72,7 @@ function App() {
       <ScrollToTop />
       <GlobalStyle />
       <AppContainer>
+        <AirflowAnimation />
         <Header />
         <MainContent>
           <Routes>

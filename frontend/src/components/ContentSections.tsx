@@ -10,18 +10,21 @@ const SectionContainer = styled.div`
 `;
 
 const JobBoardSection = styled.section`
-  background-color: #1a1a1a;
+  background-color: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(8px);
   padding: 6rem 2rem;
   text-align: center;
 `;
 
 const ValuePropsSection = styled.section`
   padding: 6rem 2rem;
-  background-color: #000000;
+  background-color: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
 `;
 
 const FAQSection = styled.section`
-  background-color: #1a1a1a;
+  background-color: rgba(26, 26, 26, 0.8);
+  backdrop-filter: blur(8px);
   padding: 6rem 2rem;
 `;
 
@@ -52,7 +55,7 @@ const JobBoardTickerContainer = styled.div`
   width: 100%;
   max-width: 900px;
   height: 80px;
-  background: #000000;
+  background: rgba(0, 0, 0, 0.5);
   border: 2px solid #4ade80;
   border-radius: 8px;
   overflow: hidden;
@@ -133,7 +136,7 @@ const PyramidBottom = styled.div`
 `;
 
 const DetailSection = styled.div`
-  background: #000000;
+  background: rgba(0, 0, 0, 0.6);
   padding: 2.5rem;
   border-radius: 12px;
   border-left: 4px solid #4ade80;
@@ -186,7 +189,7 @@ const ValuePropsGrid = styled.div`
 `;
 
 const ValuePropCard = styled.div`
-  background: #1a1a1a;
+  background: rgba(26, 26, 26, 0.6);
   padding: 2.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
@@ -230,7 +233,7 @@ const FAQContainer = styled.div`
 `;
 
 const FAQItem = styled.div`
-  background: #000000;
+  background: rgba(0, 0, 0, 0.6);
   border-radius: 8px;
   margin-bottom: 1rem;
   box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
@@ -308,7 +311,7 @@ const ValueHeroSubheadline = styled.p`
 `;
 
 const ValueFrameworkBox = styled.div`
-  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(42, 42, 42, 0.8) 100%);
   border: 2px solid #4ade80;
   border-radius: 12px;
   padding: 2.5rem;
@@ -338,7 +341,7 @@ const FrameworkDescription = styled.p`
 const ValueGoalsContainer = styled.div`
   max-width: 700px;
   margin: 0 auto 4rem;
-  background: #1a1a1a;
+  background: rgba(26, 26, 26, 0.8);
   padding: 3rem;
   border-radius: 16px;
   border-left: 6px solid #4ade80;
@@ -366,7 +369,7 @@ const ValueGoalItem = styled.div`
   gap: 1.25rem;
   margin-bottom: 1.5rem;
   padding: 1rem;
-  background: #000000;
+  background: rgba(0, 0, 0, 0.4);
   border-radius: 8px;
   transition: all 0.2s ease;
 
@@ -438,7 +441,7 @@ const ValueStatsContainer = styled.div`
 `;
 
 const StatCard = styled.div`
-  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(42, 42, 42, 0.8) 100%);
   padding: 2.5rem 2rem;
   border-radius: 12px;
   text-align: center;

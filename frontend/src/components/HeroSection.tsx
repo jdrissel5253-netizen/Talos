@@ -1,14 +1,13 @@
 import React from 'react';
 import styled from 'styled-components';
 import { CheckCircle } from 'lucide-react';
-import AirflowAnimation from './AirflowAnimation';
 
 const HeroContainer = styled.section`
   min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  background: transparent;
   padding: 2rem;
   position: relative;
   overflow: hidden;
@@ -143,7 +142,7 @@ interface HeroSectionProps {
 const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
   return (
     <HeroContainer>
-      <AirflowAnimation />
+
       <HeroLayout>
         <HeroContent>
           <HeroTitle>
