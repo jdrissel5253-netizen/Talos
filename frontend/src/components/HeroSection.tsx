@@ -34,9 +34,7 @@ const HeroContent = styled.div`
 const HeroTitle = styled.h1`
   font-size: 4rem;
   font-weight: 800;
-  background: linear-gradient(to right, #ffffff, #4ade80);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #ffffff;
   margin-bottom: 2rem;
   line-height: 1.1;
   letter-spacing: -0.02em;
