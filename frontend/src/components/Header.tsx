@@ -10,6 +10,11 @@ const HeaderContainer = styled.header`
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
   backdrop-filter: blur(8px);
   background-color: rgba(0, 0, 0, 0.9);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
 `;
 
 const LogoContainer = styled.div`
@@ -181,9 +186,7 @@ const Header: React.FC = () => {
             <DropdownItem to="/candidate-messages">Candidate Message Generator</DropdownItem>
             <DropdownItem to="/talent-pool">Personalized Talent Pool</DropdownItem>
             <DropdownItem to="/hvac-insights">HVAC Hiring Insights</DropdownItem>
-            <DropdownItem to="/resume-analysis">Resume Analysis</DropdownItem>
-            <DropdownItem to="/batch-resume-analysis">Batch Resume Analysis</DropdownItem>
-            <DropdownItem to="/jobs-management">Jobs Management</DropdownItem>
+
           </DropdownContent>
         </NavItem>
 
