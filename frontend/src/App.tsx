@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 import Header from './components/Header';
 import Footer from './components/Footer';
+import ScrollToTop from './components/ScrollToTop';
 import Home from './components/Home';
 import Login from './components/Login';
 import WhyTalos from './components/WhyTalos';
@@ -67,6 +68,7 @@ const MainContent = styled.main`
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <GlobalStyle />
       <AppContainer>
         <Header />

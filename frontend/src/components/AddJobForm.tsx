@@ -786,16 +786,50 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
                   </ArrayItemRow>
                 ))}
                 <ArrayItemRow>
-                  <Input
-                    type="text"
+                  <Select
                     value={newCertification}
                     onChange={(e) => setNewCertification(e.target.value)}
-                    placeholder="e.g., EPA 608 Certification"
                     style={{ flex: 1 }}
-                    onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCertification())}
-                  />
+                  >
+                    <option value="">-- Select a certification or type custom below --</option>
+                    <option value="EPA 608 Universal Certification">EPA 608 Universal Certification</option>
+                    <option value="EPA 608 Type I (Small Appliances)">EPA 608 Type I (Small Appliances)</option>
+                    <option value="EPA 608 Type II (High Pressure)">EPA 608 Type II (High Pressure)</option>
+                    <option value="EPA 608 Type III (Low Pressure)">EPA 608 Type III (Low Pressure)</option>
+                    <option value="NATE Certification">NATE Certification (North American Technician Excellence)</option>
+                    <option value="HVAC Excellence Certification">HVAC Excellence Certification</option>
+                    <option value="R-410A Certification">R-410A Certification</option>
+                    <option value="OSHA 10 or 30 Hour Safety">OSHA 10 or 30 Hour Safety</option>
+                    <option value="State HVAC License">State HVAC License</option>
+                    <option value="Journeyman HVAC License">Journeyman HVAC License</option>
+                    <option value="Master HVAC License">Master HVAC License</option>
+                    <option value="Electrical License">Electrical License</option>
+                    <option value="Building Performance Institute (BPI) Certification">Building Performance Institute (BPI) Certification</option>
+                    <option value="RESNET HERS Rater Certification">RESNET HERS Rater Certification</option>
+                    <option value="Commercial Refrigeration Certification">Commercial Refrigeration Certification</option>
+                    <option value="Gas Piping/Fitting Certification">Gas Piping/Fitting Certification</option>
+                    <option value="Boiler License">Boiler License</option>
+                    <option value="Building Automation Systems (BAS) Certification">Building Automation Systems (BAS) Certification</option>
+                    <option value="Smart Thermostat/Controls Certification">Smart Thermostat/Controls Certification</option>
+                    <option value="Ductwork Certification">Ductwork Certification</option>
+                    <option value="Sheet Metal License">Sheet Metal License</option>
+                    <option value="Custom">Custom (type below)</option>
+                  </Select>
                   <AddButton onClick={addCertification}>Add</AddButton>
                 </ArrayItemRow>
+                {newCertification === 'Custom' && (
+                  <ArrayItemRow style={{ marginTop: '0.5rem' }}>
+                    <Input
+                      type="text"
+                      value=""
+                      onChange={(e) => setNewCertification(e.target.value)}
+                      placeholder="Enter custom certification"
+                      style={{ flex: 1 }}
+                      onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addCertification())}
+                      autoFocus
+                    />
+                  </ArrayItemRow>
+                )}
               </ArrayInputContainer>
             </FormGroup>
           </FormSection>

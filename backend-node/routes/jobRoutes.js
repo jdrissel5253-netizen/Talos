@@ -379,57 +379,80 @@ ${jobData.company_culture ? 'COMPANY CULTURE:\n' + jobData.company_culture : ''}
 
 ${otherTitles.length > 0 ? 'RELATED POSITIONS CONSIDERED:\n' + otherTitles.join(', ') : ''}
 
-Generate a compelling, professional job description following this EXACT FORMAT:
+Generate a compelling, professional job description following this EXACT FORMAT with clear visual separation:
 
+═══════════════════════════════════════════════════════════════════
+💰 COMPENSATION
+═══════════════════════════════════════════════════════════════════
 Pay: $[min] - $[max] per [hour/year]
-
-Job description:
-
-Overview
-[Write 3-4 sentences that sell the role and opportunity. Make it engaging and aspirational. Highlight what makes this position special and what the candidate will achieve. Use strong action words and emphasize impact, leadership, or expertise depending on the seniority level.]
-
-What You'll Do
-[Expand the 3 key responsibilities provided into 6-8 detailed bullet points. Add relevant industry-specific tasks and responsibilities typical for this HVAC position. Each bullet should be specific and action-oriented. Include technical skills, customer interaction, safety protocols, equipment, systems, and any specialized work relevant to the role.]
-
-Basic Qualifications
-[List 4-6 essential requirements including:
-- Years of experience requirement
-- Required certifications (e.g., EPA Universal, state licenses)
-- Core technical skills and competencies
-- Education requirements
-- License and driving requirements if applicable
-Use bullet points starting with clear, direct statements.]
-
-Preferred Qualifications
-[List 3-5 nice-to-have qualifications that would make a candidate stand out:
-- Advanced certifications or specialized training
-- Experience with specific systems or technologies (BAS, VRF, chillers, etc.)
-- Leadership or project management experience
-- Additional technical expertise
-- Soft skills like communication or client management
-Only include if there are meaningful preferred qualifications; can be brief if role is entry-level.]
-
-Why You'll Love It Here
-[Write 2-3 sentences about company culture, values, growth opportunities, or what makes the company a great place to work. Then list the benefits:]
-
-Our benefits include:
-[List each benefit on its own line with a dash, using the exact benefits provided]
-
+Schedule: [work schedule]
 Job Type: [Full-time/Part-time/etc.]
 
-Benefits:
-[List the benefits again in a simpler format for job board compatibility]
+═══════════════════════════════════════════════════════════════════
+📋 POSITION OVERVIEW
+═══════════════════════════════════════════════════════════════════
+[Write 3-4 concise, compelling sentences that sell the role and opportunity. Make it engaging and aspirational. Highlight what makes this position special and what the candidate will achieve. Use strong action words and emphasize impact, leadership, or expertise depending on the seniority level. Keep it punchy and easy to scan.]
 
-Work Location: In person
+═══════════════════════════════════════════════════════════════════
+🔧 WHAT YOU'LL DO
+═══════════════════════════════════════════════════════════════════
+[Expand the 3 key responsibilities provided into 6-8 detailed bullet points. Each bullet should start with a strong action verb and be specific about tasks, systems, or outcomes. Include:
+• Technical tasks and responsibilities
+• Customer interaction requirements
+• Safety protocols and compliance
+• Equipment and systems you'll work with
+• Documentation and reporting duties
+Keep each bullet to 1-2 lines maximum for easy scanning.]
 
-IMPORTANT GUIDELINES:
-1. Match the tone and seniority to the job title (e.g., Lead/Senior roles should sound more advanced and leadership-focused)
-2. Use HVAC industry-specific terminology naturally
-3. Make the Overview section compelling and aspirational
-4. In "What You'll Do", be specific about technical tasks, systems, tools, and responsibilities
-5. Keep language professional but engaging
-6. Don't use placeholder text - generate real, specific content based on the job information provided
-7. The description should feel tailored to this specific HVAC role, not generic`;
+═══════════════════════════════════════════════════════════════════
+✅ BASIC QUALIFICATIONS
+═══════════════════════════════════════════════════════════════════
+[List 4-6 essential requirements as clear, scannable bullet points:
+• Minimum years of experience with specific HVAC work
+• Required certifications (EPA Universal, state licenses, etc.)
+• Core technical competencies
+• Education requirements
+• Valid driver's license (if applicable)
+• Physical requirements (lifting, climbing, etc.)
+Keep each bullet concise and direct.]
+
+═══════════════════════════════════════════════════════════════════
+⭐ PREFERRED QUALIFICATIONS
+═══════════════════════════════════════════════════════════════════
+[List 3-5 nice-to-have qualifications that would make candidates stand out:
+• Advanced certifications or specialized training
+• Experience with specific systems (BAS, VRF, chillers, etc.)
+• Leadership or project management experience
+• Additional technical expertise
+• Strong communication or customer service skills
+For entry-level roles, keep this brief or focus on attitude/willingness to learn.]
+
+═══════════════════════════════════════════════════════════════════
+💼 WHY YOU'LL LOVE WORKING HERE
+═══════════════════════════════════════════════════════════════════
+[Write 2-3 sentences about company culture, values, growth opportunities, or what makes the company a great place to work. Make it genuine and specific.]
+
+Our benefits include:
+[List each benefit as a concise bullet point using the exact benefits provided. If generic "competitive benefits package", expand to typical HVAC benefits like health insurance, PTO, 401k, tool allowance, ongoing training, etc.]
+
+═══════════════════════════════════════════════════════════════════
+📍 WORK LOCATION
+═══════════════════════════════════════════════════════════════════
+Location: [City, Zip] - In person
+${jobData.vehicle_required ? 'Company vehicle provided OR Valid driver\'s license and reliable transportation required' : ''}
+
+═══════════════════════════════════════════════════════════════════
+
+CRITICAL FORMATTING RULES:
+1. Use the exact section headers with visual separators (═══) as shown above
+2. Keep ALL bullet points concise - maximum 1-2 lines each
+3. Use emoji icons (💰 🔧 ✅ ⭐ 💼 📍) EXACTLY as shown for each section
+4. Add blank lines between sections for breathing room
+5. Make content scannable - candidates should be able to skim in 30 seconds
+6. Match tone to seniority level (entry/mid/senior/lead)
+7. Use HVAC-specific terminology naturally
+8. NO generic filler - every sentence should be specific and meaningful
+9. Keep total description under 500 words for maximum engagement`;
 
         const message = await anthropic.messages.create({
             model: "claude-sonnet-4-5-20250929",

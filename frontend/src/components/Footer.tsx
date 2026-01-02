@@ -1,6 +1,7 @@
 import React from 'react';
 import styled from 'styled-components';
 import { Linkedin, Twitter, Facebook } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const FooterContainer = styled.footer`
   background-color: #0a0a0a;
@@ -51,7 +52,7 @@ const FooterTitle = styled.h3`
   letter-spacing: 0.02em;
 `;
 
-const FooterLink = styled.a`
+const FooterLink = styled(Link)`
   color: #a3a3a3;
   text-decoration: none;
   padding: 0.5rem 0;
@@ -138,30 +139,30 @@ const Footer: React.FC = () => {
 
           <FooterSection>
             <FooterTitle>Why Talos?</FooterTitle>
-            <FooterLink href="#overview">Overview</FooterLink>
-            <FooterLink href="#different">Why Talos is different</FooterLink>
-            <FooterLink href="#value">What Talos brings to the table</FooterLink>
+            <FooterLink to="/why-talos">Overview</FooterLink>
+            <FooterLink to="/why-different">Why Talos is different</FooterLink>
+            <FooterLink to="/why-talos">What Talos brings to the table</FooterLink>
           </FooterSection>
 
           <FooterSection>
             <FooterTitle>Product</FooterTitle>
-            <FooterLink href="#job-board">Job Board Integration</FooterLink>
-            <FooterLink href="#job-writer">Job Description Writer</FooterLink>
-            <FooterLink href="#candidate-ranking">Candidate Ranking System</FooterLink>
-            <FooterLink href="#message-generator">Candidate Message Generator</FooterLink>
-            <FooterLink href="#talent-pool">Personalized Candidate Talent Pool</FooterLink>
-            <FooterLink href="#hvac-insights">HVAC Hiring Insights (nationwide)</FooterLink>
-            <FooterLink href="#resume-analysis">Resume Analysis</FooterLink>
-            <FooterLink href="#batch-resume-analysis">Batch Resume Analysis</FooterLink>
-            <FooterLink href="#jobs-management">Jobs Management</FooterLink>
+            <FooterLink to="/job-board-integration">Job Board Integration</FooterLink>
+            <FooterLink to="/job-description-writer">Job Description Writer</FooterLink>
+            <FooterLink to="/candidate-ranking">Candidate Ranking System</FooterLink>
+            <FooterLink to="/candidate-messages">Candidate Message Generator</FooterLink>
+            <FooterLink to="/talent-pool-dashboard">Personalized Candidate Talent Pool</FooterLink>
+            <FooterLink to="/hvac-insights">HVAC Hiring Insights (nationwide)</FooterLink>
+            <FooterLink to="/resume-analysis">Resume Analysis</FooterLink>
+            <FooterLink to="/batch-resume-analysis">Batch Resume Analysis</FooterLink>
+            <FooterLink to="/jobs-management">Jobs Management</FooterLink>
           </FooterSection>
 
           <FooterSection>
             <FooterTitle>Resources</FooterTitle>
-            <FooterLink href="#pricing">Pricing</FooterLink>
-            <FooterLink href="#knowledge-hub">Knowledge Hub</FooterLink>
-            <FooterLink href="#support">Support</FooterLink>
-            <FooterLink href="#contact">Contact</FooterLink>
+            <FooterLink to="/">Pricing</FooterLink>
+            <FooterLink to="/">Knowledge Hub</FooterLink>
+            <FooterLink to="/">Support</FooterLink>
+            <FooterLink to="/">Contact</FooterLink>
           </FooterSection>
         </FooterGrid>
 
@@ -170,10 +171,10 @@ const Footer: React.FC = () => {
             © 2024 Talos. All rights reserved. Built for HVAC professionals.
           </Copyright>
           <div>
-            <FooterLink href="#privacy" style={{ marginRight: '2rem' }}>
+            <FooterLink to="/" style={{ marginRight: '2rem' }}>
               Privacy Policy
             </FooterLink>
-            <FooterLink href="#terms">Terms of Service</FooterLink>
+            <FooterLink to="/">Terms of Service</FooterLink>
           </div>
         </FooterBottom>
       </FooterContent>
