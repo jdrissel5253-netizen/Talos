@@ -3,9 +3,22 @@ import styled from 'styled-components';
 import { Linkedin, Twitter, Facebook } from 'lucide-react';
 
 const FooterContainer = styled.footer`
-  background-color: #1a1a1a;
-  color: white;
+  background-color: #0a0a0a;
+  color: #e0e0e0;
   padding: 4rem 2rem 2rem;
+  border-top: 1px solid #333;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, #4ade80, transparent);
+    opacity: 0.5;
+  }
 `;
 
 const FooterContent = styled.div`
@@ -31,39 +44,46 @@ const FooterSection = styled.div`
 `;
 
 const FooterTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #4ade80;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #ffffff;
   margin-bottom: 1.5rem;
+  letter-spacing: 0.02em;
 `;
 
 const FooterLink = styled.a`
-  color: #ccc;
+  color: #a3a3a3;
   text-decoration: none;
   padding: 0.5rem 0;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
+  font-size: 0.95rem;
 
   &:hover {
     color: #4ade80;
+    padding-left: 4px;
   }
 `;
 
 const FooterDescription = styled.p`
-  color: #ccc;
+  color: #a3a3a3;
   line-height: 1.6;
   margin-bottom: 1.5rem;
+  font-size: 0.95rem;
 `;
 
 const Logo = styled.div`
   font-size: 2rem;
-  font-weight: bold;
+  font-weight: 800;
   color: #ffffff;
-  text-shadow: 2px 2px 0px #4ade80;
   margin-bottom: 1rem;
+  background: linear-gradient(to right, #ffffff, #4ade80);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
 `;
 
 const FooterBottom = styled.div`
-  border-top: 1px solid #333;
+  border-top: 1px solid #222;
   padding-top: 2rem;
   display: flex;
   justify-content: space-between;
@@ -130,7 +150,10 @@ const Footer: React.FC = () => {
             <FooterLink href="#candidate-ranking">Candidate Ranking System</FooterLink>
             <FooterLink href="#message-generator">Candidate Message Generator</FooterLink>
             <FooterLink href="#talent-pool">Personalized Candidate Talent Pool</FooterLink>
-            <FooterLink href="#insights">HVAC Hiring Insights (nationwide)</FooterLink>
+            <FooterLink href="#hvac-insights">HVAC Hiring Insights (nationwide)</FooterLink>
+            <FooterLink href="#resume-analysis">Resume Analysis</FooterLink>
+            <FooterLink href="#batch-resume-analysis">Batch Resume Analysis</FooterLink>
+            <FooterLink href="#jobs-management">Jobs Management</FooterLink>
           </FooterSection>
 
           <FooterSection>

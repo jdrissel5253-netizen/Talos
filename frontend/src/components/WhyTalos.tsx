@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { Target, Zap, DollarSign, Repeat, TrendingUp, Filter } from 'lucide-react';
 import DemoModal from './DemoModal';
 
 const PageContainer = styled.div`
@@ -99,27 +100,37 @@ const HighlightText = styled.p`
 const BenefitsList = styled.div`
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin: 3rem 0;
+  gap: 3rem;
+  margin: 4rem 0;
 `;
 
 const BenefitCard = styled.div`
-  background: #000000;
-  padding: 2rem;
-  border-radius: 12px;
-  border-left: 4px solid #4ade80;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+`;
+
+const IconWrapper = styled.div`
+  margin-bottom: 1.5rem;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  display: inline-flex;
 `;
 
 const BenefitTitle = styled.h3`
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
-  color: #4ade80;
+  color: #ffffff;
   margin-bottom: 1rem;
 `;
 
 const BenefitDescription = styled.p`
-  color: #e0e0e0;
+  color: #a3a3a3;
   line-height: 1.6;
+  font-size: 1.125rem;
 `;
 
 const CTASection = styled.section`
@@ -130,19 +141,45 @@ const CTASection = styled.section`
 const CTAButton = styled.button`
   background-color: #4ade80;
   border: none;
-  color: white;
+  color: #000000;
   padding: 1rem 2.5rem;
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transition: 0.5s;
+  }
 
   &:hover {
-    background-color: #4ade80;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+    background-color: #5ce08e;
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -193,42 +230,60 @@ const WhyTalos: React.FC = () => {
 
             <BenefitsList>
               <BenefitCard>
-                <BenefitTitle>🎯 HVAC-Specific Focus</BenefitTitle>
+                <IconWrapper>
+                  <Target size={32} />
+                </IconWrapper>
+                <BenefitTitle>HVAC-Specific Focus</BenefitTitle>
                 <BenefitDescription>
                   No generic solutions. Every feature is designed specifically for HVAC hiring challenges, from technician roles to sales positions.
                 </BenefitDescription>
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitTitle>⚡ Lightning-Fast Results</BenefitTitle>
+                <IconWrapper>
+                  <Zap size={32} />
+                </IconWrapper>
+                <BenefitTitle>Lightning-Fast Results</BenefitTitle>
                 <BenefitDescription>
                   From job posting to top candidate interviews in just three clicks. No more weeks of sourcing and screening.
                 </BenefitDescription>
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitTitle>💰 Cost Savings</BenefitTitle>
+                <IconWrapper>
+                  <DollarSign size={32} />
+                </IconWrapper>
+                <BenefitTitle>Cost Savings</BenefitTitle>
                 <BenefitDescription>
                   Eliminate expensive staffing agency fees. Talos pays for itself with just one successful hire.
                 </BenefitDescription>
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitTitle>🔄 Reduce Turnover</BenefitTitle>
+                <IconWrapper>
+                  <Repeat size={32} />
+                </IconWrapper>
+                <BenefitTitle>Reduce Turnover</BenefitTitle>
                 <BenefitDescription>
                   AI-powered matching ensures you find candidates who are the right fit for your company culture and requirements.
                 </BenefitDescription>
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitTitle>📈 Scale Your Team</BenefitTitle>
+                <IconWrapper>
+                  <TrendingUp size={32} />
+                </IconWrapper>
+                <BenefitTitle>Scale Your Team</BenefitTitle>
                 <BenefitDescription>
                   Whether you need one tech or fifty, Talos scales with your business needs without missing a beat.
                 </BenefitDescription>
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitTitle>🎯 Quality Over Quantity</BenefitTitle>
+                <IconWrapper>
+                  <Filter size={32} />
+                </IconWrapper>
+                <BenefitTitle>Quality Over Quantity</BenefitTitle>
                 <BenefitDescription>
                   Stop wading through hundreds of unqualified resumes. Get pre-ranked, HVAC-ready candidates delivered to you.
                 </BenefitDescription>

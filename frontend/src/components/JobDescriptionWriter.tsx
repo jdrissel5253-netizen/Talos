@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { Wrench, Snowflake, Home, Building2, Settings, Hammer, Briefcase, BarChart3, GraduationCap, ClipboardList, Search, Zap, Target, TrendingUp, Clock, Thermometer, PenTool } from 'lucide-react';
 import DemoModal from './DemoModal';
 
 const PageContainer = styled.div`
@@ -16,6 +17,7 @@ const PageContainer = styled.div`
     bottom: 0;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
     z-index: 1;
+    pointer-events: none;
   }
 `;
 
@@ -35,7 +37,9 @@ const HeroSection = styled.section`
 const MainTitle = styled.h1`
   font-size: 3.5rem;
   font-weight: 700;
-  color: #e0e0e0;
+  background: linear-gradient(to right, #ffffff, #4ade80);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   margin-bottom: 1.5rem;
   line-height: 1.2;
 
@@ -199,19 +203,45 @@ const CTASection = styled.section`
 const CTAButton = styled.button`
   background-color: #4ade80;
   border: none;
-  color: white;
+  color: #000000;
   padding: 1rem 2.5rem;
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(26, 90, 58, 0.3);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transition: 0.5s;
+  }
 
   &:hover {
-    background-color: #4ade80;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(26, 90, 58, 0.4);
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+    background-color: #5ce08e;
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -293,51 +323,51 @@ const JobDescriptionWriter: React.FC = () => {
 
             <RoleGrid>
               <RoleCard>
-                <RoleIcon>🔧</RoleIcon>
+                <RoleIcon><Wrench size={32} color="#4ade80" /></RoleIcon>
                 <RoleName>HVAC Technician</RoleName>
               </RoleCard>
               <RoleCard>
-                <RoleIcon>❄️</RoleIcon>
+                <RoleIcon><Snowflake size={32} color="#4ade80" /></RoleIcon>
                 <RoleName>Refrigeration Tech</RoleName>
               </RoleCard>
               <RoleCard>
-                <RoleIcon>🏠</RoleIcon>
+                <RoleIcon><Home size={32} color="#4ade80" /></RoleIcon>
                 <RoleName>Residential HVAC</RoleName>
               </RoleCard>
               <RoleCard>
-                <RoleIcon>🏢</RoleIcon>
+                <RoleIcon><Building2 size={32} color="#4ade80" /></RoleIcon>
                 <RoleName>Commercial HVAC</RoleName>
               </RoleCard>
               <RoleCard>
-                <RoleIcon>⚙️</RoleIcon>
+                <RoleIcon><Settings size={32} color="#4ade80" /></RoleIcon>
                 <RoleName>Service Technician</RoleName>
               </RoleCard>
               <RoleCard>
-                <RoleIcon>🔨</RoleIcon>
+                <RoleIcon><Hammer size={32} color="#4ade80" /></RoleIcon>
                 <RoleName>Installation Tech</RoleName>
               </RoleCard>
               <RoleCard>
-                <RoleIcon>👨‍💼</RoleIcon>
+                <RoleIcon><Briefcase size={32} color="#4ade80" /></RoleIcon>
                 <RoleName>HVAC Sales Rep</RoleName>
               </RoleCard>
               <RoleCard>
-                <RoleIcon>📊</RoleIcon>
+                <RoleIcon><BarChart3 size={32} color="#4ade80" /></RoleIcon>
                 <RoleName>Field Supervisor</RoleName>
               </RoleCard>
               <RoleCard>
-                <RoleIcon>🎓</RoleIcon>
+                <RoleIcon><GraduationCap size={32} color="#4ade80" /></RoleIcon>
                 <RoleName>HVAC Apprentice</RoleName>
               </RoleCard>
               <RoleCard>
-                <RoleIcon>📋</RoleIcon>
+                <RoleIcon><ClipboardList size={32} color="#4ade80" /></RoleIcon>
                 <RoleName>Service Manager</RoleName>
               </RoleCard>
               <RoleCard>
-                <RoleIcon>🔍</RoleIcon>
+                <RoleIcon><Search size={32} color="#4ade80" /></RoleIcon>
                 <RoleName>HVAC Inspector</RoleName>
               </RoleCard>
               <RoleCard>
-                <RoleIcon>⚡</RoleIcon>
+                <RoleIcon><Zap size={32} color="#4ade80" /></RoleIcon>
                 <RoleName>Controls Technician</RoleName>
               </RoleCard>
             </RoleGrid>
@@ -350,7 +380,7 @@ const JobDescriptionWriter: React.FC = () => {
 
             <BenefitsList>
               <BenefitCard>
-                <BenefitIcon>🎯</BenefitIcon>
+                <BenefitIcon><Target size={40} color="#4ade80" /></BenefitIcon>
                 <BenefitTitle>Industry-Specific Language</BenefitTitle>
                 <BenefitDescription>
                   Uses terminology and requirements that HVAC professionals understand and respond to, improving application quality.
@@ -358,7 +388,7 @@ const JobDescriptionWriter: React.FC = () => {
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitIcon>📈</BenefitIcon>
+                <BenefitIcon><TrendingUp size={40} color="#4ade80" /></BenefitIcon>
                 <BenefitTitle>Optimized for Results</BenefitTitle>
                 <BenefitDescription>
                   Based on analysis of thousands of successful HVAC job postings to maximize candidate attraction and conversion.
@@ -366,7 +396,7 @@ const JobDescriptionWriter: React.FC = () => {
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitIcon>⏱️</BenefitIcon>
+                <BenefitIcon><Clock size={40} color="#4ade80" /></BenefitIcon>
                 <BenefitTitle>Save Hours of Work</BenefitTitle>
                 <BenefitDescription>
                   No more struggling with blank pages or copying generic templates. Get professional descriptions in minutes.
@@ -374,7 +404,7 @@ const JobDescriptionWriter: React.FC = () => {
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitIcon>🔧</BenefitIcon>
+                <BenefitIcon><Wrench size={40} color="#4ade80" /></BenefitIcon>
                 <BenefitTitle>Certification Requirements</BenefitTitle>
                 <BenefitDescription>
                   Automatically includes relevant certifications, licenses, and technical requirements for each HVAC role.
@@ -382,7 +412,7 @@ const JobDescriptionWriter: React.FC = () => {
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitIcon>🌡️</BenefitIcon>
+                <BenefitIcon><Thermometer size={40} color="#4ade80" /></BenefitIcon>
                 <BenefitTitle>Seasonal Considerations</BenefitTitle>
                 <BenefitDescription>
                   Accounts for seasonal demands, peak periods, and geographic climate considerations in job descriptions.
@@ -390,7 +420,7 @@ const JobDescriptionWriter: React.FC = () => {
               </BenefitCard>
 
               <BenefitCard>
-                <RoleIcon>✍️</RoleIcon>
+                <RoleIcon><PenTool size={40} color="#4ade80" /></RoleIcon>
                 <BenefitTitle>Customizable Tone</BenefitTitle>
                 <BenefitDescription>
                   Adjust the description tone to match your company culture - from corporate professional to family-friendly local business.

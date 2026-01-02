@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { BarChart3, TrendingUp, Trophy, Thermometer, Building2, Briefcase } from 'lucide-react';
 import DemoModal from './DemoModal';
 
 const PageContainer = styled.div`
@@ -16,6 +17,7 @@ const PageContainer = styled.div`
     bottom: 0;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
     z-index: 1;
+    pointer-events: none;
   }
 `;
 
@@ -30,7 +32,9 @@ const ContentWrapper = styled.div`
 const MainTitle = styled.h1`
   font-size: 3.5rem;
   font-weight: 700;
-  color: #e0e0e0;
+  background: linear-gradient(to right, #ffffff, #4ade80);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   margin-bottom: 1.5rem;
   line-height: 1.2;
   text-align: center;
@@ -158,21 +162,47 @@ const ReadMoreLink = styled.a`
 const CTAButton = styled.button`
   background-color: #4ade80;
   border: none;
-  color: white;
+  color: #000000;
   padding: 1rem 2.5rem;
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(26, 90, 58, 0.3);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
   display: block;
   margin: 4rem auto 0;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transition: 0.5s;
+  }
 
   &:hover {
-    background-color: #4ade80;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(26, 90, 58, 0.4);
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+    background-color: #5ce08e;
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -205,7 +235,7 @@ const HVACInsights: React.FC = () => {
 
             <InsightGrid>
               <InsightCard>
-                <InsightIcon>📊</InsightIcon>
+                <InsightIcon><BarChart3 size={40} color="#4ade80" /></InsightIcon>
                 <InsightTitle>Regional Salary Benchmarks</InsightTitle>
                 <p style={{ color: '#666', lineHeight: '1.6' }}>
                   Current salary ranges for HVAC positions by region, helping you stay competitive in your local market.
@@ -213,7 +243,7 @@ const HVACInsights: React.FC = () => {
               </InsightCard>
 
               <InsightCard>
-                <InsightIcon>📈</InsightIcon>
+                <InsightIcon><TrendingUp size={40} color="#4ade80" /></InsightIcon>
                 <InsightTitle>Demand Forecasting</InsightTitle>
                 <p style={{ color: '#666', lineHeight: '1.6' }}>
                   Seasonal hiring trends and predicted demand spikes to help you plan your recruitment strategy.
@@ -221,7 +251,7 @@ const HVACInsights: React.FC = () => {
               </InsightCard>
 
               <InsightCard>
-                <InsightIcon>🏆</InsightIcon>
+                <InsightIcon><Trophy size={40} color="#4ade80" /></InsightIcon>
                 <InsightTitle>Skills in High Demand</InsightTitle>
                 <p style={{ color: '#666', lineHeight: '1.6' }}>
                   Most sought-after certifications and technical skills in the current HVAC job market.
@@ -229,7 +259,7 @@ const HVACInsights: React.FC = () => {
               </InsightCard>
 
               <InsightCard>
-                <InsightIcon>🌡️</InsightIcon>
+                <InsightIcon><Thermometer size={40} color="#4ade80" /></InsightIcon>
                 <InsightTitle>Seasonal Trends</InsightTitle>
                 <p style={{ color: '#666', lineHeight: '1.6' }}>
                   How weather patterns and seasonal demands affect hiring needs across different regions.
@@ -237,7 +267,7 @@ const HVACInsights: React.FC = () => {
               </InsightCard>
 
               <InsightCard>
-                <InsightIcon>🏢</InsightIcon>
+                <InsightIcon><Building2 size={40} color="#4ade80" /></InsightIcon>
                 <InsightTitle>Industry Growth Data</InsightTitle>
                 <p style={{ color: '#666', lineHeight: '1.6' }}>
                   Market expansion trends, new construction impacts, and commercial vs. residential demand.
@@ -245,7 +275,7 @@ const HVACInsights: React.FC = () => {
               </InsightCard>
 
               <InsightCard>
-                <InsightIcon>💼</InsightIcon>
+                <InsightIcon><Briefcase size={40} color="#4ade80" /></InsightIcon>
                 <InsightTitle>Competitor Analysis</InsightTitle>
                 <p style={{ color: '#666', lineHeight: '1.6' }}>
                   Anonymous insights into hiring practices and compensation trends among HVAC companies.

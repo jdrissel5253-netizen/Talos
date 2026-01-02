@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { Calendar, Phone, CheckSquare, X } from 'lucide-react';
 import DemoModal from './DemoModal';
 
 const PageContainer = styled.div`
@@ -16,6 +17,7 @@ const PageContainer = styled.div`
     bottom: 0;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
     z-index: 1;
+    pointer-events: none;
   }
 `;
 
@@ -30,7 +32,9 @@ const ContentWrapper = styled.div`
 const MainTitle = styled.h1`
   font-size: 3.5rem;
   font-weight: 700;
-  color: #e0e0e0;
+  background: linear-gradient(to right, #ffffff, #4ade80);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   margin-bottom: 1.5rem;
   line-height: 1.2;
   text-align: center;
@@ -115,21 +119,47 @@ const MessageExample = styled.div`
 const CTAButton = styled.button`
   background-color: #4ade80;
   border: none;
-  color: white;
+  color: #000000;
   padding: 1rem 2.5rem;
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(26, 90, 58, 0.3);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
   display: block;
   margin: 4rem auto 0;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transition: 0.5s;
+  }
 
   &:hover {
-    background-color: #4ade80;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(26, 90, 58, 0.4);
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+    background-color: #5ce08e;
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -158,7 +188,7 @@ const CandidateMessages: React.FC = () => {
 
             <MessageTypeGrid>
               <MessageTypeCard>
-                <MessageIcon>📅</MessageIcon>
+                <MessageIcon><Calendar size={48} color="#4ade80" /></MessageIcon>
                 <MessageTitle>Interview Invitations</MessageTitle>
                 <p style={{ color: '#e0e0e0', lineHeight: '1.8', marginBottom: '1rem' }}>
                   Our AI crafts personalized interview invitations that balance professionalism with warmth. Messages automatically highlight relevant candidate qualifications, suggest optimal meeting times based on scheduling patterns, and include all necessary logistical details formatted for maximum response rates.
@@ -172,7 +202,7 @@ const CandidateMessages: React.FC = () => {
               </MessageTypeCard>
 
               <MessageTypeCard>
-                <MessageIcon>📞</MessageIcon>
+                <MessageIcon><Phone size={48} color="#4ade80" /></MessageIcon>
                 <MessageTitle>Phone Screen Requests</MessageTitle>
                 <p style={{ color: '#e0e0e0', lineHeight: '1.8', marginBottom: '1rem' }}>
                   Generate concise, engaging phone screen invitations that respect candidates' time while generating curiosity. Our system analyzes candidate profiles to emphasize the most relevant aspects of the opportunity, increasing screening call acceptance rates.
@@ -186,7 +216,7 @@ const CandidateMessages: React.FC = () => {
               </MessageTypeCard>
 
               <MessageTypeCard>
-                <MessageIcon>✅</MessageIcon>
+                <MessageIcon><CheckSquare size={48} color="#4ade80" /></MessageIcon>
                 <MessageTitle>Follow-Up Communications</MessageTitle>
                 <p style={{ color: '#e0e0e0', lineHeight: '1.8', marginBottom: '1rem' }}>
                   Maintain candidate engagement with thoughtfully timed follow-up messages. The system references specific conversation points from interviews and applications, demonstrating genuine interest while keeping top candidates engaged throughout your hiring process.
@@ -200,7 +230,7 @@ const CandidateMessages: React.FC = () => {
               </MessageTypeCard>
 
               <MessageTypeCard>
-                <MessageIcon>❌</MessageIcon>
+                <MessageIcon><X size={48} color="#ef4444" /></MessageIcon>
                 <MessageTitle>Professional Rejections</MessageTitle>
                 <p style={{ color: '#e0e0e0', lineHeight: '1.8', marginBottom: '1rem' }}>
                   Deliver tactful rejection messages that preserve your employer brand and maintain positive candidate relationships. Messages are crafted to provide closure while leaving the door open for future opportunities, protecting your company's reputation in the talent market.

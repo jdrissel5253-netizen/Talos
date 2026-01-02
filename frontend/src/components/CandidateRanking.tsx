@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { CheckCircle, AlertCircle, XCircle, GraduationCap, ScrollText, BarChart3, Wrench, MapPin, CircleDollarSign, Clock, Target, TrendingUp, RefreshCw, Scale } from 'lucide-react';
 import DemoModal from './DemoModal';
 
 const PageContainer = styled.div`
@@ -16,6 +17,7 @@ const PageContainer = styled.div`
     bottom: 0;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
     z-index: 1;
+    pointer-events: none;
   }
 `;
 
@@ -35,7 +37,9 @@ const HeroSection = styled.section`
 const MainTitle = styled.h1`
   font-size: 3.5rem;
   font-weight: 700;
-  color: #e0e0e0;
+  background: linear-gradient(to right, #ffffff, #4ade80);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   margin-bottom: 1.5rem;
   line-height: 1.2;
 
@@ -229,19 +233,45 @@ const CTASection = styled.section`
 const CTAButton = styled.button`
   background-color: #4ade80;
   border: none;
-  color: white;
+  color: #000000;
   padding: 1rem 2.5rem;
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(26, 90, 58, 0.3);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transition: 0.5s;
+  }
 
   &:hover {
-    background-color: #4ade80;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(26, 90, 58, 0.4);
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+    background-color: #5ce08e;
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -280,7 +310,7 @@ const CandidateRanking: React.FC = () => {
 
             <TierSection>
               <TierCard tierColor="#22c55e">
-                <TierIcon>🟢</TierIcon>
+                <TierIcon><CheckCircle size={48} color="#22c55e" /></TierIcon>
                 <TierName tierColor="#22c55e">Green Tier</TierName>
                 <TierScore tierColor="#22c55e">80-100 Score</TierScore>
                 <TierDescription>
@@ -296,7 +326,7 @@ const CandidateRanking: React.FC = () => {
               </TierCard>
 
               <TierCard tierColor="#eab308">
-                <TierIcon>🟡</TierIcon>
+                <TierIcon><AlertCircle size={48} color="#eab308" /></TierIcon>
                 <TierName tierColor="#eab308">Yellow Tier</TierName>
                 <TierScore tierColor="#eab308">50-79 Score</TierScore>
                 <TierDescription>
@@ -312,7 +342,7 @@ const CandidateRanking: React.FC = () => {
               </TierCard>
 
               <TierCard tierColor="#ef4444">
-                <TierIcon>🔴</TierIcon>
+                <TierIcon><XCircle size={48} color="#ef4444" /></TierIcon>
                 <TierName tierColor="#ef4444">Red Tier</TierName>
                 <TierScore tierColor="#ef4444">0-49 Score</TierScore>
                 <TierDescription>
@@ -338,7 +368,7 @@ const CandidateRanking: React.FC = () => {
 
             <ScoringGrid>
               <ScoringCard>
-                <ScoringIcon>🎓</ScoringIcon>
+                <ScoringIcon><GraduationCap size={32} color="#4ade80" /></ScoringIcon>
                 <ScoringCriterion>HVAC Experience Assessment</ScoringCriterion>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem', marginTop: '0.5rem' }}>
                   Our AI evaluates years of hands-on HVAC experience, the complexity of systems candidates have worked on, and their progression through increasingly challenging roles. The algorithm identifies patterns that indicate deep expertise and practical knowledge.
@@ -346,7 +376,7 @@ const CandidateRanking: React.FC = () => {
               </ScoringCard>
 
               <ScoringCard>
-                <ScoringIcon>📜</ScoringIcon>
+                <ScoringIcon><ScrollText size={32} color="#4ade80" /></ScoringIcon>
                 <ScoringCriterion>Credentials & Certifications</ScoringCriterion>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem', marginTop: '0.5rem' }}>
                   The system scans for relevant certifications including EPA 608, NATE credentials, manufacturer-specific training, and state licenses. It also evaluates the recency and relevance of each certification to your specific job requirements.
@@ -354,7 +384,7 @@ const CandidateRanking: React.FC = () => {
               </ScoringCard>
 
               <ScoringCard>
-                <ScoringIcon>📊</ScoringIcon>
+                <ScoringIcon><BarChart3 size={32} color="#4ade80" /></ScoringIcon>
                 <ScoringCriterion>Employment Track Record</ScoringCriterion>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem', marginTop: '0.5rem' }}>
                   Our algorithm analyzes job stability, career progression patterns, tenure at previous positions, and the context around role changes. This helps identify candidates with strong commitment and upward mobility.
@@ -362,7 +392,7 @@ const CandidateRanking: React.FC = () => {
               </ScoringCard>
 
               <ScoringCard>
-                <ScoringIcon>🔧</ScoringIcon>
+                <ScoringIcon><Wrench size={32} color="#4ade80" /></ScoringIcon>
                 <ScoringCriterion>Technical Competencies</ScoringCriterion>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem', marginTop: '0.5rem' }}>
                   The AI evaluates specific HVAC skills mentioned in resumes, equipment familiarity, diagnostic abilities, and troubleshooting experience. It matches these competencies against your job description to find the best technical fits.
@@ -370,7 +400,7 @@ const CandidateRanking: React.FC = () => {
               </ScoringCard>
 
               <ScoringCard>
-                <ScoringIcon>📍</ScoringIcon>
+                <ScoringIcon><MapPin size={32} color="#4ade80" /></ScoringIcon>
                 <ScoringCriterion>Geographic Compatibility</ScoringCriterion>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem', marginTop: '0.5rem' }}>
                   Location analysis includes proximity to your job sites, commute feasibility, relocation indicators, travel willingness, and local market experience. This helps predict long-term retention and daily logistics.
@@ -378,7 +408,7 @@ const CandidateRanking: React.FC = () => {
               </ScoringCard>
 
               <ScoringCard>
-                <ScoringIcon>💰</ScoringIcon>
+                <ScoringIcon><CircleDollarSign size={32} color="#4ade80" /></ScoringIcon>
                 <ScoringCriterion>Compensation Expectations</ScoringCriterion>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem', marginTop: '0.5rem' }}>
                   The system compares stated salary expectations, benefits requirements, and compensation history against your budget and market rates. This ensures alignment before you invest time in interviews.
@@ -403,7 +433,7 @@ const CandidateRanking: React.FC = () => {
 
             <BenefitsList>
               <BenefitCard>
-                <BenefitIcon>⏱️</BenefitIcon>
+                <BenefitIcon><Clock size={40} color="#4ade80" /></BenefitIcon>
                 <BenefitTitle>Save Time on Screening</BenefitTitle>
                 <BenefitDescription>
                   Stop wasting time on unqualified candidates. Focus your energy on Green tier candidates who are most likely to succeed.
@@ -411,7 +441,7 @@ const CandidateRanking: React.FC = () => {
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitIcon>🎯</BenefitIcon>
+                <BenefitIcon><Target size={40} color="#4ade80" /></BenefitIcon>
                 <BenefitTitle>Reduce Hiring Mistakes</BenefitTitle>
                 <BenefitDescription>
                   AI scoring reduces bias and human error in initial candidate evaluation, leading to better hiring decisions.
@@ -419,7 +449,7 @@ const CandidateRanking: React.FC = () => {
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitIcon>📈</BenefitIcon>
+                <BenefitIcon><TrendingUp size={40} color="#4ade80" /></BenefitIcon>
                 <BenefitTitle>Improve Hire Quality</BenefitTitle>
                 <BenefitDescription>
                   By focusing on top-ranked candidates, you'll consistently hire higher-quality technicians who stay longer.
@@ -427,7 +457,7 @@ const CandidateRanking: React.FC = () => {
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitIcon>🔄</BenefitIcon>
+                <BenefitIcon><RefreshCw size={40} color="#4ade80" /></BenefitIcon>
                 <BenefitTitle>Reduce Turnover</BenefitTitle>
                 <BenefitDescription>
                   Better candidate matching leads to employees who are happier in their roles and more likely to stay long-term.
@@ -435,7 +465,7 @@ const CandidateRanking: React.FC = () => {
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitIcon>⚖️</BenefitIcon>
+                <BenefitIcon><Scale size={40} color="#4ade80" /></BenefitIcon>
                 <BenefitTitle>Consistent Evaluation</BenefitTitle>
                 <BenefitDescription>
                   Every candidate is evaluated using the same criteria, ensuring fair and consistent assessment across all applicants.
@@ -443,7 +473,7 @@ const CandidateRanking: React.FC = () => {
               </BenefitCard>
 
               <BenefitCard>
-                <BenefitIcon>📊</BenefitIcon>
+                <BenefitIcon><BarChart3 size={40} color="#4ade80" /></BenefitIcon>
                 <BenefitTitle>Data-Driven Insights</BenefitTitle>
                 <BenefitDescription>
                   Track which scoring factors correlate with successful hires and continuously improve your hiring process.

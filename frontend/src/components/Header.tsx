@@ -181,6 +181,9 @@ const Header: React.FC = () => {
             <DropdownItem to="/candidate-messages">Candidate Message Generator</DropdownItem>
             <DropdownItem to="/talent-pool">Personalized Talent Pool</DropdownItem>
             <DropdownItem to="/hvac-insights">HVAC Hiring Insights</DropdownItem>
+            <DropdownItem to="/resume-analysis">Resume Analysis</DropdownItem>
+            <DropdownItem to="/batch-resume-analysis">Batch Resume Analysis</DropdownItem>
+            <DropdownItem to="/jobs-management">Jobs Management</DropdownItem>
           </DropdownContent>
         </NavItem>
 

@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+
+import { Upload, MapPin, Briefcase, FileText } from 'lucide-react';
 import { config } from '../config';
 import { useNavigate } from 'react-router-dom';
 
@@ -684,8 +686,8 @@ const ResumeAnalysis: React.FC = () => {
               jobs.map(job => (
                 <JobItem key={job.id} isActive={false}>
                   <JobItemTitle>{job.title}</JobItemTitle>
-                  <JobItemMeta>📍 {job.location}</JobItemMeta>
-                  <JobItemMeta>💼 {job.required_years_experience}+ years</JobItemMeta>
+                  <JobItemMeta><MapPin size={12} style={{ display: 'inline', marginRight: '4px' }} /> {job.location}</JobItemMeta>
+                  <JobItemMeta><Briefcase size={12} style={{ display: 'inline', marginRight: '4px' }} /> {job.required_years_experience}+ years</JobItemMeta>
                 </JobItem>
               ))
             )}
@@ -711,286 +713,286 @@ const ResumeAnalysis: React.FC = () => {
             <Subtitle>Upload an HVAC technician resume for instant AI-powered analysis</Subtitle>
           </Header>
 
-        {!analysisResult ? (
-          <>
-            <PositionSelector>
-              <PositionLabel htmlFor="position-select">
-                Select HVAC Position to Evaluate
-              </PositionLabel>
-              <PositionDropdown
-                id="position-select"
-                value={selectedPosition}
-                onChange={(e) => setSelectedPosition(e.target.value)}
-              >
-                <option value="lead-hvac-technician">Lead HVAC Technician</option>
-                <option value="hvac-service-technician">HVAC Service Technician</option>
-                <option value="hvac-dispatcher">HVAC Dispatcher</option>
-                <option value="administrative-assistant">Administrative Assistant</option>
-                <option value="customer-service-representative">Customer Service Representative</option>
-                <option value="hvac-installer">HVAC Installer</option>
-                <option value="lead-hvac-installer">Lead HVAC Installer</option>
-                <option value="maintenance-technician">Maintenance Technician</option>
-                <option value="warehouse-associate">Warehouse Associate</option>
-                <option value="bookkeeper">Bookkeeper</option>
-                <option value="hvac-sales-representative">HVAC Sales Representative</option>
-                <option value="hvac-service-manager">HVAC Service Manager</option>
-                <option value="apprentice">Apprentice</option>
-                <option value="hvac-project-manager">HVAC Project Manager</option>
-                <option value="hvac-sales-engineer">HVAC Sales Engineer</option>
-                <option value="refrigeration-technician">Refrigeration Technician</option>
-                <option value="hvac-apprentice">HVAC Apprentice</option>
-                <option value="commercial-hvac-tech">Commercial HVAC Technician</option>
-                <option value="residential-hvac-tech">Residential HVAC Technician</option>
-              </PositionDropdown>
-            </PositionSelector>
+          {!analysisResult ? (
+            <>
+              <PositionSelector>
+                <PositionLabel htmlFor="position-select">
+                  Select HVAC Position to Evaluate
+                </PositionLabel>
+                <PositionDropdown
+                  id="position-select"
+                  value={selectedPosition}
+                  onChange={(e) => setSelectedPosition(e.target.value)}
+                >
+                  <option value="lead-hvac-technician">Lead HVAC Technician</option>
+                  <option value="hvac-service-technician">HVAC Service Technician</option>
+                  <option value="hvac-dispatcher">HVAC Dispatcher</option>
+                  <option value="administrative-assistant">Administrative Assistant</option>
+                  <option value="customer-service-representative">Customer Service Representative</option>
+                  <option value="hvac-installer">HVAC Installer</option>
+                  <option value="lead-hvac-installer">Lead HVAC Installer</option>
+                  <option value="maintenance-technician">Maintenance Technician</option>
+                  <option value="warehouse-associate">Warehouse Associate</option>
+                  <option value="bookkeeper">Bookkeeper</option>
+                  <option value="hvac-sales-representative">HVAC Sales Representative</option>
+                  <option value="hvac-service-manager">HVAC Service Manager</option>
+                  <option value="apprentice">Apprentice</option>
+                  <option value="hvac-project-manager">HVAC Project Manager</option>
+                  <option value="hvac-sales-engineer">HVAC Sales Engineer</option>
+                  <option value="refrigeration-technician">Refrigeration Technician</option>
+                  <option value="hvac-apprentice">HVAC Apprentice</option>
+                  <option value="commercial-hvac-tech">Commercial HVAC Technician</option>
+                  <option value="residential-hvac-tech">Residential HVAC Technician</option>
+                </PositionDropdown>
+              </PositionSelector>
 
-            <PositionSelector>
-              <PositionLabel htmlFor="years-select">
-                Required Years of Experience
-              </PositionLabel>
-              <PositionDropdown
-                id="years-select"
-                value={requiredYearsExperience}
-                onChange={(e) => setRequiredYearsExperience(Number(e.target.value))}
-              >
-                <option value="0.5">0.5 years</option>
-                <option value="1">1 year</option>
-                <option value="1.5">1.5 years</option>
-                <option value="2">2 years</option>
-                <option value="2.5">2.5 years</option>
-                <option value="3">3 years</option>
-                <option value="3.5">3.5 years</option>
-                <option value="4">4 years</option>
-                <option value="4.5">4.5 years</option>
-                <option value="5">5 years</option>
-                <option value="5.5">5.5 years</option>
-                <option value="6">6 years</option>
-                <option value="6.5">6.5 years</option>
-                <option value="7">7 years</option>
-                <option value="7.5">7.5 years</option>
-                <option value="8">8 years</option>
-                <option value="8.5">8.5 years</option>
-                <option value="9">9 years</option>
-                <option value="9.5">9.5 years</option>
-                <option value="10">10 years</option>
-              </PositionDropdown>
-            </PositionSelector>
+              <PositionSelector>
+                <PositionLabel htmlFor="years-select">
+                  Required Years of Experience
+                </PositionLabel>
+                <PositionDropdown
+                  id="years-select"
+                  value={requiredYearsExperience}
+                  onChange={(e) => setRequiredYearsExperience(Number(e.target.value))}
+                >
+                  <option value="0.5">0.5 years</option>
+                  <option value="1">1 year</option>
+                  <option value="1.5">1.5 years</option>
+                  <option value="2">2 years</option>
+                  <option value="2.5">2.5 years</option>
+                  <option value="3">3 years</option>
+                  <option value="3.5">3.5 years</option>
+                  <option value="4">4 years</option>
+                  <option value="4.5">4.5 years</option>
+                  <option value="5">5 years</option>
+                  <option value="5.5">5.5 years</option>
+                  <option value="6">6 years</option>
+                  <option value="6.5">6.5 years</option>
+                  <option value="7">7 years</option>
+                  <option value="7.5">7.5 years</option>
+                  <option value="8">8 years</option>
+                  <option value="8.5">8.5 years</option>
+                  <option value="9">9 years</option>
+                  <option value="9.5">9.5 years</option>
+                  <option value="10">10 years</option>
+                </PositionDropdown>
+              </PositionSelector>
 
-            <UploadSection
-              onClick={handleUploadClick}
-              onDragOver={handleDragOver}
-              onDragLeave={handleDragLeave}
-              onDrop={handleDrop}
-              className={isDragging ? 'dragging' : ''}
-            >
-              <UploadIcon>📄</UploadIcon>
-              <UploadText>
-                {selectedFile ? 'File Selected!' : 'Drop your resume here or click to browse'}
-              </UploadText>
-              <UploadHint>Supports PDF files up to 5MB</UploadHint>
-              <FileInput
-                id="fileInput"
-                type="file"
-                accept=".pdf"
-                onChange={handleFileSelect}
-              />
-              <BrowseButton as="div">
-                {selectedFile ? 'Change File' : 'Browse Files'}
-              </BrowseButton>
-              {selectedFile && (
-                <FileName>📎 {selectedFile.name}</FileName>
+              <UploadSection
+                onClick={handleUploadClick}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+                className={isDragging ? 'dragging' : ''}
+              >
+                <UploadIcon><FileText size={64} color="#4ade80" /></UploadIcon>
+                <UploadText>
+                  {selectedFile ? 'File Selected!' : 'Drop your resume here or click to browse'}
+                </UploadText>
+                <UploadHint>Supports PDF files up to 5MB</UploadHint>
+                <FileInput
+                  id="fileInput"
+                  type="file"
+                  accept=".pdf"
+                  onChange={handleFileSelect}
+                />
+                <BrowseButton as="div">
+                  {selectedFile ? 'Change File' : 'Browse Files'}
+                </BrowseButton>
+                {selectedFile && (
+                  <FileName>📎 {selectedFile.name}</FileName>
+                )}
+              </UploadSection>
+
+              {selectedFile && !isAnalyzing && (
+                <BrowseButton onClick={handleAnalyze}>
+                  Analyze Resume with AI
+                </BrowseButton>
               )}
-            </UploadSection>
 
-            {selectedFile && !isAnalyzing && (
-              <BrowseButton onClick={handleAnalyze}>
-                Analyze Resume with AI
-              </BrowseButton>
-            )}
-
-            {isAnalyzing && (
-              <AnalyzingLoader>
-                <LoaderSpinner />
-                <LoaderText>Analyzing resume with AI...</LoaderText>
-                <p style={{ color: '#999', marginTop: '0.5rem', fontSize: '0.875rem' }}>
-                  This may take 10-15 seconds
-                </p>
-              </AnalyzingLoader>
-            )}
-          </>
-        ) : (
-          <ResultsSection>
-            <ScoreCard>
-              <ScoreLabel>Overall Score</ScoreLabel>
-              <ScoreValue>{analysisResult.overallScore}</ScoreValue>
-              <ScoreOutOf>out of 100</ScoreOutOf>
-            </ScoreCard>
-
-            {analysisResult.isOverqualified && (
-              <DetailSection style={{ background: '#2a2a1a', borderLeft: '4px solid #f59e0b' }}>
-                <DetailTitle style={{ color: '#f59e0b' }}>⚠️ Overqualified Candidate</DetailTitle>
-                <DetailContent>
-                  {analysisResult.overqualificationReason}
-                  <p style={{ marginTop: '0.75rem', fontSize: '0.875rem', color: '#999' }}>
-                    This candidate has been placed in the lower "give them a chance" tier (70-75) due to being overqualified for this position.
+              {isAnalyzing && (
+                <AnalyzingLoader>
+                  <LoaderSpinner />
+                  <LoaderText>Analyzing resume with AI...</LoaderText>
+                  <p style={{ color: '#999', marginTop: '0.5rem', fontSize: '0.875rem' }}>
+                    This may take 10-15 seconds
                   </p>
+                </AnalyzingLoader>
+              )}
+            </>
+          ) : (
+            <ResultsSection>
+              <ScoreCard>
+                <ScoreLabel>Overall Score</ScoreLabel>
+                <ScoreValue>{analysisResult.overallScore}</ScoreValue>
+                <ScoreOutOf>out of 100</ScoreOutOf>
+              </ScoreCard>
+
+              {analysisResult.isOverqualified && (
+                <DetailSection style={{ background: '#2a2a1a', borderLeft: '4px solid #f59e0b' }}>
+                  <DetailTitle style={{ color: '#f59e0b' }}>⚠️ Overqualified Candidate</DetailTitle>
+                  <DetailContent>
+                    {analysisResult.overqualificationReason}
+                    <p style={{ marginTop: '0.75rem', fontSize: '0.875rem', color: '#999' }}>
+                      This candidate has been placed in the lower "give them a chance" tier (70-75) due to being overqualified for this position.
+                    </p>
+                  </DetailContent>
+                </DetailSection>
+              )}
+
+              <DetailSection>
+                <DetailTitle>Summary</DetailTitle>
+                <DetailContent>{analysisResult.summary}</DetailContent>
+              </DetailSection>
+
+              <DetailSection>
+                <DetailTitle>
+                  Technical Skills
+                  <ScoreBadge>{analysisResult.technicalSkills.score}/100</ScoreBadge>
+                </DetailTitle>
+                <DetailContent>
+                  <strong>Found:</strong>
+                  <List>
+                    {analysisResult.technicalSkills.found.map((skill, idx) => (
+                      <ListItem key={idx}>{skill}</ListItem>
+                    ))}
+                  </List>
+                  {analysisResult.technicalSkills.missing.length > 0 && (
+                    <>
+                      <strong>Missing:</strong>
+                      <List>
+                        {analysisResult.technicalSkills.missing.map((skill, idx) => (
+                          <ListItem key={idx}>{skill}</ListItem>
+                        ))}
+                      </List>
+                    </>
+                  )}
+                  <p>{analysisResult.technicalSkills.feedback}</p>
                 </DetailContent>
               </DetailSection>
-            )}
 
-            <DetailSection>
-              <DetailTitle>Summary</DetailTitle>
-              <DetailContent>{analysisResult.summary}</DetailContent>
-            </DetailSection>
-
-            <DetailSection>
-              <DetailTitle>
-                Technical Skills
-                <ScoreBadge>{analysisResult.technicalSkills.score}/100</ScoreBadge>
-              </DetailTitle>
-              <DetailContent>
-                <strong>Found:</strong>
-                <List>
-                  {analysisResult.technicalSkills.found.map((skill, idx) => (
-                    <ListItem key={idx}>{skill}</ListItem>
-                  ))}
-                </List>
-                {analysisResult.technicalSkills.missing.length > 0 && (
-                  <>
-                    <strong>Missing:</strong>
-                    <List>
-                      {analysisResult.technicalSkills.missing.map((skill, idx) => (
-                        <ListItem key={idx}>{skill}</ListItem>
-                      ))}
-                    </List>
-                  </>
-                )}
-                <p>{analysisResult.technicalSkills.feedback}</p>
-              </DetailContent>
-            </DetailSection>
-
-            <DetailSection>
-              <DetailTitle>
-                Certifications
-                <ScoreBadge>{analysisResult.certifications.score}/100</ScoreBadge>
-              </DetailTitle>
-              <DetailContent>
-                <strong>Found:</strong>
-                <List>
-                  {analysisResult.certifications.found.length > 0 ? (
-                    analysisResult.certifications.found.map((cert, idx) => (
-                      <ListItem key={idx}>{cert}</ListItem>
-                    ))
-                  ) : (
-                    <ListItem>No certifications found</ListItem>
-                  )}
-                </List>
-                {analysisResult.certifications.recommended.length > 0 && (
-                  <>
-                    <strong>Recommended:</strong>
-                    <List>
-                      {analysisResult.certifications.recommended.map((cert, idx) => (
+              <DetailSection>
+                <DetailTitle>
+                  Certifications
+                  <ScoreBadge>{analysisResult.certifications.score}/100</ScoreBadge>
+                </DetailTitle>
+                <DetailContent>
+                  <strong>Found:</strong>
+                  <List>
+                    {analysisResult.certifications.found.length > 0 ? (
+                      analysisResult.certifications.found.map((cert, idx) => (
                         <ListItem key={idx}>{cert}</ListItem>
-                      ))}
-                    </List>
-                  </>
-                )}
-                <p>{analysisResult.certifications.feedback}</p>
-              </DetailContent>
-            </DetailSection>
+                      ))
+                    ) : (
+                      <ListItem>No certifications found</ListItem>
+                    )}
+                  </List>
+                  {analysisResult.certifications.recommended.length > 0 && (
+                    <>
+                      <strong>Recommended:</strong>
+                      <List>
+                        {analysisResult.certifications.recommended.map((cert, idx) => (
+                          <ListItem key={idx}>{cert}</ListItem>
+                        ))}
+                      </List>
+                    </>
+                  )}
+                  <p>{analysisResult.certifications.feedback}</p>
+                </DetailContent>
+              </DetailSection>
 
-            <DetailSection>
-              <DetailTitle>
-                Experience
-                <ScoreBadge>{analysisResult.experience.score}/100</ScoreBadge>
-              </DetailTitle>
-              <DetailContent>
-                <p><strong>Years of Experience:</strong> {analysisResult.experience.yearsOfExperience}</p>
-                <strong>Relevant Experience:</strong>
-                <List>
-                  {analysisResult.experience.relevantExperience.map((exp, idx) => (
-                    <ListItem key={idx}>{exp}</ListItem>
-                  ))}
-                </List>
-                <p>{analysisResult.experience.feedback}</p>
-              </DetailContent>
-            </DetailSection>
+              <DetailSection>
+                <DetailTitle>
+                  Experience
+                  <ScoreBadge>{analysisResult.experience.score}/100</ScoreBadge>
+                </DetailTitle>
+                <DetailContent>
+                  <p><strong>Years of Experience:</strong> {analysisResult.experience.yearsOfExperience}</p>
+                  <strong>Relevant Experience:</strong>
+                  <List>
+                    {analysisResult.experience.relevantExperience.map((exp, idx) => (
+                      <ListItem key={idx}>{exp}</ListItem>
+                    ))}
+                  </List>
+                  <p>{analysisResult.experience.feedback}</p>
+                </DetailContent>
+              </DetailSection>
 
-            <DetailSection>
-              <DetailTitle>
-                Presentation Quality
-                <ScoreBadge>{analysisResult.presentationQuality.score}/100</ScoreBadge>
-              </DetailTitle>
-              <DetailContent>
-                <strong>Strengths:</strong>
-                <List>
-                  {analysisResult.presentationQuality.strengths.map((strength, idx) => (
-                    <ListItem key={idx}>{strength}</ListItem>
-                  ))}
-                </List>
-                {analysisResult.presentationQuality.improvements.length > 0 && (
-                  <>
-                    <strong>Areas for Improvement:</strong>
-                    <List>
-                      {analysisResult.presentationQuality.improvements.map((improvement, idx) => (
-                        <ListItem key={idx}>{improvement}</ListItem>
-                      ))}
-                    </List>
-                  </>
-                )}
-                <p>{analysisResult.presentationQuality.feedback}</p>
-              </DetailContent>
-            </DetailSection>
+              <DetailSection>
+                <DetailTitle>
+                  Presentation Quality
+                  <ScoreBadge>{analysisResult.presentationQuality.score}/100</ScoreBadge>
+                </DetailTitle>
+                <DetailContent>
+                  <strong>Strengths:</strong>
+                  <List>
+                    {analysisResult.presentationQuality.strengths.map((strength, idx) => (
+                      <ListItem key={idx}>{strength}</ListItem>
+                    ))}
+                  </List>
+                  {analysisResult.presentationQuality.improvements.length > 0 && (
+                    <>
+                      <strong>Areas for Improvement:</strong>
+                      <List>
+                        {analysisResult.presentationQuality.improvements.map((improvement, idx) => (
+                          <ListItem key={idx}>{improvement}</ListItem>
+                        ))}
+                      </List>
+                    </>
+                  )}
+                  <p>{analysisResult.presentationQuality.feedback}</p>
+                </DetailContent>
+              </DetailSection>
 
-            <DetailSection>
-              <DetailTitle>Key Strengths</DetailTitle>
-              <DetailContent>
-                <List>
-                  {analysisResult.strengths.map((strength, idx) => (
-                    <ListItem key={idx}>{strength}</ListItem>
-                  ))}
-                </List>
-              </DetailContent>
-            </DetailSection>
+              <DetailSection>
+                <DetailTitle>Key Strengths</DetailTitle>
+                <DetailContent>
+                  <List>
+                    {analysisResult.strengths.map((strength, idx) => (
+                      <ListItem key={idx}>{strength}</ListItem>
+                    ))}
+                  </List>
+                </DetailContent>
+              </DetailSection>
 
-            <DetailSection>
-              <DetailTitle>Areas for Improvement</DetailTitle>
-              <DetailContent>
-                <List>
-                  {analysisResult.weaknesses.map((weakness, idx) => (
-                    <ListItem key={idx}>{weakness}</ListItem>
-                  ))}
-                </List>
-              </DetailContent>
-            </DetailSection>
+              <DetailSection>
+                <DetailTitle>Areas for Improvement</DetailTitle>
+                <DetailContent>
+                  <List>
+                    {analysisResult.weaknesses.map((weakness, idx) => (
+                      <ListItem key={idx}>{weakness}</ListItem>
+                    ))}
+                  </List>
+                </DetailContent>
+              </DetailSection>
 
-            <DetailSection>
-              <DetailTitle>Recommendations</DetailTitle>
-              <DetailContent>
-                <List>
-                  {analysisResult.recommendations.map((recommendation, idx) => (
-                    <ListItem key={idx}>{recommendation}</ListItem>
-                  ))}
-                </List>
-              </DetailContent>
-            </DetailSection>
+              <DetailSection>
+                <DetailTitle>Recommendations</DetailTitle>
+                <DetailContent>
+                  <List>
+                    {analysisResult.recommendations.map((recommendation, idx) => (
+                      <ListItem key={idx}>{recommendation}</ListItem>
+                    ))}
+                  </List>
+                </DetailContent>
+              </DetailSection>
 
-            <RecommendationBadge type={getRecommendationType(analysisResult.hiringRecommendation)}>
-              <RecommendationText>
-                Hiring Recommendation: {analysisResult.hiringRecommendation.replace(/_/g, ' ')}
-              </RecommendationText>
-            </RecommendationBadge>
+              <RecommendationBadge type={getRecommendationType(analysisResult.hiringRecommendation)}>
+                <RecommendationText>
+                  Hiring Recommendation: {analysisResult.hiringRecommendation.replace(/_/g, ' ')}
+                </RecommendationText>
+              </RecommendationBadge>
 
-            <AddToJobButton onClick={handleAddToJob}>
-              💼 Add to Job Pipeline
-            </AddToJobButton>
+              <AddToJobButton onClick={handleAddToJob}>
+                💼 Add to Job Pipeline
+              </AddToJobButton>
 
-            <NewAnalysisButton onClick={handleNewAnalysis}>
-              Analyze Another Resume
-            </NewAnalysisButton>
-          </ResultsSection>
-        )}
-      </MainCard>
+              <NewAnalysisButton onClick={handleNewAnalysis}>
+                Analyze Another Resume
+              </NewAnalysisButton>
+            </ResultsSection>
+          )}
+        </MainCard>
       </MainContent>
 
       <Modal isOpen={isAddToJobModalOpen}>

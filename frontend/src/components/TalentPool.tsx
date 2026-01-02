@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { Target, BarChart3, MapPin, Wrench, ScrollText, CircleDollarSign, Home, Calendar, Lock, RefreshCw, FileText, TrendingUp, Bell } from 'lucide-react';
 import DemoModal from './DemoModal';
 
 const PageContainer = styled.div`
@@ -16,6 +17,7 @@ const PageContainer = styled.div`
     bottom: 0;
     background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
     z-index: 1;
+    pointer-events: none;
   }
 `;
 
@@ -30,7 +32,9 @@ const ContentWrapper = styled.div`
 const MainTitle = styled.h1`
   font-size: 3.5rem;
   font-weight: 700;
-  color: #e0e0e0;
+  background: linear-gradient(to right, #ffffff, #4ade80);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   margin-bottom: 1.5rem;
   line-height: 1.2;
   text-align: center;
@@ -129,21 +133,47 @@ const FeatureTitle = styled.h3`
 const CTAButton = styled.button`
   background-color: #4ade80;
   border: none;
-  color: white;
+  color: #000000;
   padding: 1rem 2.5rem;
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(26, 90, 58, 0.3);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
   display: block;
   margin: 4rem auto 0;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transition: 0.5s;
+  }
 
   &:hover {
-    background-color: #4ade80;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(26, 90, 58, 0.4);
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+    background-color: #5ce08e;
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -176,7 +206,7 @@ const TalentPool: React.FC = () => {
 
             <FilterGrid>
               <FilterCard>
-                <FilterIcon>🎯</FilterIcon>
+                <FilterIcon><Target size={40} color="#4ade80" /></FilterIcon>
                 <FilterTitle>Smart Tier Segmentation</FilterTitle>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
                   Candidates automatically organized by performance scoring for instant prioritization
@@ -184,7 +214,7 @@ const TalentPool: React.FC = () => {
               </FilterCard>
 
               <FilterCard>
-                <FilterIcon>📊</FilterIcon>
+                <FilterIcon><BarChart3 size={40} color="#4ade80" /></FilterIcon>
                 <FilterTitle>Dynamic Score Analysis</FilterTitle>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
                   Advanced filtering algorithms surface the most qualified candidates first
@@ -192,7 +222,7 @@ const TalentPool: React.FC = () => {
               </FilterCard>
 
               <FilterCard>
-                <FilterIcon>📍</FilterIcon>
+                <FilterIcon><MapPin size={40} color="#4ade80" /></FilterIcon>
                 <FilterTitle>Geographic Intelligence</FilterTitle>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
                   Sophisticated location matching optimizes for commute feasibility and local experience
@@ -200,7 +230,7 @@ const TalentPool: React.FC = () => {
               </FilterCard>
 
               <FilterCard>
-                <FilterIcon>🔧</FilterIcon>
+                <FilterIcon><Wrench size={40} color="#4ade80" /></FilterIcon>
                 <FilterTitle>Experience Profiling</FilterTitle>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
                   AI-powered classification of candidate seniority and skill progression patterns
@@ -208,7 +238,7 @@ const TalentPool: React.FC = () => {
               </FilterCard>
 
               <FilterCard>
-                <FilterIcon>📜</FilterIcon>
+                <FilterIcon><ScrollText size={40} color="#4ade80" /></FilterIcon>
                 <FilterTitle>Credential Verification</FilterTitle>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
                   Automated detection and categorization of industry certifications and licenses
@@ -216,7 +246,7 @@ const TalentPool: React.FC = () => {
               </FilterCard>
 
               <FilterCard>
-                <FilterIcon>💰</FilterIcon>
+                <FilterIcon><CircleDollarSign size={40} color="#4ade80" /></FilterIcon>
                 <FilterTitle>Compensation Alignment</FilterTitle>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
                   Strategic matching of candidate expectations with your budget parameters
@@ -224,7 +254,7 @@ const TalentPool: React.FC = () => {
               </FilterCard>
 
               <FilterCard>
-                <FilterIcon>🏠</FilterIcon>
+                <FilterIcon><Home size={40} color="#4ade80" /></FilterIcon>
                 <FilterTitle>Specialization Mapping</FilterTitle>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
                   Intelligent categorization of HVAC expertise across market segments
@@ -232,7 +262,7 @@ const TalentPool: React.FC = () => {
               </FilterCard>
 
               <FilterCard>
-                <FilterIcon>📅</FilterIcon>
+                <FilterIcon><Calendar size={40} color="#4ade80" /></FilterIcon>
                 <FilterTitle>Availability Tracking</FilterTitle>
                 <p style={{ color: '#e0e0e0', fontSize: '0.875rem' }}>
                   Real-time monitoring of candidate availability status and start date flexibility
@@ -248,7 +278,7 @@ const TalentPool: React.FC = () => {
 
             <FeaturesList>
               <FeatureCard>
-                <FeatureIcon>🔒</FeatureIcon>
+                <FeatureIcon><Lock size={40} color="#4ade80" /></FeatureIcon>
                 <FeatureTitle>Enterprise-Grade Security</FeatureTitle>
                 <p style={{ color: '#e0e0e0', lineHeight: '1.6' }}>
                   Bank-level encryption and access controls ensure your proprietary candidate pipeline remains completely confidential and protected from competitors.
@@ -256,7 +286,7 @@ const TalentPool: React.FC = () => {
               </FeatureCard>
 
               <FeatureCard>
-                <FeatureIcon>🔄</FeatureIcon>
+                <FeatureIcon><RefreshCw size={40} color="#4ade80" /></FeatureIcon>
                 <FeatureTitle>Living Database Intelligence</FeatureTitle>
                 <p style={{ color: '#e0e0e0', lineHeight: '1.6' }}>
                   Advanced data integration continuously enriches candidate profiles with updated qualifications, market movements, and availability signals.
@@ -264,7 +294,7 @@ const TalentPool: React.FC = () => {
               </FeatureCard>
 
               <FeatureCard>
-                <FeatureIcon>📝</FeatureIcon>
+                <FeatureIcon><FileText size={40} color="#4ade80" /></FeatureIcon>
                 <FeatureTitle>Collaborative Workflow Tools</FeatureTitle>
                 <p style={{ color: '#e0e0e0', lineHeight: '1.6' }}>
                   Sophisticated annotation systems enable your team to share insights, track engagement history, and maintain institutional knowledge on each candidate.
@@ -272,7 +302,7 @@ const TalentPool: React.FC = () => {
               </FeatureCard>
 
               <FeatureCard>
-                <FeatureIcon>📈</FeatureIcon>
+                <FeatureIcon><TrendingUp size={40} color="#4ade80" /></FeatureIcon>
                 <FeatureTitle>Predictive Analytics Engine</FeatureTitle>
                 <p style={{ color: '#e0e0e0', lineHeight: '1.6' }}>
                   Machine learning algorithms analyze hiring outcomes to continuously refine candidate quality predictions and optimize your selection criteria.
@@ -280,7 +310,7 @@ const TalentPool: React.FC = () => {
               </FeatureCard>
 
               <FeatureCard>
-                <FeatureIcon>🔔</FeatureIcon>
+                <FeatureIcon><Bell size={40} color="#4ade80" /></FeatureIcon>
                 <FeatureTitle>Proactive Opportunity Alerts</FeatureTitle>
                 <p style={{ color: '#e0e0e0', lineHeight: '1.6' }}>
                   Intelligent monitoring systems identify optimal timing for candidate outreach and signal when your pipeline requires strategic refreshment.
@@ -288,7 +318,7 @@ const TalentPool: React.FC = () => {
               </FeatureCard>
 
               <FeatureCard>
-                <FeatureIcon>📊</FeatureIcon>
+                <FeatureIcon><BarChart3 size={40} color="#4ade80" /></FeatureIcon>
                 <FeatureTitle>Strategic Intelligence Reports</FeatureTitle>
                 <p style={{ color: '#e0e0e0', lineHeight: '1.6' }}>
                   Comprehensive analytics dashboards provide actionable insights into talent market trends, competitive positioning, and pipeline health metrics.

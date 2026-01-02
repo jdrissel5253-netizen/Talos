@@ -8,15 +8,11 @@ const HeroContainer = styled.section`
   display: flex;
   justify-content: center;
   align-items: center;
-  background: #000000;
+  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
   padding: 2rem;
   position: relative;
   overflow: hidden;
 `;
-
-
-
-
 
 const HeroLayout = styled.div`
   display: flex;
@@ -28,8 +24,6 @@ const HeroLayout = styled.div`
   position: relative;
 `;
 
-
-
 const HeroContent = styled.div`
   max-width: 800px;
   text-align: center;
@@ -39,27 +33,29 @@ const HeroContent = styled.div`
 `;
 
 const HeroTitle = styled.h1`
-  font-size: 3.5rem;
-  font-weight: 700;
-  color: #e0e0e0;
+  font-size: 4rem;
+  font-weight: 800;
+  background: linear-gradient(to right, #ffffff, #4ade80);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
   margin-bottom: 2rem;
-  line-height: 1.2;
-  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.1);
+  line-height: 1.1;
+  letter-spacing: -0.02em;
 
   @media (max-width: 768px) {
-    font-size: 2.5rem;
+    font-size: 2.75rem;
   }
 
   @media (max-width: 480px) {
-    font-size: 2rem;
+    font-size: 2.25rem;
   }
 `;
 
 const HeroSubtitle = styled.p`
   font-size: 1.25rem;
-  color: #e0e0e0;
+  color: #a3a3a3;
   margin-bottom: 3rem;
-  line-height: 1.6;
+  line-height: 1.7;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
@@ -72,19 +68,41 @@ const HeroSubtitle = styled.p`
 const CTAButton = styled.button`
   background-color: #4ade80;
   border: none;
-  color: white;
-  padding: 1rem 2.5rem;
+  color: #000000;
+  padding: 1rem 3rem;
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(74, 222, 128, 0.3);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transition: 0.5s;
+  }
 
   &:hover {
-    background-color: #4ade80;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(74, 222, 128, 0.4);
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+    background-color: #5ce08e;
+
+    &::before {
+      left: 100%;
+    }
   }
 
   &:active {

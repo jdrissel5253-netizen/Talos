@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
+import { Check, X, Cpu, BarChart3, BookOpen, RefreshCw, Wrench, LineChart } from 'lucide-react';
 import DemoModal from './DemoModal';
 
 const PageContainer = styled.div`
@@ -114,13 +115,14 @@ const ComparisonCard = styled.div`
 `;
 
 const OldWayCard = styled(ComparisonCard)`
-  background: #ffebee;
-  border: 2px solid #f44336;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid #333;
+  opacity: 0.7;
 `;
 
 const NewWayCard = styled(ComparisonCard)`
-  background: #e8f5e8;
-  border: 2px solid #4ade80;
+  background: rgba(74, 222, 128, 0.05);
+  border: 1px solid #4ade80;
 `;
 
 const ComparisonTitle = styled.h3`
@@ -144,26 +146,19 @@ const ComparisonList = styled.ul`
 `;
 
 const ComparisonItem = styled.li`
-  padding: 0.5rem 0;
+  padding: 0.75rem 0;
   line-height: 1.5;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const OldWayItem = styled(ComparisonItem)`
-  color: #e0e0e0;
-
-  &::before {
-    content: '❌ ';
-    margin-right: 0.5rem;
-  }
+  color: #888;
 `;
 
 const NewWayItem = styled(ComparisonItem)`
   color: #e0e0e0;
-
-  &::before {
-    content: '✅ ';
-    margin-right: 0.5rem;
-  }
 `;
 
 const FeatureGrid = styled.div`
@@ -175,15 +170,25 @@ const FeatureGrid = styled.div`
 
 const FeatureCard = styled.div`
   background: #000000;
-  padding: 2rem;
+  padding: 2.5rem;
   border-radius: 12px;
-  border-left: 4px solid #4ade80;
-  text-align: center;
+  border: 1px solid #333;
+  text-align: left;
+  transition: transform 0.3s ease;
+
+  &:hover {
+    transform: translateY(-5px);
+    border-color: #4ade80;
+  }
 `;
 
 const FeatureIcon = styled.div`
-  font-size: 3rem;
-  margin-bottom: 1rem;
+  color: #4ade80;
+  margin-bottom: 1.5rem;
+  background: rgba(74, 222, 128, 0.1);
+  padding: 1rem;
+  border-radius: 8px;
+  display: inline-flex;
 `;
 
 const FeatureTitle = styled.h3`
@@ -206,19 +211,45 @@ const CTASection = styled.section`
 const CTAButton = styled.button`
   background-color: #4ade80;
   border: none;
-  color: white;
+  color: #000000;
   padding: 1rem 2.5rem;
   font-size: 1.125rem;
-  font-weight: 600;
+  font-weight: 700;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  box-shadow: 0 4px 15px rgba(26, 90, 58, 0.3);
+  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+      90deg,
+      transparent,
+      rgba(255, 255, 255, 0.4),
+      transparent
+    );
+    transition: 0.5s;
+  }
 
   &:hover {
-    background-color: #4ade80;
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(26, 90, 58, 0.4);
+    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
+    background-color: #5ce08e;
+
+    &::before {
+      left: 100%;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
   }
 `;
 
@@ -263,26 +294,26 @@ const WhyTalosDifferent: React.FC = () => {
               <OldWayCard>
                 <OldWayTitle>Generic Recruiting Platforms</OldWayTitle>
                 <ComparisonList>
-                  <OldWayItem>One-size-fits-all approach</OldWayItem>
-                  <OldWayItem>Generic job description templates</OldWayItem>
-                  <OldWayItem>No industry-specific screening</OldWayItem>
-                  <OldWayItem>Manual candidate ranking</OldWayItem>
-                  <OldWayItem>High turnover rates</OldWayItem>
-                  <OldWayItem>Expensive staffing agency fees</OldWayItem>
-                  <OldWayItem>Weeks of sourcing time</OldWayItem>
+                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> One-size-fits-all approach</OldWayItem>
+                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> Generic job description templates</OldWayItem>
+                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> No industry-specific screening</OldWayItem>
+                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> Manual candidate ranking</OldWayItem>
+                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> High turnover rates</OldWayItem>
+                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> Expensive staffing agency fees</OldWayItem>
+                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> Weeks of sourcing time</OldWayItem>
                 </ComparisonList>
               </OldWayCard>
 
               <NewWayCard>
                 <NewWayTitle>Talos HVAC-Specific Platform</NewWayTitle>
                 <ComparisonList>
-                  <NewWayItem>Built exclusively for HVAC</NewWayItem>
-                  <NewWayItem>HVAC-optimized job descriptions</NewWayItem>
-                  <NewWayItem>Industry-specific AI screening</NewWayItem>
-                  <NewWayItem>AI-powered candidate ranking</NewWayItem>
-                  <NewWayItem>Reduced turnover with better matching</NewWayItem>
-                  <NewWayItem>No staffing agency fees</NewWayItem>
-                  <NewWayItem>Top candidates in 3 clicks</NewWayItem>
+                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> Built exclusively for HVAC</NewWayItem>
+                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> HVAC-optimized job descriptions</NewWayItem>
+                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> Industry-specific AI screening</NewWayItem>
+                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> AI-powered candidate ranking</NewWayItem>
+                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> Reduced turnover with better matching</NewWayItem>
+                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> No staffing agency fees</NewWayItem>
+                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> Top candidates in 3 clicks</NewWayItem>
                 </ComparisonList>
               </NewWayCard>
             </ComparisonSection>
@@ -293,7 +324,9 @@ const WhyTalosDifferent: React.FC = () => {
 
             <FeatureGrid>
               <FeatureCard>
-                <FeatureIcon>🎯</FeatureIcon>
+                <FeatureIcon>
+                  <Cpu size={32} />
+                </FeatureIcon>
                 <FeatureTitle>HVAC-Trained AI</FeatureTitle>
                 <FeatureDescription>
                   Our AI has been specifically trained on HVAC roles, understanding the nuances between residential, commercial, and service technicians.
@@ -301,7 +334,9 @@ const WhyTalosDifferent: React.FC = () => {
               </FeatureCard>
 
               <FeatureCard>
-                <FeatureIcon>📊</FeatureIcon>
+                <FeatureIcon>
+                  <BarChart3 size={32} />
+                </FeatureIcon>
                 <FeatureTitle>Industry Benchmarks</FeatureTitle>
                 <FeatureDescription>
                   Candidates are scored against proven benchmarks from top-performing HVAC professionals, not generic criteria.
@@ -309,7 +344,9 @@ const WhyTalosDifferent: React.FC = () => {
               </FeatureCard>
 
               <FeatureCard>
-                <FeatureIcon>🔍</FeatureIcon>
+                <FeatureIcon>
+                  <BookOpen size={32} />
+                </FeatureIcon>
                 <FeatureTitle>Deep Industry Knowledge</FeatureTitle>
                 <FeatureDescription>
                   Understands HVAC certifications, seasonal demands, geographic considerations, and company culture fits.
@@ -317,7 +354,9 @@ const WhyTalosDifferent: React.FC = () => {
               </FeatureCard>
 
               <FeatureCard>
-                <FeatureIcon>⚡</FeatureIcon>
+                <FeatureIcon>
+                  <RefreshCw size={32} />
+                </FeatureIcon>
                 <FeatureTitle>Continuous Learning</FeatureTitle>
                 <FeatureDescription>
                   Our AI constantly learns from successful hires and failed placements to improve matching accuracy.
@@ -325,7 +364,9 @@ const WhyTalosDifferent: React.FC = () => {
               </FeatureCard>
 
               <FeatureCard>
-                <FeatureIcon>🛠️</FeatureIcon>
+                <FeatureIcon>
+                  <Wrench size={32} />
+                </FeatureIcon>
                 <FeatureTitle>Technical Expertise</FeatureTitle>
                 <FeatureDescription>
                   Evaluates candidates based on specific HVAC skills, from basic installation to advanced diagnostics.
@@ -333,7 +374,9 @@ const WhyTalosDifferent: React.FC = () => {
               </FeatureCard>
 
               <FeatureCard>
-                <FeatureIcon>📈</FeatureIcon>
+                <FeatureIcon>
+                  <LineChart size={32} />
+                </FeatureIcon>
                 <FeatureTitle>Predictive Analytics</FeatureTitle>
                 <FeatureDescription>
                   Predicts candidate success and longevity based on historical data from the HVAC industry.

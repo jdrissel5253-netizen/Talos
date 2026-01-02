@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
+
 import { useNavigate } from 'react-router-dom';
+import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText } from 'lucide-react';
 import { config } from '../config';
 import AddJobForm from './AddJobForm';
 import ContactRejectionModal from './ContactRejectionModal';
@@ -630,7 +632,20 @@ const JobsManagement: React.FC = () => {
     const getStars = (rating: number) => {
         const fullStars = Math.floor(rating);
         const halfStar = rating % 1 >= 0.5;
-        return '⭐'.repeat(fullStars) + (halfStar ? '½' : '');
+
+        return (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+                {[...Array(5)].map((_, i) => (
+                    <Star
+                        key={i}
+                        size={16}
+                        fill={i < fullStars ? "#fbbf24" : "none"}
+                        color="#fbbf24"
+                        className={i === fullStars && halfStar ? 'half-star' : ''}
+                    />
+                ))}
+            </div>
+        );
     };
 
     // Group candidates by tier
@@ -653,528 +668,528 @@ const JobsManagement: React.FC = () => {
             )}
 
             <PageContainer>
-            <LeftPanel isCollapsed={isLeftPanelCollapsed}>
-                <CollapseButton onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}>
-                    {isLeftPanelCollapsed ? '▶' : '◀'}
-                </CollapseButton>
+                <LeftPanel isCollapsed={isLeftPanelCollapsed}>
+                    <CollapseButton onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}>
+                        {isLeftPanelCollapsed ? '▶' : '◀'}
+                    </CollapseButton>
 
-                {!isLeftPanelCollapsed && (
-                    <>
-                        <PanelHeader>
-                            <PanelTitle>My Jobs</PanelTitle>
-                            <BackButton onClick={() => navigate('/batch-resume-analysis')}>
-                                ← Back to Resume Evaluator
-                            </BackButton>
-                            <AddJobButton onClick={() => setShowAddJobForm(true)}>
-                                + Add New Job
-                            </AddJobButton>
-                        </PanelHeader>
+                    {!isLeftPanelCollapsed && (
+                        <>
+                            <PanelHeader>
+                                <PanelTitle>My Jobs</PanelTitle>
+                                <BackButton onClick={() => navigate('/batch-resume-analysis')}>
+                                    ← Back to Resume Evaluator
+                                </BackButton>
+                                <AddJobButton onClick={() => setShowAddJobForm(true)}>
+                                    + Add New Job
+                                </AddJobButton>
+                            </PanelHeader>
 
-                        <JobsList>
-                            {jobs.length === 0 ? (
-                                <EmptyState>
-                                    <p>No jobs yet.</p>
-                                    <p>Click "Add New Job" to get started!</p>
-                                </EmptyState>
-                            ) : (
-                                jobs.map(job => (
-                                    <JobCard
-                                        key={job.id}
-                                        isActive={selectedJob?.id === job.id}
-                                        onClick={() => setSelectedJob(job)}
-                                    >
-                                        <JobTitle>{job.title}</JobTitle>
-                                        <JobMeta>
-                                            <span>📍 {job.location}</span>
-                                            <span>💼 {job.required_years_experience}+ years</span>
-                                            {job.vehicle_required && <span>🚗 Vehicle Required</span>}
-                                        </JobMeta>
-                                    </JobCard>
-                                ))
-                            )}
-                        </JobsList>
-                    </>
-                )}
-            </LeftPanel>
-
-            <MainContent>
-                {selectedJob ? (
-                    <>
-                        <ContentHeader>
-                            <ContentTitle>{selectedJob.title}</ContentTitle>
-                            <ContentSubtitle>Candidate Pipeline</ContentSubtitle>
-                        </ContentHeader>
-
-                        <JobDetailsCard>
-                            <h3 style={{ color: '#4ade80', marginBottom: '1rem' }}>Job Details</h3>
-                            <DetailRow>
-                                <DetailLabel>Location:</DetailLabel>
-                                <DetailValue>{selectedJob.location}</DetailValue>
-                            </DetailRow>
-                            <DetailRow>
-                                <DetailLabel>Required Experience:</DetailLabel>
-                                <DetailValue>{selectedJob.required_years_experience}+ years</DetailValue>
-                            </DetailRow>
-                            <DetailRow>
-                                <DetailLabel>Vehicle Required:</DetailLabel>
-                                <DetailValue>{selectedJob.vehicle_required ? 'Yes' : 'No'}</DetailValue>
-                            </DetailRow>
-                            {selectedJob.description && (
-                                <DetailRow>
-                                    <DetailLabel>Description:</DetailLabel>
-                                    <DetailValue>{selectedJob.description}</DetailValue>
-                                </DetailRow>
-                            )}
-                        </JobDetailsCard>
-
-                        <PipelineTabs>
-                            <Tab isActive={activeTab === 'all'} onClick={() => setActiveTab('all')}>
-                                All ({candidates.length})
-                            </Tab>
-                            <Tab isActive={activeTab === 'approved'} onClick={() => setActiveTab('approved')}>
-                                Approved
-                            </Tab>
-                            <Tab isActive={activeTab === 'contacted'} onClick={() => setActiveTab('contacted')}>
-                                Contacted
-                            </Tab>
-                            <Tab isActive={activeTab === 'backup'} onClick={() => setActiveTab('backup')}>
-                                Backups
-                            </Tab>
-                            <Tab isActive={activeTab === 'rejected'} onClick={() => setActiveTab('rejected')}>
-                                Rejected
-                            </Tab>
-                        </PipelineTabs>
-
-                        <FilterSortBar>
-                            <span style={{ color: '#e0e0e0', fontWeight: 600 }}>Filter & Sort:</span>
-                            <Select value={filterTier} onChange={(e) => setFilterTier(e.target.value)}>
-                                <option value="all">All Tiers</option>
-                                <option value="green">🟢 Green Tier</option>
-                                <option value="yellow">🟡 Yellow Tier</option>
-                                <option value="red">🔴 Red Tier</option>
-                            </Select>
-                            <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                                <option value="tier_score">Sort by Score</option>
-                                <option value="years_of_experience">Sort by Experience</option>
-                                <option value="star_rating">Sort by Star Rating</option>
-                            </Select>
-                        </FilterSortBar>
-
-                        {selectedCandidates.size > 0 && (
-                            <BulkActionsBar>
-                                <span style={{ color: '#e0e0e0' }}>
-                                    {selectedCandidates.size} selected
-                                </span>
-                                <BulkActionButton onClick={() => handleBulkAction('approved')}>
-                                    ✓ Approve All
-                                </BulkActionButton>
-                                <BulkActionButton onClick={() => handleBulkAction('backup')}>
-                                    👍 Move to Backup
-                                </BulkActionButton>
-                                <BulkActionButton onClick={() => handleBulkAction('rejected')}>
-                                    ✗ Reject All
-                                </BulkActionButton>
-                            </BulkActionsBar>
-                        )}
-
-                        <CandidatesGrid>
-                            {activeTab === 'all' ? (
-                                <>
-                                    {candidatesByTier.green.length > 0 && (
-                                        <TierSection>
-                                            <TierHeader tier="green">
-                                                <span>🟢 GREEN TIER (80-100 points)</span>
-                                                <span>{candidatesByTier.green.length} candidates</span>
-                                            </TierHeader>
-                                            {candidatesByTier.green.map(candidate => (
-                                                <CandidateCard
-                                                    key={candidate.id}
-                                                    isSelected={selectedCandidates.has(candidate.id)}
-                                                >
-                                                    <CandidateHeader>
-                                                        <CandidateInfo>
-                                                            <CandidateName>
-                                                                <Checkbox
-                                                                    type="checkbox"
-                                                                    checked={selectedCandidates.has(candidate.id)}
-                                                                    onChange={() => toggleCandidateSelection(candidate.id)}
-                                                                />
-                                                                {candidate.filename?.replace('.pdf', '') || 'Unknown'}
-                                                                <StarRating>{getStars(candidate.star_rating)}</StarRating>
-                                                                {candidate.give_them_a_chance && (
-                                                                    <Badge>Give Them a Chance</Badge>
-                                                                )}
-                                                            </CandidateName>
-                                                        </CandidateInfo>
-                                                        <Score tier={candidate.tier}>{candidate.tier_score}</Score>
-                                                    </CandidateHeader>
-
-                                                    <Summary>{candidate.ai_summary}</Summary>
-
-                                                    <MetaRow>
-                                                        <span>📅 {candidate.years_of_experience} years exp</span>
-                                                        <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
-                                                        <span>📜 {candidate.certifications_found?.length || 0} certs</span>
-                                                    </MetaRow>
-
-                                                    <ActionButtons style={{ marginTop: '1rem' }}>
-                                                        <ActionIcon
-                                                            color="#4ade80"
-                                                            onClick={() => handleCandidateAction(candidate.id, 'approved')}
-                                                            title="Approve"
-                                                        >
-                                                            ✓
-                                                        </ActionIcon>
-
-                                                        <MessageDropdown>
-                                                            <ActionIcon
-                                                                color="#3b82f6"
-                                                                onClick={() => setMessageDropdownOpen(
-                                                                    messageDropdownOpen === candidate.id ? null : candidate.id
-                                                                )}
-                                                                title="Send Message"
-                                                            >
-                                                                ✉
-                                                            </ActionIcon>
-                                                            <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
-                                                                <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
-                                                                    📱 SMS
-                                                                </DropdownItem>
-                                                                <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
-                                                                    📧 Email
-                                                                </DropdownItem>
-                                                                <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
-                                                                    ✗ Rejection
-                                                                </DropdownItem>
-                                                            </DropdownContent>
-                                                        </MessageDropdown>
-
-                                                        <ActionIcon
-                                                            color="#fbbf24"
-                                                            onClick={() => handleCandidateAction(candidate.id, 'backup')}
-                                                            title="Move to Backup"
-                                                        >
-                                                            👍
-                                                        </ActionIcon>
-
-                                                        <ActionIcon
-                                                            color="#ef4444"
-                                                            onClick={() => handleCandidateAction(candidate.id, 'rejected')}
-                                                            title="Reject"
-                                                        >
-                                                            ✗
-                                                        </ActionIcon>
-                                                    </ActionButtons>
-                                                </CandidateCard>
-                                            ))}
-                                        </TierSection>
-                                    )}
-
-                                    {candidatesByTier.yellow.length > 0 && (
-                                        <TierSection>
-                                            <TierHeader tier="yellow">
-                                                <span>🟡 YELLOW TIER (50-79 points)</span>
-                                                <span>{candidatesByTier.yellow.length} candidates</span>
-                                            </TierHeader>
-                                            {/* Similar candidate card rendering for yellow tier */}
-                                            {candidatesByTier.yellow.map(candidate => (
-                                                <CandidateCard
-                                                    key={candidate.id}
-                                                    isSelected={selectedCandidates.has(candidate.id)}
-                                                >
-                                                    {/* Same structure as green tier */}
-                                                    <CandidateHeader>
-                                                        <CandidateInfo>
-                                                            <CandidateName>
-                                                                <Checkbox
-                                                                    type="checkbox"
-                                                                    checked={selectedCandidates.has(candidate.id)}
-                                                                    onChange={() => toggleCandidateSelection(candidate.id)}
-                                                                />
-                                                                {candidate.filename?.replace('.pdf', '') || 'Unknown'}
-                                                                <StarRating>{getStars(candidate.star_rating)}</StarRating>
-                                                                {candidate.give_them_a_chance && (
-                                                                    <Badge>Give Them a Chance</Badge>
-                                                                )}
-                                                            </CandidateName>
-                                                        </CandidateInfo>
-                                                        <Score tier={candidate.tier}>{candidate.tier_score}</Score>
-                                                    </CandidateHeader>
-
-                                                    <Summary>{candidate.ai_summary}</Summary>
-
-                                                    <MetaRow>
-                                                        <span>📅 {candidate.years_of_experience} years exp</span>
-                                                        <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
-                                                        <span>📜 {candidate.certifications_found?.length || 0} certs</span>
-                                                    </MetaRow>
-
-                                                    <ActionButtons style={{ marginTop: '1rem' }}>
-                                                        <ActionIcon
-                                                            color="#4ade80"
-                                                            onClick={() => handleCandidateAction(candidate.id, 'approved')}
-                                                            title="Approve"
-                                                        >
-                                                            ✓
-                                                        </ActionIcon>
-
-                                                        <MessageDropdown>
-                                                            <ActionIcon
-                                                                color="#3b82f6"
-                                                                onClick={() => setMessageDropdownOpen(
-                                                                    messageDropdownOpen === candidate.id ? null : candidate.id
-                                                                )}
-                                                                title="Send Message"
-                                                            >
-                                                                ✉
-                                                            </ActionIcon>
-                                                            <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
-                                                                <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
-                                                                    📱 SMS
-                                                                </DropdownItem>
-                                                                <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
-                                                                    📧 Email
-                                                                </DropdownItem>
-                                                                <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
-                                                                    ✗ Rejection
-                                                                </DropdownItem>
-                                                            </DropdownContent>
-                                                        </MessageDropdown>
-
-                                                        <ActionIcon
-                                                            color="#fbbf24"
-                                                            onClick={() => handleCandidateAction(candidate.id, 'backup')}
-                                                            title="Move to Backup"
-                                                        >
-                                                            👍
-                                                        </ActionIcon>
-
-                                                        <ActionIcon
-                                                            color="#ef4444"
-                                                            onClick={() => handleCandidateAction(candidate.id, 'rejected')}
-                                                            title="Reject"
-                                                        >
-                                                            ✗
-                                                        </ActionIcon>
-                                                    </ActionButtons>
-                                                </CandidateCard>
-                                            ))}
-                                        </TierSection>
-                                    )}
-
-                                    {candidatesByTier.red.length > 0 && (
-                                        <TierSection>
-                                            <TierHeader tier="red">
-                                                <span>🔴 RED TIER (0-49 points)</span>
-                                                <span>{candidatesByTier.red.length} candidates</span>
-                                            </TierHeader>
-                                            {/* Similar candidate card rendering for red tier */}
-                                            {candidatesByTier.red.map(candidate => (
-                                                <CandidateCard
-                                                    key={candidate.id}
-                                                    isSelected={selectedCandidates.has(candidate.id)}
-                                                >
-                                                    {/* Same structure as green tier */}
-                                                    <CandidateHeader>
-                                                        <CandidateInfo>
-                                                            <CandidateName>
-                                                                <Checkbox
-                                                                    type="checkbox"
-                                                                    checked={selectedCandidates.has(candidate.id)}
-                                                                    onChange={() => toggleCandidateSelection(candidate.id)}
-                                                                />
-                                                                {candidate.filename?.replace('.pdf', '') || 'Unknown'}
-                                                                <StarRating>{getStars(candidate.star_rating)}</StarRating>
-                                                            </CandidateName>
-                                                        </CandidateInfo>
-                                                        <Score tier={candidate.tier}>{candidate.tier_score}</Score>
-                                                    </CandidateHeader>
-
-                                                    <Summary>{candidate.ai_summary}</Summary>
-
-                                                    <MetaRow>
-                                                        <span>📅 {candidate.years_of_experience} years exp</span>
-                                                        <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
-                                                        <span>📜 {candidate.certifications_found?.length || 0} certs</span>
-                                                    </MetaRow>
-
-                                                    <ActionButtons style={{ marginTop: '1rem' }}>
-                                                        <ActionIcon
-                                                            color="#4ade80"
-                                                            onClick={() => handleCandidateAction(candidate.id, 'approved')}
-                                                            title="Approve"
-                                                        >
-                                                            ✓
-                                                        </ActionIcon>
-
-                                                        <MessageDropdown>
-                                                            <ActionIcon
-                                                                color="#3b82f6"
-                                                                onClick={() => setMessageDropdownOpen(
-                                                                    messageDropdownOpen === candidate.id ? null : candidate.id
-                                                                )}
-                                                                title="Send Message"
-                                                            >
-                                                                ✉
-                                                            </ActionIcon>
-                                                            <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
-                                                                <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
-                                                                    📱 SMS
-                                                                </DropdownItem>
-                                                                <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
-                                                                    📧 Email
-                                                                </DropdownItem>
-                                                                <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
-                                                                    ✗ Rejection
-                                                                </DropdownItem>
-                                                            </DropdownContent>
-                                                        </MessageDropdown>
-
-                                                        <ActionIcon
-                                                            color="#fbbf24"
-                                                            onClick={() => handleCandidateAction(candidate.id, 'backup')}
-                                                            title="Move to Backup"
-                                                        >
-                                                            👍
-                                                        </ActionIcon>
-
-                                                        <ActionIcon
-                                                            color="#ef4444"
-                                                            onClick={() => handleCandidateAction(candidate.id, 'rejected')}
-                                                            title="Reject"
-                                                        >
-                                                            ✗
-                                                        </ActionIcon>
-                                                    </ActionButtons>
-                                                </CandidateCard>
-                                            ))}
-                                        </TierSection>
-                                    )}
-
-                                    {candidates.length === 0 && (
-                                        <EmptyState>
-                                            <h3>No candidates yet</h3>
-                                            <p>Upload resumes to start building your candidate pipeline!</p>
-                                        </EmptyState>
-                                    )}
-                                </>
-                            ) : (
-                                // Simplified view for other tabs (approved, contacted, etc.)
-                                <>
-                                    {candidates.map(candidate => (
-                                        <CandidateCard
-                                            key={candidate.id}
-                                            isSelected={selectedCandidates.has(candidate.id)}
+                            <JobsList>
+                                {jobs.length === 0 ? (
+                                    <EmptyState>
+                                        <p>No jobs yet.</p>
+                                        <p>Click "Add New Job" to get started!</p>
+                                    </EmptyState>
+                                ) : (
+                                    jobs.map(job => (
+                                        <JobCard
+                                            key={job.id}
+                                            isActive={selectedJob?.id === job.id}
+                                            onClick={() => setSelectedJob(job)}
                                         >
-                                            <CandidateHeader>
-                                                <CandidateInfo>
-                                                    <CandidateName>
-                                                        <Checkbox
-                                                            type="checkbox"
-                                                            checked={selectedCandidates.has(candidate.id)}
-                                                            onChange={() => toggleCandidateSelection(candidate.id)}
-                                                        />
-                                                        {candidate.filename?.replace('.pdf', '') || 'Unknown'}
-                                                        <StarRating>{getStars(candidate.star_rating)}</StarRating>
-                                                        {candidate.give_them_a_chance && (
-                                                            <Badge>Give Them a Chance</Badge>
-                                                        )}
-                                                    </CandidateName>
-                                                </CandidateInfo>
-                                                <Score tier={candidate.tier}>{candidate.tier_score}</Score>
-                                            </CandidateHeader>
+                                            <JobTitle>{job.title}</JobTitle>
+                                            <JobMeta>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {job.location}</span>
+                                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Briefcase size={14} /> {job.required_years_experience}+ years</span>
+                                                {job.vehicle_required && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Car size={14} /> Vehicle Required</span>}
+                                            </JobMeta>
+                                        </JobCard>
+                                    ))
+                                )}
+                            </JobsList>
+                        </>
+                    )}
+                </LeftPanel>
 
-                                            <Summary>{candidate.ai_summary}</Summary>
+                <MainContent>
+                    {selectedJob ? (
+                        <>
+                            <ContentHeader>
+                                <ContentTitle>{selectedJob.title}</ContentTitle>
+                                <ContentSubtitle>Candidate Pipeline</ContentSubtitle>
+                            </ContentHeader>
 
-                                            <MetaRow>
-                                                <span>📅 {candidate.years_of_experience} years exp</span>
-                                                <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
-                                                <span>📜 {candidate.certifications_found?.length || 0} certs</span>
-                                            </MetaRow>
+                            <JobDetailsCard>
+                                <h3 style={{ color: '#4ade80', marginBottom: '1rem' }}>Job Details</h3>
+                                <DetailRow>
+                                    <DetailLabel>Location:</DetailLabel>
+                                    <DetailValue>{selectedJob.location}</DetailValue>
+                                </DetailRow>
+                                <DetailRow>
+                                    <DetailLabel>Required Experience:</DetailLabel>
+                                    <DetailValue>{selectedJob.required_years_experience}+ years</DetailValue>
+                                </DetailRow>
+                                <DetailRow>
+                                    <DetailLabel>Vehicle Required:</DetailLabel>
+                                    <DetailValue>{selectedJob.vehicle_required ? 'Yes' : 'No'}</DetailValue>
+                                </DetailRow>
+                                {selectedJob.description && (
+                                    <DetailRow>
+                                        <DetailLabel>Description:</DetailLabel>
+                                        <DetailValue>{selectedJob.description}</DetailValue>
+                                    </DetailRow>
+                                )}
+                            </JobDetailsCard>
 
-                                            <ActionButtons style={{ marginTop: '1rem' }}>
-                                                <ActionIcon
-                                                    color="#4ade80"
-                                                    onClick={() => handleCandidateAction(candidate.id, 'approved')}
-                                                    title="Approve"
-                                                >
-                                                    ✓
-                                                </ActionIcon>
+                            <PipelineTabs>
+                                <Tab isActive={activeTab === 'all'} onClick={() => setActiveTab('all')}>
+                                    All ({candidates.length})
+                                </Tab>
+                                <Tab isActive={activeTab === 'approved'} onClick={() => setActiveTab('approved')}>
+                                    Approved
+                                </Tab>
+                                <Tab isActive={activeTab === 'contacted'} onClick={() => setActiveTab('contacted')}>
+                                    Contacted
+                                </Tab>
+                                <Tab isActive={activeTab === 'backup'} onClick={() => setActiveTab('backup')}>
+                                    Backups
+                                </Tab>
+                                <Tab isActive={activeTab === 'rejected'} onClick={() => setActiveTab('rejected')}>
+                                    Rejected
+                                </Tab>
+                            </PipelineTabs>
 
-                                                <MessageDropdown>
-                                                    <ActionIcon
-                                                        color="#3b82f6"
-                                                        onClick={() => setMessageDropdownOpen(
-                                                            messageDropdownOpen === candidate.id ? null : candidate.id
-                                                        )}
-                                                        title="Send Message"
-                                                    >
-                                                        ✉
-                                                    </ActionIcon>
-                                                    <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
-                                                        <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
-                                                            📱 SMS
-                                                        </DropdownItem>
-                                                        <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
-                                                            📧 Email
-                                                        </DropdownItem>
-                                                        <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
-                                                            ✗ Rejection
-                                                        </DropdownItem>
-                                                    </DropdownContent>
-                                                </MessageDropdown>
+                            <FilterSortBar>
+                                <span style={{ color: '#e0e0e0', fontWeight: 600 }}>Filter & Sort:</span>
+                                <Select value={filterTier} onChange={(e) => setFilterTier(e.target.value)}>
+                                    <option value="all">All Tiers</option>
+                                    <option value="green">Green Tier</option>
+                                    <option value="yellow">Yellow Tier</option>
+                                    <option value="red">Red Tier</option>
+                                </Select>
+                                <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
+                                    <option value="tier_score">Sort by Score</option>
+                                    <option value="years_of_experience">Sort by Experience</option>
+                                    <option value="star_rating">Sort by Star Rating</option>
+                                </Select>
+                            </FilterSortBar>
 
-                                                <ActionIcon
-                                                    color="#fbbf24"
-                                                    onClick={() => handleCandidateAction(candidate.id, 'backup')}
-                                                    title="Move to Backup"
-                                                >
-                                                    👍
-                                                </ActionIcon>
-
-                                                <ActionIcon
-                                                    color="#ef4444"
-                                                    onClick={() => handleCandidateAction(candidate.id, 'rejected')}
-                                                    title="Reject"
-                                                >
-                                                    ✗
-                                                </ActionIcon>
-                                            </ActionButtons>
-                                        </CandidateCard>
-                                    ))}
-
-                                    {candidates.length === 0 && (
-                                        <EmptyState>
-                                            <h3>No candidates in this category</h3>
-                                        </EmptyState>
-                                    )}
-                                </>
+                            {selectedCandidates.size > 0 && (
+                                <BulkActionsBar>
+                                    <span style={{ color: '#e0e0e0' }}>
+                                        {selectedCandidates.size} selected
+                                    </span>
+                                    <BulkActionButton onClick={() => handleBulkAction('approved')}>
+                                        <Check size={16} style={{ marginRight: '8px' }} /> Approve All
+                                    </BulkActionButton>
+                                    <BulkActionButton onClick={() => handleBulkAction('backup')}>
+                                        <ThumbsUp size={16} style={{ marginRight: '8px' }} /> Move to Backup
+                                    </BulkActionButton>
+                                    <BulkActionButton onClick={() => handleBulkAction('rejected')}>
+                                        <X size={16} style={{ marginRight: '8px' }} /> Reject All
+                                    </BulkActionButton>
+                                </BulkActionsBar>
                             )}
-                        </CandidatesGrid>
-                    </>
-                ) : (
-                    <EmptyState>
-                        <h2>Welcome to Jobs Management</h2>
-                        <p>Create a job to start managing your candidate pipeline!</p>
-                    </EmptyState>
-                )}
-            </MainContent>
-        </PageContainer>
 
-        {/* Contact/Rejection Modal */}
-        {selectedCandidateForContact && (
-            <ContactRejectionModal
-                isOpen={contactModalOpen}
-                onClose={() => {
-                    setContactModalOpen(false);
-                    setSelectedCandidateForContact(null);
-                }}
-                candidate={selectedCandidateForContact}
-                initialMode={contactMode}
-                initialCommunicationType={contactCommunicationType}
-                onSuccess={handleContactSuccess}
-            />
-        )}
+                            <CandidatesGrid>
+                                {activeTab === 'all' ? (
+                                    <>
+                                        {candidatesByTier.green.length > 0 && (
+                                            <TierSection>
+                                                <TierHeader tier="green">
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={20} /> GREEN TIER (80-100 points)</span>
+                                                    <span>{candidatesByTier.green.length} candidates</span>
+                                                </TierHeader>
+                                                {candidatesByTier.green.map(candidate => (
+                                                    <CandidateCard
+                                                        key={candidate.id}
+                                                        isSelected={selectedCandidates.has(candidate.id)}
+                                                    >
+                                                        <CandidateHeader>
+                                                            <CandidateInfo>
+                                                                <CandidateName>
+                                                                    <Checkbox
+                                                                        type="checkbox"
+                                                                        checked={selectedCandidates.has(candidate.id)}
+                                                                        onChange={() => toggleCandidateSelection(candidate.id)}
+                                                                    />
+                                                                    {candidate.filename?.replace('.pdf', '') || 'Unknown'}
+                                                                    <StarRating>{getStars(candidate.star_rating)}</StarRating>
+                                                                    {candidate.give_them_a_chance && (
+                                                                        <Badge>Give Them a Chance</Badge>
+                                                                    )}
+                                                                </CandidateName>
+                                                            </CandidateInfo>
+                                                            <Score tier={candidate.tier}>{candidate.tier_score}</Score>
+                                                        </CandidateHeader>
+
+                                                        <Summary>{candidate.ai_summary}</Summary>
+
+                                                        <MetaRow>
+                                                            <span>📅 {candidate.years_of_experience} years exp</span>
+                                                            <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
+                                                            <span>📜 {candidate.certifications_found?.length || 0} certs</span>
+                                                        </MetaRow>
+
+                                                        <ActionButtons style={{ marginTop: '1rem' }}>
+                                                            <ActionIcon
+                                                                color="#4ade80"
+                                                                onClick={() => handleCandidateAction(candidate.id, 'approved')}
+                                                                title="Approve"
+                                                            >
+                                                                ✓
+                                                            </ActionIcon>
+
+                                                            <MessageDropdown>
+                                                                <ActionIcon
+                                                                    color="#3b82f6"
+                                                                    onClick={() => setMessageDropdownOpen(
+                                                                        messageDropdownOpen === candidate.id ? null : candidate.id
+                                                                    )}
+                                                                    title="Send Message"
+                                                                >
+                                                                    ✉
+                                                                </ActionIcon>
+                                                                <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
+                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
+                                                                        📱 SMS
+                                                                    </DropdownItem>
+                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
+                                                                        📧 Email
+                                                                    </DropdownItem>
+                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
+                                                                        ✗ Rejection
+                                                                    </DropdownItem>
+                                                                </DropdownContent>
+                                                            </MessageDropdown>
+
+                                                            <ActionIcon
+                                                                color="#fbbf24"
+                                                                onClick={() => handleCandidateAction(candidate.id, 'backup')}
+                                                                title="Move to Backup"
+                                                            >
+                                                                👍
+                                                            </ActionIcon>
+
+                                                            <ActionIcon
+                                                                color="#ef4444"
+                                                                onClick={() => handleCandidateAction(candidate.id, 'rejected')}
+                                                                title="Reject"
+                                                            >
+                                                                ✗
+                                                            </ActionIcon>
+                                                        </ActionButtons>
+                                                    </CandidateCard>
+                                                ))}
+                                            </TierSection>
+                                        )}
+
+                                        {candidatesByTier.yellow.length > 0 && (
+                                            <TierSection>
+                                                <TierHeader tier="yellow">
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><AlertCircle size={20} /> YELLOW TIER (50-79 points)</span>
+                                                    <span>{candidatesByTier.yellow.length} candidates</span>
+                                                </TierHeader>
+                                                {/* Similar candidate card rendering for yellow tier */}
+                                                {candidatesByTier.yellow.map(candidate => (
+                                                    <CandidateCard
+                                                        key={candidate.id}
+                                                        isSelected={selectedCandidates.has(candidate.id)}
+                                                    >
+                                                        {/* Same structure as green tier */}
+                                                        <CandidateHeader>
+                                                            <CandidateInfo>
+                                                                <CandidateName>
+                                                                    <Checkbox
+                                                                        type="checkbox"
+                                                                        checked={selectedCandidates.has(candidate.id)}
+                                                                        onChange={() => toggleCandidateSelection(candidate.id)}
+                                                                    />
+                                                                    {candidate.filename?.replace('.pdf', '') || 'Unknown'}
+                                                                    <StarRating>{getStars(candidate.star_rating)}</StarRating>
+                                                                    {candidate.give_them_a_chance && (
+                                                                        <Badge>Give Them a Chance</Badge>
+                                                                    )}
+                                                                </CandidateName>
+                                                            </CandidateInfo>
+                                                            <Score tier={candidate.tier}>{candidate.tier_score}</Score>
+                                                        </CandidateHeader>
+
+                                                        <Summary>{candidate.ai_summary}</Summary>
+
+                                                        <MetaRow>
+                                                            <span>📅 {candidate.years_of_experience} years exp</span>
+                                                            <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
+                                                            <span>📜 {candidate.certifications_found?.length || 0} certs</span>
+                                                        </MetaRow>
+
+                                                        <ActionButtons style={{ marginTop: '1rem' }}>
+                                                            <ActionIcon
+                                                                color="#4ade80"
+                                                                onClick={() => handleCandidateAction(candidate.id, 'approved')}
+                                                                title="Approve"
+                                                            >
+                                                                ✓
+                                                            </ActionIcon>
+
+                                                            <MessageDropdown>
+                                                                <ActionIcon
+                                                                    color="#3b82f6"
+                                                                    onClick={() => setMessageDropdownOpen(
+                                                                        messageDropdownOpen === candidate.id ? null : candidate.id
+                                                                    )}
+                                                                    title="Send Message"
+                                                                >
+                                                                    ✉
+                                                                </ActionIcon>
+                                                                <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
+                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
+                                                                        📱 SMS
+                                                                    </DropdownItem>
+                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
+                                                                        📧 Email
+                                                                    </DropdownItem>
+                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
+                                                                        ✗ Rejection
+                                                                    </DropdownItem>
+                                                                </DropdownContent>
+                                                            </MessageDropdown>
+
+                                                            <ActionIcon
+                                                                color="#fbbf24"
+                                                                onClick={() => handleCandidateAction(candidate.id, 'backup')}
+                                                                title="Move to Backup"
+                                                            >
+                                                                👍
+                                                            </ActionIcon>
+
+                                                            <ActionIcon
+                                                                color="#ef4444"
+                                                                onClick={() => handleCandidateAction(candidate.id, 'rejected')}
+                                                                title="Reject"
+                                                            >
+                                                                ✗
+                                                            </ActionIcon>
+                                                        </ActionButtons>
+                                                    </CandidateCard>
+                                                ))}
+                                            </TierSection>
+                                        )}
+
+                                        {candidatesByTier.red.length > 0 && (
+                                            <TierSection>
+                                                <TierHeader tier="red">
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><XCircle size={20} /> RED TIER (0-49 points)</span>
+                                                    <span>{candidatesByTier.red.length} candidates</span>
+                                                </TierHeader>
+                                                {/* Similar candidate card rendering for red tier */}
+                                                {candidatesByTier.red.map(candidate => (
+                                                    <CandidateCard
+                                                        key={candidate.id}
+                                                        isSelected={selectedCandidates.has(candidate.id)}
+                                                    >
+                                                        {/* Same structure as green tier */}
+                                                        <CandidateHeader>
+                                                            <CandidateInfo>
+                                                                <CandidateName>
+                                                                    <Checkbox
+                                                                        type="checkbox"
+                                                                        checked={selectedCandidates.has(candidate.id)}
+                                                                        onChange={() => toggleCandidateSelection(candidate.id)}
+                                                                    />
+                                                                    {candidate.filename?.replace('.pdf', '') || 'Unknown'}
+                                                                    <StarRating>{getStars(candidate.star_rating)}</StarRating>
+                                                                </CandidateName>
+                                                            </CandidateInfo>
+                                                            <Score tier={candidate.tier}>{candidate.tier_score}</Score>
+                                                        </CandidateHeader>
+
+                                                        <Summary>{candidate.ai_summary}</Summary>
+
+                                                        <MetaRow>
+                                                            <span>📅 {candidate.years_of_experience} years exp</span>
+                                                            <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
+                                                            <span>📜 {candidate.certifications_found?.length || 0} certs</span>
+                                                        </MetaRow>
+
+                                                        <ActionButtons style={{ marginTop: '1rem' }}>
+                                                            <ActionIcon
+                                                                color="#4ade80"
+                                                                onClick={() => handleCandidateAction(candidate.id, 'approved')}
+                                                                title="Approve"
+                                                            >
+                                                                ✓
+                                                            </ActionIcon>
+
+                                                            <MessageDropdown>
+                                                                <ActionIcon
+                                                                    color="#3b82f6"
+                                                                    onClick={() => setMessageDropdownOpen(
+                                                                        messageDropdownOpen === candidate.id ? null : candidate.id
+                                                                    )}
+                                                                    title="Send Message"
+                                                                >
+                                                                    ✉
+                                                                </ActionIcon>
+                                                                <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
+                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
+                                                                        📱 SMS
+                                                                    </DropdownItem>
+                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
+                                                                        📧 Email
+                                                                    </DropdownItem>
+                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
+                                                                        ✗ Rejection
+                                                                    </DropdownItem>
+                                                                </DropdownContent>
+                                                            </MessageDropdown>
+
+                                                            <ActionIcon
+                                                                color="#fbbf24"
+                                                                onClick={() => handleCandidateAction(candidate.id, 'backup')}
+                                                                title="Move to Backup"
+                                                            >
+                                                                👍
+                                                            </ActionIcon>
+
+                                                            <ActionIcon
+                                                                color="#ef4444"
+                                                                onClick={() => handleCandidateAction(candidate.id, 'rejected')}
+                                                                title="Reject"
+                                                            >
+                                                                ✗
+                                                            </ActionIcon>
+                                                        </ActionButtons>
+                                                    </CandidateCard>
+                                                ))}
+                                            </TierSection>
+                                        )}
+
+                                        {candidates.length === 0 && (
+                                            <EmptyState>
+                                                <h3>No candidates yet</h3>
+                                                <p>Upload resumes to start building your candidate pipeline!</p>
+                                            </EmptyState>
+                                        )}
+                                    </>
+                                ) : (
+                                    // Simplified view for other tabs (approved, contacted, etc.)
+                                    <>
+                                        {candidates.map(candidate => (
+                                            <CandidateCard
+                                                key={candidate.id}
+                                                isSelected={selectedCandidates.has(candidate.id)}
+                                            >
+                                                <CandidateHeader>
+                                                    <CandidateInfo>
+                                                        <CandidateName>
+                                                            <Checkbox
+                                                                type="checkbox"
+                                                                checked={selectedCandidates.has(candidate.id)}
+                                                                onChange={() => toggleCandidateSelection(candidate.id)}
+                                                            />
+                                                            {candidate.filename?.replace('.pdf', '') || 'Unknown'}
+                                                            <StarRating>{getStars(candidate.star_rating)}</StarRating>
+                                                            {candidate.give_them_a_chance && (
+                                                                <Badge>Give Them a Chance</Badge>
+                                                            )}
+                                                        </CandidateName>
+                                                    </CandidateInfo>
+                                                    <Score tier={candidate.tier}>{candidate.tier_score}</Score>
+                                                </CandidateHeader>
+
+                                                <Summary>{candidate.ai_summary}</Summary>
+
+                                                <MetaRow>
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {candidate.years_of_experience} years exp</span>
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Car size={14} /> {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><FileText size={14} /> {candidate.certifications_found?.length || 0} certs</span>
+                                                </MetaRow>
+
+                                                <ActionButtons style={{ marginTop: '1rem' }}>
+                                                    <ActionIcon
+                                                        color="#4ade80"
+                                                        onClick={() => handleCandidateAction(candidate.id, 'approved')}
+                                                        title="Approve"
+                                                    >
+                                                        <Check size={16} />
+                                                    </ActionIcon>
+
+                                                    <MessageDropdown>
+                                                        <ActionIcon
+                                                            color="#3b82f6"
+                                                            onClick={() => setMessageDropdownOpen(
+                                                                messageDropdownOpen === candidate.id ? null : candidate.id
+                                                            )}
+                                                            title="Send Message"
+                                                        >
+                                                            <Mail size={16} />
+                                                        </ActionIcon>
+                                                        <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
+                                                            <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
+                                                                <Smartphone size={14} style={{ marginRight: '8px' }} /> SMS
+                                                            </DropdownItem>
+                                                            <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
+                                                                <Mail size={14} style={{ marginRight: '8px' }} /> Email
+                                                            </DropdownItem>
+                                                            <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
+                                                                <X size={14} style={{ marginRight: '8px' }} /> Rejection
+                                                            </DropdownItem>
+                                                        </DropdownContent>
+                                                    </MessageDropdown>
+
+                                                    <ActionIcon
+                                                        color="#fbbf24"
+                                                        onClick={() => handleCandidateAction(candidate.id, 'backup')}
+                                                        title="Move to Backup"
+                                                    >
+                                                        <ThumbsUp size={16} />
+                                                    </ActionIcon>
+
+                                                    <ActionIcon
+                                                        color="#ef4444"
+                                                        onClick={() => handleCandidateAction(candidate.id, 'rejected')}
+                                                        title="Reject"
+                                                    >
+                                                        <X size={16} />
+                                                    </ActionIcon>
+                                                </ActionButtons>
+                                            </CandidateCard>
+                                        ))}
+
+                                        {candidates.length === 0 && (
+                                            <EmptyState>
+                                                <h3>No candidates in this category</h3>
+                                            </EmptyState>
+                                        )}
+                                    </>
+                                )}
+                            </CandidatesGrid>
+                        </>
+                    ) : (
+                        <EmptyState>
+                            <h2>Welcome to Jobs Management</h2>
+                            <p>Create a job to start managing your candidate pipeline!</p>
+                        </EmptyState>
+                    )}
+                </MainContent>
+            </PageContainer>
+
+            {/* Contact/Rejection Modal */}
+            {selectedCandidateForContact && (
+                <ContactRejectionModal
+                    isOpen={contactModalOpen}
+                    onClose={() => {
+                        setContactModalOpen(false);
+                        setSelectedCandidateForContact(null);
+                    }}
+                    candidate={selectedCandidateForContact}
+                    initialMode={contactMode}
+                    initialCommunicationType={contactCommunicationType}
+                    onSuccess={handleContactSuccess}
+                />
+            )}
         </>
     );
 };
