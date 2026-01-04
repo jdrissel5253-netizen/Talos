@@ -1,0 +1,219 @@
+﻿git : remote: error: 
+GH013: Repository 
+rule violations 
+found for refs/heads/
+test-push-debug.     
+   
+At line:1 char:26
++ ... api user --jq 
+.login; git push -u 
+origin 
+test-push-debug 2>&1 
+| Out-F ...
++                    
+       ~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~
+~~~~
+    + CategoryInfo   
+           : NotSpe  
+  cified: (remote:   
+  error: ...-debu    
+g.        :Strin    
+g) [], RemoteExc    
+eption
+    + FullyQualified 
+   ErrorId : Native  
+  CommandError
+ 
+remote: 
+remote: - GITHUB 
+PUSH PROTECTION      
+  
+remote:   ΓÇöΓÇöΓÇöΓÇ
+öΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇ
+öΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇ
+öΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇ
+öΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇ
+öΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇ
+öΓÇöΓÇö        
+remote:     Resolve 
+the following 
+violations before 
+pushing again        
+remote: 
+remote:     - Push 
+cannot contain 
+secrets        
+remote: 
+remote:             
+remote:      (?) 
+Learn how to resolve 
+a blocked push       
+ 
+remote:      https://
+docs.github.com/code-
+security/secret-scann
+ing/working-with-secr
+et-scanning-and-push-
+protection/working-wi
+th-push-protection-fr
+om-the-command-line#r
+esolving-a-blocked-pu
+sh        
+remote:             
+remote:             
+remote:       ΓÇöΓÇö 
+Google OAuth Client 
+ID ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö
+ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö
+ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö
+ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö
+ΓÇö        
+remote:        
+locations:        
+remote:          - 
+commit: d8a01b527c0a8
+0e88b3e97ec180f088337
+a5dafd        
+remote:            
+path: backend-node/cr
+edentials/token.json:
+1        
+remote:             
+remote:        (?) 
+To push, remove 
+secret from 
+commit(s) or follow 
+this URL to allow 
+the secret.        
+remote:        https:
+//github.com/jdrissel
+5253-netizen/Talos/se
+curity/secret-scannin
+g/unblock-secret/37nk
+svvdaSPLtR8onMUP5Os0W
+UQ        
+remote:             
+remote:             
+remote:       ΓÇöΓÇö 
+Google OAuth Client 
+Secret ΓÇöΓÇöΓÇöΓÇöΓÇ
+öΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇ
+öΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇ
+öΓÇöΓÇöΓÇöΓÇöΓÇö     
+   
+remote:        
+locations:        
+remote:          - 
+commit: d8a01b527c0a8
+0e88b3e97ec180f088337
+a5dafd        
+remote:            
+path: backend-node/cr
+edentials/token.json:
+1        
+remote:             
+remote:        (?) 
+To push, remove 
+secret from 
+commit(s) or follow 
+this URL to allow 
+the secret.        
+remote:        https:
+//github.com/jdrissel
+5253-netizen/Talos/se
+curity/secret-scannin
+g/unblock-secret/37nk
+swTH487cUBAxugUetNVGT
+gm        
+remote:             
+remote:             
+remote:       ΓÇöΓÇö 
+Google OAuth Refresh 
+Token ΓÇöΓÇöΓÇöΓÇöΓÇö
+ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö
+ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö
+ΓÇöΓÇöΓÇöΓÇöΓÇö      
+  
+remote:        
+locations:        
+remote:          - 
+commit: d8a01b527c0a8
+0e88b3e97ec180f088337
+a5dafd        
+remote:            
+path: backend-node/cr
+edentials/token.json:
+1        
+remote:          - 
+commit: d8a01b527c0a8
+0e88b3e97ec180f088337
+a5dafd        
+remote:            
+path: backend-node/cr
+edentials/token.json:
+1        
+remote:             
+remote:        (?) 
+To push, remove 
+secret from 
+commit(s) or follow 
+this URL to allow 
+the secret.        
+remote:        https:
+//github.com/jdrissel
+5253-netizen/Talos/se
+curity/secret-scannin
+g/unblock-secret/37nk
+ssZBhhEuOKqSOvBl0PQe5
+1n        
+remote:             
+remote:             
+remote:       ΓÇöΓÇö 
+Google OAuth Access 
+Token ΓÇöΓÇöΓÇöΓÇöΓÇö
+ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö
+ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö
+ΓÇöΓÇöΓÇöΓÇöΓÇöΓÇö   
+     
+remote:        
+locations:        
+remote:          - 
+commit: d8a01b527c0a8
+0e88b3e97ec180f088337
+a5dafd        
+remote:            
+path: backend-node/cr
+edentials/token.json:
+1        
+remote:             
+remote:        (?) 
+To push, remove 
+secret from 
+commit(s) or follow 
+this URL to allow 
+the secret.        
+remote:        https:
+//github.com/jdrissel
+5253-netizen/Talos/se
+curity/secret-scannin
+g/unblock-secret/37nk
+sseGwRMhQmKCjiqtfedtw
+hx        
+remote:             
+remote: 
+remote: 
+To https://github.com
+/jdrissel5253-netizen
+/Talos.git
+ ! [remote rejected] 
+test-push-debug -> 
+test-push-debug 
+(push declined due 
+to repository rule 
+violations)
+error: failed to 
+push some refs to 'ht
+tps://github.com/jdri
+ssel5253-netizen/Talo
+s.git'

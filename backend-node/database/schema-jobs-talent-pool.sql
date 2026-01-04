@@ -71,6 +71,10 @@ CREATE TABLE IF NOT EXISTS communication_log (
     candidate_pipeline_id INTEGER REFERENCES candidate_pipeline(id) ON DELETE CASCADE,
     communication_type TEXT NOT NULL, -- 'sms', 'email', 'rejection_email'
     message_content TEXT,
+    template_type TEXT,
+    template_tone TEXT,
+    is_nudge BOOLEAN DEFAULT 0,
+    scheduling_link TEXT,
     sent_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     status TEXT DEFAULT 'sent' -- sent, delivered, failed
 );

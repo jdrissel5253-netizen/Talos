@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { config } from '../config';
-
+import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X } from 'lucide-react';
+import ResumePreviewModal from './ResumePreviewModal';
+import ContactRejectionModal from './ContactRejectionModal';
+import { extractCandidateName } from '../utils/templateHelpers';
 
 interface Candidate {
   pipeline_id: number;
@@ -136,6 +139,28 @@ const FilterLabel = styled.label`
   color: #4ade80;
 `;
 
+
+const GoogleConnectButton = styled.button<{ connected: boolean }>`
+  background: ${props => props.connected ? 'rgba(74, 222, 128, 0.1)' : '#333'};
+  color: ${props => props.connected ? '#4ade80' : '#fff'};
+  border: 1px solid ${props => props.connected ? '#4ade80' : '#444'};
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: ${props => props.connected ? 'default' : 'pointer'};
+  transition: all 0.2s;
+  margin: 1rem auto 0;
+
+  &:hover {
+    background: ${props => props.connected ? 'rgba(74, 222, 128, 0.1)' : '#444'};
+    border-color: ${props => props.connected ? '#4ade80' : '#666'};
+  }
+`;
+
 const FilterSelect = styled.select`
   padding: 0.75rem;
   border: 2px solid #333333;
@@ -165,110 +190,203 @@ const FilterInput = styled.input`
   }
 `;
 
-const CandidatesTable = styled.div`
-  overflow-x: auto;
+// New Card-Based Components (Copied/Adapted from JobsManagement)
+const CandidatesGrid = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 `;
 
-const Table = styled.table`
-  width: 100%;
-  border-collapse: collapse;
+const TierSection = styled.div`
+  margin-bottom: 2rem;
 `;
 
-const TableHead = styled.thead`
-  background: #000000;
-`;
-
-const TableHeader = styled.th`
-  padding: 1rem;
-  text-align: left;
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: #4ade80;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  border-bottom: 2px solid #333333;
-  cursor: pointer;
-  user-select: none;
-
-  &:hover {
-    background: #1a1a1a;
-  }
-`;
-
-const TableBody = styled.tbody``;
-
-const TableRow = styled.tr`
-  border-bottom: 1px solid #333333;
-  transition: background 0.2s ease;
-
-  &:hover {
-    background: #000000;
-  }
-`;
-
-const TableCell = styled.td`
-  padding: 1rem;
-  color: #e0e0e0;
-  font-size: 0.875rem;
-`;
-
-const TierBadge = styled.span<{ tier: 'green' | 'yellow' | 'red' }>`
-  display: inline-block;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  background-color: ${props =>
-    props.tier === 'green' ? '#4ade80' :
-    props.tier === 'yellow' ? '#fbbf24' :
-    '#ef4444'};
+const TierHeader = styled.div<{ tier: string }>`
+  background: ${props => {
+    if (props.tier === 'green') return '#4ade80';
+    if (props.tier === 'yellow') return '#fbbf24';
+    return '#ef4444';
+  }};
   color: ${props => props.tier === 'yellow' ? '#000' : '#fff'};
+  padding: 1rem;
+  border-radius: 8px 8px 0 0;
+  font-weight: 700;
+  font-size: 1.125rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 `;
 
-const StatusBadge = styled.span<{ status: string }>`
-  display: inline-block;
+const CandidateCard = styled.div`
+  background: #0f0f0f;
+  border: 2px solid #333333;
+  border-radius: 8px;
+  padding: 1.5rem;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: #4ade80;
+    transform: translateY(-2px);
+  }
+`;
+
+const CandidateHeader = styled.div`
+  display: flex;
+  justify-content: space-between;
+  align-items: start;
+  margin-bottom: 1rem;
+`;
+
+const CandidateInfo = styled.div`
+  flex: 1;
+`;
+
+const CandidateName = styled.h3`
+  font-size: 1.25rem;
+  color: #e0e0e0;
+  margin-bottom: 0.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const StarRating = styled.span`
+  color: #fbbf24;
+  font-size: 1rem;
+  margin-left: 0.5rem;
+`;
+
+const Score = styled.span<{ tier: string }>`
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: ${props => {
+    if (props.tier === 'green') return '#4ade80';
+    if (props.tier === 'yellow') return '#fbbf24';
+    return '#ef4444';
+  }};
+`;
+
+const Badge = styled.span`
+  background: #4ade80;
+  color: white;
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   font-size: 0.75rem;
   font-weight: 600;
-  background-color: ${props =>
-    props.status === 'new' ? '#6366f1' :
-    props.status === 'contacted' ? '#3b82f6' :
-    props.status === 'approved' ? '#10b981' :
-    props.status === 'backup' ? '#f59e0b' :
-    '#6b7280'};
-  color: #fff;
+  margin-left: 0.5rem;
 `;
 
-const ScoreBadge = styled.span`
-  display: inline-block;
-  padding: 0.5rem 0.75rem;
+const Summary = styled.p`
+  color: #999;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+  font-size: 0.9375rem;
+`;
+
+const MetaRow = styled.div`
+  display: flex;
+  gap: 2rem;
+  flex-wrap: wrap;
+  font-size: 0.875rem;
+  color: #e0e0e0;
+  margin-bottom: 1rem;
+`;
+
+const MetaItem = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const ActionButtons = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+  border-top: 1px solid #333;
+  padding-top: 1rem;
+  align-items: center;
+`;
+
+const ActionButton = styled.button`
   background: #333333;
-  border-radius: 6px;
-  font-weight: bold;
-  color: #4ade80;
-`;
-
-const StarRating = styled.div`
-  color: #fbbf24;
-`;
-
-const ViewButton = styled.button`
-  background-color: #4ade80;
-  color: white;
+  color: #e0e0e0;
   border: none;
   padding: 0.5rem 1rem;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 
   &:hover {
-    background-color: #22c55e;
-    transform: translateY(-1px);
+    background: #4ade80;
+    color: #000;
   }
+`;
+
+const ActionIcon = styled.button<{ color: string }>`
+    background: ${props => props.color};
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.125rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+        transform: scale(1.1);
+    }
+`;
+
+const MessageDropdown = styled.div`
+    position: relative;
+    display: inline-block;
+`;
+
+const DropdownContent = styled.div<{ isOpen: boolean }>`
+    display: ${props => props.isOpen ? 'block' : 'none'};
+    position: absolute;
+    background: #1a1a1a;
+    min-width: 200px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+    z-index: 10;
+    right: 0;
+    top: 100%;
+    margin-top: 0.5rem;
+    border: 2px solid #333333;
+`;
+
+const DropdownItem = styled.button`
+    background: none;
+    border: none;
+    color: #e0e0e0;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+
+    &:hover {
+        background: #333333;
+    }
+
+    &:first-child {
+        border-radius: 4px 4px 0 0;
+    }
+
+    &:last-child {
+        border-radius: 0 0 4px 4px;
+    }
 `;
 
 const LoadingMessage = styled.div`
@@ -305,6 +423,20 @@ const TalentPoolManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  // Resume Modal State
+  const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
+  const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
+
+  // Contact Modal State
+  const [contactModalOpen, setContactModalOpen] = useState(false);
+  const [selectedCandidateForContact, setSelectedCandidateForContact] = useState<{ pipelineId: number; name: string; position: string; } | null>(null);
+  const [contactMode, setContactMode] = useState<'contact' | 'rejection'>('contact');
+  const [contactCommunicationType, setContactCommunicationType] = useState<'email' | 'sms'>('email');
+  const [messageDropdownOpen, setMessageDropdownOpen] = useState<number | null>(null);
+
+  // Gmail Connection
+  const [isGmailConnected, setIsGmailConnected] = useState(false);
+
   // Filters
   const [tierFilter, setTierFilter] = useState<string>('');
   const [positionFilter, setPositionFilter] = useState<string>('');
@@ -317,7 +449,33 @@ const TalentPoolManager: React.FC = () => {
   useEffect(() => {
     fetchTalentPool();
     fetchStats();
+    checkGmailConnection();
   }, [tierFilter, positionFilter, statusFilter, minScore, maxScore, sortBy, sortOrder]);
+
+  const checkGmailConnection = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}/api/auth/google/status`);
+      const data = await response.json();
+      if (data.status === 'success') {
+        setIsGmailConnected(data.data.isConnected);
+      }
+    } catch (error) {
+      console.error('Error checking Gmail connection:', error);
+    }
+  };
+
+  const handleConnectGmail = async () => {
+    try {
+      const response = await fetch(`${config.apiUrl}/api/auth/google/url`);
+      const data = await response.json();
+      if (data.status === 'success') {
+        window.location.href = data.data.url;
+      }
+    } catch (error) {
+      console.error('Error fetching auth URL:', error);
+      alert('Failed to initiate Gmail connection');
+    }
+  };
 
   const fetchTalentPool = async () => {
     try {
@@ -362,29 +520,120 @@ const TalentPoolManager: React.FC = () => {
     }
   };
 
-  const handleSort = (field: string) => {
-    if (sortBy === field) {
-      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+  const handleViewResume = (candidate: Candidate) => {
+    setSelectedCandidate(candidate);
+    setIsResumeModalOpen(true);
+  };
+
+  const handleSendMessage = (candidatePipelineId: number, messageType: string) => {
+    // Find the candidate
+    const candidate = candidates.find(c => c.pipeline_id === candidatePipelineId);
+    if (!candidate) return;
+
+    // Extract candidate name from filename
+    const candidateName = extractCandidateName(candidate.filename || 'Candidate');
+
+    // Set up modal state
+    setSelectedCandidateForContact({
+      pipelineId: candidatePipelineId,
+      name: candidateName,
+      position: candidate.job_title || candidate.position_type || 'Position'
+    });
+
+    // Determine mode and communication type
+    if (messageType === 'rejection_email') {
+      setContactMode('rejection');
+      setContactCommunicationType('email');
     } else {
-      setSortBy(field);
-      setSortOrder('desc');
+      setContactMode('contact');
+      setContactCommunicationType(messageType === 'sms' ? 'sms' : 'email');
     }
+
+    // Close dropdown and open modal
+    setMessageDropdownOpen(null);
+    setContactModalOpen(true);
   };
 
-  const renderStarRating = (rating: number) => {
+  const handleContactSuccess = () => {
+    setContactModalOpen(false);
+    setSelectedCandidateForContact(null);
+    // Reload candidates and stats to reflect status changes
+    fetchTalentPool();
+    fetchStats();
+  };
+
+  const getStars = (rating: number) => {
     const fullStars = Math.floor(rating);
-    const hasHalfStar = rating % 1 >= 0.5;
-    const stars = [];
+    const halfStar = rating % 1 >= 0.5;
 
-    for (let i = 0; i < fullStars; i++) {
-      stars.push('★');
-    }
-    if (hasHalfStar) {
-      stars.push('☆');
-    }
-
-    return stars.join('');
+    return (
+      <span style={{ display: 'flex', alignItems: 'center' }}>
+        {[...Array(5)].map((_, i) => (
+          <span key={i} style={{ opacity: i < fullStars ? 1 : 0.3 }}>★</span>
+        ))}
+      </span>
+    );
   };
+
+  // Group candidates by tier for display
+  const candidatesByTier = {
+    green: candidates.filter(c => c.tier === 'green'),
+    yellow: candidates.filter(c => c.tier === 'yellow'),
+    red: candidates.filter(c => c.tier === 'red')
+  };
+
+  const renderCandidateCard = (candidate: Candidate) => (
+    <CandidateCard key={candidate.pipeline_id}>
+      <CandidateHeader>
+        <CandidateInfo>
+          <CandidateName>
+            {candidate.filename?.replace('.pdf', '') || 'Unknown Candidate'}
+            <StarRating>{getStars(candidate.star_rating)}</StarRating>
+            {candidate.give_them_a_chance && <Badge>High Potential</Badge>}
+          </CandidateName>
+          <div style={{ color: '#999', fontSize: '0.9rem' }}>{candidate.position_type} • {candidate.job_location || 'Remote/TBD'}</div>
+        </CandidateInfo>
+        <Score tier={candidate.tier}>{candidate.tier_score}</Score>
+      </CandidateHeader>
+
+      <Summary>{candidate.ai_summary}</Summary>
+
+      <MetaRow>
+        <MetaItem><Calendar size={16} /> {candidate.years_of_experience} years experience</MetaItem>
+        <MetaItem><Car size={16} /> {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</MetaItem>
+        <MetaItem><ClipboardList size={16} /> {candidate.certifications_found?.length || 0} certifications</MetaItem>
+      </MetaRow>
+
+      <ActionButtons>
+        <ActionButton onClick={() => handleViewResume(candidate)}>
+          <FileText size={16} /> View Resume Preview
+        </ActionButton>
+
+        <MessageDropdown>
+          <ActionIcon
+            color="#3b82f6"
+            onClick={() => setMessageDropdownOpen(
+              messageDropdownOpen === candidate.pipeline_id ? null : candidate.pipeline_id
+            )}
+            title="Send Message"
+          >
+            <Mail size={16} />
+          </ActionIcon>
+          <DropdownContent isOpen={messageDropdownOpen === candidate.pipeline_id}>
+            <DropdownItem onClick={() => handleSendMessage(candidate.pipeline_id, 'sms')}>
+              <Smartphone size={14} style={{ marginRight: '8px' }} /> SMS
+            </DropdownItem>
+            <DropdownItem onClick={() => handleSendMessage(candidate.pipeline_id, 'email')}>
+              <Mail size={14} style={{ marginRight: '8px' }} /> Email
+            </DropdownItem>
+            <DropdownItem onClick={() => handleSendMessage(candidate.pipeline_id, 'rejection_email')}>
+              <X size={14} style={{ marginRight: '8px' }} /> Rejection
+            </DropdownItem>
+          </DropdownContent>
+        </MessageDropdown>
+      </ActionButtons>
+    </CandidateCard>
+  );
 
   return (
     <Container>
@@ -392,6 +641,13 @@ const TalentPoolManager: React.FC = () => {
         <Header>
           <Title>Talent Pool Management</Title>
           <Subtitle>View and manage all candidates in your talent pipeline</Subtitle>
+          <GoogleConnectButton
+            connected={isGmailConnected}
+            onClick={!isGmailConnected ? handleConnectGmail : undefined}
+          >
+            {isGmailConnected ? <CheckCircle size={16} /> : <Mail size={16} />}
+            {isGmailConnected ? 'Gmail Connected' : 'Connect Gmail Account'}
+          </GoogleConnectButton>
         </Header>
 
         {stats && (
@@ -491,62 +747,65 @@ const TalentPoolManager: React.FC = () => {
             <p>Try adjusting your filters or upload resumes to build your talent pool.</p>
           </EmptyState>
         ) : (
-          <CandidatesTable>
-            <Table>
-              <TableHead>
-                <tr>
-                  <TableHeader onClick={() => handleSort('name')}>
-                    Candidate {sortBy === 'name' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </TableHeader>
-                  <TableHeader onClick={() => handleSort('position')}>
-                    Position {sortBy === 'position' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </TableHeader>
-                  <TableHeader onClick={() => handleSort('score')}>
-                    Score {sortBy === 'score' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </TableHeader>
-                  <TableHeader>Tier</TableHeader>
-                  <TableHeader>Rating</TableHeader>
-                  <TableHeader>Status</TableHeader>
-                  <TableHeader>Experience</TableHeader>
-                  <TableHeader onClick={() => handleSort('date')}>
-                    Uploaded {sortBy === 'date' && (sortOrder === 'asc' ? '↑' : '↓')}
-                  </TableHeader>
-                  <TableHeader>Actions</TableHeader>
-                </tr>
-              </TableHead>
-              <TableBody>
-                {candidates.map((candidate) => (
-                  <TableRow key={candidate.pipeline_id}>
-                    <TableCell>{candidate.filename.replace('.pdf', '')}</TableCell>
-                    <TableCell>{candidate.position_type}</TableCell>
-                    <TableCell>
-                      <ScoreBadge>{candidate.tier_score}</ScoreBadge>
-                    </TableCell>
-                    <TableCell>
-                      <TierBadge tier={candidate.tier}>{candidate.tier}</TierBadge>
-                    </TableCell>
-                    <TableCell>
-                      <StarRating>{renderStarRating(candidate.star_rating)}</StarRating>
-                    </TableCell>
-                    <TableCell>
-                      <StatusBadge status={candidate.pipeline_status}>
-                        {candidate.pipeline_status}
-                      </StatusBadge>
-                    </TableCell>
-                    <TableCell>{candidate.years_of_experience} yrs</TableCell>
-                    <TableCell>{new Date(candidate.uploaded_at).toLocaleDateString()}</TableCell>
-                    <TableCell>
-                      <ViewButton onClick={() => alert('View details coming soon!')}>
-                        View
-                      </ViewButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CandidatesTable>
+          <CandidatesGrid>
+            {candidatesByTier.green.length > 0 && (
+              <TierSection>
+                <TierHeader tier="green">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckCircle size={20} /> GREEN TIER (80-100 points)
+                  </div>
+                  <span>{candidatesByTier.green.length} candidates</span>
+                </TierHeader>
+                {candidatesByTier.green.map(renderCandidateCard)}
+              </TierSection>
+            )}
+
+            {candidatesByTier.yellow.length > 0 && (
+              <TierSection>
+                <TierHeader tier="yellow">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <AlertCircle size={20} /> YELLOW TIER (50-79 points)
+                  </div>
+                  <span>{candidatesByTier.yellow.length} candidates</span>
+                </TierHeader>
+                {candidatesByTier.yellow.map(renderCandidateCard)}
+              </TierSection>
+            )}
+
+            {candidatesByTier.red.length > 0 && (
+              <TierSection>
+                <TierHeader tier="red">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <XCircle size={20} /> RED TIER (0-49 points)
+                  </div>
+                  <span>{candidatesByTier.red.length} candidates</span>
+                </TierHeader>
+                {candidatesByTier.red.map(renderCandidateCard)}
+              </TierSection>
+            )}
+          </CandidatesGrid>
         )}
       </MainCard>
+
+      <ResumePreviewModal
+        isOpen={isResumeModalOpen}
+        onClose={() => setIsResumeModalOpen(false)}
+        candidate={selectedCandidate}
+      />
+
+      {selectedCandidateForContact && (
+        <ContactRejectionModal
+          isOpen={contactModalOpen}
+          onClose={() => {
+            setContactModalOpen(false);
+            setSelectedCandidateForContact(null);
+          }}
+          candidate={selectedCandidateForContact}
+          initialMode={contactMode}
+          initialCommunicationType={contactCommunicationType}
+          onSuccess={handleContactSuccess}
+        />
+      )}
     </Container>
   );
 };

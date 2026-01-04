@@ -28,6 +28,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 const resumeRoutes = require('./routes/resumeRoutes');
 const { router: authRoutes } = require('./routes/authRoutes');
+const googleAuthRoutes = require('./routes/googleAuthRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 const candidatePipelineRoutes = require('./routes/candidatePipelineRoutes');
 
@@ -43,6 +44,7 @@ app.get('/', (req, res) => {
 
 app.use('/api/resume', resumeRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/auth/google', googleAuthRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/pipeline', candidatePipelineRoutes);
 app.get('/api/health', (req, res) => {

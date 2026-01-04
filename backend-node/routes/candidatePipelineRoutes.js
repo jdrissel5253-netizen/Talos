@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { candidatePipelineService } = require('../services/databaseService');
+const gmailService = require('../services/gmailService');
 const Anthropic = require('@anthropic-ai/sdk');
 
 // Initialize Anthropic client for automated messaging
@@ -145,7 +146,8 @@ router.post('/:id/message', async (req, res) => {
             isNudge,               // boolean
             schedulingLink,        // URL
             candidateName,         // string
-            jobTitle               // string
+            jobTitle,              // string
+            recipientEmail         // Email address to send to
         } = req.body;
 
         if (!messageContent) {
@@ -160,6 +162,30 @@ router.post('/:id/message', async (req, res) => {
                 status: 'error',
                 message: 'Valid communication type is required (email or sms)'
             });
+        }
+
+        // Send Email via Gmail API
+        if (communicationType === 'email') {
+            if (!recipientEmail) {
+                return res.status(400).json({
+                    status: 'error',
+                    message: 'Recipient email is required'
+                });
+            }
+
+            try {
+                await gmailService.sendEmail({
+                    to: recipientEmail,
+                    subject: messageSubject || `Regarding your application for ${jobTitle}`,
+                    body: messageContent
+                });
+            } catch (emailError) {
+                console.error('Failed to send email:', emailError);
+                return res.status(500).json({
+                    status: 'error',
+                    message: 'Failed to send email: ' + emailError.message
+                });
+            }
         }
 
         // Log the communication with template metadata

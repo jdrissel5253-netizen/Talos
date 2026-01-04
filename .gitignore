@@ -50,3 +50,5 @@ uploads/
 tmp/
 temp/
 nul
+
+backend-node/credentials/token.json

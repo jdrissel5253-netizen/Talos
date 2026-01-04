@@ -31,6 +31,7 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
   const [isNudge, setIsNudge] = useState(false);
   const [schedulingLink, setSchedulingLink] = useState(config.defaultSchedulingLink || '[link]');
   const [silentRejection, setSilentRejection] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -84,6 +85,11 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
         return;
       }
 
+      // Validate email if sending email
+      if (communicationType === 'email' && !recipientEmail) {
+        throw new Error('Please enter a recipient email address');
+      }
+
       // Send message
       if (!template || !renderedMessage) {
         throw new Error('No template found for the selected options');
@@ -104,13 +110,15 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
             isNudge,
             schedulingLink,
             candidateName: candidate.name,
-            jobTitle: candidate.position
+            jobTitle: candidate.position,
+            recipientEmail: communicationType === 'email' ? recipientEmail : undefined
           })
         }
       );
 
       if (!response.ok) {
-        throw new Error('Failed to send message');
+        const data = await response.json();
+        throw new Error(data.message || 'Failed to send message');
       }
 
       onSuccess();
@@ -165,6 +173,20 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
                   💬 Text
                 </CommunicationTypeButton>
               </CommunicationTypeContainer>
+            </FormRow>
+          )}
+
+          {/* Recipient Email (only when sending an email) */}
+          {((mode === 'contact' && communicationType === 'email') || (mode === 'rejection' && !silentRejection)) && (
+            <FormRow>
+              <Label>Recipient Email</Label>
+              <Input
+                type="email"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                placeholder="candidate@example.com"
+                required
+              />
             </FormRow>
           )}
 
@@ -271,10 +293,10 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
             {sending
               ? 'Sending...'
               : mode === 'rejection'
-              ? silentRejection
-                ? 'Reject Candidate'
-                : 'Send Rejection'
-              : 'Send Message'
+                ? silentRejection
+                  ? 'Reject Candidate'
+                  : 'Send Rejection'
+                : 'Send Message'
             }
           </SendButton>
         </ModalFooter>

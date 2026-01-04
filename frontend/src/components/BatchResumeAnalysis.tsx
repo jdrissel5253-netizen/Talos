@@ -562,7 +562,7 @@ const BatchResumeAnalysis: React.FC = () => {
           <NavButton onClick={() => navigate('/jobs-management')}>
             💼 View My Jobs
           </NavButton>
-          <NavButton onClick={() => navigate('/talent-pool-dashboard')}>
+          <NavButton onClick={() => navigate('/talent-pool-manager')}>
             👥 View Talent Pool
           </NavButton>
         </NavButtonsContainer>

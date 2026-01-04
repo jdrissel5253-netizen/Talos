@@ -22,6 +22,7 @@ import HVACInsights from './components/HVACInsights';
 import ResumeAnalysis from './components/ResumeAnalysis';
 import BatchResumeAnalysis from './components/BatchResumeAnalysis';
 import JobsManagement from './components/JobsManagement';
+import GoogleAuthHandler from './components/GoogleAuthHandler';
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -72,6 +73,7 @@ function App() {
       <ScrollToTop />
       <GlobalStyle />
       <AppContainer>
+        <GoogleAuthHandler />
         <AirflowAnimation />
         <Header />
         <MainContent>
