@@ -1,7 +1,7 @@
 // API Configuration
 export const API_BASE_URL = process.env.REACT_APP_API_URL ||
   (process.env.NODE_ENV === 'production'
-    ? 'http://54.90.125.190:8081'
+    ? 'https://api.gotalos.io'
     : 'http://localhost:8082');
 
 export const config = {

@@ -19,7 +19,12 @@ if (!fs.existsSync(uploadsDir)) {
 // Middleware
 app.use(cors({
     origin: process.env.NODE_ENV === 'production'
-        ? ['http://talos-hvac-frontend-1759612745.s3-website-us-east-1.amazonaws.com', 'https://talos-hvac-frontend-1759612745.s3-website-us-east-1.amazonaws.com']
+        ? [
+            'http://talos-hvac-frontend-1759612745.s3-website-us-east-1.amazonaws.com',
+            'https://talos-hvac-frontend-1759612745.s3-website-us-east-1.amazonaws.com',
+            'https://gotalos.io',
+            'https://www.gotalos.io'
+        ]
         : 'http://localhost:3000'
 }));
 app.use(bodyParser.json());
