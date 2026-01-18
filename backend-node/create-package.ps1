@@ -1,46 +1,13 @@
-# Create deployment package excluding large files
+# Create deployment package using Python for reliable cross-platform zip format (forward slashes)
 $sourcePath = Get-Location
-$zipPath = Join-Path $sourcePath "talos-backend.zip"
+$scriptPath = Join-Path $sourcePath "create_package.py"
 
-# Remove old zip if exists
-if (Test-Path $zipPath) {
-    Remove-Item $zipPath -Force
+Write-Host "Running Python packaging script..."
+python $scriptPath
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "Package created successfully."
+} else {
+    Write-Error "Failed to create package. Exit code: $LASTEXITCODE"
+    exit 1
 }
-
-# Get all files except excluded ones
-Get-ChildItem -Path $sourcePath -Recurse -File |
-    Where-Object {
-        $_.FullName -notlike "*\node_modules\*" -and
-        $_.Name -ne "talos.db" -and
-        $_.FullName -notlike "*\uploads\*" -and
-        $_.FullName -notlike "*\.git\*" -and
-        $_.Name -ne "talos-backend.zip"
-    } |
-    ForEach-Object {
-        $relativePath = $_.FullName.Substring($sourcePath.Path.Length + 1)
-        $null = $relativePath
-    }
-
-# Create zip with only source files
-$compress = @{
-    Path = @(
-        ".ebextensions",
-        ".platform",
-        ".env",
-        ".env.example",
-        ".gitignore",
-        "Procfile",
-        "config",
-        "database",
-        "package.json",
-        "package-lock.json",
-        "routes",
-        "server.js",
-        "services"
-    )
-    DestinationPath = $zipPath
-    CompressionLevel = "Optimal"
-}
-Compress-Archive @compress -Force
-
-Write-Host "Package created: $zipPath"
