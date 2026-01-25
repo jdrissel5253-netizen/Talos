@@ -878,6 +878,381 @@ ${flexibleOnTitle ?
 }
 
 /**
+ * Generate Service Technician-specific scoring matrix with updated ranges
+ */
+function generateServiceTechnicianScoringMatrix(requiredYears) {
+   return `
+=== DETAILED SCORING MATRIX FOR HVAC SERVICE TECHNICIAN ===
+
+REQUIRED EXPERIENCE TIER (Has ${requiredYears}+ years of Service Technician experience):
+
+Good Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 90-100
+  - No gap + Not hoppy + 30-50mi: 70-79
+  - No gap + Not hoppy + >50mi: 50-60
+  - No gap + Job hoppy + <30mi: 70-79
+  - No gap + Job hoppy + 30-50mi: 50-60
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 85-89
+  - Small gap + Not hoppy + 30-50mi: 70-79
+  - Small gap + Not hoppy + >50mi: 50-59
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 50-59
+  - Small gap + Job hoppy + >50mi: 40-50
+  - Large gap + Not hoppy + <30mi: 70-79
+  - Large gap + Not hoppy + 30-50mi: 60-69
+  - Large gap + Not hoppy + >50mi: 40-50
+  - Large gap + Job hoppy + <30mi: 50-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 20-29
+
+Good Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 85-90
+  - No gap + Not hoppy + 30-50mi: 70-79
+  - No gap + Not hoppy + >50mi: 50-59
+  - No gap + Job hoppy + <30mi: 70-74
+  - No gap + Job hoppy + 30-50mi: 60-69
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 70-79
+  - Small gap + Not hoppy + 30-50mi: 60-69
+  - Small gap + Not hoppy + >50mi: 50-59
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 50-59
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-55
+  - Large gap + Not hoppy + >50mi: 30-39
+  - Large gap + Job hoppy + <30mi: 50-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 30-39
+
+Mid Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 80-89
+  - No gap + Not hoppy + 30-50mi: 70-79
+  - No gap + Not hoppy + >50mi: 60-69
+  - No gap + Job hoppy + <30mi: 60-69
+  - No gap + Job hoppy + 30-50mi: 50-59
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 70-79
+  - Small gap + Not hoppy + 30-50mi: 60-69
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 40-49
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 70-74
+  - Large gap + Not hoppy + 30-50mi: 60-69
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 50-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 30-39
+
+Mid Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 80-81
+  - No gap + Not hoppy + 30-50mi: 70-74
+  - No gap + Not hoppy + >50mi: 50-59
+  - No gap + Job hoppy + <30mi: 65-69
+  - No gap + Job hoppy + 30-50mi: 55-59
+  - No gap + Job hoppy + >50mi: 40-44
+  - Small gap + Not hoppy + <30mi: 75-79
+  - Small gap + Not hoppy + 30-50mi: 65-69
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 50-55
+  - Small gap + Job hoppy + >50mi: 40-49
+  - Large gap + Not hoppy + <30mi: 70-74
+  - Large gap + Not hoppy + 30-50mi: 60-69
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 50-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 20-39
+
+Poor Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 80-82
+  - No gap + Not hoppy + 30-50mi: 70-74
+  - No gap + Not hoppy + >50mi: 60-69
+  - No gap + Job hoppy + <30mi: 60-69
+  - No gap + Job hoppy + 30-50mi: 50-59
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 70-75
+  - Small gap + Not hoppy + 30-50mi: 60-69
+  - Small gap + Not hoppy + >50mi: 41-50
+  - Small gap + Job hoppy + <30mi: 55-60
+  - Small gap + Job hoppy + 30-50mi: 45-49
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-55
+  - Large gap + Not hoppy + >50mi: 30-39
+  - Large gap + Job hoppy + <30mi: 50-55
+  - Large gap + Job hoppy + 30-50mi: 40-45
+  - Large gap + Job hoppy + >50mi: 20-39
+
+Poor Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 75-79
+  - No gap + Not hoppy + 30-50mi: 65-69
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 60-65
+  - No gap + Job hoppy + 30-50mi: 50-55
+  - No gap + Job hoppy + >50mi: 30-49
+  - Small gap + Not hoppy + <30mi: 70-75
+  - Small gap + Not hoppy + 30-50mi: 60-65
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 51-60
+  - Small gap + Job hoppy + 30-50mi: 40-49
+  - Small gap + Job hoppy + >50mi: 20-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-59
+  - Large gap + Not hoppy + >50mi: 30-49
+  - Large gap + Job hoppy + <30mi: 50-52
+  - Large gap + Job hoppy + 30-50mi: 30-49
+  - Large gap + Job hoppy + >50mi: 20-29
+
+CLOSE TO REQUIRED EXPERIENCE (${requiredYears * 0.5} to ${requiredYears * 0.95} years - 50-95% of required):
+
+Good Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 85-90
+  - No gap + Not hoppy + 30-50mi: 70-79
+  - No gap + Not hoppy + >50mi: 50-59
+  - No gap + Job hoppy + <30mi: 70-74
+  - No gap + Job hoppy + 30-50mi: 55-59
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 80-84
+  - Small gap + Not hoppy + 30-50mi: 60-69
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 50-55
+  - Small gap + Job hoppy + >50mi: 30-49
+  - Large gap + Not hoppy + <30mi: 70-79
+  - Large gap + Not hoppy + 30-50mi: 60-65
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 55-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 20-29
+
+Good Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 80-81
+  - No gap + Not hoppy + 30-50mi: 60-75
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 65-69
+  - No gap + Job hoppy + 30-50mi: 50-59
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 74-79
+  - Small gap + Not hoppy + 30-50mi: 60-65
+  - Small gap + Not hoppy + >50mi: 45-50
+  - Small gap + Job hoppy + <30mi: 60-64
+  - Small gap + Job hoppy + 30-50mi: 50-54
+  - Small gap + Job hoppy + >50mi: 30-49
+  - Large gap + Not hoppy + <30mi: 70-75
+  - Large gap + Not hoppy + 30-50mi: 60-64
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 50-55
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 20-39
+
+Mid Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 70-79
+  - No gap + Not hoppy + 30-50mi: 60-65
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 60-69
+  - No gap + Job hoppy + 30-50mi: 50-59
+  - No gap + Job hoppy + >50mi: 30-49
+  - Small gap + Not hoppy + <30mi: 70-74
+  - Small gap + Not hoppy + 30-50mi: 55-69
+  - Small gap + Not hoppy + >50mi: 30-49
+  - Small gap + Job hoppy + <30mi: 50-59
+  - Small gap + Job hoppy + 30-50mi: 40-49
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-59
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 50-55
+  - Large gap + Job hoppy + 30-50mi: 30-39
+  - Large gap + Job hoppy + >50mi: 20-29
+
+Mid Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 70-74
+  - No gap + Not hoppy + 30-50mi: 55-69
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 60-64
+  - No gap + Job hoppy + 30-50mi: 50-54
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 70-71
+  - Small gap + Not hoppy + 30-50mi: 60-64
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 50-55
+  - Small gap + Job hoppy + 30-50mi: 40-49
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 60-64
+  - Large gap + Not hoppy + 30-50mi: 50-54
+  - Large gap + Not hoppy + >50mi: 30-49
+  - Large gap + Job hoppy + <30mi: 40-49
+  - Large gap + Job hoppy + 30-50mi: 30-39
+  - Large gap + Job hoppy + >50mi: 10-29
+
+Poor Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 70-75
+  - No gap + Not hoppy + 30-50mi: 60-65
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 50-59
+  - No gap + Job hoppy + 30-50mi: 40-49
+  - No gap + Job hoppy + >50mi: 20-39
+  - Small gap + Not hoppy + <30mi: 60-65
+  - Small gap + Not hoppy + 30-50mi: 50-59
+  - Small gap + Not hoppy + >50mi: 30-49
+  - Small gap + Job hoppy + <30mi: 50-55
+  - Small gap + Job hoppy + 30-50mi: 41-45
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 55-59
+  - Large gap + Not hoppy + 30-50mi: 41-50
+  - Large gap + Not hoppy + >50mi: 20-35
+  - Large gap + Job hoppy + <30mi: 40-49
+  - Large gap + Job hoppy + 30-50mi: 30-39
+  - Large gap + Job hoppy + >50mi: 20-29
+
+Poor Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 70-71
+  - No gap + Not hoppy + 30-50mi: 55-65
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 50-59
+  - No gap + Job hoppy + 30-50mi: 40-49
+  - No gap + Job hoppy + >50mi: 30-39
+  - Small gap + Not hoppy + <30mi: 60-65
+  - Small gap + Not hoppy + 30-50mi: 50-59
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 40-49
+  - Small gap + Job hoppy + 30-50mi: 30-39
+  - Small gap + Job hoppy + >50mi: 20-29
+  - Large gap + Not hoppy + <30mi: 55-65
+  - Large gap + Not hoppy + 30-50mi: 50-54
+  - Large gap + Not hoppy + >50mi: 30-49
+  - Large gap + Job hoppy + <30mi: 40-49
+  - Large gap + Job hoppy + 30-50mi: 30-39
+  - Large gap + Job hoppy + >50mi: 20-29
+
+NOT CLOSE TO REQUIRED EXPERIENCE (Under ${requiredYears * 0.5} years - less than 50% of required):
+
+Good Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 50-59
+  - No gap + Not hoppy + 30-50mi: 40-49
+  - No gap + Not hoppy + >50mi: 20-39
+  - No gap + Job hoppy + <30mi: 40-49
+  - No gap + Job hoppy + 30-50mi: 30-39
+  - No gap + Job hoppy + >50mi: 20-29
+  - Small gap + Not hoppy + <30mi: 50-54
+  - Small gap + Not hoppy + 30-50mi: 40-49
+  - Small gap + Not hoppy + >50mi: 30-39
+  - Small gap + Job hoppy + <30mi: 40-49
+  - Small gap + Job hoppy + 30-50mi: 30-39
+  - Small gap + Job hoppy + >50mi: 20-29
+  - Large gap + Not hoppy + <30mi: 50-51
+  - Large gap + Not hoppy + 30-50mi: 40-45
+  - Large gap + Not hoppy + >50mi: 30-39
+  - Large gap + Job hoppy + <30mi: 30-39
+  - Large gap + Job hoppy + 30-50mi: 20-29
+  - Large gap + Job hoppy + >50mi: 10-19
+
+Good Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 50-54
+  - No gap + Not hoppy + 30-50mi: 40-49
+  - No gap + Not hoppy + >50mi: 30-39
+  - No gap + Job hoppy + <30mi: 40-49
+  - No gap + Job hoppy + 30-50mi: 30-39
+  - No gap + Job hoppy + >50mi: 20-29
+  - Small gap + Not hoppy + <30mi: 50-51
+  - Small gap + Not hoppy + 30-50mi: 40-45
+  - Small gap + Not hoppy + >50mi: 20-35
+  - Small gap + Job hoppy + <30mi: 40-49
+  - Small gap + Job hoppy + 30-50mi: 30-39
+  - Small gap + Job hoppy + >50mi: 20-29
+  - Large gap + Not hoppy + <30mi: 40-49
+  - Large gap + Not hoppy + 30-50mi: 30-39
+  - Large gap + Not hoppy + >50mi: 20-29
+  - Large gap + Job hoppy + <30mi: 30-39
+  - Large gap + Job hoppy + 30-50mi: 20-29
+  - Large gap + Job hoppy + >50mi: 10-19
+
+Mid Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 40-49
+  - No gap + Not hoppy + 30-50mi: 30-39
+  - No gap + Not hoppy + >50mi: 20-29
+  - No gap + Job hoppy + <30mi: 40-45
+  - No gap + Job hoppy + 30-50mi: 30-35
+  - No gap + Job hoppy + >50mi: 20-25
+  - Small gap + Not hoppy + <30mi: 40-49
+  - Small gap + Not hoppy + 30-50mi: 30-39
+  - Small gap + Not hoppy + >50mi: 20-29
+  - Small gap + Job hoppy + <30mi: 30-49
+  - Small gap + Job hoppy + 30-50mi: 30-39
+  - Small gap + Job hoppy + >50mi: 20-29
+  - Large gap + Not hoppy + <30mi: 40-49
+  - Large gap + Not hoppy + 30-50mi: 30-39
+  - Large gap + Not hoppy + >50mi: 20-29
+  - Large gap + Job hoppy + <30mi: 30-39
+  - Large gap + Job hoppy + 30-50mi: 20-29
+  - Large gap + Job hoppy + >50mi: 10-19
+
+Mid Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 40-49
+  - No gap + Not hoppy + 30-50mi: 30-39
+  - No gap + Not hoppy + >50mi: 20-29
+  - No gap + Job hoppy + <30mi: 40-45
+  - No gap + Job hoppy + 30-50mi: 30-39
+  - No gap + Job hoppy + >50mi: 20-29
+  - Small gap + Not hoppy + <30mi: 40-49
+  - Small gap + Not hoppy + 30-50mi: 30-39
+  - Small gap + Not hoppy + >50mi: 20-29
+  - Small gap + Job hoppy + <30mi: 30-39
+  - Small gap + Job hoppy + 30-50mi: 20-29
+  - Small gap + Job hoppy + >50mi: 10-19
+  - Large gap + Not hoppy + <30mi: 40-45
+  - Large gap + Not hoppy + 30-50mi: 30-39
+  - Large gap + Not hoppy + >50mi: 20-29
+  - Large gap + Job hoppy + <30mi: 30-39
+  - Large gap + Job hoppy + 30-50mi: 20-29
+  - Large gap + Job hoppy + >50mi: 10-19
+
+Poor Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 40-45
+  - No gap + Not hoppy + 30-50mi: 30-35
+  - No gap + Not hoppy + >50mi: 20-25
+  - No gap + Job hoppy + <30mi: 30-39
+  - No gap + Job hoppy + 30-50mi: 20-29
+  - No gap + Job hoppy + >50mi: 10-19
+  - Small gap + Not hoppy + <30mi: 40-45
+  - Small gap + Not hoppy + 30-50mi: 30-35
+  - Small gap + Not hoppy + >50mi: 20-25
+  - Small gap + Job hoppy + <30mi: 20-29
+  - Small gap + Job hoppy + 30-50mi: 10-19
+  - Small gap + Job hoppy + >50mi: 5-10
+  - Large gap + Not hoppy + <30mi: 30-39
+  - Large gap + Not hoppy + 30-50mi: 20-29
+  - Large gap + Not hoppy + >50mi: 10-19
+  - Large gap + Job hoppy + <30mi: 20-25
+  - Large gap + Job hoppy + 30-50mi: 10-15
+  - Large gap + Job hoppy + >50mi: 5-10
+
+Poor Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 40-45
+  - No gap + Not hoppy + 30-50mi: 30-35
+  - No gap + Not hoppy + >50mi: 20-25
+  - No gap + Job hoppy + <30mi: 20-29
+  - No gap + Job hoppy + 30-50mi: 10-19
+  - No gap + Job hoppy + >50mi: 5-10
+  - Small gap + Not hoppy + <30mi: 30-39
+  - Small gap + Not hoppy + 30-50mi: 20-29
+  - Small gap + Not hoppy + >50mi: 10-19
+  - Small gap + Job hoppy + <30mi: 10-19
+  - Small gap + Job hoppy + 30-50mi: 5-9
+  - Small gap + Job hoppy + >50mi: 4-6
+  - Large gap + Not hoppy + <30mi: 20-29
+  - Large gap + Not hoppy + 30-50mi: 10-19
+  - Large gap + Not hoppy + >50mi: 5-10
+  - Large gap + Job hoppy + <30mi: 10-15
+  - Large gap + Job hoppy + 30-50mi: 5-10
+  - Large gap + Job hoppy + >50mi: 1-5
+`;
+}
+
+/**
  * Get HVAC Service Technician tiered evaluation criteria
  */
 function getServiceTechnicianCriteria(requiredYears) {
@@ -886,74 +1261,150 @@ function getServiceTechnicianCriteria(requiredYears) {
 HVAC SERVICE TECHNICIAN RESUME EVALUATION FRAMEWORK
 Job Requirement: ${requiredYears} years of Service Technician experience
 
-=== CRITICAL EVALUATION RULES ===
+This scoring system evaluates candidates even if their title isn't exactly "HVAC Service Technician" by using transferable-skills logic, equivalent roles, and binary requirements.
 
-EXPERIENCE CATEGORIES:
-- REQUIRED EXPERIENCE: Candidate has ${requiredYears}+ years as Service Technician
+=== HARD REQUIREMENTS (BINARY FILTERS) ===
+
+If the job post defines hard requirements (ex: EPA Certification, ${requiredYears}+ years experience, ability to work on residential systems), the candidate must satisfy these through:
+- Direct HVAC Service Technician experience, OR
+- Equivalent HVAC field roles that perform similar service/diagnostic duties (see Equivalent Titles below)
+
+If the candidate does NOT meet binary minimums, they FAIL the hard filter and should score in the RED tier (0-49).
+
+=== CORE COMPETENCY CATEGORIES ===
+
+Score candidates using these FOUR service-focused competency groups.
+Strong candidates show 3-4 categories. Mid-level show 2-3. Entry-level/weak show 0-1.
+
+A. HVAC DIAGNOSTICS & PROBLEM SOLVING
+Look for:
+- Diagnosing common HVAC failures (capacitors, contactors, boards, motors)
+- Troubleshooting cooling/heating issues
+- Electrical diagnostic skills
+- Experience with minisplits, heat pumps, gas furnaces
+- Ability to run performance tests
+- Basic refrigeration cycle understanding
+- Handling service calls independently
+This category should trigger even if job title doesn't mention "service"
+
+B. INSTALLATION, REPAIR & MAINTENANCE SKILLS
+Evidence of hands-on technical abilities:
+- Performing maintenance: cleaning coils, checking pressures, inspecting systems
+- Completing component-level repairs
+- Changing motors, compressors, or control boards
+- Brazing, soldering, line set work
+- Performing partial or full installations
+- Knowledge of local code and safety standards
+
+C. CUSTOMER INTERACTION & FIELD INDEPENDENCE
+Higher scores if candidate shows:
+- Experience interacting with customers on-site
+- Ability to explain repairs or system issues
+- Working independently in the field
+- Providing repair recommendations
+- Writing accurate service notes or invoices
+- Coordinating with dispatch or supervisors
+This distinguishes true field-ready techs from shop-based or helper roles
+
+D. RELIABILITY, PROFESSIONALISM & JOB MANAGEMENT
+Indicators like:
+- Managing daily service routes
+- Consistency in completing assigned calls
+- On-time arrival and reliable scheduling
+- Maintaining service records
+- Strong communication and accountability
+- Following company procedures
+
+=== EQUIVALENT JOB TITLES ===
+
+STRONG EQUIVALENTS (Automatically count as Service Tech experience):
+- HVAC Maintenance Technician
+- HVAC Installer (Level II or higher)
+- HVAC Technician (generic)
+- HVAC Field Technician
+- HVAC Repair Technician
+- Refrigeration Technician (with HVAC crossover)
+- Building Engineer (HVAC-heavy roles)
+- Facilities Technician (HVAC-heavy)
+- Residential or Light Commercial HVAC Technician
+- Apprentice HVAC Technician (only for early-career roles)
+
+MODERATE EQUIVALENTS (Context-dependent - verify competencies):
+- Lead Installer (if job allows installation-heavy backgrounds)
+- General Maintenance Technician (must show real HVAC experience)
+- Handyman roles (only if they explicitly include HVAC systems)
+- Property Maintenance Techs (with HVAC servicing duties)
+
+Use semantic reasoning to decide if a role functions like service work even if wording is indirect.
+
+=== EXPERIENCE CATEGORIES ===
+
+- REQUIRED EXPERIENCE: Candidate has ${requiredYears}+ years as Service Technician or Strong Equivalent
 - CLOSE TO REQUIRED: Candidate has ${requiredYears * 0.5} to ${requiredYears * 0.95} years (50-95% of required)
 - NOT CLOSE TO REQUIRED: Candidate has less than ${requiredYears * 0.5} years (<50% of required)
 
-RESUME QUALITY DEFINITIONS:
-- GOOD RESUME: Proper formatting, no typos, proper punctuation/grammar, at least 2 substantive bullets per experience (not short bullets)
+=== RESUME QUALITY DEFINITIONS ===
+
+- GOOD RESUME: Proper formatting, no typos, proper punctuation/grammar, at least 2 substantive bullets per experience
 - MID RESUME: Professional formatting with few grammatical errors, but missing key elements like bullets under experiences, or has limited bullets, or has small formatting issues
 - POOR RESUME: Multiple punctuation errors + multiple typos, numerous formatting issues, AND lacks substantive content
 
-CERTIFICATIONS:
+=== CERTIFICATIONS ===
+
 - Look for EPA 608, NATE, state licenses, etc.
 - Having certifications listed ALWAYS scores higher than not having them listed
 - For very experienced candidates, missing certifications won't kill their score UNLESS they also have a bad resume
 
-WORK GAPS:
+=== WORK GAPS ===
+
 - NO WORK GAP: Under 6 months of unemployment (continuous employment OR overlapping jobs OR gaps less than 6 months)
 - SMALL WORK GAP: 6 months to 1 year of unemployment with no job listed
 - LARGE WORK GAP: Over 1 year of unemployment with no job listed
-- IMPORTANT: Overlapping jobs (multiple jobs at once) is NOT a work gap - it's actually POSITIVE and shows work ethic
+- IMPORTANT: Overlapping jobs (multiple jobs at once) is NOT a work gap - it's POSITIVE
 - Career transitions FROM other industries INTO HVAC should NOT be penalized
-- Only count actual unemployment periods (gaps between all jobs) as work gaps
 - Work gaps are a LESSER factor compared to job hoppiness, experience, and resume quality
 
-JOB HOPPINESS:
+=== JOB HOPPINESS ===
+
 - JOB HOPPY: Frequent job changes (significant negative factor - really hurts score)
 - NOT JOB HOPPY: Stable employment history
 
-LOCATION/DISTANCE:
-- WITHIN 30 MILES: Minimal impact on score
-- 30-50 MILES: Moderate negative impact (especially if candidate is otherwise strong)
-- OVER 50 MILES: Major negative impact (99% will fall into red tier)
-- IMPORTANT: Use reasoning - don't severely punish 33 miles vs 30 miles. Be flexible around boundaries.
+=== LOCATION/DISTANCE ===
 
-${generateUnifiedScoringRubric(requiredYears, true)}
+- WITHIN 30 MILES: Minimal impact on score
+- 30-50 MILES: Moderate negative impact
+- OVER 50 MILES: Major negative impact (most will fall into red tier)
+- Be flexible around boundaries (32 miles vs 30 miles shouldn't be drastically different)
+
+${generateServiceTechnicianScoringMatrix(requiredYears)}
 
 === EVALUATION INSTRUCTIONS ===
 
-1. Carefully analyze the resume to determine:
-   - Years of Service Technician experience (must be EXACT - count years carefully)
-   - Resume quality (good/mid/poor based on definitions above)
+1. First check HARD REQUIREMENTS - if candidate fails binary filters, score in RED tier
+
+2. Evaluate against the 4 CORE COMPETENCY CATEGORIES:
+   - Strong candidates (3-4 categories): Higher end of score range
+   - Mid-level candidates (2-3 categories): Middle of score range
+   - Weak candidates (0-1 categories): Lower end of score range
+
+3. Count experience across ALL equivalent titles (not just exact "Service Technician" matches)
+
+4. Carefully analyze the resume to determine:
+   - Years of Service Technician/equivalent experience (count years carefully)
+   - Resume quality (good/mid/poor)
    - Certifications present (any HVAC certs count)
-   - Work gaps (ONLY count periods with NO employment - overlapping jobs = NO gap)
-   - Job stability (not hoppy vs job hoppy - focus on HVAC career stability, not pre-HVAC jobs)
-   - Location if mentioned (within 30mi / 30-50mi / over 50mi)
+   - Work gaps (ONLY count periods with NO employment)
+   - Job stability (not hoppy vs job hoppy)
+   - Location if mentioned
 
-   CRITICAL: Do NOT penalize candidates for:
-   - Having multiple jobs simultaneously (this shows excellent work ethic!)
-   - Career transitions INTO HVAC from other fields
-   - Non-HVAC jobs held while in school or before entering HVAC field
+5. Find the matching combination in the scoring matrix
 
-2. Categorize experience level:
-   - Required: ${requiredYears}+ years
-   - Close to required: ${requiredYears * 0.5}-${requiredYears * 0.95} years
-   - Not close: <${requiredYears * 0.5} years
-
-3. Find the matching combination in the scoring matrix above
-
-4. Assign a score within the specified range based on:
-   - How close to the boundaries they are
+6. Assign a score within the specified range based on:
+   - Competency category strength (3-4 = high end, 2-3 = middle, 0-1 = low end)
    - Overall impression of candidate quality
-   - Use the FULL range provided (don't always pick the middle)
+   - Use the FULL range provided
 
-5. CRITICAL: Experience is THE MOST IMPORTANT factor. A good/bad resume can make or break a score, but experience level determines the tier.
-
-6. Location flexibility: Be reasonable around boundaries (32 miles vs 30 miles shouldn't be drastically different)
+7. CRITICAL: Experience is THE MOST IMPORTANT factor. Competency categories help differentiate within score ranges.
 `,
       scoring: {
          greenTier: { min: 80, max: 100 },
@@ -2254,29 +2705,36 @@ STEP 12: VERIFY ENTRY-LEVEL OPENNESS
 Now, analyze the resume and provide a JSON response EXACTLY matching this structure:
 
 {
-  "overall_score": <integer 0-100>,
-  "score_out_of_10": <integer 0-10>,
+  "overallScore": <integer 0-100>,
   "summary": "<concise 2-3 sentence summary>",
-  "technical_skills_score": <integer 0-100>,
-  "technical_skills_found": ["skill1", "skill2"],
-  "technical_skills_missing": ["skill1", "skill2"],
-  "technical_skills_feedback": "<feedback>",
-  "certifications_score": <integer 0-100>,
-  "certifications_found": ["cert1", "cert2"],
-  "certifications_recommended": ["cert1", "cert2"],
-  "certifications_feedback": "<feedback>",
-  "experience_score": <integer 0-100>,
-  "years_of_experience": <number>,
-  "relevant_experience": ["exp1", "exp2"],
-  "experience_feedback": "<feedback>",
-  "presentation_score": <integer 0-100>,
-  "presentation_strengths": ["strength1", "strength2"],
-  "presentation_improvements": ["improvement1", "improvement2"],
-  "presentation_feedback": "<feedback>",
-  "strengths": ["overall_strength1", "overall_strength2"],
-  "weaknesses": ["weakness1", "weakness2"],
-  "recommendations": ["recommendation1", "recommendation2"],
-  "hiring_recommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
+  "technicalSkills": {
+    "score": <integer 0-100>,
+    "found": ["skill1", "skill2"],
+    "missing": ["skill1", "skill2"],
+    "feedback": "<feedback>"
+  },
+  "certifications": {
+    "score": <integer 0-100>,
+    "found": ["cert1", "cert2"],
+    "recommended": ["cert1", "cert2"],
+    "feedback": "<feedback>"
+  },
+  "experience": {
+    "score": <integer 0-100>,
+    "yearsOfExperience": <number>,
+    "relevantExperience": ["exp1", "exp2"],
+    "feedback": "<feedback>"
+  },
+  "presentationQuality": {
+    "score": <integer 0-100>,
+    "strengths": ["strength1", "strength2"],
+    "improvements": ["improvement1", "improvement2"],
+    "feedback": "<feedback>"
+  },
+  "keyStrengths": ["strength1", "strength2", "strength3"],
+  "concerns": ["concern1", "concern2"],
+  "recommendationSummary": "<2-3 sentence recommendation>",
+  "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
 }`;
 
       } else if (useBookkeeperFramework) {
@@ -2377,29 +2835,36 @@ STEP 12: VERIFY RIGID EVALUATION
 Now, analyze the resume and provide a JSON response EXACTLY matching this structure:
 
 {
-  "overall_score": <integer 0-100>,
-  "score_out_of_10": <integer 0-10>,
+  "overallScore": <integer 0-100>,
   "summary": "<concise 2-3 sentence summary>",
-  "technical_skills_score": <integer 0-100>,
-  "technical_skills_found": ["skill1", "skill2"],
-  "technical_skills_missing": ["skill1", "skill2"],
-  "technical_skills_feedback": "<feedback>",
-  "certifications_score": <integer 0-100>,
-  "certifications_found": ["cert1", "cert2"],
-  "certifications_recommended": ["cert1", "cert2"],
-  "certifications_feedback": "<feedback>",
-  "experience_score": <integer 0-100>,
-  "years_of_experience": <number>,
-  "relevant_experience": ["exp1", "exp2"],
-  "experience_feedback": "<feedback>",
-  "presentation_score": <integer 0-100>,
-  "presentation_strengths": ["strength1", "strength2"],
-  "presentation_improvements": ["improvement1", "improvement2"],
-  "presentation_feedback": "<feedback>",
-  "strengths": ["overall_strength1", "overall_strength2"],
-  "weaknesses": ["weakness1", "weakness2"],
-  "recommendations": ["recommendation1", "recommendation2"],
-  "hiring_recommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
+  "technicalSkills": {
+    "score": <integer 0-100>,
+    "found": ["skill1", "skill2"],
+    "missing": ["skill1", "skill2"],
+    "feedback": "<feedback>"
+  },
+  "certifications": {
+    "score": <integer 0-100>,
+    "found": ["cert1", "cert2"],
+    "recommended": ["cert1", "cert2"],
+    "feedback": "<feedback>"
+  },
+  "experience": {
+    "score": <integer 0-100>,
+    "yearsOfExperience": <number>,
+    "relevantExperience": ["exp1", "exp2"],
+    "feedback": "<feedback>"
+  },
+  "presentationQuality": {
+    "score": <integer 0-100>,
+    "strengths": ["strength1", "strength2"],
+    "improvements": ["improvement1", "improvement2"],
+    "feedback": "<feedback>"
+  },
+  "keyStrengths": ["strength1", "strength2", "strength3"],
+  "concerns": ["concern1", "concern2"],
+  "recommendationSummary": "<2-3 sentence recommendation>",
+  "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
 }`;
 
       } else if (useApprenticeFramework) {
@@ -2489,29 +2954,36 @@ STEP 11: VERIFY "GIVE THEM A CHANCE" CANDIDATES
 Now, analyze the resume and provide a JSON response EXACTLY matching this structure:
 
 {
-  "overall_score": <integer 0-100>,
-  "score_out_of_10": <integer 0-10>,
+  "overallScore": <integer 0-100>,
   "summary": "<concise 2-3 sentence summary>",
-  "technical_skills_score": <integer 0-100>,
-  "technical_skills_found": ["skill1", "skill2"],
-  "technical_skills_missing": ["skill1", "skill2"],
-  "technical_skills_feedback": "<feedback>",
-  "certifications_score": <integer 0-100>,
-  "certifications_found": ["cert1", "cert2"],
-  "certifications_recommended": ["cert1", "cert2"],
-  "certifications_feedback": "<feedback>",
-  "experience_score": <integer 0-100>,
-  "years_of_experience": <number>,
-  "relevant_experience": ["exp1", "exp2"],
-  "experience_feedback": "<feedback>",
-  "presentation_score": <integer 0-100>,
-  "presentation_strengths": ["strength1", "strength2"],
-  "presentation_improvements": ["improvement1", "improvement2"],
-  "presentation_feedback": "<feedback>",
-  "strengths": ["overall_strength1", "overall_strength2"],
-  "weaknesses": ["weakness1", "weakness2"],
-  "recommendations": ["recommendation1", "recommendation2"],
-  "hiring_recommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
+  "technicalSkills": {
+    "score": <integer 0-100>,
+    "found": ["skill1", "skill2"],
+    "missing": ["skill1", "skill2"],
+    "feedback": "<feedback>"
+  },
+  "certifications": {
+    "score": <integer 0-100>,
+    "found": ["cert1", "cert2"],
+    "recommended": ["cert1", "cert2"],
+    "feedback": "<feedback>"
+  },
+  "experience": {
+    "score": <integer 0-100>,
+    "yearsOfExperience": <number>,
+    "relevantExperience": ["exp1", "exp2"],
+    "feedback": "<feedback>"
+  },
+  "presentationQuality": {
+    "score": <integer 0-100>,
+    "strengths": ["strength1", "strength2"],
+    "improvements": ["improvement1", "improvement2"],
+    "feedback": "<feedback>"
+  },
+  "keyStrengths": ["strength1", "strength2", "strength3"],
+  "concerns": ["concern1", "concern2"],
+  "recommendationSummary": "<2-3 sentence recommendation>",
+  "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
 }`;
 
       } else if (useCustomerServiceRepFramework) {

@@ -40,8 +40,8 @@ async function addCandidateToTalentPool(candidateId, analysis, evaluatedPosition
         const userId = 1; // Default user ID
         const generalJob = await getOrCreateGeneralTalentPoolJob(userId);
 
-        // Calculate tier based on score
-        const score = analysis.overallScore;
+        // Calculate tier based on score (with NaN protection)
+        const score = Number(analysis.overallScore) || 0;
         let tier, star_rating;
 
         if (score >= 80) {
@@ -52,13 +52,13 @@ async function addCandidateToTalentPool(candidateId, analysis, evaluatedPosition
             star_rating = 2.0 + (score - 50) / 30 * 1.9; // 2.0 to 3.9
         } else {
             tier = 'red';
-            star_rating = score / 50 * 1.5; // 0 to 1.5
+            star_rating = Math.max(0, score / 50 * 1.5); // 0 to 1.5
         }
 
         const pipelineData = {
             tier,
-            tier_score: Math.round(score),
-            star_rating: Math.round(star_rating * 10) / 10,
+            tier_score: Math.round(score) || 0,
+            star_rating: Math.round(star_rating * 10) / 10 || 0,
             give_them_a_chance: score >= 70 && score < 80,
             vehicle_status: 'unknown',
             ai_summary: analysis.summary || 'Resume analyzed and added to talent pool',

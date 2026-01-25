@@ -1,11 +1,46 @@
 const db = require('../config/database');
 
-// Helper function to convert arrays to JSON for SQLite
+// Detect environment
+// FORCE POSTGRES FOR PRODUCTION
+const USE_POSTGRES = true;
+
+console.log('Service Layer DB Mode: POSTGRES (FORCED)');
+
+// Helper function to convert arrays to JSON for SQLite (or TEXT columns in PG)
 const toJSON = (value) => {
     if (Array.isArray(value)) {
         return JSON.stringify(value);
     }
     return value;
+};
+
+// Helper for native ARRAY columns in Postgres
+const toArray = (value) => {
+    // Handle null/undefined
+    if (value === null || value === undefined) {
+        return USE_POSTGRES ? [] : '[]';
+    }
+
+    // If it's a string that looks like JSON array, parse it first
+    if (typeof value === 'string') {
+        if (value.startsWith('[')) {
+            try {
+                value = JSON.parse(value);
+            } catch (e) {
+                // If parsing fails, wrap in array
+                return USE_POSTGRES ? [value] : JSON.stringify([value]);
+            }
+        } else {
+            // Single string value, wrap in array
+            return USE_POSTGRES ? [value] : JSON.stringify([value]);
+        }
+    }
+
+    if (USE_POSTGRES && Array.isArray(value)) {
+        // Ensure all elements are strings for TEXT[] columns
+        return value.map(v => v === null || v === undefined ? '' : String(v));
+    }
+    return toJSON(value); // SQLite needs JSON string
 };
 
 // Helper function to parse JSON from SQLite
@@ -18,6 +53,20 @@ const fromJSON = (value) => {
         }
     }
     return value;
+};
+
+// Helper function to sanitize numbers (prevent NaN, null, undefined)
+const toNumber = (value, defaultValue = 0) => {
+    if (value === null || value === undefined) return defaultValue;
+    const num = Number(value);
+    return isNaN(num) ? defaultValue : num;
+};
+
+// Helper function to sanitize decimal numbers
+const toDecimal = (value, defaultValue = 0) => {
+    if (value === null || value === undefined) return defaultValue;
+    const num = parseFloat(value);
+    return isNaN(num) ? defaultValue : Math.round(num * 10) / 10;
 };
 
 /**
@@ -161,12 +210,12 @@ const analysisService = {
                 $21, $22, $23, $24
             ) RETURNING *`,
             [
-                candidateId, overallScore, scoreOutOf10, finalSummary,
-                tech.score, toJSON(tech.found), toJSON(tech.missing), tech.feedback,
-                certs.score, toJSON(certs.found), toJSON(certs.recommended), certs.feedback,
-                exp.score, exp.yearsOfExperience, toJSON(exp.relevantExperience), exp.feedback,
-                pres.score, toJSON(pres.strengths), toJSON(pres.improvements), pres.feedback,
-                toJSON(finalStrengths), toJSON(finalWeaknesses), toJSON(finalRecommendations), hiringRecommendation
+                candidateId, toNumber(overallScore), toNumber(scoreOutOf10), finalSummary,
+                toNumber(tech.score), toArray(tech.found), toArray(tech.missing), tech.feedback || '',
+                toNumber(certs.score), toArray(certs.found), toArray(certs.recommended), certs.feedback || '',
+                toNumber(exp.score), toDecimal(exp.yearsOfExperience), toArray(exp.relevantExperience), exp.feedback || '',
+                toNumber(pres.score), toArray(pres.strengths), toArray(pres.improvements), pres.feedback || '',
+                toArray(finalStrengths), toArray(finalWeaknesses), toArray(finalRecommendations), hiringRecommendation || 'MAYBE'
             ]
         );
         return result.rows[0];
@@ -344,8 +393,8 @@ const candidatePipelineService = {
                 evaluated_position = excluded.evaluated_position
             RETURNING *`,
             [candidateId, jobId, 'new', tier, tier_score, star_rating,
-             give_them_a_chance ? 1 : 0, vehicle_status, ai_summary,
-             internal_notes, toJSON(tags), evaluated_position]
+                give_them_a_chance ? 1 : 0, vehicle_status, ai_summary,
+                internal_notes, toJSON(tags), evaluated_position]
         );
         return result.rows[0];
     },

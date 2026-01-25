@@ -455,7 +455,7 @@ CRITICAL FORMATTING RULES:
 9. Keep total description under 500 words for maximum engagement`;
 
         const message = await anthropic.messages.create({
-            model: "claude-sonnet-4-5-20250929",
+            model: "claude-3-5-sonnet-20241022",
             max_tokens: 2000,
             temperature: 0.7,
             messages: [{
