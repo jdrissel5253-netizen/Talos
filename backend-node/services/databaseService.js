@@ -26,19 +26,19 @@ const fromJSON = (value) => {
 const userService = {
     async create(email, passwordHash, companyName = null) {
         const result = await db.query(
-            'INSERT INTO users (email, password_hash, company_name) VALUES (?, ?, ?) RETURNING *',
+            'INSERT INTO users (email, password_hash, company_name) VALUES ($1, $2, $3) RETURNING *',
             [email, passwordHash, companyName]
         );
         return result.rows[0];
     },
 
     async findByEmail(email) {
-        const result = await db.query('SELECT * FROM users WHERE email = ?', [email]);
+        const result = await db.query('SELECT * FROM users WHERE email = $1', [email]);
         return result.rows[0];
     },
 
     async findById(id) {
-        const result = await db.query('SELECT * FROM users WHERE id = ?', [id]);
+        const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
         return result.rows[0];
     }
 };
@@ -49,7 +49,7 @@ const userService = {
 const batchService = {
     async create(userId, name, totalResumes) {
         const result = await db.query(
-            'INSERT INTO batches (user_id, name, total_resumes) VALUES (?, ?, ?) RETURNING *',
+            'INSERT INTO batches (user_id, name, total_resumes) VALUES ($1, $2, $3) RETURNING *',
             [userId, name, totalResumes]
         );
         return result.rows[0];
@@ -57,14 +57,14 @@ const batchService = {
 
     async findByUserId(userId) {
         const result = await db.query(
-            'SELECT * FROM batches WHERE user_id = ? ORDER BY created_at DESC',
+            'SELECT * FROM batches WHERE user_id = $1 ORDER BY created_at DESC',
             [userId]
         );
         return result.rows;
     },
 
     async findById(id) {
-        const result = await db.query('SELECT * FROM batches WHERE id = ?', [id]);
+        const result = await db.query('SELECT * FROM batches WHERE id = $1', [id]);
         return result.rows[0];
     }
 };
@@ -75,7 +75,7 @@ const batchService = {
 const candidateService = {
     async create(batchId, filename, filePath) {
         const result = await db.query(
-            'INSERT INTO candidates (batch_id, filename, file_path, status) VALUES (?, ?, ?, ?) RETURNING *',
+            'INSERT INTO candidates (batch_id, filename, file_path, status) VALUES ($1, $2, $3, $4) RETURNING *',
             [batchId, filename, filePath, 'analyzing']
         );
         return result.rows[0];
@@ -83,7 +83,7 @@ const candidateService = {
 
     async updateStatus(id, status) {
         const result = await db.query(
-            'UPDATE candidates SET status = ? WHERE id = ? RETURNING *',
+            'UPDATE candidates SET status = $1 WHERE id = $2 RETURNING *',
             [status, id]
         );
         return result.rows[0];
@@ -94,7 +94,7 @@ const candidateService = {
             `SELECT c.*, a.score_out_of_10, a.summary, a.hiring_recommendation
              FROM candidates c
              LEFT JOIN analyses a ON c.id = a.candidate_id
-             WHERE c.batch_id = ?
+             WHERE c.batch_id = $1
              ORDER BY a.score_out_of_10 DESC`,
             [batchId]
         );
@@ -102,7 +102,7 @@ const candidateService = {
     },
 
     async findById(id) {
-        const result = await db.query('SELECT * FROM candidates WHERE id = ?', [id]);
+        const result = await db.query('SELECT * FROM candidates WHERE id = $1', [id]);
         return result.rows[0];
     }
 };
@@ -153,12 +153,12 @@ const analysisService = {
                 presentation_score, presentation_strengths, presentation_improvements, presentation_feedback,
                 strengths, weaknesses, recommendations, hiring_recommendation
             ) VALUES (
-                ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?,
-                ?, ?, ?, ?
+                $1, $2, $3, $4,
+                $5, $6, $7, $8,
+                $9, $10, $11, $12,
+                $13, $14, $15, $16,
+                $17, $18, $19, $20,
+                $21, $22, $23, $24
             ) RETURNING *`,
             [
                 candidateId, overallScore, scoreOutOf10, finalSummary,
@@ -173,7 +173,7 @@ const analysisService = {
     },
 
     async findByCandidateId(candidateId) {
-        const result = await db.query('SELECT * FROM analyses WHERE candidate_id = ?', [candidateId]);
+        const result = await db.query('SELECT * FROM analyses WHERE candidate_id = $1', [candidateId]);
         const analysis = result.rows[0];
         if (analysis) {
             // Parse JSON fields
@@ -196,7 +196,7 @@ const analysisService = {
             `SELECT c.*, a.*
              FROM candidates c
              JOIN analyses a ON c.id = a.candidate_id
-             WHERE c.id = ?`,
+             WHERE c.id = $1`,
             [candidateId]
         );
         const analysis = result.rows[0];
@@ -232,7 +232,7 @@ const jobService = {
                 education_requirements, other_relevant_titles, advancement_opportunities,
                 advancement_timeline, company_culture, ai_generated_description,
                 flexible_on_title, status
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32) RETURNING *`,
             [
                 userId,
                 jobData.title,
@@ -273,25 +273,27 @@ const jobService = {
 
     async findByUserId(userId) {
         const result = await db.query(
-            'SELECT * FROM jobs WHERE user_id = ? ORDER BY created_at DESC',
+            'SELECT * FROM jobs WHERE user_id = $1 ORDER BY created_at DESC',
             [userId]
         );
         return result.rows;
     },
 
     async findById(id) {
-        const result = await db.query('SELECT * FROM jobs WHERE id = ?', [id]);
+        const result = await db.query('SELECT * FROM jobs WHERE id = $1', [id]);
         return result.rows[0];
     },
 
     async update(id, updates) {
         const fields = [];
         const values = [];
+        let paramIndex = 1;
 
         Object.keys(updates).forEach(key => {
             if (updates[key] !== undefined) {
-                fields.push(`${key} = ?`);
+                fields.push(`${key} = $${paramIndex}`);
                 values.push(updates[key]);
+                paramIndex++;
             }
         });
 
@@ -299,14 +301,14 @@ const jobService = {
 
         values.push(id);
         const result = await db.query(
-            `UPDATE jobs SET ${fields.join(', ')} WHERE id = ? RETURNING *`,
+            `UPDATE jobs SET ${fields.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
             values
         );
         return result.rows[0];
     },
 
     async delete(id) {
-        await db.query('DELETE FROM jobs WHERE id = ?', [id]);
+        await db.query('DELETE FROM jobs WHERE id = $1', [id]);
     }
 };
 
@@ -331,7 +333,7 @@ const candidatePipelineService = {
             `INSERT INTO candidate_pipeline (
                 candidate_id, job_id, pipeline_status, tier, tier_score, star_rating,
                 give_them_a_chance, vehicle_status, ai_summary, internal_notes, tags, evaluated_position
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
             ON CONFLICT(candidate_id, job_id) DO UPDATE SET
                 tier = excluded.tier,
                 tier_score = excluded.tier_score,
@@ -350,16 +352,16 @@ const candidatePipelineService = {
 
     async updateStatus(candidatePipelineId, status) {
         const result = await db.query(
-            'UPDATE candidate_pipeline SET pipeline_status = ? WHERE id = ? RETURNING *',
+            'UPDATE candidate_pipeline SET pipeline_status = $1 WHERE id = $2 RETURNING *',
             [status, candidatePipelineId]
         );
         return result.rows[0];
     },
 
     async bulkUpdateStatus(candidatePipelineIds, status) {
-        const placeholders = candidatePipelineIds.map(() => '?').join(',');
+        const placeholders = candidatePipelineIds.map((_, i) => `$${i + 2}`).join(',');
         const result = await db.query(
-            `UPDATE candidate_pipeline SET pipeline_status = ?
+            `UPDATE candidate_pipeline SET pipeline_status = $1
              WHERE id IN (${placeholders}) RETURNING *`,
             [status, ...candidatePipelineIds]
         );
@@ -373,23 +375,27 @@ const candidatePipelineService = {
             FROM candidate_pipeline cp
             JOIN candidates c ON cp.candidate_id = c.id
             LEFT JOIN analyses a ON c.id = a.candidate_id
-            WHERE cp.job_id = ?
+            WHERE cp.job_id = $1
         `;
 
         const params = [jobId];
+        let paramIndex = 2;
 
         // Apply filters
         if (filters.tier) {
-            query += ' AND cp.tier = ?';
+            query += ` AND cp.tier = $${paramIndex}`;
             params.push(filters.tier);
+            paramIndex++;
         }
         if (filters.pipeline_status) {
-            query += ' AND cp.pipeline_status = ?';
+            query += ` AND cp.pipeline_status = $${paramIndex}`;
             params.push(filters.pipeline_status);
+            paramIndex++;
         }
         if (filters.min_score) {
-            query += ' AND cp.tier_score >= ?';
+            query += ` AND cp.tier_score >= $${paramIndex}`;
             params.push(filters.min_score);
+            paramIndex++;
         }
         if (filters.give_them_a_chance) {
             query += ' AND cp.give_them_a_chance = 1';
@@ -428,7 +434,7 @@ const candidatePipelineService = {
                 template_tone,
                 is_nudge,
                 scheduling_link
-            ) VALUES (?, ?, ?, ?, ?, ?, ?) RETURNING *`,
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
             [
                 candidatePipelineId,
                 communicationType,
@@ -446,11 +452,11 @@ const candidatePipelineService = {
         // Update candidate_pipeline with contact info and status
         await db.query(
             `UPDATE candidate_pipeline
-             SET contacted_via = ?,
+             SET contacted_via = $1,
                  contacted_at = CURRENT_TIMESTAMP,
-                 last_message_sent = ?,
-                 pipeline_status = ?
-             WHERE id = ?`,
+                 last_message_sent = $2,
+                 pipeline_status = $3
+             WHERE id = $4`,
             [communicationType, messageContent, newStatus, candidatePipelineId]
         );
 
@@ -460,7 +466,7 @@ const candidatePipelineService = {
     async getCommunicationHistory(candidatePipelineId) {
         const result = await db.query(
             `SELECT * FROM communication_log
-             WHERE candidate_pipeline_id = ?
+             WHERE candidate_pipeline_id = $1
              ORDER BY sent_at DESC`,
             [candidatePipelineId]
         );
@@ -505,31 +511,38 @@ const candidatePipelineService = {
         `;
 
         const params = [];
+        let paramIndex = 1;
 
         // Apply filters
         if (filters.tier) {
-            query += ' AND cp.tier = ?';
+            query += ` AND cp.tier = $${paramIndex}`;
             params.push(filters.tier);
+            paramIndex++;
         }
         if (filters.job_id) {
-            query += ' AND cp.job_id = ?';
+            query += ` AND cp.job_id = $${paramIndex}`;
             params.push(filters.job_id);
+            paramIndex++;
         }
         if (filters.position) {
-            query += ' AND j.position_type = ?';
+            query += ` AND j.position_type = $${paramIndex}`;
             params.push(filters.position);
+            paramIndex++;
         }
         if (filters.minScore !== undefined) {
-            query += ' AND cp.tier_score >= ?';
+            query += ` AND cp.tier_score >= $${paramIndex}`;
             params.push(filters.minScore);
+            paramIndex++;
         }
         if (filters.maxScore !== undefined) {
-            query += ' AND cp.tier_score <= ?';
+            query += ` AND cp.tier_score <= $${paramIndex}`;
             params.push(filters.maxScore);
+            paramIndex++;
         }
         if (filters.status) {
-            query += ' AND cp.pipeline_status = ?';
+            query += ` AND cp.pipeline_status = $${paramIndex}`;
             params.push(filters.status);
+            paramIndex++;
         }
 
         // Sorting
@@ -620,13 +633,13 @@ const candidatePipelineService = {
 
         if (isContacted) {
             query = `UPDATE candidate_pipeline
-                     SET contacted_via = ?, contacted_at = CURRENT_TIMESTAMP
-                     WHERE id = ? RETURNING *`;
+                     SET contacted_via = $1, contacted_at = CURRENT_TIMESTAMP
+                     WHERE id = $2 RETURNING *`;
             params = [contactedVia || 'manual', candidatePipelineId];
         } else {
             query = `UPDATE candidate_pipeline
                      SET contacted_via = NULL, contacted_at = NULL
-                     WHERE id = ? RETURNING *`;
+                     WHERE id = $1 RETURNING *`;
             params = [candidatePipelineId];
         }
 
@@ -639,7 +652,7 @@ const candidatePipelineService = {
         const candidateResult = await db.query(
             `SELECT c.*, a.* FROM candidates c
              LEFT JOIN analyses a ON c.id = a.candidate_id
-             WHERE c.id = ?`,
+             WHERE c.id = $1`,
             [candidateId]
         );
 
