@@ -3686,7 +3686,7 @@ Provide thorough, honest, and actionable feedback specifically tailored to the $
 
       // Call Claude API
       const message = await anthropic.messages.create({
-         model: "claude-3-haiku-20240307",  // Using Claude 3 Haiku for better specific rubric adherence
+         model: "claude-3-5-sonnet-20241022",  // Using Claude 3.5 Sonnet for better analysis
          max_tokens: 4096,
          temperature: 0,  // Set to 0 for deterministic, consistent grading
          messages: [{
