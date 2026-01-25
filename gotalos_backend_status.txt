@@ -1,0 +1,30 @@
+GotaLos.io Backend Infrastructure Status
+Date: 2026-01-13
+
+*** SUMMARY ***
+The backend environment for gotalos.io appears to be missing (deleted or terminated) from AWS Elastic Beanstalk. This is likely why API calls are failing. The database and frontend infrastructure are intact.
+
+*** INFRASTRUCTURE DETAILS ***
+
+1. DATABASE (Active)
+   - Type: PostgreSQL on AWS RDS
+   - Endpoint: talos-db.cktooy4kca01.us-east-1.rds.amazonaws.com
+   - Port: 5432
+   - User: talos_admin
+
+2. FRONTEND (Active)
+   - Host: AWS S3 (Static Website Hosting)
+   - Bucket: talos-hvac-frontend-1759612745.s3-website-us-east-1.amazonaws.com
+   - CDN: AWS CloudFront (Distribution ID: E3IMJUISUQ2J81)
+
+3. BACKEND COMPUTE (Missing)
+   - Service: AWS Elastic Beanstalk
+   - Region: us-east-1 (N. Virginia)
+   - Expected Environment Name: talos-hvac-backend-env
+   - Target Domain (from CloudFront): talos-hvac-backend-env.us-east-1.elasticbeanstalk.com
+   - STATUS: Environment does not exist in AWS account.
+
+*** RECOMMENDED NEXT STEPS ***
+1. Create a new Elastic Beanstalk environment using the existing code in `talos-website\backend-node`.
+2. Update the CloudFront distribution to point to the new Elastic Beanstalk environment URL.
+3. Verify connectivity between the new backend and the existing RDS database.

@@ -30,7 +30,8 @@ def create_package():
         'test_output_2.txt',
         'test_output_3.txt',
         'create-package.ps1', # Don't need the builder script itself
-        'create_package.py'
+        'create_package.py',
+        'package-lock.json'
     }
 
     # Explicit inclusions (to ensure we grab dotfiles that might be missed)

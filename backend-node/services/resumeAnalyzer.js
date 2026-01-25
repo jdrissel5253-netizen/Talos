@@ -4,313 +4,317 @@ const fs = require('fs').promises;
 const path = require('path');
 
 // Initialize Anthropic client
+if (!process.env.ANTHROPIC_API_KEY) {
+   console.error('CRITICAL ERROR: ANTHROPIC_API_KEY is missing from environment variables');
+}
+
 const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY
+   apiKey: process.env.ANTHROPIC_API_KEY
 });
 
 /**
  * Extract text from PDF resume
  */
 async function extractTextFromPDF(filePath) {
-    const dataBuffer = await fs.readFile(filePath);
-    const data = await pdfParse(dataBuffer);
-    return data.text;
+   const dataBuffer = await fs.readFile(filePath);
+   const data = await pdfParse(dataBuffer);
+   return data.text;
 }
 
 /**
  * Get position-specific evaluation criteria
  */
 function getPositionCriteria(position) {
-    const criteria = {
-        'HVAC Technician': {
-            title: 'HVAC Technician',
-            keySkills: [
-                '- EPA 608 Universal Certification',
-                '- NATE Certification',
-                '- HVAC Installation & Maintenance',
-                '- Refrigeration Systems',
-                '- Air Conditioning Systems',
-                '- Heating Systems (Gas, Electric, Oil)',
-                '- Ductwork Installation',
-                '- Troubleshooting & Diagnostics',
-                '- HVAC Controls & Thermostats',
-                '- Residential and/or Commercial Experience',
-                '- Load Calculations',
-                '- Blueprint Reading',
-                '- Safety Protocols (OSHA)',
-                '- Customer Service Skills',
-                '- Hand and Power Tool Proficiency'
-            ],
-            experienceGuidelines: 'Look for 2-5 years of hands-on HVAC experience. Experience with both installation and service/repair is valuable.',
-            additionalNotes: 'Focus on technical competence, problem-solving abilities, and customer interaction skills. Safety consciousness is critical.'
-        },
-        'Lead HVAC Technician': {
-            title: 'Lead HVAC Technician',
-            keySkills: [
-                '- EPA 608 Universal Certification (Required)',
-                '- NATE Certification (Preferred)',
-                '- Advanced HVAC Systems Knowledge',
-                '- Team Leadership & Supervision Experience',
-                '- Project Management Skills',
-                '- Quality Control & Inspection',
-                '- Training & Mentoring Abilities',
-                '- Complex Troubleshooting & Diagnostics',
-                '- Commercial HVAC Experience',
-                '- Blueprint Reading & System Design',
-                '- Code Compliance (Local, State, Federal)',
-                '- Budget Management',
-                '- Vendor Relations',
-                '- Advanced Safety Management',
-                '- Client Communication & Relationship Building'
-            ],
-            experienceGuidelines: 'Look for 5+ years of HVAC experience with demonstrated leadership capabilities. Prior supervisory or lead technician experience is highly valued.',
-            additionalNotes: 'Prioritize leadership qualities, project management experience, and ability to handle complex commercial systems. Look for evidence of training others, managing teams, and coordinating work schedules.'
-        },
-        'HVAC Dispatcher': {
-            title: 'HVAC Dispatcher',
-            keySkills: [
-                '- Dispatch Software Proficiency (ServiceTitan, FieldEdge, etc.)',
-                '- HVAC Industry Knowledge',
-                '- Customer Service Excellence',
-                '- Multi-line Phone System Experience',
-                '- Scheduling & Route Optimization',
-                '- Priority Assessment & Triage',
-                '- CRM Software Experience',
-                '- Communication Skills (written & verbal)',
-                '- Problem-solving & Conflict Resolution',
-                '- Time Management & Organization',
-                '- Basic Understanding of HVAC Equipment',
-                '- Emergency Call Handling',
-                '- Data Entry & Record Keeping',
-                '- Team Coordination',
-                '- Microsoft Office Suite (Excel, Outlook)'
-            ],
-            experienceGuidelines: 'Look for 1-3 years of dispatch, customer service, or administrative experience. HVAC industry experience is a plus but not required if they have strong dispatch/coordination background.',
-            additionalNotes: 'Focus on organizational skills, communication abilities, multitasking capacity, and customer service orientation. Look for experience with scheduling software and handling high-volume communications.'
-        },
-        'Administrative Assistant': {
-            title: 'Administrative Assistant',
-            keySkills: [
-                '- Microsoft Office Suite (Word, Excel, PowerPoint, Outlook)',
-                '- Google Workspace (Docs, Sheets, Gmail, Calendar)',
-                '- Calendar Management & Scheduling',
-                '- Filing & Organization (digital and physical)',
-                '- Data Entry & Record Keeping',
-                '- Phone & Email Communication',
-                '- Customer Service Skills',
-                '- Document Preparation & Formatting',
-                '- CRM or Database Experience',
-                '- Multi-tasking & Prioritization',
-                '- Attention to Detail',
-                '- Time Management',
-                '- Professional Communication (written & verbal)',
-                '- Office Supply Management',
-                '- Meeting Coordination'
-            ],
-            experienceGuidelines: 'Look for 1-3 years of administrative, office support, or customer service experience. Direct admin assistant experience is valuable, but equivalent roles (receptionist, office coordinator, executive assistant) with transferable skills are also strong candidates.',
-            additionalNotes: 'Focus on organizational abilities, attention to detail, communication skills, and proficiency with office software. Look for candidates who can multitask effectively in busy office environments and support multiple team members.'
-        },
-        'Customer Service Representative': {
-            title: 'Customer Service Representative',
-            keySkills: [
-                '- Customer Interaction & Communication',
-                '- Call Center or Phone System Experience',
-                '- Problem Solving & Issue Resolution',
-                '- Conflict De-escalation',
-                '- CRM Systems (Salesforce, Zendesk, HubSpot, ServiceNow)',
-                '- Active Listening & Empathy',
-                '- Multi-tasking in High-Volume Environment',
-                '- Ticketing Systems & Documentation',
-                '- Professional Written & Verbal Communication',
-                '- Handling Customer Complaints',
-                '- Product/Service Knowledge',
-                '- Data Entry & Record Keeping',
-                '- Time Management & Organization',
-                '- Positive Attitude & Patience',
-                '- Adaptability & Flexibility'
-            ],
-            experienceGuidelines: 'Look for 2+ years of customer-facing experience. Direct CSR experience is valuable, but equivalent roles (call center rep, retail associate, hospitality staff, front desk, receptionist) with strong customer interaction skills are also strong candidates.',
-            additionalNotes: 'Focus on communication abilities, problem-solving skills, empathy, and ability to handle high-volume customer interactions. Look for candidates who can remain professional under pressure, de-escalate conflicts, and maintain a positive customer experience.'
-        },
-        'HVAC Installer': {
-            title: 'HVAC Installer',
-            keySkills: [
-                '- HVAC System Installation',
-                '- Ductwork Installation & Fabrication',
-                '- EPA 608 Certification (Preferred)',
-                '- Refrigerant Line Installation',
-                '- Electrical Wiring & Connections',
-                '- Blueprint Reading',
-                '- Hand & Power Tool Proficiency',
-                '- Residential & Commercial Installation',
-                '- System Start-up & Testing',
-                '- Safety Protocols (OSHA)',
-                '- Physical Stamina & Strength',
-                '- Team Collaboration',
-                '- Time Management',
-                '- Quality Workmanship',
-                '- Customer Service Skills'
-            ],
-            experienceGuidelines: 'Look for 1-3 years of HVAC installation experience. Entry-level candidates with apprenticeship experience or strong mechanical aptitude are also considered.',
-            additionalNotes: 'Focus on installation expertise, ability to work in various environments (attics, crawl spaces), physical capability, and attention to detail in system installation. Safety consciousness is critical.'
-        },
-        'Lead HVAC Installer': {
-            title: 'Lead HVAC Installer',
-            keySkills: [
-                '- Advanced HVAC Installation Expertise',
-                '- EPA 608 Universal Certification (Required)',
-                '- Team Leadership & Crew Supervision',
-                '- Job Site Management',
-                '- Blueprint Reading & System Design',
-                '- Load Calculations',
-                '- Quality Control & Inspection',
-                '- Training & Mentoring',
-                '- Material & Equipment Coordination',
-                '- Code Compliance (Local, State, Federal)',
-                '- Project Scheduling',
-                '- Customer Communication',
-                '- Problem-solving on Complex Installations',
-                '- Safety Management',
-                '- Multi-system Installation (Residential & Commercial)'
-            ],
-            experienceGuidelines: 'Look for 4+ years of HVAC installation experience with demonstrated leadership capabilities. Prior lead or supervisory experience is highly valued.',
-            additionalNotes: 'Prioritize leadership qualities, project coordination skills, and ability to manage installation crews. Look for evidence of training others, managing job sites, and ensuring quality installations on schedule.'
-        },
-        'Maintenance Technician': {
-            title: 'Maintenance Technician',
-            keySkills: [
-                '- Preventive Maintenance Programs',
-                '- HVAC Systems Maintenance',
-                '- Electrical Systems & Troubleshooting',
-                '- Plumbing Systems Knowledge',
-                '- Building Systems (HVAC, Electrical, Plumbing)',
-                '- Mechanical Repairs',
-                '- Hand & Power Tool Proficiency',
-                '- Equipment Inspection & Testing',
-                '- Work Order Management Systems',
-                '- Safety Protocols & OSHA Compliance',
-                '- Basic Welding & Fabrication (Preferred)',
-                '- Facility Management Software',
-                '- Problem-solving & Diagnostics',
-                '- Record Keeping & Documentation',
-                '- Customer Service Skills'
-            ],
-            experienceGuidelines: 'Look for 2-4 years of maintenance experience in commercial or industrial settings. Multi-skilled candidates with broad mechanical, electrical, and HVAC knowledge are ideal.',
-            additionalNotes: 'Focus on versatility, preventive maintenance experience, troubleshooting abilities, and ability to work independently. Look for candidates who can handle multiple building systems and respond to urgent maintenance needs.'
-        },
-        'Warehouse Associate': {
-            title: 'Warehouse Associate',
-            keySkills: [
-                '- Inventory Management',
-                '- Forklift Operation (Certification Preferred)',
-                '- Warehouse Management Systems (WMS)',
-                '- Picking, Packing & Shipping',
-                '- Receiving & Inspection',
-                '- Barcode Scanning & RF Devices',
-                '- Material Handling Equipment',
-                '- Physical Stamina & Lifting (50+ lbs)',
-                '- Safety Protocols & OSHA Compliance',
-                '- Organization & Attention to Detail',
-                '- Basic Computer Skills',
-                '- Team Collaboration',
-                '- Time Management',
-                '- Quality Control',
-                '- Order Fulfillment'
-            ],
-            experienceGuidelines: 'Look for 1-2 years of warehouse, logistics, or inventory experience. Forklift certification and WMS experience are strong advantages.',
-            additionalNotes: 'Focus on reliability, physical capability, attention to detail, and safety consciousness. Look for candidates who can work efficiently in fast-paced warehouse environments and maintain accurate inventory records.'
-        },
-        'Bookkeeper': {
-            title: 'Bookkeeper',
-            keySkills: [
-                '- Accounting Software (QuickBooks, Xero, Sage)',
-                '- Accounts Payable & Receivable',
-                '- General Ledger Maintenance',
-                '- Bank Reconciliation',
-                '- Financial Record Keeping',
-                '- Payroll Processing',
-                '- Invoice Processing',
-                '- Expense Tracking & Reporting',
-                '- Microsoft Excel (Advanced)',
-                '- Tax Preparation Support',
-                '- Financial Reporting',
-                '- Attention to Detail & Accuracy',
-                '- Confidentiality & Ethics',
-                '- Time Management',
-                '- Communication Skills'
-            ],
-            experienceGuidelines: 'Look for 2-4 years of bookkeeping or accounting experience. QuickBooks proficiency is highly valued. Accounting degree or certification (Certified Bookkeeper) is a plus.',
-            additionalNotes: 'Focus on accuracy, attention to detail, accounting software proficiency, and ability to maintain confidential financial records. Look for candidates who can work independently and manage multiple accounting tasks efficiently.'
-        },
-        'HVAC Sales Representative': {
-            title: 'HVAC Sales Representative',
-            keySkills: [
-                '- Sales Experience (B2B or B2C)',
-                '- HVAC Systems Knowledge',
-                '- Lead Generation & Prospecting',
-                '- Customer Needs Assessment',
-                '- Solution Selling & Consultation',
-                '- CRM Systems (Salesforce, HubSpot)',
-                '- Proposal & Quote Preparation',
-                '- Contract Negotiation',
-                '- Product Knowledge (Equipment, Systems)',
-                '- Communication & Presentation Skills',
-                '- Relationship Building',
-                '- Territory Management',
-                '- Sales Target Achievement',
-                '- Technical Product Training',
-                '- Customer Service Orientation'
-            ],
-            experienceGuidelines: 'Look for 2-5 years of sales experience, preferably in HVAC, construction, or technical products. Track record of meeting or exceeding sales targets is essential.',
-            additionalNotes: 'Focus on sales achievements, technical aptitude, relationship-building skills, and ability to explain complex HVAC solutions to customers. Look for candidates who can balance technical knowledge with strong sales capabilities.'
-        },
-        'HVAC Service Manager': {
-            title: 'HVAC Service Manager',
-            keySkills: [
-                '- HVAC Technical Expertise',
-                '- Team Leadership & Management',
-                '- Service Department Operations',
-                '- Scheduling & Dispatch Management',
-                '- Budget & P&L Management',
-                '- Customer Relationship Management',
-                '- Quality Assurance & Control',
-                '- Performance Management & KPIs',
-                '- Service Software (ServiceTitan, FieldEdge)',
-                '- EPA 608 Certification (Preferred)',
-                '- Hiring, Training & Development',
-                '- Contract Management',
-                '- Code Compliance & Safety Management',
-                '- Problem Resolution & Conflict Management',
-                '- Strategic Planning & Process Improvement'
-            ],
-            experienceGuidelines: 'Look for 5+ years of HVAC experience with 2+ years in supervisory or management roles. Strong service department management background is essential.',
-            additionalNotes: 'Prioritize leadership experience, operational management skills, and ability to drive service department profitability. Look for candidates who can manage technician teams, ensure customer satisfaction, and optimize service operations.'
-        },
-        'Apprentice': {
-            title: 'Apprentice',
-            keySkills: [
-                '- Eagerness to Learn & Develop Skills',
-                '- Basic Mechanical Aptitude',
-                '- Hand & Power Tool Familiarity',
-                '- Physical Stamina & Ability to Lift',
-                '- Following Directions & Instructions',
-                '- Safety Awareness & Protocols',
-                '- Reliable & Punctual',
-                '- Team Collaboration',
-                '- Problem-solving Interest',
-                '- Basic Math Skills',
-                '- Valid Driver\'s License (Preferred)',
-                '- Technical/Trade School Education (Preferred)',
-                '- OSHA 10 Certification (Preferred)',
-                '- Willingness to Work in Various Conditions',
-                '- Professional Attitude & Work Ethic'
-            ],
-            experienceGuidelines: 'Look for candidates with 0-1 years of experience. Previous trade experience, technical school training, or related apprenticeships are valuable. Focus on potential, attitude, and willingness to learn rather than extensive experience.',
-            additionalNotes: 'Focus on trainability, work ethic, mechanical aptitude, and genuine interest in learning the HVAC trade. Look for candidates with strong foundational skills, positive attitude, and commitment to professional development. Prior exposure to construction, mechanical work, or hands-on technical fields is a plus.'
-        }
-    };
+   const criteria = {
+      'HVAC Technician': {
+         title: 'HVAC Technician',
+         keySkills: [
+            '- EPA 608 Universal Certification',
+            '- NATE Certification',
+            '- HVAC Installation & Maintenance',
+            '- Refrigeration Systems',
+            '- Air Conditioning Systems',
+            '- Heating Systems (Gas, Electric, Oil)',
+            '- Ductwork Installation',
+            '- Troubleshooting & Diagnostics',
+            '- HVAC Controls & Thermostats',
+            '- Residential and/or Commercial Experience',
+            '- Load Calculations',
+            '- Blueprint Reading',
+            '- Safety Protocols (OSHA)',
+            '- Customer Service Skills',
+            '- Hand and Power Tool Proficiency'
+         ],
+         experienceGuidelines: 'Look for 2-5 years of hands-on HVAC experience. Experience with both installation and service/repair is valuable.',
+         additionalNotes: 'Focus on technical competence, problem-solving abilities, and customer interaction skills. Safety consciousness is critical.'
+      },
+      'Lead HVAC Technician': {
+         title: 'Lead HVAC Technician',
+         keySkills: [
+            '- EPA 608 Universal Certification (Required)',
+            '- NATE Certification (Preferred)',
+            '- Advanced HVAC Systems Knowledge',
+            '- Team Leadership & Supervision Experience',
+            '- Project Management Skills',
+            '- Quality Control & Inspection',
+            '- Training & Mentoring Abilities',
+            '- Complex Troubleshooting & Diagnostics',
+            '- Commercial HVAC Experience',
+            '- Blueprint Reading & System Design',
+            '- Code Compliance (Local, State, Federal)',
+            '- Budget Management',
+            '- Vendor Relations',
+            '- Advanced Safety Management',
+            '- Client Communication & Relationship Building'
+         ],
+         experienceGuidelines: 'Look for 5+ years of HVAC experience with demonstrated leadership capabilities. Prior supervisory or lead technician experience is highly valued.',
+         additionalNotes: 'Prioritize leadership qualities, project management experience, and ability to handle complex commercial systems. Look for evidence of training others, managing teams, and coordinating work schedules.'
+      },
+      'HVAC Dispatcher': {
+         title: 'HVAC Dispatcher',
+         keySkills: [
+            '- Dispatch Software Proficiency (ServiceTitan, FieldEdge, etc.)',
+            '- HVAC Industry Knowledge',
+            '- Customer Service Excellence',
+            '- Multi-line Phone System Experience',
+            '- Scheduling & Route Optimization',
+            '- Priority Assessment & Triage',
+            '- CRM Software Experience',
+            '- Communication Skills (written & verbal)',
+            '- Problem-solving & Conflict Resolution',
+            '- Time Management & Organization',
+            '- Basic Understanding of HVAC Equipment',
+            '- Emergency Call Handling',
+            '- Data Entry & Record Keeping',
+            '- Team Coordination',
+            '- Microsoft Office Suite (Excel, Outlook)'
+         ],
+         experienceGuidelines: 'Look for 1-3 years of dispatch, customer service, or administrative experience. HVAC industry experience is a plus but not required if they have strong dispatch/coordination background.',
+         additionalNotes: 'Focus on organizational skills, communication abilities, multitasking capacity, and customer service orientation. Look for experience with scheduling software and handling high-volume communications.'
+      },
+      'Administrative Assistant': {
+         title: 'Administrative Assistant',
+         keySkills: [
+            '- Microsoft Office Suite (Word, Excel, PowerPoint, Outlook)',
+            '- Google Workspace (Docs, Sheets, Gmail, Calendar)',
+            '- Calendar Management & Scheduling',
+            '- Filing & Organization (digital and physical)',
+            '- Data Entry & Record Keeping',
+            '- Phone & Email Communication',
+            '- Customer Service Skills',
+            '- Document Preparation & Formatting',
+            '- CRM or Database Experience',
+            '- Multi-tasking & Prioritization',
+            '- Attention to Detail',
+            '- Time Management',
+            '- Professional Communication (written & verbal)',
+            '- Office Supply Management',
+            '- Meeting Coordination'
+         ],
+         experienceGuidelines: 'Look for 1-3 years of administrative, office support, or customer service experience. Direct admin assistant experience is valuable, but equivalent roles (receptionist, office coordinator, executive assistant) with transferable skills are also strong candidates.',
+         additionalNotes: 'Focus on organizational abilities, attention to detail, communication skills, and proficiency with office software. Look for candidates who can multitask effectively in busy office environments and support multiple team members.'
+      },
+      'Customer Service Representative': {
+         title: 'Customer Service Representative',
+         keySkills: [
+            '- Customer Interaction & Communication',
+            '- Call Center or Phone System Experience',
+            '- Problem Solving & Issue Resolution',
+            '- Conflict De-escalation',
+            '- CRM Systems (Salesforce, Zendesk, HubSpot, ServiceNow)',
+            '- Active Listening & Empathy',
+            '- Multi-tasking in High-Volume Environment',
+            '- Ticketing Systems & Documentation',
+            '- Professional Written & Verbal Communication',
+            '- Handling Customer Complaints',
+            '- Product/Service Knowledge',
+            '- Data Entry & Record Keeping',
+            '- Time Management & Organization',
+            '- Positive Attitude & Patience',
+            '- Adaptability & Flexibility'
+         ],
+         experienceGuidelines: 'Look for 2+ years of customer-facing experience. Direct CSR experience is valuable, but equivalent roles (call center rep, retail associate, hospitality staff, front desk, receptionist) with strong customer interaction skills are also strong candidates.',
+         additionalNotes: 'Focus on communication abilities, problem-solving skills, empathy, and ability to handle high-volume customer interactions. Look for candidates who can remain professional under pressure, de-escalate conflicts, and maintain a positive customer experience.'
+      },
+      'HVAC Installer': {
+         title: 'HVAC Installer',
+         keySkills: [
+            '- HVAC System Installation',
+            '- Ductwork Installation & Fabrication',
+            '- EPA 608 Certification (Preferred)',
+            '- Refrigerant Line Installation',
+            '- Electrical Wiring & Connections',
+            '- Blueprint Reading',
+            '- Hand & Power Tool Proficiency',
+            '- Residential & Commercial Installation',
+            '- System Start-up & Testing',
+            '- Safety Protocols (OSHA)',
+            '- Physical Stamina & Strength',
+            '- Team Collaboration',
+            '- Time Management',
+            '- Quality Workmanship',
+            '- Customer Service Skills'
+         ],
+         experienceGuidelines: 'Look for 1-3 years of HVAC installation experience. Entry-level candidates with apprenticeship experience or strong mechanical aptitude are also considered.',
+         additionalNotes: 'Focus on installation expertise, ability to work in various environments (attics, crawl spaces), physical capability, and attention to detail in system installation. Safety consciousness is critical.'
+      },
+      'Lead HVAC Installer': {
+         title: 'Lead HVAC Installer',
+         keySkills: [
+            '- Advanced HVAC Installation Expertise',
+            '- EPA 608 Universal Certification (Required)',
+            '- Team Leadership & Crew Supervision',
+            '- Job Site Management',
+            '- Blueprint Reading & System Design',
+            '- Load Calculations',
+            '- Quality Control & Inspection',
+            '- Training & Mentoring',
+            '- Material & Equipment Coordination',
+            '- Code Compliance (Local, State, Federal)',
+            '- Project Scheduling',
+            '- Customer Communication',
+            '- Problem-solving on Complex Installations',
+            '- Safety Management',
+            '- Multi-system Installation (Residential & Commercial)'
+         ],
+         experienceGuidelines: 'Look for 4+ years of HVAC installation experience with demonstrated leadership capabilities. Prior lead or supervisory experience is highly valued.',
+         additionalNotes: 'Prioritize leadership qualities, project coordination skills, and ability to manage installation crews. Look for evidence of training others, managing job sites, and ensuring quality installations on schedule.'
+      },
+      'Maintenance Technician': {
+         title: 'Maintenance Technician',
+         keySkills: [
+            '- Preventive Maintenance Programs',
+            '- HVAC Systems Maintenance',
+            '- Electrical Systems & Troubleshooting',
+            '- Plumbing Systems Knowledge',
+            '- Building Systems (HVAC, Electrical, Plumbing)',
+            '- Mechanical Repairs',
+            '- Hand & Power Tool Proficiency',
+            '- Equipment Inspection & Testing',
+            '- Work Order Management Systems',
+            '- Safety Protocols & OSHA Compliance',
+            '- Basic Welding & Fabrication (Preferred)',
+            '- Facility Management Software',
+            '- Problem-solving & Diagnostics',
+            '- Record Keeping & Documentation',
+            '- Customer Service Skills'
+         ],
+         experienceGuidelines: 'Look for 2-4 years of maintenance experience in commercial or industrial settings. Multi-skilled candidates with broad mechanical, electrical, and HVAC knowledge are ideal.',
+         additionalNotes: 'Focus on versatility, preventive maintenance experience, troubleshooting abilities, and ability to work independently. Look for candidates who can handle multiple building systems and respond to urgent maintenance needs.'
+      },
+      'Warehouse Associate': {
+         title: 'Warehouse Associate',
+         keySkills: [
+            '- Inventory Management',
+            '- Forklift Operation (Certification Preferred)',
+            '- Warehouse Management Systems (WMS)',
+            '- Picking, Packing & Shipping',
+            '- Receiving & Inspection',
+            '- Barcode Scanning & RF Devices',
+            '- Material Handling Equipment',
+            '- Physical Stamina & Lifting (50+ lbs)',
+            '- Safety Protocols & OSHA Compliance',
+            '- Organization & Attention to Detail',
+            '- Basic Computer Skills',
+            '- Team Collaboration',
+            '- Time Management',
+            '- Quality Control',
+            '- Order Fulfillment'
+         ],
+         experienceGuidelines: 'Look for 1-2 years of warehouse, logistics, or inventory experience. Forklift certification and WMS experience are strong advantages.',
+         additionalNotes: 'Focus on reliability, physical capability, attention to detail, and safety consciousness. Look for candidates who can work efficiently in fast-paced warehouse environments and maintain accurate inventory records.'
+      },
+      'Bookkeeper': {
+         title: 'Bookkeeper',
+         keySkills: [
+            '- Accounting Software (QuickBooks, Xero, Sage)',
+            '- Accounts Payable & Receivable',
+            '- General Ledger Maintenance',
+            '- Bank Reconciliation',
+            '- Financial Record Keeping',
+            '- Payroll Processing',
+            '- Invoice Processing',
+            '- Expense Tracking & Reporting',
+            '- Microsoft Excel (Advanced)',
+            '- Tax Preparation Support',
+            '- Financial Reporting',
+            '- Attention to Detail & Accuracy',
+            '- Confidentiality & Ethics',
+            '- Time Management',
+            '- Communication Skills'
+         ],
+         experienceGuidelines: 'Look for 2-4 years of bookkeeping or accounting experience. QuickBooks proficiency is highly valued. Accounting degree or certification (Certified Bookkeeper) is a plus.',
+         additionalNotes: 'Focus on accuracy, attention to detail, accounting software proficiency, and ability to maintain confidential financial records. Look for candidates who can work independently and manage multiple accounting tasks efficiently.'
+      },
+      'HVAC Sales Representative': {
+         title: 'HVAC Sales Representative',
+         keySkills: [
+            '- Sales Experience (B2B or B2C)',
+            '- HVAC Systems Knowledge',
+            '- Lead Generation & Prospecting',
+            '- Customer Needs Assessment',
+            '- Solution Selling & Consultation',
+            '- CRM Systems (Salesforce, HubSpot)',
+            '- Proposal & Quote Preparation',
+            '- Contract Negotiation',
+            '- Product Knowledge (Equipment, Systems)',
+            '- Communication & Presentation Skills',
+            '- Relationship Building',
+            '- Territory Management',
+            '- Sales Target Achievement',
+            '- Technical Product Training',
+            '- Customer Service Orientation'
+         ],
+         experienceGuidelines: 'Look for 2-5 years of sales experience, preferably in HVAC, construction, or technical products. Track record of meeting or exceeding sales targets is essential.',
+         additionalNotes: 'Focus on sales achievements, technical aptitude, relationship-building skills, and ability to explain complex HVAC solutions to customers. Look for candidates who can balance technical knowledge with strong sales capabilities.'
+      },
+      'HVAC Service Manager': {
+         title: 'HVAC Service Manager',
+         keySkills: [
+            '- HVAC Technical Expertise',
+            '- Team Leadership & Management',
+            '- Service Department Operations',
+            '- Scheduling & Dispatch Management',
+            '- Budget & P&L Management',
+            '- Customer Relationship Management',
+            '- Quality Assurance & Control',
+            '- Performance Management & KPIs',
+            '- Service Software (ServiceTitan, FieldEdge)',
+            '- EPA 608 Certification (Preferred)',
+            '- Hiring, Training & Development',
+            '- Contract Management',
+            '- Code Compliance & Safety Management',
+            '- Problem Resolution & Conflict Management',
+            '- Strategic Planning & Process Improvement'
+         ],
+         experienceGuidelines: 'Look for 5+ years of HVAC experience with 2+ years in supervisory or management roles. Strong service department management background is essential.',
+         additionalNotes: 'Prioritize leadership experience, operational management skills, and ability to drive service department profitability. Look for candidates who can manage technician teams, ensure customer satisfaction, and optimize service operations.'
+      },
+      'Apprentice': {
+         title: 'Apprentice',
+         keySkills: [
+            '- Eagerness to Learn & Develop Skills',
+            '- Basic Mechanical Aptitude',
+            '- Hand & Power Tool Familiarity',
+            '- Physical Stamina & Ability to Lift',
+            '- Following Directions & Instructions',
+            '- Safety Awareness & Protocols',
+            '- Reliable & Punctual',
+            '- Team Collaboration',
+            '- Problem-solving Interest',
+            '- Basic Math Skills',
+            '- Valid Driver\'s License (Preferred)',
+            '- Technical/Trade School Education (Preferred)',
+            '- OSHA 10 Certification (Preferred)',
+            '- Willingness to Work in Various Conditions',
+            '- Professional Attitude & Work Ethic'
+         ],
+         experienceGuidelines: 'Look for candidates with 0-1 years of experience. Previous trade experience, technical school training, or related apprenticeships are valuable. Focus on potential, attitude, and willingness to learn rather than extensive experience.',
+         additionalNotes: 'Focus on trainability, work ethic, mechanical aptitude, and genuine interest in learning the HVAC trade. Look for candidates with strong foundational skills, positive attitude, and commitment to professional development. Prior exposure to construction, mechanical work, or hands-on technical fields is a plus.'
+      }
+   };
 
-    return criteria[position] || criteria['HVAC Technician'];
+   return criteria[position] || criteria['HVAC Technician'];
 }
 
 /**
@@ -318,11 +322,11 @@ function getPositionCriteria(position) {
  * @param {boolean} includeCerts - Whether certifications should be a factor (false for office positions)
  */
 function generateUnifiedScoringRubric(requiredYears, includeCerts = true) {
-    const certsLabel = includeCerts ? 'certifications' : 'relevant skills/software';
-    const certsListed = includeCerts ? 'Certs Listed' : 'Skills Listed';
-    const certsNotListed = includeCerts ? 'NO Certs Listed' : 'NO Skills Listed';
+   const certsLabel = includeCerts ? 'certifications' : 'relevant skills/software';
+   const certsListed = includeCerts ? 'Certs Listed' : 'Skills Listed';
+   const certsNotListed = includeCerts ? 'NO Certs Listed' : 'NO Skills Listed';
 
-    return `
+   return `
 === DETAILED SCORING MATRIX ===
 
 REQUIRED EXPERIENCE TIER (Has ${requiredYears}+ years of required experience):
@@ -701,10 +705,10 @@ END OF RUBRIC
  * Get HVAC Dispatcher tiered evaluation criteria
  */
 function getDispatcherCriteria(requiredYears, flexibleOnTitle = true) {
-    const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
+   const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
 
-    return {
-        framework: `
+   return {
+      framework: `
 HVAC DISPATCHER RESUME EVALUATION FRAMEWORK
 Job Requirement: ${requiredYears} years of Dispatcher or equivalent experience
 Flexibility on Role Title: ${flexibleOnTitle ? 'YES - Accept equivalent roles with transferable skills' : 'NO - Strict title matching, equivalent roles score lower'}
@@ -765,11 +769,11 @@ CONDITIONAL EQUIVALENTS (Require skill confirmation in resume):
 - Hospitality roles - hotel front desk (if shows reservation/coordination)
 
 ${flexibleOnTitle ?
-`FLEXIBILITY MODE: ON
+            `FLEXIBILITY MODE: ON
 - Strong Equivalents count as FULL dispatcher experience
 - Conditional Equivalents count as FULL experience IF resume demonstrates relevant skills
 - Focus on transferable skills, not just job titles` :
-`FLEXIBILITY MODE: OFF
+            `FLEXIBILITY MODE: OFF
 - Strong Equivalents count as "Close to Required" experience (apply -${flexibilityPenalty} point penalty)
 - Conditional Equivalents count as "Not Close to Required"
 - Candidates without exact "Dispatcher" title will score lower`}
@@ -828,8 +832,8 @@ ${generateUnifiedScoringRubric(requiredYears, false)}
 === FLEXIBILITY PENALTY APPLICATION ===
 
 ${flexibleOnTitle ?
-`NO PENALTY APPLIED - Equivalent roles score the same as direct dispatcher experience.` :
-`PENALTY APPLIES: If candidate has equivalent role experience (not exact "Dispatcher" title):
+            `NO PENALTY APPLIED - Equivalent roles score the same as direct dispatcher experience.` :
+            `PENALTY APPLIES: If candidate has equivalent role experience (not exact "Dispatcher" title):
 - After calculating score from rubric, SUBTRACT ${flexibilityPenalty} points
 - Example: Score of 79 becomes 70
 - This moves strong equivalent candidates down in the rankings
@@ -864,21 +868,21 @@ ${flexibleOnTitle ?
 
 7. CRITICAL: Experience is THE MOST IMPORTANT factor, followed by demonstrated transferable skills.
 `,
-        scoring: {
-            greenTier: { min: 80, max: 100 },
-            yellowTier: { min: 50, max: 79 },
-            redTier: { min: 0, max: 49 }
-        },
-        flexibilityPenalty: flexibilityPenalty
-    };
+      scoring: {
+         greenTier: { min: 80, max: 100 },
+         yellowTier: { min: 50, max: 79 },
+         redTier: { min: 0, max: 49 }
+      },
+      flexibilityPenalty: flexibilityPenalty
+   };
 }
 
 /**
  * Get HVAC Service Technician tiered evaluation criteria
  */
 function getServiceTechnicianCriteria(requiredYears) {
-    return {
-        framework: `
+   return {
+      framework: `
 HVAC SERVICE TECHNICIAN RESUME EVALUATION FRAMEWORK
 Job Requirement: ${requiredYears} years of Service Technician experience
 
@@ -951,22 +955,22 @@ ${generateUnifiedScoringRubric(requiredYears, true)}
 
 6. Location flexibility: Be reasonable around boundaries (32 miles vs 30 miles shouldn't be drastically different)
 `,
-        scoring: {
-            greenTier: { min: 80, max: 100 },
-            yellowTier: { min: 50, max: 79 },
-            redTier: { min: 0, max: 49 }
-        }
-    };
+      scoring: {
+         greenTier: { min: 80, max: 100 },
+         yellowTier: { min: 50, max: 79 },
+         redTier: { min: 0, max: 49 }
+      }
+   };
 }
 
 /**
  * Get Apprentice tiered evaluation criteria
  */
 function getApprenticeCriteria(requiredYears, flexibleOnTitle = true) {
-    const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
+   const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
 
-    return {
-        framework: `
+   return {
+      framework: `
 HVAC APPRENTICE RESUME EVALUATION FRAMEWORK
 Job Requirement: ${requiredYears} years of Apprentice or equivalent experience (typically 0-1 years)
 Flexibility on Role Title: ${flexibleOnTitle ? 'YES - Accept equivalent roles with transferable skills' : 'NO - Strict title matching, equivalent roles score lower'}
@@ -1060,11 +1064,11 @@ CONDITIONAL EQUIVALENTS (Count IF resume shows 1-2 core competencies):
 - Technical Intern
 
 ${flexibleOnTitle ?
-`FLEXIBILITY MODE: ON
+            `FLEXIBILITY MODE: ON
 - Strong Equivalents count as FULL apprentice experience
 - Conditional Equivalents count as FULL experience IF resume demonstrates 1-2 core competencies
 - Focus on transferable skills and potential, not just job titles` :
-`FLEXIBILITY MODE: OFF
+            `FLEXIBILITY MODE: OFF
 - Strong Equivalents count as "Close to Required" experience (apply -${flexibilityPenalty} point penalty)
 - Conditional Equivalents drop to lower end of "Close to Required" with -${flexibilityPenalty} point penalty
 - Example: A candidate scoring 79 would drop to 70 with flexibility OFF`}
@@ -1113,22 +1117,22 @@ IMPORTANT: Candidates with certifications but limited experience should score in
 ${generateUnifiedScoringRubric(requiredYears, false)}
 
 `,
-        scoring: {
-            greenTier: { min: 80, max: 100 },
-            yellowTier: { min: 50, max: 79 },
-            redTier: { min: 0, max: 49 }
-        }
-    };
+      scoring: {
+         greenTier: { min: 80, max: 100 },
+         yellowTier: { min: 50, max: 79 },
+         redTier: { min: 0, max: 49 }
+      }
+   };
 }
 
 /**
  * Get Bookkeeper tiered evaluation criteria
  */
 function getBookkeeperCriteria(requiredYears, flexibleOnTitle = true) {
-    const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
+   const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
 
-    return {
-        framework: `
+   return {
+      framework: `
 BOOKKEEPER RESUME EVALUATION FRAMEWORK
 Job Requirement: ${requiredYears} years of Bookkeeper or equivalent experience
 Flexibility on Role Title: ${flexibleOnTitle ? 'YES - Accept equivalent roles with transferable skills' : 'NO - Strict title matching, equivalent roles score lower'}
@@ -1228,11 +1232,11 @@ CONDITIONAL EQUIVALENTS (Count ONLY if resume shows 2+ core competencies):
 - Accounting Graduate (for entry-level roles with 0-1 years experience only)
 
 ${flexibleOnTitle ?
-`FLEXIBILITY MODE: ON
+            `FLEXIBILITY MODE: ON
 - Strong Equivalents count as FULL bookkeeping experience
 - Conditional Equivalents count as FULL experience IF resume demonstrates 2+ core competencies
 - Focus on transferable financial skills, not just job titles` :
-`FLEXIBILITY MODE: OFF
+            `FLEXIBILITY MODE: OFF
 - Strong Equivalents count as "Close to Required" experience (apply -${flexibilityPenalty} point penalty)
 - Conditional Equivalents score significantly lower
 - Example: A candidate scoring 79 would drop to 70 with flexibility OFF
@@ -1298,22 +1302,22 @@ Entry-Level Exception:
 ${generateUnifiedScoringRubric(requiredYears, false)}
 
 `,
-        scoring: {
-            greenTier: { min: 80, max: 100 },
-            yellowTier: { min: 50, max: 79 },
-            redTier: { min: 0, max: 49 }
-        }
-    };
+      scoring: {
+         greenTier: { min: 80, max: 100 },
+         yellowTier: { min: 50, max: 79 },
+         redTier: { min: 0, max: 49 }
+      }
+   };
 }
 
 /**
  * Get HVAC Sales Representative tiered evaluation criteria
  */
 function getSalesRepCriteria(requiredYears, flexibleOnTitle = true) {
-    const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
+   const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
 
-    return {
-        framework: `
+   return {
+      framework: `
 HVAC SALES REPRESENTATIVE RESUME EVALUATION FRAMEWORK
 Job Requirement: ${requiredYears} years of HVAC Sales or equivalent sales experience
 Flexibility on Role Title: ${flexibleOnTitle ? 'YES - Accept equivalent sales roles with transferable skills' : 'NO - Strict HVAC sales experience required, equivalent roles score lower'}
@@ -1401,12 +1405,12 @@ CONDITIONAL EQUIVALENTS (Require skill confirmation - must show 1-2+ core compet
 - B2B Sales (if technical products or services)
 
 ${flexibleOnTitle ?
-`FLEXIBILITY MODE: ON
+            `FLEXIBILITY MODE: ON
 - Strong Equivalents count as FULL HVAC sales experience
 - Conditional Equivalents count as FULL experience IF resume demonstrates 1-2+ core competencies from Section A-D
 - Focus on transferable sales skills, proven results, and customer-facing success
 - Sales is highly transferable - prioritize track record over exact job title` :
-`FLEXIBILITY MODE: OFF
+            `FLEXIBILITY MODE: OFF
 - Only direct HVAC sales experience counts as "Required Experience"
 - Strong Equivalents count as "Close to Required" experience (apply -${flexibilityPenalty} point penalty)
 - Conditional Equivalents count as "Not Close to Required" (placed in lower tier)
@@ -1477,22 +1481,22 @@ Certifications (bonus, not required):
 ${generateUnifiedScoringRubric(requiredYears, true)}
 
 `,
-        scoring: {
-            greenTier: { min: 80, max: 100 },
-            yellowTier: { min: 50, max: 79 },
-            redTier: { min: 0, max: 49 }
-        }
-    };
+      scoring: {
+         greenTier: { min: 80, max: 100 },
+         yellowTier: { min: 50, max: 79 },
+         redTier: { min: 0, max: 49 }
+      }
+   };
 }
 
 /**
  * Get Lead HVAC Technician tiered evaluation criteria with transferable skills
  */
 function getLeadHVACTechnicianCriteria(requiredYears, flexibleOnTitle = true) {
-    const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
+   const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
 
-    return {
-        framework: `
+   return {
+      framework: `
 LEAD HVAC TECHNICIAN RESUME EVALUATION FRAMEWORK
 Job Requirement: ${requiredYears} years of Lead HVAC Technician or equivalent senior HVAC experience
 Flexibility on Role Title: ${flexibleOnTitle ? 'YES - Accept equivalent senior HVAC roles with transferable skills' : 'NO - Strict title matching, equivalent roles score 9 points lower'}
@@ -1607,7 +1611,7 @@ EXPERIENCE TIER DEFINITIONS:
 === REQUIRED EXPERIENCE TIER ===
 
 ${flexibleOnTitle ?
-`FLEXIBILITY MODE: ON (flexibleOnTitle = true)
+            `FLEXIBILITY MODE: ON (flexibleOnTitle = true)
 
 Accept candidates with ${requiredYears}+ years in ANY of the following:
 ✓ Lead HVAC Technician (direct match)
@@ -1624,7 +1628,7 @@ Examples that QUALIFY for Required tier:
 - Lead Installer with 5+ years who manages install crews and does service work
 - Maintenance Tech with 5+ years doing commercial HVAC with supervisory duties
 - General Manager with 5+ years of hands-on HVAC work and team leadership` :
-`FLEXIBILITY MODE: OFF (flexibleOnTitle = false)
+            `FLEXIBILITY MODE: OFF (flexibleOnTitle = false)
 
 Only these titles qualify for Required Experience tier:
 ✓ Lead HVAC Technician (direct match)
@@ -1690,22 +1694,22 @@ LOCATION/DISTANCE:
 ${generateUnifiedScoringRubric(requiredYears, true)}
 
 `,
-        scoring: {
-            greenTier: { min: 80, max: 100 },
-            yellowTier: { min: 50, max: 79 },
-            redTier: { min: 0, max: 49 }
-        }
-    };
+      scoring: {
+         greenTier: { min: 80, max: 100 },
+         yellowTier: { min: 50, max: 79 },
+         redTier: { min: 0, max: 49 }
+      }
+   };
 }
 
 /**
  * Get Administrative Assistant tiered evaluation criteria
  */
 function getAdminAssistantCriteria(requiredYears, flexibleOnTitle = true) {
-    const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
+   const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
 
-    return {
-        framework: `
+   return {
+      framework: `
 ADMIN ASSISTANT RESUME EVALUATION FRAMEWORK
 Job Requirement: ${requiredYears} years of Administrative Assistant or equivalent experience
 Flexibility on Role Title: ${flexibleOnTitle ? 'YES - Accept equivalent roles with transferable skills' : 'NO - Strict title matching, equivalent roles score lower'}
@@ -1774,11 +1778,11 @@ CONDITIONAL EQUIVALENTS (Require skill confirmation in resume):
 - Warehouse Office roles (inventory clerk, shipping/receiving desk)
 
 ${flexibleOnTitle ?
-`FLEXIBILITY MODE: ON
+            `FLEXIBILITY MODE: ON
 - Strong Equivalents count as FULL Administrative Assistant experience
 - Conditional Equivalents count as FULL experience IF resume demonstrates relevant skills from sections A-D above
 - Focus on transferable skills, not just job titles` :
-`FLEXIBILITY MODE: OFF
+            `FLEXIBILITY MODE: OFF
 - Strong Equivalents count as "Close to Required" experience (apply -${flexibilityPenalty} point penalty)
 - Conditional Equivalents count as "Not Close to Required"
 - Candidates without exact "Administrative Assistant" title will score lower`}
@@ -1845,22 +1849,22 @@ Certifications (bonus, not required):
 ${generateUnifiedScoringRubric(requiredYears, false)}
 
 `,
-        scoring: {
-            greenTier: { min: 80, max: 100 },
-            yellowTier: { min: 50, max: 79 },
-            redTier: { min: 0, max: 49 }
-        }
-    };
+      scoring: {
+         greenTier: { min: 80, max: 100 },
+         yellowTier: { min: 50, max: 79 },
+         redTier: { min: 0, max: 49 }
+      }
+   };
 }
 
 /**
  * Get Customer Service Representative tiered evaluation criteria
  */
 function getCustomerServiceRepCriteria(requiredYears, flexibleOnTitle = true) {
-    const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
+   const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
 
-    return {
-        framework: `
+   return {
+      framework: `
 CUSTOMER SERVICE REPRESENTATIVE RESUME EVALUATION FRAMEWORK
 Job Requirement: ${requiredYears} years of Customer Service Representative or equivalent experience
 Flexibility on Role Title: ${flexibleOnTitle ? 'YES - Accept equivalent roles with transferable skills' : 'NO - Strict title matching, equivalent roles score lower'}
@@ -1932,11 +1936,11 @@ CONDITIONAL EQUIVALENTS (Require skill confirmation in resume):
 - Appointment Coordinator (if customer interaction)
 
 ${flexibleOnTitle ?
-`FLEXIBILITY MODE: ON
+            `FLEXIBILITY MODE: ON
 - Strong Equivalents count as FULL Customer Service Representative experience
 - Conditional Equivalents count as FULL experience IF resume demonstrates relevant skills from sections A-D above
 - Focus on transferable skills and customer-facing activities, not just job titles` :
-`FLEXIBILITY MODE: OFF
+            `FLEXIBILITY MODE: OFF
 - Strong Equivalents count as "Close to Required" experience (apply -${flexibilityPenalty} point penalty)
 - Conditional Equivalents count as "Not Close to Required"
 - Candidates without exact "Customer Service Representative" title will score lower`}
@@ -2003,49 +2007,49 @@ Certifications (bonus, not required):
 ${generateUnifiedScoringRubric(requiredYears, false)}
 
 `,
-        scoring: {
-            greenTier: { min: 80, max: 100 },
-            yellowTier: { min: 50, max: 79 },
-            redTier: { min: 0, max: 49 }
-        }
-    };
+      scoring: {
+         greenTier: { min: 80, max: 100 },
+         yellowTier: { min: 50, max: 79 },
+         redTier: { min: 0, max: 49 }
+      }
+   };
 }
 
 /**
  * Analyze resume using Claude AI with HVAC-specific criteria
  */
 async function analyzeResume(filePath, position = 'HVAC Technician', requiredYearsExperience = 2, flexibleOnTitle = true) {
-    try {
-        // Extract text from resume
-        let resumeText;
-        const ext = path.extname(filePath).toLowerCase();
+   try {
+      // Extract text from resume
+      let resumeText;
+      const ext = path.extname(filePath).toLowerCase();
 
-        if (ext === '.pdf') {
-            resumeText = await extractTextFromPDF(filePath);
-        } else {
-            // For DOC/DOCX, you'd need additional library like mammoth
-            // For now, we'll handle PDF only
-            throw new Error('Only PDF files are currently supported');
-        }
+      if (ext === '.pdf') {
+         resumeText = await extractTextFromPDF(filePath);
+      } else {
+         // For DOC/DOCX, you'd need additional library like mammoth
+         // For now, we'll handle PDF only
+         throw new Error('Only PDF files are currently supported');
+      }
 
-        // Check if we're using the tiered framework for HVAC Service Technician, Lead HVAC Technician, Dispatcher, Administrative Assistant, Customer Service Rep, Apprentice, Bookkeeper, Warehouse Associate, or Sales Rep
-        const useServiceTechFramework = position === 'HVAC Service Technician';
-        const useLeadHVACTechFramework = position === 'Lead HVAC Technician';
-        const useDispatcherFramework = position === 'HVAC Dispatcher';
-        const useAdminAssistantFramework = position === 'Administrative Assistant';
-        const useCustomerServiceRepFramework = position === 'Customer Service Representative';
-        const useApprenticeFramework = position === 'Apprentice' || position === 'HVAC Apprentice';
-        const useBookkeeperFramework = position === 'Bookkeeper';
-        const useWarehouseAssociateFramework = position === 'Warehouse Associate';
-        const useSalesRepFramework = position === 'HVAC Sales Representative';
+      // Check if we're using the tiered framework for HVAC Service Technician, Lead HVAC Technician, Dispatcher, Administrative Assistant, Customer Service Rep, Apprentice, Bookkeeper, Warehouse Associate, or Sales Rep
+      const useServiceTechFramework = position === 'HVAC Service Technician';
+      const useLeadHVACTechFramework = position === 'Lead HVAC Technician';
+      const useDispatcherFramework = position === 'HVAC Dispatcher';
+      const useAdminAssistantFramework = position === 'Administrative Assistant';
+      const useCustomerServiceRepFramework = position === 'Customer Service Representative';
+      const useApprenticeFramework = position === 'Apprentice' || position === 'HVAC Apprentice';
+      const useBookkeeperFramework = position === 'Bookkeeper';
+      const useWarehouseAssociateFramework = position === 'Warehouse Associate';
+      const useSalesRepFramework = position === 'HVAC Sales Representative';
 
-        let prompt;
+      let prompt;
 
-        if (useSalesRepFramework) {
-            // Use the detailed HVAC Sales Representative evaluation framework
-            const salesRepCriteria = getSalesRepCriteria(requiredYearsExperience, flexibleOnTitle);
+      if (useSalesRepFramework) {
+         // Use the detailed HVAC Sales Representative evaluation framework
+         const salesRepCriteria = getSalesRepCriteria(requiredYearsExperience, flexibleOnTitle);
 
-            prompt = `You are an expert recruiter specializing in HVAC Sales Representative evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
+         prompt = `You are an expert recruiter specializing in HVAC Sales Representative evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
 
 ${salesRepCriteria.framework}
 
@@ -2160,11 +2164,11 @@ Return your analysis in this EXACT JSON format:
   "recommendations": ["<recommendation 1>", "<recommendation 2>"],
   "hiringRecommendation": "<STRONG_YES (90+) | YES (80-89) | MAYBE (70-79) | PROBABLY_NOT (50-69) | NO (<50)>"
 }`;
-        } else if (useWarehouseAssociateFramework) {
-            // Use the detailed Warehouse Associate evaluation framework
-            const warehouseCriteria = getWarehouseAssociateCriteria(requiredYearsExperience, flexibleOnTitle);
+      } else if (useWarehouseAssociateFramework) {
+         // Use the detailed Warehouse Associate evaluation framework
+         const warehouseCriteria = getWarehouseAssociateCriteria(requiredYearsExperience, flexibleOnTitle);
 
-            prompt = `You are an expert recruiter specializing in Warehouse Associate evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
+         prompt = `You are an expert recruiter specializing in Warehouse Associate evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
 
 ${warehouseCriteria.framework}
 
@@ -2275,11 +2279,11 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
   "hiring_recommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
 }`;
 
-        } else if (useBookkeeperFramework) {
-            // Use the detailed Bookkeeper evaluation framework
-            const bookkeeperCriteria = getBookkeeperCriteria(requiredYearsExperience, flexibleOnTitle);
+      } else if (useBookkeeperFramework) {
+         // Use the detailed Bookkeeper evaluation framework
+         const bookkeeperCriteria = getBookkeeperCriteria(requiredYearsExperience, flexibleOnTitle);
 
-            prompt = `You are an expert recruiter specializing in Bookkeeper evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
+         prompt = `You are an expert recruiter specializing in Bookkeeper evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
 
 ${bookkeeperCriteria.framework}
 
@@ -2398,11 +2402,11 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
   "hiring_recommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
 }`;
 
-        } else if (useApprenticeFramework) {
-            // Use the detailed Apprentice evaluation framework
-            const apprenticeCriteria = getApprenticeCriteria(requiredYearsExperience, flexibleOnTitle);
+      } else if (useApprenticeFramework) {
+         // Use the detailed Apprentice evaluation framework
+         const apprenticeCriteria = getApprenticeCriteria(requiredYearsExperience, flexibleOnTitle);
 
-            prompt = `You are an expert recruiter specializing in Apprentice evaluation for trade positions. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
+         prompt = `You are an expert recruiter specializing in Apprentice evaluation for trade positions. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
 
 ${apprenticeCriteria.framework}
 
@@ -2510,11 +2514,11 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
   "hiring_recommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
 }`;
 
-        } else if (useCustomerServiceRepFramework) {
-            // Use the detailed Customer Service Representative evaluation framework
-            const csrCriteria = getCustomerServiceRepCriteria(requiredYearsExperience, flexibleOnTitle);
+      } else if (useCustomerServiceRepFramework) {
+         // Use the detailed Customer Service Representative evaluation framework
+         const csrCriteria = getCustomerServiceRepCriteria(requiredYearsExperience, flexibleOnTitle);
 
-            prompt = `You are an expert recruiter specializing in Customer Service Representative evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
+         prompt = `You are an expert recruiter specializing in Customer Service Representative evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
 
 ${csrCriteria.framework}
 
@@ -2624,11 +2628,11 @@ CRITICAL RULES:
 - Focus on transferable skills and customer-facing activities, not just job titles (unless flexibility is OFF)
 - ALWAYS provide complete JSON response`;
 
-        } else if (useAdminAssistantFramework) {
-            // Use the detailed Administrative Assistant evaluation framework
-            const adminCriteria = getAdminAssistantCriteria(requiredYearsExperience, flexibleOnTitle);
+      } else if (useAdminAssistantFramework) {
+         // Use the detailed Administrative Assistant evaluation framework
+         const adminCriteria = getAdminAssistantCriteria(requiredYearsExperience, flexibleOnTitle);
 
-            prompt = `You are an expert recruiter specializing in Administrative Assistant evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
+         prompt = `You are an expert recruiter specializing in Administrative Assistant evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
 
 ${adminCriteria.framework}
 
@@ -2738,11 +2742,11 @@ CRITICAL RULES:
 - Focus on transferable skills, not just job titles (unless flexibility is OFF)
 - ALWAYS provide complete JSON response`;
 
-        } else if (useDispatcherFramework) {
-            // Use the detailed dispatcher evaluation framework
-            const dispatcherCriteria = getDispatcherCriteria(requiredYearsExperience, flexibleOnTitle);
+      } else if (useDispatcherFramework) {
+         // Use the detailed dispatcher evaluation framework
+         const dispatcherCriteria = getDispatcherCriteria(requiredYearsExperience, flexibleOnTitle);
 
-            prompt = `You are an expert HVAC industry recruiter specializing in Dispatcher evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
+         prompt = `You are an expert HVAC industry recruiter specializing in Dispatcher evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
 
 ${dispatcherCriteria.framework}
 
@@ -2819,8 +2823,8 @@ STEP 8: APPLY THE RUBRIC (if not overqualified)
 
 STEP 9: APPLY FLEXIBILITY PENALTY (IF APPLICABLE)
    ${flexibleOnTitle ?
-   'Flexibility is ON - No penalty applies. Equivalent roles score the same as direct dispatcher experience.' :
-   `Flexibility is OFF - If candidate's experience is from equivalent roles (not exact "Dispatcher" title), SUBTRACT 9 points from the final score. Minimum score is 1.`}
+               'Flexibility is ON - No penalty applies. Equivalent roles score the same as direct dispatcher experience.' :
+               `Flexibility is OFF - If candidate's experience is from equivalent roles (not exact "Dispatcher" title), SUBTRACT 9 points from the final score. Minimum score is 1.`}
 
 STEP 10: VALIDATE YOUR ANSWER
    a) If overqualified, score must be 70-75
@@ -2869,11 +2873,11 @@ Provide your evaluation in the following JSON format:
 }
 
 IMPORTANT: Your overallScore MUST align with the tier ranges (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair.`;
-        } else if (useServiceTechFramework) {
-            // Use the detailed tiered evaluation framework
-            const serviceTechCriteria = getServiceTechnicianCriteria(requiredYearsExperience);
+      } else if (useServiceTechFramework) {
+         // Use the detailed tiered evaluation framework
+         const serviceTechCriteria = getServiceTechnicianCriteria(requiredYearsExperience);
 
-            prompt = `You are an expert HVAC industry recruiter specializing in Service Technician evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
+         prompt = `You are an expert HVAC industry recruiter specializing in Service Technician evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
 
 ${serviceTechCriteria.framework}
 
@@ -2988,11 +2992,11 @@ STEP 9: VALIDATE YOUR ANSWER
 
 IMPORTANT: Your overallScore MUST align with the tier ranges specified in the framework (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair in your evaluation.`;
 
-        } else if (useLeadHVACTechFramework) {
-            // Use the detailed Lead HVAC Technician evaluation framework with transferable skills
-            const leadTechCriteria = getLeadHVACTechnicianCriteria(requiredYearsExperience, flexibleOnTitle);
+      } else if (useLeadHVACTechFramework) {
+         // Use the detailed Lead HVAC Technician evaluation framework with transferable skills
+         const leadTechCriteria = getLeadHVACTechnicianCriteria(requiredYearsExperience, flexibleOnTitle);
 
-            prompt = `You are an expert HVAC industry recruiter specializing in Lead HVAC Technician evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
+         prompt = `You are an expert HVAC industry recruiter specializing in Lead HVAC Technician evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
 
 ${leadTechCriteria.framework}
 
@@ -3018,8 +3022,8 @@ STEP 1: IDENTIFY ALL RELEVANT LEAD/SENIOR HVAC EXPERIENCE
       - HVAC Project Manager (with hands-on technical work)
       - Commercial HVAC Technician (senior level)
    c) ${flexibleOnTitle ?
-      'FLEXIBILITY IS ON: Also accept HVAC Service Technician, HVAC Installer, or Maintenance Technician (without Lead/Senior in title) IF they demonstrate 3-4 core competency categories.' :
-      'FLEXIBILITY IS OFF: Only accept titles with "Lead" or "Senior" in the title. Service Technicians/Installers/Maintenance Techs without Lead/Senior drop to Close tier and get -9 point penalty.'}
+               'FLEXIBILITY IS ON: Also accept HVAC Service Technician, HVAC Installer, or Maintenance Technician (without Lead/Senior in title) IF they demonstrate 3-4 core competency categories.' :
+               'FLEXIBILITY IS OFF: Only accept titles with "Lead" or "Senior" in the title. Service Technicians/Installers/Maintenance Techs without Lead/Senior drop to Close tier and get -9 point penalty.'}
    d) Calculate duration of EACH position in years and months
    e) SUM all durations to get TOTAL relevant lead/senior experience
 
@@ -3062,8 +3066,8 @@ STEP 2: EVALUATE THE 4 CORE COMPETENCY CATEGORIES
 STEP 3: CLASSIFY EXPERIENCE TIER
    a) If TOTAL years >= ${requiredYearsExperience} in lead/senior role (or equivalent with 3-4 competencies): "REQUIRED EXPERIENCE" tier
    b) ${!flexibleOnTitle ?
-      `If flexibility is OFF and candidate has ${requiredYearsExperience}+ years as Service Tech/Installer/Maintenance (without Lead/Senior title): "CLOSE TO REQUIRED" tier with -9 penalty` :
-      ''}
+               `If flexibility is OFF and candidate has ${requiredYearsExperience}+ years as Service Tech/Installer/Maintenance (without Lead/Senior title): "CLOSE TO REQUIRED" tier with -9 penalty` :
+               ''}
    c) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: "CLOSE TO REQUIRED" tier
    d) If TOTAL years < ${requiredYearsExperience * 0.5}: "NOT CLOSE TO REQUIRED" tier
 
@@ -3107,8 +3111,8 @@ STEP 9: APPLY SCORING MATRIX
       - Job Stability (NOT JOB HOPPY / JOB HOPPY)
       - Distance (WITHIN 30 MILES / 30-50 MILES / OVER 50 MILES)
    b) ${!flexibleOnTitle ?
-      'Apply -9 point penalty if candidate lacks "Lead" or "Senior" in title but would otherwise qualify for Required tier' :
-      'No flexibility penalty - evaluate based on competencies'}
+               'Apply -9 point penalty if candidate lacks "Lead" or "Senior" in title but would otherwise qualify for Required tier' :
+               'No flexibility penalty - evaluate based on competencies'}
    c) Use the MIDDLE of the score range for that row
    d) Adjust slightly within range based on other factors
 
@@ -3152,11 +3156,11 @@ CRITICAL RULES:
 - Apply flexibility penalty correctly (-9 points when flexibility is OFF and candidate lacks Lead/Senior title)
 - ALWAYS provide complete JSON response`;
 
-        } else {
-            // Use the original criteria for other positions
-            const positionCriteria = getPositionCriteria(position);
+      } else {
+         // Use the original criteria for other positions
+         const positionCriteria = getPositionCriteria(position);
 
-            prompt = `You are an expert HVAC industry recruiter. Analyze the following resume for a ${positionCriteria.title} position and provide a detailed evaluation.
+         prompt = `You are an expert HVAC industry recruiter. Analyze the following resume for a ${positionCriteria.title} position and provide a detailed evaluation.
 
 Resume Content:
 ${resumeText}
@@ -3206,54 +3210,54 @@ Additional Evaluation Notes:
 ${positionCriteria.additionalNotes}
 
 Provide thorough, honest, and actionable feedback specifically tailored to the ${positionCriteria.title} position requirements.`;
-        }
+      }
 
-        // Call Claude API
-        const message = await anthropic.messages.create({
-            model: "claude-sonnet-4-5-20250929",  // Using Claude Sonnet 4.5 for better rubric adherence
-            max_tokens: 4096,
-            temperature: 0,  // Set to 0 for deterministic, consistent grading
-            messages: [{
-                role: "user",
-                content: prompt
-            }]
-        });
+      // Call Claude API
+      const message = await anthropic.messages.create({
+         model: "claude-3-haiku-20240307",  // Using Claude 3 Haiku for better specific rubric adherence
+         max_tokens: 4096,
+         temperature: 0,  // Set to 0 for deterministic, consistent grading
+         messages: [{
+            role: "user",
+            content: prompt
+         }]
+      });
 
-        // Parse the response
-        const responseText = message.content[0].text;
+      // Parse the response
+      const responseText = message.content[0].text;
 
-        // Extract JSON from response (Claude might wrap it in markdown)
-        let jsonMatch = responseText.match(/\{[\s\S]*\}/);
-        if (!jsonMatch) {
-            throw new Error('Failed to parse AI response');
-        }
+      // Extract JSON from response (Claude might wrap it in markdown)
+      let jsonMatch = responseText.match(/\{[\s\S]*\}/);
+      if (!jsonMatch) {
+         throw new Error('Failed to parse AI response');
+      }
 
-        const analysis = JSON.parse(jsonMatch[0]);
+      const analysis = JSON.parse(jsonMatch[0]);
 
-        // Convert overallScore (0-100) to scoreOutOf10
-        analysis.scoreOutOf10 = Math.round(analysis.overallScore / 10);
+      // Convert overallScore (0-100) to scoreOutOf10
+      analysis.scoreOutOf10 = Math.round(analysis.overallScore / 10);
 
-        // Clean up the uploaded file after analysis
-        await fs.unlink(filePath).catch(err => console.error('Error deleting file:', err));
+      // Clean up the uploaded file after analysis
+      await fs.unlink(filePath).catch(err => console.error('Error deleting file:', err));
 
-        return analysis;
+      return analysis;
 
-    } catch (error) {
-        console.error('============ RESUME ANALYSIS ERROR ============');
-        console.error('Error message:', error.message);
-        console.error('Error type:', error.constructor.name);
-        if (error.status) {
-            console.error('API Status:', error.status);
-        }
-        if (error.error) {
-            console.error('API Error details:', JSON.stringify(error.error, null, 2));
-        }
-        console.error('Stack trace:', error.stack);
-        console.error('==============================================');
-        throw error;
-    }
+   } catch (error) {
+      console.error('============ RESUME ANALYSIS ERROR ============');
+      console.error('Error message:', error.message);
+      console.error('Error type:', error.constructor.name);
+      if (error.status) {
+         console.error('API Status:', error.status);
+      }
+      if (error.error) {
+         console.error('API Error details:', JSON.stringify(error.error, null, 2));
+      }
+      console.error('Stack trace:', error.stack);
+      console.error('==============================================');
+      throw error;
+   }
 }
 
 module.exports = {
-    analyzeResume
+   analyzeResume
 };

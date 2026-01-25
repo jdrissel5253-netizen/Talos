@@ -1,0 +1,10 @@
+{
+    "EnvironmentName": "Talos-backend-v2-env-1",
+    "HealthStatus": "Degraded",
+    "Status": "Ready",
+    "Color": "Red",
+    "Causes": [
+        "Command failed on all instances.",
+        "Incorrect application version found on all instances. Expected version \"NewerTalosCode\" (deployment 1)."
+    ]
+}

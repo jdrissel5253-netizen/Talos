@@ -1,11 +1,13 @@
-require('dotenv').config();
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
 const fs = require('fs');
 const path = require('path');
 const app = express();
-const PORT = process.env.NODE_ENV === 'production' ? 8080 : (process.env.PORT || 8080);
+const PORT = 8080; // Hardcoded to fix AWS EB stuck env var mismatch
 
 // Create uploads directory if it doesn't exist
 const uploadsDir = path.join(__dirname, 'uploads');
@@ -19,7 +21,12 @@ if (!fs.existsSync(uploadsDir)) {
 // Middleware
 app.use(cors({
     origin: process.env.NODE_ENV === 'production'
-        ? ['http://talos-hvac-frontend-1759612745.s3-website-us-east-1.amazonaws.com', 'https://talos-hvac-frontend-1759612745.s3-website-us-east-1.amazonaws.com']
+        ? [
+            'http://talos-hvac-frontend-1759612745.s3-website-us-east-1.amazonaws.com',
+            'https://talos-hvac-frontend-1759612745.s3-website-us-east-1.amazonaws.com',
+            'https://gotalos.io',
+            'https://www.gotalos.io'
+        ]
         : 'http://localhost:3000'
 }));
 app.use(bodyParser.json());

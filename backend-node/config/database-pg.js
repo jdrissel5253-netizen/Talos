@@ -2,17 +2,17 @@ const { Pool } = require('pg');
 
 // Use environment variables for database connection
 const pool = new Pool({
-    host: process.env.DB_HOST || 'localhost',
-    port: process.env.DB_PORT || 5432,
-    database: process.env.DB_NAME || 'postgres', // Changed default to 'postgres'
-    user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD,
+    host: process.env.DB_HOST || process.env.RDS_HOSTNAME || 'localhost',
+    port: process.env.DB_PORT || process.env.RDS_PORT || 5432,
+    database: process.env.DB_NAME || process.env.RDS_DB_NAME || 'ebdb',
+    user: process.env.DB_USER || process.env.RDS_USERNAME || 'postgres',
+    password: process.env.DB_PASSWORD || process.env.RDS_PASSWORD,
     ssl: process.env.DB_SSL === 'true' ? {
         rejectUnauthorized: false
     } : false,
     max: 20,
     idleTimeoutMillis: 30000,
-    connectionTimeoutMillis: 10000, // Increased timeout
+    connectionTimeoutMillis: 10000,
 });
 
 // Test connection

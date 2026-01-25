@@ -63,3 +63,8 @@ backend-node/config_settings.json
 backend-node/config_utf8.json
 backend-node/final_env.json
 key_pairs.json
+logs/
+*_status.json
+*_events.json
+eb_apps*.json
+eb_config_utf8.json
