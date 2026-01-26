@@ -3,8 +3,8 @@ const fs = require('fs');
 
 // Configuration - Updated bucket
 const BUCKET = 'elasticbeanstalk-us-east-1-387904338435';
-const APP_NAME = 'talos-hvac-backend';
-const ENV_NAME = 'talos-hvac-backend-env';
+const APP_NAME = 'talos-backend-v2';
+const ENV_NAME = 'Talos-backend-prod';
 const ZIP_FILE = 'talos-backend.zip';
 const VERSION_LABEL = `v-${new Date().toISOString().replace(/[:.]/g, '-').slice(0, 19)}`;
 
