@@ -1,10 +1,9 @@
 const db = require('../config/database');
 
-// Detect environment
-// FORCE POSTGRES FOR PRODUCTION
-const USE_POSTGRES = true;
+// Detect environment - must match database.js logic
+const USE_POSTGRES = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV === 'production';
 
-console.log('Service Layer DB Mode: POSTGRES (FORCED)');
+console.log(`Service Layer DB Mode: ${USE_POSTGRES ? 'POSTGRES' : 'SQLITE'}`);
 
 // Helper function to convert arrays to JSON for SQLite (or TEXT columns in PG)
 const toJSON = (value) => {
