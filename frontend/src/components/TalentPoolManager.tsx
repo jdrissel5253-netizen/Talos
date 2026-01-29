@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { config } from '../config';
 import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X } from 'lucide-react';
@@ -139,6 +140,27 @@ const FilterLabel = styled.label`
   color: #4ade80;
 `;
 
+
+const NavButton = styled.button`
+  background: #333333;
+  color: #e0e0e0;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+
+  &:hover {
+    background: #4ade80;
+    color: white;
+    transform: translateY(-1px);
+  }
+`;
 
 const GoogleConnectButton = styled.button<{ connected: boolean }>`
   background: ${props => props.connected ? 'rgba(74, 222, 128, 0.1)' : '#333'};
@@ -418,6 +440,7 @@ const EmptyIcon = styled.div`
 `;
 
 const TalentPoolManager: React.FC = () => {
+  const navigate = useNavigate();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [stats, setStats] = useState<TalentPoolStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -641,13 +664,18 @@ const TalentPoolManager: React.FC = () => {
         <Header>
           <Title>Talent Pool Management</Title>
           <Subtitle>View and manage all candidates in your talent pipeline</Subtitle>
-          <GoogleConnectButton
-            connected={isGmailConnected}
-            onClick={!isGmailConnected ? handleConnectGmail : undefined}
-          >
-            {isGmailConnected ? <CheckCircle size={16} /> : <Mail size={16} />}
-            {isGmailConnected ? 'Gmail Connected' : 'Connect Gmail Account'}
-          </GoogleConnectButton>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '12px' }}>
+            <NavButton onClick={() => navigate('/jobs-management')}>
+              ← View My Jobs
+            </NavButton>
+            <GoogleConnectButton
+              connected={isGmailConnected}
+              onClick={!isGmailConnected ? handleConnectGmail : undefined}
+            >
+              {isGmailConnected ? <CheckCircle size={16} /> : <Mail size={16} />}
+              {isGmailConnected ? 'Gmail Connected' : 'Connect Gmail Account'}
+            </GoogleConnectButton>
+          </div>
         </Header>
 
         {stats && (

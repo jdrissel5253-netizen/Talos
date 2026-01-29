@@ -683,6 +683,9 @@ const JobsManagement: React.FC = () => {
                                 <AddJobButton onClick={() => setShowAddJobForm(true)}>
                                     + Add New Job
                                 </AddJobButton>
+                                <BackButton onClick={() => navigate('/talent-pool-manager')}>
+                                    View Talent Pool →
+                                </BackButton>
                             </PanelHeader>
 
                             <JobsList>
