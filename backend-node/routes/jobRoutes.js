@@ -348,111 +348,65 @@ async function generateJobDescription(jobData) {
         const otherTitles = JSON.parse(jobData.other_relevant_titles || '[]');
         const certifications = JSON.parse(jobData.qualifications_certifications || '[]');
 
-        const prompt = `You are an expert job description writer specializing in creating compelling, SEO-optimized HVAC job postings.
+        const prompt = `You are an expert job description writer. Write a clean, professional job description for an HVAC position.
 
-Create a professional, engaging job description for the following position:
-
-BASIC INFORMATION:
+INPUT DATA:
 - Job Title: ${jobData.title}
 - Company: ${jobData.company_name || 'Our company'}
 - Location: ${jobData.city ? jobData.city + ', ' : ''}${jobData.zip_code || ''} (${jobData.job_location_type || 'On-site'})
 - Job Type: ${jobData.job_type}
 - Pay Range: ${jobData.pay_range_min ? '$' + jobData.pay_range_min + ' - $' + jobData.pay_range_max + ' per ' + jobData.pay_type.replace('ly', '') : 'Competitive'}
-- Expected Hours: ${jobData.expected_hours || 'Full-time'}
-- Work Schedule: ${jobData.work_schedule || 'To be discussed'}
-
-KEY RESPONSIBILITIES (provided by employer):
-${responsibilities.map((r, i) => `${i + 1}. ${r}`).join('\n')}
-
-QUALIFICATIONS:
+- Schedule: ${jobData.work_schedule || 'Full-time'}
 - Experience Required: ${jobData.qualifications_years || jobData.required_years_experience || 0} years
 - Education: ${jobData.education_requirements || 'Not specified'}
-- Certifications: ${certifications.length > 0 ? certifications.join(', ') : 'Not required'}
-${jobData.qualifications_other ? '- Additional: ' + jobData.qualifications_other : ''}
+- Certifications: ${certifications.length > 0 ? certifications.join(', ') : 'None required'}
+- Key Responsibilities: ${responsibilities.join('; ')}
+- Benefits: ${benefits.length > 0 ? benefits.join(', ') : 'Competitive benefits package'}
+${jobData.advancement_opportunities ? '- Advancement: Available' + (jobData.advancement_timeline ? ' (' + jobData.advancement_timeline + ')' : '') : ''}
+${jobData.company_culture ? '- Culture: ' + jobData.company_culture : ''}
 
-BENEFITS:
-${benefits.length > 0 ? benefits.map(b => '- ' + b).join('\n') : '- Competitive benefits package'}
+Write the job description using this EXACT format. No emojis. No decorative lines. Clean and professional like a well-written business document.
 
-${jobData.advancement_opportunities ? 'CAREER ADVANCEMENT:\n- Advancement opportunities available' + (jobData.advancement_timeline ? ' (Timeline: ' + jobData.advancement_timeline + ')' : '') : ''}
+---
 
-${jobData.company_culture ? 'COMPANY CULTURE:\n' + jobData.company_culture : ''}
+[JOB TITLE]
 
-${otherTitles.length > 0 ? 'RELATED POSITIONS CONSIDERED:\n' + otherTitles.join(', ') : ''}
+[COMPANY NAME] | [LOCATION] | [JOB TYPE]
+[PAY RANGE] | [SCHEDULE]
 
-Generate a compelling, professional job description following this EXACT FORMAT with clear visual separation:
+About This Role
 
-═══════════════════════════════════════════════════════════════════
-💰 COMPENSATION
-═══════════════════════════════════════════════════════════════════
-Pay: $[min] - $[max] per [hour/year]
-Schedule: [work schedule]
-Job Type: [Full-time/Part-time/etc.]
+[Write 2-3 sentences describing the position and opportunity. Be direct and genuine. Use straightforward, blue-collar language that speaks to skilled tradespeople. Focus on what the role offers and what kind of person will succeed.]
 
-═══════════════════════════════════════════════════════════════════
-📋 POSITION OVERVIEW
-═══════════════════════════════════════════════════════════════════
-[Write 3-4 concise, compelling sentences that sell the role and opportunity. Make it engaging and aspirational. Highlight what makes this position special and what the candidate will achieve. Use strong action words and emphasize impact, leadership, or expertise depending on the seniority level. Keep it punchy and easy to scan.]
+Responsibilities
 
-═══════════════════════════════════════════════════════════════════
-🔧 WHAT YOU'LL DO
-═══════════════════════════════════════════════════════════════════
-[Expand the 3 key responsibilities provided into 6-8 detailed bullet points. Each bullet should start with a strong action verb and be specific about tasks, systems, or outcomes. Include:
-• Technical tasks and responsibilities
-• Customer interaction requirements
-• Safety protocols and compliance
-• Equipment and systems you'll work with
-• Documentation and reporting duties
-Keep each bullet to 1-2 lines maximum for easy scanning.]
+[List 5-6 bullet points using simple dashes (-). Start each with a strong action verb. Be specific about the actual work. Keep each bullet to one line when possible.]
 
-═══════════════════════════════════════════════════════════════════
-✅ BASIC QUALIFICATIONS
-═══════════════════════════════════════════════════════════════════
-[List 4-6 essential requirements as clear, scannable bullet points:
-• Minimum years of experience with specific HVAC work
-• Required certifications (EPA Universal, state licenses, etc.)
-• Core technical competencies
-• Education requirements
-• Valid driver's license (if applicable)
-• Physical requirements (lifting, climbing, etc.)
-Keep each bullet concise and direct.]
+Qualifications
 
-═══════════════════════════════════════════════════════════════════
-⭐ PREFERRED QUALIFICATIONS
-═══════════════════════════════════════════════════════════════════
-[List 3-5 nice-to-have qualifications that would make candidates stand out:
-• Advanced certifications or specialized training
-• Experience with specific systems (BAS, VRF, chillers, etc.)
-• Leadership or project management experience
-• Additional technical expertise
-• Strong communication or customer service skills
-For entry-level roles, keep this brief or focus on attitude/willingness to learn.]
+[List 4-5 required qualifications as bullet points. Include experience, certifications, and essential skills. Be clear about what's mandatory.]
 
-═══════════════════════════════════════════════════════════════════
-💼 WHY YOU'LL LOVE WORKING HERE
-═══════════════════════════════════════════════════════════════════
-[Write 2-3 sentences about company culture, values, growth opportunities, or what makes the company a great place to work. Make it genuine and specific.]
+Preferred
 
-Our benefits include:
-[List each benefit as a concise bullet point using the exact benefits provided. If generic "competitive benefits package", expand to typical HVAC benefits like health insurance, PTO, 401k, tool allowance, ongoing training, etc.]
+[List 2-3 nice-to-have qualifications. Keep it brief.]
 
-═══════════════════════════════════════════════════════════════════
-📍 WORK LOCATION
-═══════════════════════════════════════════════════════════════════
-Location: [City, Zip] - In person
-${jobData.vehicle_required ? 'Company vehicle provided OR Valid driver\'s license and reliable transportation required' : ''}
+What We Offer
 
-═══════════════════════════════════════════════════════════════════
+[List benefits as bullet points. Use the exact benefits provided.]
 
-CRITICAL FORMATTING RULES:
-1. Use the exact section headers with visual separators (═══) as shown above
-2. Keep ALL bullet points concise - maximum 1-2 lines each
-3. Use emoji icons (💰 🔧 ✅ ⭐ 💼 📍) EXACTLY as shown for each section
-4. Add blank lines between sections for breathing room
-5. Make content scannable - candidates should be able to skim in 30 seconds
-6. Match tone to seniority level (entry/mid/senior/lead)
-7. Use HVAC-specific terminology naturally
-8. NO generic filler - every sentence should be specific and meaningful
-9. Keep total description under 500 words for maximum engagement`;
+${jobData.advancement_opportunities ? '[Include one sentence about growth opportunities.]' : ''}
+
+---
+
+CRITICAL RULES:
+1. NO emojis anywhere
+2. NO decorative lines or borders (═══ or similar)
+3. NO excessive spacing or blank lines
+4. Use simple dashes (-) for all bullet points
+5. Keep language professional but approachable - write for skilled tradespeople, not corporate executives
+6. Be concise - every word should earn its place
+7. Total length: 250-350 words maximum
+8. Tone: Respectful, direct, and genuine - like talking to a colleague`;
 
         const message = await anthropic.messages.create({
             model: "claude-sonnet-4-5-20250929",  // Using Claude Sonnet 4.5
