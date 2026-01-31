@@ -353,6 +353,34 @@ interface AddJobFormProps {
   onJobCreated: () => void;
 }
 
+const JOB_TITLE_OPTIONS = [
+  'HVAC Technician',
+  'Lead HVAC Technician',
+  'HVAC Dispatcher',
+  'Administrative Assistant',
+  'Customer Service Representative',
+  'HVAC Installer',
+  'Lead HVAC Installer',
+  'Maintenance Technician',
+  'Warehouse Associate',
+  'Bookkeeper',
+  'HVAC Sales Representative',
+  'HVAC Service Manager',
+  'Apprentice'
+];
+
+const YEARS_OF_EXPERIENCE_OPTIONS = [
+  { value: '0', label: 'No experience required' },
+  { value: '1', label: '1 year' },
+  { value: '2', label: '2 years' },
+  { value: '3', label: '3 years' },
+  { value: '4', label: '4 years' },
+  { value: '5', label: '5 years' },
+  { value: '6', label: '6+ years' },
+  { value: '7', label: '7+ years' },
+  { value: '10', label: '10+ years' }
+];
+
 const BENEFITS_OPTIONS = [
   'Health insurance',
   'Paid time off',
@@ -551,14 +579,17 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
                 <Label>
                   Job Title <RequiredStar>*</RequiredStar>
                 </Label>
-                <Input
-                  type="text"
+                <Select
                   name="title"
                   value={formData.title}
                   onChange={handleChange}
-                  placeholder="e.g., HVAC Service Technician"
                   required
-                />
+                >
+                  <option value="">-- Select a job title --</option>
+                  {JOB_TITLE_OPTIONS.map(title => (
+                    <option key={title} value={title}>{title}</option>
+                  ))}
+                </Select>
               </FormGroup>
 
               <FormGroup>
@@ -751,15 +782,16 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
             <FormRow>
               <FormGroup>
                 <Label>Years of Experience</Label>
-                <Input
-                  type="number"
+                <Select
                   name="qualifications_years"
                   value={formData.qualifications_years}
                   onChange={handleChange}
-                  placeholder="e.g., 2"
-                  step="0.5"
-                  min="0"
-                />
+                >
+                  <option value="">-- Select years of experience --</option>
+                  {YEARS_OF_EXPERIENCE_OPTIONS.map(option => (
+                    <option key={option.value} value={option.value}>{option.label}</option>
+                  ))}
+                </Select>
               </FormGroup>
 
               <FormGroup>
