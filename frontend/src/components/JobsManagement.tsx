@@ -217,6 +217,30 @@ const DetailValue = styled.span`
     color: #e0e0e0;
 `;
 
+const IndeedButton = styled.a`
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: #2164f3;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    text-decoration: none;
+    margin-top: 1rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: #1a4fc9;
+        transform: translateY(-1px);
+    }
+
+    img {
+        height: 20px;
+        filter: brightness(0) invert(1);
+    }
+`;
+
 const PipelineTabs = styled.div`
     display: flex;
     gap: 0.5rem;
@@ -743,6 +767,13 @@ const JobsManagement: React.FC = () => {
                                         <DetailValue>{selectedJob.description}</DetailValue>
                                     </DetailRow>
                                 )}
+                                <IndeedButton
+                                    href="https://employers.indeed.com/p/posting/orientation?jobId=697e7bd81fa87b7b4f80d2f4"
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                >
+                                    Post to Indeed
+                                </IndeedButton>
                             </JobDetailsCard>
 
                             <PipelineTabs>
