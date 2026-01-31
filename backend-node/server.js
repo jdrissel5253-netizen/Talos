@@ -38,6 +38,7 @@ const { router: authRoutes } = require('./routes/authRoutes');
 const googleAuthRoutes = require('./routes/googleAuthRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 const candidatePipelineRoutes = require('./routes/candidatePipelineRoutes');
+const applyRoutes = require('./routes/applyRoutes');
 
 // Root route
 app.get('/', (req, res) => {
@@ -54,6 +55,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/auth/google', googleAuthRoutes);
 app.use('/api/jobs', jobRoutes);
 app.use('/api/pipeline', candidatePipelineRoutes);
+app.use('/api/apply', applyRoutes);
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'healthy',
