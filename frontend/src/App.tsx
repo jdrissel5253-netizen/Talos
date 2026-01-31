@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import styled, { createGlobalStyle } from 'styled-components';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -23,6 +23,20 @@ import ResumeAnalysis from './components/ResumeAnalysis';
 import BatchResumeAnalysis from './components/BatchResumeAnalysis';
 import JobsManagement from './components/JobsManagement';
 import GoogleAuthHandler from './components/GoogleAuthHandler';
+
+// Lazy load PublicApply for faster initial page load (important for Indeed SEO)
+const PublicApply = lazy(() => import('./components/PublicApply'));
+
+// Minimal loading fallback for apply page
+const ApplyLoadingFallback = styled.div`
+  min-height: 100vh;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #4ade80;
+  font-size: 1rem;
+`;
 
 const GlobalStyle = createGlobalStyle`
   * {
@@ -67,10 +81,35 @@ const MainContent = styled.main`
   padding-top: 80px; /* Account for fixed header */
 `;
 
-function App() {
+// Standalone container for public apply page (no header padding)
+const StandaloneContent = styled.main`
+  flex: 1;
+`;
+
+// Layout wrapper that conditionally shows header/footer
+function AppLayout() {
+  const location = useLocation();
+  const isApplyPage = location.pathname === '/apply';
+
+  // For /apply page, render a minimal standalone version for fast load
+  if (isApplyPage) {
+    return (
+      <>
+        <GlobalStyle />
+        <AppContainer>
+          <StandaloneContent>
+            <Suspense fallback={<ApplyLoadingFallback>Loading...</ApplyLoadingFallback>}>
+              <PublicApply />
+            </Suspense>
+          </StandaloneContent>
+        </AppContainer>
+      </>
+    );
+  }
+
+  // For all other pages, render full layout with header/footer
   return (
-    <Router>
-      <ScrollToTop />
+    <>
       <GlobalStyle />
       <AppContainer>
         <GoogleAuthHandler />
@@ -100,6 +139,15 @@ function App() {
         </MainContent>
         <Footer />
       </AppContainer>
+    </>
+  );
+}
+
+function App() {
+  return (
+    <Router>
+      <ScrollToTop />
+      <AppLayout />
     </Router>
   );
 }
