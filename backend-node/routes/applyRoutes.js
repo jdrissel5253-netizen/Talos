@@ -2,7 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { candidateService, analysisService } = require('../services/databaseService');
+const { candidateService, analysisService, candidatePipelineService, jobService } = require('../services/databaseService');
 const { analyzeResume } = require('../services/resumeAnalyzer');
 
 const router = express.Router();
@@ -139,6 +139,46 @@ router.post('/', upload.single('resume'), async (req, res) => {
 
         // Update candidate status to completed
         await candidateService.updateStatus(candidate.id, 'completed');
+
+        // Add candidate to job pipeline if jobId is provided
+        if (jobId && candidate && analysisResult) {
+            try {
+                const job = await jobService.findById(parseInt(jobId));
+                if (job) {
+                    // Calculate tier based on score
+                    const score = analysisResult.overallScore || 0;
+                    let tier, star_rating;
+
+                    if (score >= 80) {
+                        tier = 'green';
+                        star_rating = 4.0 + (score - 80) / 20;
+                    } else if (score >= 50) {
+                        tier = 'yellow';
+                        star_rating = 2.0 + (score - 50) / 30 * 1.9;
+                    } else {
+                        tier = 'red';
+                        star_rating = score / 50 * 1.5;
+                    }
+
+                    const pipelineData = {
+                        tier,
+                        tier_score: Math.round(score),
+                        star_rating: Math.round(star_rating * 10) / 10,
+                        give_them_a_chance: false,
+                        vehicle_status: 'unknown',
+                        ai_summary: `Applied via public link. ${name} | ${email} | ${phone}. Score: ${score}/100. ${analysisResult.hiringRecommendation || 'Pending review'}.`,
+                        internal_notes: `Source: Public Apply Page`,
+                        tags: ['public-application']
+                    };
+
+                    await candidatePipelineService.addToJob(candidate.id, parseInt(jobId), pipelineData);
+                    console.log('Added candidate to job pipeline:', candidate.id, 'Job:', jobId);
+                }
+            } catch (pipelineError) {
+                console.error('Error adding to pipeline (non-fatal):', pipelineError);
+                // Don't fail the application if pipeline add fails
+            }
+        }
 
         res.json({
             status: 'success',
