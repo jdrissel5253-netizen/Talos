@@ -71,6 +71,63 @@ const Subtitle = styled.p`
     }
 `;
 
+const JobDescriptionSection = styled.div`
+    background: #000000;
+    border: 1px solid #333333;
+    border-radius: 8px;
+    padding: 1.25rem;
+    margin-bottom: 1.5rem;
+    max-height: 300px;
+    overflow-y: auto;
+
+    @media (min-width: 480px) {
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    &::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: #1a1a1a;
+        border-radius: 3px;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: #4ade80;
+        border-radius: 3px;
+    }
+`;
+
+const JobDescriptionHeader = styled.h3`
+    color: #4ade80;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.5rem;
+`;
+
+const JobDescriptionText = styled.p`
+    color: #ccc;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+`;
+
+const JobDescriptionList = styled.ul`
+    color: #ccc;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    margin: 0;
+    padding-left: 1.25rem;
+
+    li {
+        margin-bottom: 0.5rem;
+    }
+`;
+
 const Form = styled.form`
     display: flex;
     flex-direction: column;
@@ -397,6 +454,39 @@ const PublicApply: React.FC = () => {
 
                 <Title>Apply for {jobTitle}</Title>
                 <Subtitle>Submit your application below</Subtitle>
+
+                <JobDescriptionSection>
+                    <JobDescriptionHeader>Job Summary</JobDescriptionHeader>
+                    <JobDescriptionText>
+                        Join our team as an HVAC Service Technician and play a key role in delivering reliable heating, ventilation, air conditioning, and refrigeration solutions to our customers. In this hands-on position, you'll diagnose, repair, and maintain HVAC/R systems across residential and commercial settings. Your technical expertise will ensure optimal system performance, energy efficiency, and exceptional customer satisfaction. This role offers the opportunity to work with diverse equipment, sharpen your diagnostic skills, and grow within a company that values safety, quality workmanship, and professional development.
+                    </JobDescriptionText>
+
+                    <JobDescriptionHeader>Duties</JobDescriptionHeader>
+                    <JobDescriptionList>
+                        <li>Diagnose and repair HVAC systems including air conditioning units, heating systems (gas, electric, oil), and refrigeration equipment using schematics and technical manuals.</li>
+                        <li>Perform routine preventive maintenance on HVAC/R systems to prevent breakdowns and extend equipment lifespan.</li>
+                        <li>Install, calibrate, and test HVAC controls, thermostats, and system components to ensure proper operation and safety compliance.</li>
+                        <li>Read and interpret blueprints, load calculations, and HVAC design plans to accurately troubleshoot issues and execute repairs.</li>
+                        <li>Conduct field service visits for system diagnostics, repairs, and equipment upgrades across various customer sites.</li>
+                        <li>Troubleshoot electrical, mechanical, and refrigerant-related issues using diagnostic tools and industry best practices.</li>
+                        <li>Maintain detailed service records, complete inspection reports, and document all work performed for accountability and future reference.</li>
+                        <li>Communicate effectively with customers to explain repairs, provide recommendations, and ensure a positive service experience.</li>
+                    </JobDescriptionList>
+
+                    <JobDescriptionHeader>Requirements</JobDescriptionHeader>
+                    <JobDescriptionList>
+                        <li>2+ years of proven experience as an HVAC Service Technician with hands-on troubleshooting and repair skills.</li>
+                        <li>EPA 608 Universal Certification required; NATE Certification preferred.</li>
+                        <li>Strong technical knowledge of air conditioning, heating systems, refrigeration, and ductwork installation.</li>
+                        <li>Ability to read and interpret schematics, blueprints, and technical manuals accurately.</li>
+                        <li>Proficiency with hand tools, power tools, and diagnostic equipment.</li>
+                        <li>Valid driver's license with a clean driving record.</li>
+                        <li>Experience with both residential and commercial HVAC systems preferred.</li>
+                        <li>Strong customer service and communication skills with professional demeanor.</li>
+                        <li>Commitment to safety protocols and OSHA compliance standards.</li>
+                        <li>Ability to work in various environments including attics, crawl spaces, and rooftops, with physical capability to lift heavy equipment.</li>
+                    </JobDescriptionList>
+                </JobDescriptionSection>
 
                 {error && <ErrorMessage>{error}</ErrorMessage>}
 
