@@ -44,12 +44,16 @@ router.post('/register', async (req, res) => {
         // Hash password
         const passwordHash = await bcrypt.hash(password, 10);
 
+        // Determine role — bootstrap admin if email matches ADMIN_EMAIL
+        const adminEmail = process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL.toLowerCase() : null;
+        const role = (adminEmail && email === adminEmail) ? 'admin' : 'user';
+
         // Create user
-        const user = await userService.create(email, passwordHash, companyName);
+        const user = await userService.create(email, passwordHash, companyName, role);
 
         // Generate JWT token
         const token = jwt.sign(
-            { userId: user.id, email: user.email },
+            { userId: user.id, email: user.email, role: user.role },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
@@ -62,7 +66,8 @@ router.post('/register', async (req, res) => {
                 user: {
                     id: user.id,
                     email: user.email,
-                    companyName: user.company_name
+                    companyName: user.company_name,
+                    role: user.role
                 }
             }
         });
@@ -111,7 +116,7 @@ router.post('/login', async (req, res) => {
 
         // Generate JWT token
         const token = jwt.sign(
-            { userId: user.id, email: user.email },
+            { userId: user.id, email: user.email, role: user.role || 'user' },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
@@ -124,7 +129,8 @@ router.post('/login', async (req, res) => {
                 user: {
                     id: user.id,
                     email: user.email,
-                    companyName: user.company_name
+                    companyName: user.company_name,
+                    role: user.role || 'user'
                 }
             }
         });
@@ -164,7 +170,21 @@ const authenticateToken = (req, res, next) => {
     });
 };
 
+/**
+ * Middleware to require admin role
+ */
+const requireAdmin = (req, res, next) => {
+    if (req.user?.role !== 'admin') {
+        return res.status(403).json({
+            status: 'error',
+            message: 'Admin access required'
+        });
+    }
+    next();
+};
+
 module.exports = {
     router,
-    authenticateToken
+    authenticateToken,
+    requireAdmin
 };

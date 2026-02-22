@@ -178,6 +178,20 @@ const applicantEmailMigration = [
     'CREATE INDEX IF NOT EXISTS idx_candidates_applicant_email ON candidates(applicant_email)',
 ];
 
+// User role column
+const roleMigration = [
+    "ALTER TABLE users ADD COLUMN IF NOT EXISTS role VARCHAR(20) NOT NULL DEFAULT 'user'",
+    `DO $$ BEGIN
+        IF NOT EXISTS (
+            SELECT 1 FROM information_schema.check_constraints
+            WHERE constraint_name = 'users_role_check'
+        ) THEN
+            ALTER TABLE users ADD CONSTRAINT users_role_check
+                CHECK (role IN ('user', 'admin'));
+        END IF;
+    END $$`,
+];
+
 // Constraint fixes
 const constraintFixes = [
     `DO $$ BEGIN
@@ -277,6 +291,21 @@ async function runMigrations() {
             } catch (e) {
                 if (e.code === '42701') {
                     console.log('  - Already exists, skipping');
+                } else {
+                    console.error(`  ✗ Error: ${e.message}`);
+                }
+            }
+        }
+
+        // Run role column migration
+        console.log('\nAdding role column to users...');
+        for (const sql of roleMigration) {
+            try {
+                await query(sql);
+                console.log('  ✓ Role migration applied');
+            } catch (e) {
+                if (e.code === '42701') {
+                    console.log('  - Column already exists, skipping');
                 } else {
                     console.error(`  ✗ Error: ${e.message}`);
                 }

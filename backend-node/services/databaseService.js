@@ -123,10 +123,10 @@ const sanitize = {
  * User operations
  */
 const userService = {
-    async create(email, passwordHash, companyName = null) {
+    async create(email, passwordHash, companyName = null, role = 'user') {
         const result = await db.query(
-            'INSERT INTO users (email, password_hash, company_name) VALUES ($1, $2, $3) RETURNING *',
-            [email, passwordHash, companyName]
+            'INSERT INTO users (email, password_hash, company_name, role) VALUES ($1, $2, $3, $4) RETURNING *',
+            [email, passwordHash, companyName, role]
         );
         return result.rows[0];
     },
@@ -138,6 +138,14 @@ const userService = {
 
     async findById(id) {
         const result = await db.query('SELECT * FROM users WHERE id = $1', [id]);
+        return result.rows[0];
+    },
+
+    async setRole(userId, role) {
+        const result = await db.query(
+            "UPDATE users SET role = $1 WHERE id = $2 RETURNING *",
+            [role, userId]
+        );
         return result.rows[0];
     }
 };
@@ -381,6 +389,13 @@ const jobService = {
             ]
         );
         return result.rows[0];
+    },
+
+    async findAll() {
+        const result = await db.query(
+            'SELECT * FROM jobs WHERE deleted_at IS NULL ORDER BY created_at DESC'
+        );
+        return result.rows;
     },
 
     async findByUserId(userId) {
