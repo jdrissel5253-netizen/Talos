@@ -184,55 +184,99 @@ const SupportText = styled.p`
   }
 `;
 
+const ModeToggle = styled.p`
+  text-align: center;
+  font-size: 0.875rem;
+  color: #e0e0e0;
+  margin-top: 1.25rem;
+
+  button {
+    background: none;
+    border: none;
+    color: #4ade80;
+    cursor: pointer;
+    font-size: 0.875rem;
+    text-decoration: underline;
+    padding: 0;
+
+    &:hover {
+      color: #86efac;
+    }
+  }
+`;
+
 const Login: React.FC = () => {
   const navigate = useNavigate();
+  const [mode, setMode] = useState<'login' | 'register'>('login');
   const [formData, setFormData] = useState({
-    username: '',
-    password: ''
+    email: '',
+    password: '',
+    confirmPassword: '',
+    companyName: ''
   });
   const [isLoading, setIsLoading] = useState(false);
-  const [loginError, setLoginError] = useState('');
+  const [error, setError] = useState('');
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const switchMode = (next: 'login' | 'register') => {
+    setMode(next);
+    setError('');
+    setFormData({ email: '', password: '', confirmPassword: '', companyName: '' });
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLoginError('');
+    setError('');
 
-    if (!formData.username.trim() || !formData.password.trim()) {
-      setLoginError('Please enter both email and password.');
+    if (!formData.email.trim() || !formData.password.trim()) {
+      setError('Please enter both email and password.');
       return;
+    }
+
+    if (mode === 'register') {
+      if (formData.password.length < 8) {
+        setError('Password must be at least 8 characters.');
+        return;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match.');
+        return;
+      }
     }
 
     setIsLoading(true);
 
     try {
-      const response = await fetch(`${config.apiUrl}/api/auth/login`, {
+      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/register';
+      const body: Record<string, string> = {
+        email: formData.email.trim(),
+        password: formData.password
+      };
+      if (mode === 'register' && formData.companyName.trim()) {
+        body.companyName = formData.companyName.trim();
+      }
+
+      const response = await fetch(`${config.apiUrl}${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          email: formData.username.trim(),
-          password: formData.password
-        })
+        body: JSON.stringify(body)
       });
 
       const data = await response.json();
 
       if (!response.ok) {
-        setLoginError(data.message || 'Invalid email or password.');
+        setError(data.message || (mode === 'login' ? 'Invalid email or password.' : 'Registration failed.'));
         return;
       }
 
       setToken(data.data.token);
       navigate('/jobs-management');
     } catch (err) {
-      setLoginError('Unable to connect. Please check your internet connection.');
+      setError('Unable to connect. Please check your internet connection.');
     } finally {
       setIsLoading(false);
     }
@@ -245,21 +289,6 @@ const Login: React.FC = () => {
     }
   };
 
-  const handleForgotUsername = () => {
-    const email = prompt('Enter your email address to recover your username:');
-    if (email && email.trim()) {
-      alert(`Username recovery instructions have been sent to ${email}`);
-    }
-  };
-
-  const handleDemoClick = () => {
-    setIsDemoModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsDemoModalOpen(false);
-  };
-
   return (
     <>
       <LoginContainer>
@@ -270,23 +299,39 @@ const Login: React.FC = () => {
             <Tagline>HVAC Hiring Solutions</Tagline>
           </LogoSection>
 
-          <WelcomeTitle>Welcome Back</WelcomeTitle>
-          <WelcomeSubtitle>Sign in to your Talos account</WelcomeSubtitle>
+          <WelcomeTitle>{mode === 'login' ? 'Welcome Back' : 'Create Account'}</WelcomeTitle>
+          <WelcomeSubtitle>
+            {mode === 'login' ? 'Sign in to your Talos account' : 'Get started with Talos'}
+          </WelcomeSubtitle>
 
-          {loginError && (
+          {error && (
             <div role="alert" style={{ background: '#7f1d1d', color: '#fca5a5', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center' }}>
-              {loginError}
+              {error}
             </div>
           )}
 
           <Form onSubmit={handleSubmit}>
+            {mode === 'register' && (
+              <FormGroup>
+                <Label htmlFor="companyName">Company Name</Label>
+                <Input
+                  type="text"
+                  id="companyName"
+                  name="companyName"
+                  value={formData.companyName}
+                  onChange={handleInputChange}
+                  placeholder="Optional"
+                />
+              </FormGroup>
+            )}
+
             <FormGroup>
-              <Label htmlFor="username">Username or Email</Label>
+              <Label htmlFor="email">Email</Label>
               <Input
-                type="text"
-                id="username"
-                name="username"
-                value={formData.username}
+                type="email"
+                id="email"
+                name="email"
+                value={formData.email}
                 onChange={handleInputChange}
                 required
               />
@@ -304,33 +349,63 @@ const Login: React.FC = () => {
               />
             </FormGroup>
 
-            <ForgotLinks>
-              <ForgotLink type="button" onClick={handleForgotPassword}>
-                Forgot Password?
-              </ForgotLink>
-              <span>|</span>
-              <ForgotLink type="button" onClick={handleForgotUsername}>
-                Forgot Username?
-              </ForgotLink>
-            </ForgotLinks>
+            {mode === 'register' && (
+              <FormGroup>
+                <Label htmlFor="confirmPassword">Confirm Password</Label>
+                <Input
+                  type="password"
+                  id="confirmPassword"
+                  name="confirmPassword"
+                  value={formData.confirmPassword}
+                  onChange={handleInputChange}
+                  required
+                />
+              </FormGroup>
+            )}
+
+            {mode === 'login' && (
+              <ForgotLinks>
+                <ForgotLink type="button" onClick={handleForgotPassword}>
+                  Forgot Password?
+                </ForgotLink>
+              </ForgotLinks>
+            )}
 
             <LoginButton type="submit" disabled={isLoading}>
-              {isLoading ? 'Signing In...' : 'Sign In'}
+              {isLoading
+                ? (mode === 'login' ? 'Signing In...' : 'Creating Account...')
+                : (mode === 'login' ? 'Sign In' : 'Create Account')}
             </LoginButton>
 
-            <DemoButton type="button" onClick={handleDemoClick}>
-              Get Demo
-            </DemoButton>
+            {mode === 'login' && (
+              <DemoButton type="button" onClick={() => setIsDemoModalOpen(true)}>
+                Get Demo
+              </DemoButton>
+            )}
           </Form>
 
-          <SupportText>
-            If you are having trouble logging in,<br />
-            please email <a href="mailto:support@talos-hvac.com">support@talos-hvac.com</a>
-          </SupportText>
+          <ModeToggle>
+            {mode === 'login' ? (
+              <>Don't have an account?{' '}
+                <button type="button" onClick={() => switchMode('register')}>Create one</button>
+              </>
+            ) : (
+              <>Already have an account?{' '}
+                <button type="button" onClick={() => switchMode('login')}>Sign in</button>
+              </>
+            )}
+          </ModeToggle>
+
+          {mode === 'login' && (
+            <SupportText>
+              If you are having trouble logging in,<br />
+              please email <a href="mailto:support@talos-hvac.com">support@talos-hvac.com</a>
+            </SupportText>
+          )}
         </LoginCard>
       </LoginContainer>
 
-      <DemoModal isOpen={isDemoModalOpen} onClose={handleCloseModal} />
+      <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
     </>
   );
 };
