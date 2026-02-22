@@ -1,11 +1,12 @@
+require('dotenv').config();
 const { Pool } = require('pg');
 
 const pool = new Pool({
-    host: 'awseb-e-wsmmcq2zc3-stack-awsebrdsdatabase-ehqy2gn0naaf.ckj8wi4e4l42.us-east-1.rds.amazonaws.com',
-    port: 5432,
-    database: 'ebdb',
-    user: 'talosuser',
-    password: 'TalosAdmin2024!New',
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    database: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
     ssl: { rejectUnauthorized: false },
     connectionTimeoutMillis: 5000,
 });
@@ -15,7 +16,7 @@ async function checkTables() {
         const client = await pool.connect();
         console.log('Connected to DB.');
 
-        const tables = ['candidate_pipeline', 'communication_log'];
+        const tables = ['candidate_pipeline', 'communication_log', 'job_requirements'];
 
         for (const table of tables) {
             try {

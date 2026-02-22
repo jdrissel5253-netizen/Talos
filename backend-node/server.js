@@ -90,15 +90,6 @@ app.use(helmet({
     referrerPolicy: { policy: 'strict-origin-when-cross-origin' }
 }));
 
-// Enforce HTTPS in production (behind AWS ALB/ELB)
-if (process.env.NODE_ENV === 'production') {
-    app.use((req, res, next) => {
-        if (req.header('x-forwarded-proto') !== 'https') {
-            return res.redirect(301, `https://${req.header('host')}${req.url}`);
-        }
-        next();
-    });
-}
 
 // Compression middleware - gzip responses over 1KB
 app.use(compression({ level: 6, threshold: 1024 }));
