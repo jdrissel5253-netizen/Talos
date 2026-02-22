@@ -1,13 +1,14 @@
 // Detect environment and use appropriate database
 const USE_POSTGRES = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV === 'production';
+const logger = require('../services/logger');
 
 if (USE_POSTGRES) {
     // Use PostgreSQL (for AWS RDS)
-    console.log('🐘 Using PostgreSQL database');
+    logger.info('Using PostgreSQL database');
     module.exports = require('./database-pg');
 } else {
     // Use SQLite (for local development)
-    console.log('📦 Using SQLite database');
+    logger.info('Using SQLite database');
     const Database = require('better-sqlite3');
     const path = require('path');
 
@@ -18,7 +19,7 @@ if (USE_POSTGRES) {
     // Enable foreign keys
     db.pragma('foreign_keys = ON');
 
-    console.log(`✅ Connected to SQLite database at ${dbPath}`);
+    logger.info('Connected to SQLite database', { path: dbPath });
 
     // Query helper function to match PostgreSQL interface
     const query = (text, params = []) => {
@@ -52,7 +53,7 @@ if (USE_POSTGRES) {
             const info = stmt.run(...params);
             return { rows: [], rowCount: info.changes };
         } catch (error) {
-            console.error('Database query error:', error);
+            logger.error('Database query error', { error: error.message });
             throw error;
         }
     };

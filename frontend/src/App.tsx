@@ -7,28 +7,28 @@ import ScrollToTop from './components/ScrollToTop';
 import AirflowAnimation from './components/AirflowAnimation';
 import Home from './components/Home';
 import Login from './components/Login';
-import WhyTalos from './components/WhyTalos';
-import WhyTalosDifferent from './components/WhyTalosDifferent';
-import JobBoardIntegration from './components/JobBoardIntegration';
-import JobDescriptionWriter from './components/JobDescriptionWriter';
-import CandidateRanking from './components/CandidateRanking';
-import CandidateMessages from './components/CandidateMessages';
-import TalentPool from './components/TalentPool';
-import TalentPoolManager from './components/TalentPoolManager';
-import TalentPoolHome from './components/TalentPoolHome';
-import JobSelectionScreen from './components/JobSelectionScreen';
-import CandidateListScreen from './components/CandidateListScreen';
-import HVACInsights from './components/HVACInsights';
-import ResumeAnalysis from './components/ResumeAnalysis';
-import BatchResumeAnalysis from './components/BatchResumeAnalysis';
-import JobsManagement from './components/JobsManagement';
 import GoogleAuthHandler from './components/GoogleAuthHandler';
 
-// Lazy load PublicApply for faster initial page load (important for Indeed SEO)
+// Lazy load all non-critical routes
+const JobsManagement = lazy(() => import('./components/JobsManagement'));
+const BatchResumeAnalysis = lazy(() => import('./components/BatchResumeAnalysis'));
+const TalentPoolManager = lazy(() => import('./components/TalentPoolManager'));
+const ResumeAnalysis = lazy(() => import('./components/ResumeAnalysis'));
+const WhyTalos = lazy(() => import('./components/WhyTalos'));
+const WhyTalosDifferent = lazy(() => import('./components/WhyTalosDifferent'));
+const JobBoardIntegration = lazy(() => import('./components/JobBoardIntegration'));
+const JobDescriptionWriter = lazy(() => import('./components/JobDescriptionWriter'));
+const CandidateRanking = lazy(() => import('./components/CandidateRanking'));
+const CandidateMessages = lazy(() => import('./components/CandidateMessages'));
+const TalentPool = lazy(() => import('./components/TalentPool'));
+const TalentPoolHome = lazy(() => import('./components/TalentPoolHome'));
+const JobSelectionScreen = lazy(() => import('./components/JobSelectionScreen'));
+const CandidateListScreen = lazy(() => import('./components/CandidateListScreen'));
+const HVACInsights = lazy(() => import('./components/HVACInsights'));
 const PublicApply = lazy(() => import('./components/PublicApply'));
 
-// Minimal loading fallback for apply page
-const ApplyLoadingFallback = styled.div`
+// Loading fallback for lazy-loaded routes
+const LoadingFallback = styled.div`
   min-height: 100vh;
   background: #000;
   display: flex;
@@ -98,7 +98,7 @@ function AppLayout() {
         <GlobalStyle />
         <AppContainer>
           <StandaloneContent>
-            <Suspense fallback={<ApplyLoadingFallback>Loading...</ApplyLoadingFallback>}>
+            <Suspense fallback={<LoadingFallback>Loading...</LoadingFallback>}>
               <PublicApply />
             </Suspense>
           </StandaloneContent>
@@ -116,26 +116,28 @@ function AppLayout() {
         <AirflowAnimation />
         <Header />
         <MainContent>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/resume-analysis" element={<ResumeAnalysis />} />
-            <Route path="/batch-resume-analysis" element={<BatchResumeAnalysis />} />
-            <Route path="/jobs-management" element={<JobsManagement />} />
-            <Route path="/why-talos" element={<WhyTalos />} />
-            <Route path="/why-different" element={<WhyTalosDifferent />} />
-            <Route path="/job-board-integration" element={<JobBoardIntegration />} />
-            <Route path="/job-description-writer" element={<JobDescriptionWriter />} />
-            <Route path="/candidate-ranking" element={<CandidateRanking />} />
-            <Route path="/candidate-messages" element={<CandidateMessages />} />
-            <Route path="/talent-pool" element={<TalentPool />} />
-            <Route path="/talent-pool-dashboard" element={<TalentPoolHome />} />
-            <Route path="/talent-pool/jobs" element={<JobSelectionScreen />} />
-            <Route path="/talent-pool/candidates" element={<CandidateListScreen />} />
-            <Route path="/talent-pool-old" element={<TalentPool />} />
-            <Route path="/talent-pool-manager" element={<TalentPoolManager />} />
-            <Route path="/hvac-insights" element={<HVACInsights />} />
-          </Routes>
+          <Suspense fallback={<LoadingFallback>Loading...</LoadingFallback>}>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/resume-analysis" element={<ResumeAnalysis />} />
+              <Route path="/batch-resume-analysis" element={<BatchResumeAnalysis />} />
+              <Route path="/jobs-management" element={<JobsManagement />} />
+              <Route path="/why-talos" element={<WhyTalos />} />
+              <Route path="/why-different" element={<WhyTalosDifferent />} />
+              <Route path="/job-board-integration" element={<JobBoardIntegration />} />
+              <Route path="/job-description-writer" element={<JobDescriptionWriter />} />
+              <Route path="/candidate-ranking" element={<CandidateRanking />} />
+              <Route path="/candidate-messages" element={<CandidateMessages />} />
+              <Route path="/talent-pool" element={<TalentPool />} />
+              <Route path="/talent-pool-dashboard" element={<TalentPoolHome />} />
+              <Route path="/talent-pool/jobs" element={<JobSelectionScreen />} />
+              <Route path="/talent-pool/candidates" element={<CandidateListScreen />} />
+              <Route path="/talent-pool-old" element={<TalentPool />} />
+              <Route path="/talent-pool-manager" element={<TalentPoolManager />} />
+              <Route path="/hvac-insights" element={<HVACInsights />} />
+            </Routes>
+          </Suspense>
         </MainContent>
         <Footer />
       </AppContainer>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { isLoggedIn, clearToken } from '../utils/auth';
 
 const HeaderContainer = styled.header`
   display: flex;
@@ -195,7 +196,11 @@ const Header: React.FC = () => {
       </Navigation>
 
       <ButtonGroup>
-        <LoginButton as={Link} to="/login">Login</LoginButton>
+        {isLoggedIn() ? (
+          <LoginButton onClick={() => { clearToken(); navigate('/login'); }}>Logout</LoginButton>
+        ) : (
+          <LoginButton as={Link} to="/login">Login</LoginButton>
+        )}
         <DemoButton onClick={() => navigate('/#demo')}>Get Demo</DemoButton>
       </ButtonGroup>
     </HeaderContainer>

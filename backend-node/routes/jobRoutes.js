@@ -1,7 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { jobService, candidatePipelineService, analysisService, candidateService } = require('../services/databaseService');
+const { jobService, candidatePipelineService, analysisService, candidateService, sanitize } = require('../services/databaseService');
+const { calculateTier, calculateStarRating, adjustScoreForVehicle } = require('../services/scoringService');
 const Anthropic = require('@anthropic-ai/sdk');
+const logger = require('../services/logger');
 
 // Initialize Anthropic client for AI summaries
 const anthropic = new Anthropic({
@@ -14,17 +16,17 @@ const anthropic = new Anthropic({
  */
 router.get('/', async (req, res) => {
     try {
-        // TODO: Add authentication middleware and get userId from req.user
-        const userId = req.query.userId || 1; // Temporary: default to user 1
+        const userId = req.user.userId;
 
         const jobs = await jobService.findByUserId(userId);
 
+        res.set('Cache-Control', 'private, max-age=300');
         res.json({
             status: 'success',
             data: { jobs }
         });
     } catch (error) {
-        console.error('Error fetching jobs:', error);
+        logger.error('Error fetching jobs', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to fetch jobs'
@@ -38,7 +40,10 @@ router.get('/', async (req, res) => {
  */
 router.get('/:id', async (req, res) => {
     try {
-        const jobId = parseInt(req.params.id);
+        const jobId = sanitize.positiveInt(req.params.id);
+        if (!jobId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid job ID' });
+        }
         const filters = req.query;
 
         const job = await jobService.findById(jobId);
@@ -59,7 +64,7 @@ router.get('/:id', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error fetching job:', error);
+        logger.error('Error fetching job', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to fetch job'
@@ -73,40 +78,61 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-        // TODO: Add authentication middleware and get userId from req.user
-        const userId = req.body.userId || 1; // Temporary: default to user 1
+        const userId = req.user.userId;
+
+        const title = sanitize.trimString(req.body.title, 255);
+        if (!title) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Job title is required'
+            });
+        }
 
         const jobData = {
-            title: req.body.title,
-            company_name: req.body.company_name,
-            description: req.body.description,
-            location: req.body.location,
-            job_location_type: req.body.job_location_type,
-            city: req.body.city,
-            zip_code: req.body.zip_code,
-            job_type: req.body.job_type,
-            required_years_experience: req.body.required_years_experience,
+            title,
+            company_name: sanitize.trimString(req.body.company_name, 255),
+            description: sanitize.trimString(req.body.description, 10000),
+            location: sanitize.trimString(req.body.location, 255),
+            job_location_type: sanitize.trimString(req.body.job_location_type, 50),
+            city: sanitize.trimString(req.body.city, 255),
+            zip_code: sanitize.trimString(req.body.zip_code, 20),
+            job_type: sanitize.trimString(req.body.job_type, 50),
+            required_years_experience: sanitize.nonNegativeNumber(req.body.required_years_experience),
             vehicle_required: req.body.vehicle_required,
-            position_type: req.body.position_type,
-            salary_min: req.body.salary_min,
-            salary_max: req.body.salary_max,
-            pay_range_min: req.body.pay_range_min,
-            pay_range_max: req.body.pay_range_max,
-            pay_type: req.body.pay_type,
-            expected_hours: req.body.expected_hours,
-            work_schedule: req.body.work_schedule,
+            position_type: sanitize.trimString(req.body.position_type, 100),
+            salary_min: sanitize.nonNegativeNumber(req.body.salary_min),
+            salary_max: sanitize.nonNegativeNumber(req.body.salary_max),
+            pay_range_min: sanitize.nonNegativeNumber(req.body.pay_range_min),
+            pay_range_max: sanitize.nonNegativeNumber(req.body.pay_range_max),
+            pay_type: sanitize.trimString(req.body.pay_type, 50),
+            expected_hours: sanitize.trimString(req.body.expected_hours, 100),
+            work_schedule: sanitize.trimString(req.body.work_schedule, 100),
             benefits: JSON.stringify(req.body.benefits || []),
             key_responsibilities: JSON.stringify(req.body.key_responsibilities || []),
-            qualifications_years: req.body.qualifications_years,
+            qualifications_years: sanitize.nonNegativeNumber(req.body.qualifications_years),
             qualifications_certifications: JSON.stringify(req.body.qualifications_certifications || []),
-            qualifications_other: req.body.qualifications_other,
-            education_requirements: req.body.education_requirements,
+            qualifications_other: sanitize.trimString(req.body.qualifications_other, 2000),
+            education_requirements: sanitize.trimString(req.body.education_requirements, 500),
             other_relevant_titles: JSON.stringify(req.body.other_relevant_titles || []),
-            advancement_opportunities: req.body.advancement_opportunities,
-            advancement_timeline: req.body.advancement_timeline,
-            company_culture: req.body.company_culture,
+            advancement_opportunities: sanitize.trimString(req.body.advancement_opportunities, 2000),
+            advancement_timeline: sanitize.trimString(req.body.advancement_timeline, 255),
+            company_culture: sanitize.trimString(req.body.company_culture, 2000),
             flexible_on_title: req.body.flexible_on_title !== false // Default to true
         };
+
+        // Validate salary/pay range ordering
+        if (jobData.salary_min != null && jobData.salary_max != null && jobData.salary_max < jobData.salary_min) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'salary_max must be greater than or equal to salary_min'
+            });
+        }
+        if (jobData.pay_range_min != null && jobData.pay_range_max != null && jobData.pay_range_max < jobData.pay_range_min) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'pay_range_max must be greater than or equal to pay_range_min'
+            });
+        }
 
         // Generate AI job description
         if (req.body.key_responsibilities && req.body.key_responsibilities.length >= 3) {
@@ -122,7 +148,7 @@ router.post('/', async (req, res) => {
             data: { job }
         });
     } catch (error) {
-        console.error('Error creating job:', error);
+        logger.error('Error creating job', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to create job'
@@ -136,17 +162,39 @@ router.post('/', async (req, res) => {
  */
 router.put('/:id', async (req, res) => {
     try {
-        const jobId = parseInt(req.params.id);
+        const jobId = sanitize.positiveInt(req.params.id);
+        if (!jobId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid job ID' });
+        }
         const updates = req.body;
 
-        const job = await jobService.update(jobId, updates);
+        // Validate salary/pay range ordering on update
+        const salaryMin = updates.salary_min != null ? Number(updates.salary_min) : null;
+        const salaryMax = updates.salary_max != null ? Number(updates.salary_max) : null;
+        if (salaryMin != null && salaryMax != null && salaryMax < salaryMin) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'salary_max must be greater than or equal to salary_min'
+            });
+        }
+        const payMin = updates.pay_range_min != null ? Number(updates.pay_range_min) : null;
+        const payMax = updates.pay_range_max != null ? Number(updates.pay_range_max) : null;
+        if (payMin != null && payMax != null && payMax < payMin) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'pay_range_max must be greater than or equal to pay_range_min'
+            });
+        }
+
+        const userId = req.user ? req.user.userId : null;
+        const job = await jobService.update(jobId, updates, userId);
 
         res.json({
             status: 'success',
             data: { job }
         });
     } catch (error) {
-        console.error('Error updating job:', error);
+        logger.error('Error updating job', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to update job'
@@ -160,15 +208,19 @@ router.put('/:id', async (req, res) => {
  */
 router.delete('/:id', async (req, res) => {
     try {
-        const jobId = parseInt(req.params.id);
-        await jobService.delete(jobId);
+        const jobId = sanitize.positiveInt(req.params.id);
+        if (!jobId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid job ID' });
+        }
+        const userId = req.user ? req.user.userId : null;
+        await jobService.delete(jobId, userId);
 
         res.json({
             status: 'success',
             message: 'Job deleted successfully'
         });
     } catch (error) {
-        console.error('Error deleting job:', error);
+        logger.error('Error deleting job', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to delete job'
@@ -182,8 +234,11 @@ router.delete('/:id', async (req, res) => {
  */
 router.post('/:id/candidates/:candidateId', async (req, res) => {
     try {
-        const jobId = parseInt(req.params.id);
-        const candidateId = parseInt(req.params.candidateId);
+        const jobId = sanitize.positiveInt(req.params.id);
+        const candidateId = sanitize.positiveInt(req.params.candidateId);
+        if (!jobId || !candidateId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid job or candidate ID' });
+        }
 
         // Get job details and candidate analysis
         const job = await jobService.findById(jobId);
@@ -197,33 +252,12 @@ router.post('/:id/candidates/:candidateId', async (req, res) => {
             });
         }
 
-        // Calculate tier based on score
+        // Calculate tier and star rating using shared scoring service
         const score = analysis.overall_score;
-        let tier, star_rating;
-
-        if (score >= 80) {
-            tier = 'green';
-            star_rating = 4.0 + (score - 80) / 20; // 4.0 to 5.0
-        } else if (score >= 50) {
-            tier = 'yellow';
-            star_rating = 2.0 + (score - 50) / 30 * 1.9; // 2.0 to 3.9
-        } else {
-            tier = 'red';
-            star_rating = score / 50 * 1.5; // 0 to 1.5
-        }
-
-        // Determine vehicle status (if provided in request body)
         const vehicle_status = req.body.vehicle_status || 'unknown';
-
-        // Adjust score if vehicle is required
-        let adjusted_score = score;
-        if (job.vehicle_required) {
-            if (vehicle_status === 'has_vehicle') {
-                adjusted_score = Math.min(100, score + 5);
-            } else if (vehicle_status === 'no_vehicle') {
-                adjusted_score = Math.max(0, score - 10);
-            }
-        }
+        const tier = calculateTier(score);
+        const star_rating = calculateStarRating(score);
+        const adjusted_score = adjustScoreForVehicle(score, vehicle_status, job.vehicle_required);
 
         // Determine "Give Them a Chance" flag
         const give_them_a_chance = await determineGiveThemAChance(analysis, job, score);
@@ -249,7 +283,7 @@ router.post('/:id/candidates/:candidateId', async (req, res) => {
             data: { pipelineEntry }
         });
     } catch (error) {
-        console.error('Error adding candidate to job:', error);
+        logger.error('Error adding candidate to job', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to add candidate to job'
@@ -332,7 +366,7 @@ Keep it professional, concise, and actionable.`;
 
         return message.content[0].text;
     } catch (error) {
-        console.error('Error generating AI summary:', error);
+        logger.error('Error generating AI summary', { error: error.message });
         // Return a fallback summary
         return `Candidate scored ${analysis.overall_score}/100 (${tier} tier) for ${job.title}. Has ${analysis.years_of_experience} years of experience. ${analysis.hiring_recommendation.replace(/_/g, ' ')}.`;
     }
@@ -400,7 +434,7 @@ ${jobData.advancement_opportunities ? '[Include one sentence about growth opport
 
 CRITICAL RULES:
 1. NO emojis anywhere
-2. NO decorative lines or borders (═══ or similar)
+2. NO decorative lines or borders
 3. NO excessive spacing or blank lines
 4. Use simple dashes (-) for all bullet points
 5. Keep language professional but approachable - write for skilled tradespeople, not corporate executives
@@ -420,7 +454,7 @@ CRITICAL RULES:
 
         return message.content[0].text;
     } catch (error) {
-        console.error('Error generating job description:', error);
+        logger.error('Error generating job description', { error: error.message });
         // Return a basic fallback description
         const responsibilities = JSON.parse(jobData.key_responsibilities || '[]');
         return `${jobData.title}\n\nWe are seeking a qualified ${jobData.title} to join our team.\n\nKey Responsibilities:\n${responsibilities.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n\nQualifications:\n- ${jobData.qualifications_years || 0} years of experience\n- ${jobData.education_requirements || 'Relevant education'}\n\nApply today to join our team!`;

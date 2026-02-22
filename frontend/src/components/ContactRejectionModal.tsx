@@ -1,6 +1,7 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { config } from '../config';
+import { getAuthHeaders } from '../utils/auth';
 import { getTemplate, renderTemplate, getInterviewTypes, getTones } from '../utils/templateHelpers';
 
 interface ContactRejectionModalProps {
@@ -24,6 +25,7 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
   initialCommunicationType = 'email',
   onSuccess
 }) => {
+  const modalRef = useRef<HTMLDivElement>(null);
   const [mode, setMode] = useState<'contact' | 'rejection'>(initialMode);
   const [communicationType, setCommunicationType] = useState<'email' | 'sms'>(initialCommunicationType);
   const [interviewType, setInterviewType] = useState<'video' | 'phone' | 'in-person'>('video');
@@ -34,6 +36,17 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
   const [recipientEmail, setRecipientEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Escape key to close & auto-focus
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    modalRef.current?.focus();
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isOpen, onClose]);
 
   // Update mode when initialMode changes
   useEffect(() => {
@@ -72,7 +85,7 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
           `${config.apiUrl}/api/pipeline/${candidate.pipelineId}/reject`,
           {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' }
+            headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }
           }
         );
 
@@ -99,7 +112,7 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
         `${config.apiUrl}/api/pipeline/${candidate.pipelineId}/message`,
         {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
           body: JSON.stringify({
             communicationType,
             messageContent: renderedMessage.body,
@@ -132,10 +145,17 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
 
   return (
     <Overlay onClick={onClose}>
-      <ModalContainer onClick={(e) => e.stopPropagation()}>
+      <ModalContainer
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="contact-modal-title"
+        onClick={(e) => e.stopPropagation()}
+      >
         <ModalHeader>
-          <ModalTitle>{mode === 'contact' ? 'Contact Candidate' : 'Reject Candidate'}</ModalTitle>
-          <CloseButton onClick={onClose}>×</CloseButton>
+          <ModalTitle id="contact-modal-title">{mode === 'contact' ? 'Contact Candidate' : 'Reject Candidate'}</ModalTitle>
+          <CloseButton aria-label="Close" onClick={onClose}>×</CloseButton>
         </ModalHeader>
 
         <ModalBody>
@@ -143,12 +163,14 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
           <ModeToggleContainer>
             <ModeToggleButton
               active={mode === 'contact'}
+              aria-pressed={mode === 'contact'}
               onClick={() => setMode('contact')}
             >
               Contact
             </ModeToggleButton>
             <ModeToggleButton
               active={mode === 'rejection'}
+              aria-pressed={mode === 'rejection'}
               onClick={() => setMode('rejection')}
             >
               Reject
@@ -162,12 +184,14 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
               <CommunicationTypeContainer>
                 <CommunicationTypeButton
                   active={communicationType === 'email'}
+                  aria-pressed={communicationType === 'email'}
                   onClick={() => setCommunicationType('email')}
                 >
                   📧 Email
                 </CommunicationTypeButton>
                 <CommunicationTypeButton
                   active={communicationType === 'sms'}
+                  aria-pressed={communicationType === 'sms'}
                   onClick={() => setCommunicationType('sms')}
                 >
                   💬 Text
@@ -179,8 +203,9 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
           {/* Recipient Email (only when sending an email) */}
           {((mode === 'contact' && communicationType === 'email') || (mode === 'rejection' && !silentRejection)) && (
             <FormRow>
-              <Label>Recipient Email</Label>
+              <Label htmlFor="modal-recipient-email">Recipient Email</Label>
               <Input
+                id="modal-recipient-email"
                 type="email"
                 value={recipientEmail}
                 onChange={(e) => setRecipientEmail(e.target.value)}
@@ -243,8 +268,9 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
           {/* Scheduling Link (only for contact mode and not silent rejection) */}
           {mode === 'contact' && (
             <FormRow>
-              <Label>Scheduling Link</Label>
+              <Label htmlFor="modal-scheduling-link">Scheduling Link</Label>
               <Input
+                id="modal-scheduling-link"
                 type="text"
                 value={schedulingLink}
                 onChange={(e) => setSchedulingLink(e.target.value)}
@@ -277,7 +303,7 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
           )}
 
           {/* Error Message */}
-          {error && <ErrorMessage>{error}</ErrorMessage>}
+          {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
 
           {/* Candidate Info */}
           <CandidateInfo>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { config } from '../config';
+import { getAuthHeaders } from '../utils/auth';
 import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X } from 'lucide-react';
 import ResumePreviewModal from './ResumePreviewModal';
 import ContactRejectionModal from './ContactRejectionModal';
@@ -513,7 +514,7 @@ const TalentPoolManager: React.FC = () => {
       if (sortBy) params.append('sortBy', sortBy);
       if (sortOrder) params.append('sortOrder', sortOrder);
 
-      const response = await fetch(`${config.apiUrl}/api/pipeline/talent-pool?${params.toString()}`);
+      const response = await fetch(`${config.apiUrl}/api/pipeline/talent-pool?${params.toString()}`, { headers: getAuthHeaders() });
       const data = await response.json();
 
       if (data.status === 'success') {
@@ -532,7 +533,7 @@ const TalentPoolManager: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}/api/pipeline/talent-pool/stats`);
+      const response = await fetch(`${config.apiUrl}/api/pipeline/talent-pool/stats`, { headers: getAuthHeaders() });
       const data = await response.json();
 
       if (data.status === 'success') {

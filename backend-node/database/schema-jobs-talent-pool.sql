@@ -53,6 +53,9 @@ CREATE TABLE IF NOT EXISTS candidate_pipeline (
     internal_notes TEXT,
     tags TEXT, -- JSON array
 
+    -- Position evaluated for
+    evaluated_position TEXT,
+
     -- Communication tracking
     contacted_via TEXT, -- 'sms', 'email', null
     contacted_at DATETIME,

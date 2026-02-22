@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const gmailService = require('../services/gmailService');
+const logger = require('../services/logger');
 
 /**
  * POST /api/auth/google/callback
@@ -23,11 +24,10 @@ router.post('/callback', async (req, res) => {
             message: 'Successfully connected to Gmail'
         });
     } catch (error) {
-        console.error('Error exchanging token:', error);
+        logger.error('Error exchanging token', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
-            message: 'Failed to connect to Gmail',
-            error: error.message
+            message: 'Failed to connect to Gmail'
         });
     }
 });

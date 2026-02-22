@@ -341,6 +341,12 @@ const RequiredStar = styled.span`
     color: #ef4444;
 `;
 
+const FieldError = styled.span`
+    color: #ef4444;
+    font-size: 0.8rem;
+    margin-top: -0.25rem;
+`;
+
 const PublicApply: React.FC = () => {
     const [searchParams] = useSearchParams();
     const jobId = searchParams.get('job');
@@ -355,12 +361,40 @@ const PublicApply: React.FC = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [error, setError] = useState('');
+    const [fieldErrors, setFieldErrors] = useState<{ name?: string; email?: string; phone?: string }>({});
+
+    const validateField = (name: string, value: string): string => {
+        switch (name) {
+            case 'name':
+                return value.trim() ? '' : 'Name is required';
+            case 'email': {
+                if (!value.trim()) return 'Email is required';
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                return emailRegex.test(value.trim()) ? '' : 'Please enter a valid email address';
+            }
+            case 'phone': {
+                if (!value.trim()) return 'Phone number is required';
+                const phoneRegex = /^[+]?[\d\s().\-]{7,}$/;
+                return phoneRegex.test(value.trim()) ? '' : 'Please enter a valid phone number';
+            }
+            default:
+                return '';
+        }
+    };
+
+    const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        const error = validateField(name, value);
+        setFieldErrors(prev => ({ ...prev, [name]: error }));
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setFormData(prev => ({
-            ...prev,
-            [e.target.name]: e.target.value
-        }));
+        const { name, value } = e.target;
+        setFormData(prev => ({ ...prev, [name]: value }));
+        // Clear field error when user starts typing
+        if (fieldErrors[name as keyof typeof fieldErrors]) {
+            setFieldErrors(prev => ({ ...prev, [name]: '' }));
+        }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -380,8 +414,15 @@ const PublicApply: React.FC = () => {
         e.preventDefault();
         setError('');
 
-        if (!formData.name || !formData.email || !formData.phone) {
-            setError('Please fill in all required fields');
+        // Validate all fields
+        const errors = {
+            name: validateField('name', formData.name),
+            email: validateField('email', formData.email),
+            phone: validateField('phone', formData.phone)
+        };
+        setFieldErrors(errors);
+
+        if (errors.name || errors.email || errors.phone) {
             return;
         }
 
@@ -394,9 +435,9 @@ const PublicApply: React.FC = () => {
 
         try {
             const submitData = new FormData();
-            submitData.append('name', formData.name);
-            submitData.append('email', formData.email);
-            submitData.append('phone', formData.phone);
+            submitData.append('name', formData.name.trim());
+            submitData.append('email', formData.email.trim());
+            submitData.append('phone', formData.phone.trim());
             submitData.append('resume', resume);
             if (jobId) submitData.append('jobId', jobId);
             submitData.append('jobTitle', jobTitle);
@@ -405,6 +446,14 @@ const PublicApply: React.FC = () => {
                 method: 'POST',
                 body: submitData
             });
+
+            if (!response.ok) {
+                const data = await response.json().catch(() => null);
+                setError(data?.message || (response.status >= 500
+                    ? 'Something went wrong. Please try again later.'
+                    : 'Failed to submit application. Please check your information and try again.'));
+                return;
+            }
 
             const data = await response.json();
 
@@ -415,7 +464,7 @@ const PublicApply: React.FC = () => {
             }
         } catch (err) {
             console.error('Error submitting application:', err);
-            setError('Failed to submit application. Please try again.');
+            setError('Failed to submit application. Please check your connection and try again.');
         } finally {
             setIsSubmitting(false);
         }
@@ -425,7 +474,7 @@ const PublicApply: React.FC = () => {
         return (
             <PageContainer>
                 <FormCard>
-                    <SuccessContainer>
+                    <SuccessContainer role="status">
                         <SuccessIconWrapper>
                             <SuccessCheckmark>✓</SuccessCheckmark>
                         </SuccessIconWrapper>
@@ -435,7 +484,7 @@ const PublicApply: React.FC = () => {
                             If your qualifications match our needs, we'll be in touch.
                         </SuccessText>
                         <SuccessDetails>
-                            <SuccessDetailRow><strong>Position:</strong> {jobTitle}</SuccessDetailRow>
+                            <SuccessDetailRow><strong>Position:</strong> HVAC Service Technician</SuccessDetailRow>
                             <SuccessDetailRow><strong>Name:</strong> {formData.name}</SuccessDetailRow>
                             <SuccessDetailRow><strong>Email:</strong> {formData.email}</SuccessDetailRow>
                         </SuccessDetails>
@@ -488,64 +537,79 @@ const PublicApply: React.FC = () => {
                     </JobDescriptionList>
                 </JobDescriptionSection>
 
-                {error && <ErrorMessage>{error}</ErrorMessage>}
+                {error && <ErrorMessage role="alert">{error}</ErrorMessage>}
 
                 <Form onSubmit={handleSubmit}>
                     <FormGroup>
-                        <Label>Full Name <RequiredStar>*</RequiredStar></Label>
+                        <Label htmlFor="apply-name">Full Name <RequiredStar aria-hidden="true">*</RequiredStar></Label>
                         <Input
+                            id="apply-name"
                             type="text"
                             name="name"
                             value={formData.name}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="John Smith"
                             required
+                            aria-invalid={!!fieldErrors.name}
+                            aria-describedby={fieldErrors.name ? 'apply-name-error' : undefined}
                         />
+                        {fieldErrors.name && <FieldError id="apply-name-error" role="alert">{fieldErrors.name}</FieldError>}
                     </FormGroup>
 
                     <FormGroup>
-                        <Label>Email Address <RequiredStar>*</RequiredStar></Label>
+                        <Label htmlFor="apply-email">Email Address <RequiredStar aria-hidden="true">*</RequiredStar></Label>
                         <Input
+                            id="apply-email"
                             type="email"
                             name="email"
                             value={formData.email}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="john@example.com"
                             required
+                            aria-invalid={!!fieldErrors.email}
+                            aria-describedby={fieldErrors.email ? 'apply-email-error' : undefined}
                         />
+                        {fieldErrors.email && <FieldError id="apply-email-error" role="alert">{fieldErrors.email}</FieldError>}
                     </FormGroup>
 
                     <FormGroup>
-                        <Label>Phone Number <RequiredStar>*</RequiredStar></Label>
+                        <Label htmlFor="apply-phone">Phone Number <RequiredStar aria-hidden="true">*</RequiredStar></Label>
                         <Input
+                            id="apply-phone"
                             type="tel"
                             name="phone"
                             value={formData.phone}
                             onChange={handleChange}
+                            onBlur={handleBlur}
                             placeholder="(555) 123-4567"
                             required
+                            aria-invalid={!!fieldErrors.phone}
+                            aria-describedby={fieldErrors.phone ? 'apply-phone-error' : undefined}
                         />
+                        {fieldErrors.phone && <FieldError id="apply-phone-error" role="alert">{fieldErrors.phone}</FieldError>}
                     </FormGroup>
 
                     <FormGroup>
-                        <Label>Resume <RequiredStar>*</RequiredStar></Label>
+                        <Label htmlFor="apply-resume">Resume <RequiredStar aria-hidden="true">*</RequiredStar></Label>
                         <FileInputWrapper>
                             {!resume ? (
                                 <>
                                     <FileInput
                                         type="file"
-                                        id="resume"
+                                        id="apply-resume"
                                         accept=".pdf,.doc,.docx"
                                         onChange={handleFileChange}
                                     />
-                                    <FileInputLabel htmlFor="resume">
+                                    <FileInputLabel htmlFor="apply-resume">
                                         📄 Click to upload your resume (PDF or Word)
                                     </FileInputLabel>
                                 </>
                             ) : (
                                 <FileName>
                                     <span>📄 {resume.name}</span>
-                                    <RemoveFile type="button" onClick={() => setResume(null)}>
+                                    <RemoveFile type="button" aria-label="Remove resume" onClick={() => setResume(null)}>
                                         ×
                                     </RemoveFile>
                                 </FileName>

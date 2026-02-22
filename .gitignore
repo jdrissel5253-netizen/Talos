@@ -53,6 +53,13 @@ nul
 
 backend-node/credentials/token.json
 
+# Sensitive config files (NEVER commit these!)
+backend-node/envs.json
+backend-node/prod_config.json
+cf_config_full.json
+cf_update_config.json
+cf_update_source.json
+
 # Debug & Temporary files
 *.zip
 backend-node/cname*.txt
@@ -68,3 +75,7 @@ logs/
 *_events.json
 eb_apps*.json
 eb_config_utf8.json
+
+# Claude Code tool metadata
+.claude/
+context_for_claude.txt

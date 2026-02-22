@@ -34,7 +34,6 @@ async function initializeDatabase() {
 
             console.log('✅ Default test user created:');
             console.log(`   Email: ${defaultEmail}`);
-            console.log(`   Password: ${defaultPassword}`);
             console.log(`   User ID: ${result.rows[0].id}`);
         } else {
             console.log('ℹ️  Default test user already exists');

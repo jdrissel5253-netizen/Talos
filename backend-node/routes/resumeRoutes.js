@@ -3,42 +3,31 @@ const multer = require('multer');
 const path = require('path');
 const { analyzeResume } = require('../services/resumeAnalyzer');
 const { batchService, candidateService, analysisService, jobService, candidatePipelineService } = require('../services/databaseService');
+const logger = require('../services/logger');
 
 const router = express.Router();
 
-// Helper function to get or create the default "General Talent Pool" job
-async function getOrCreateGeneralTalentPoolJob(userId) {
+// Helper function to add candidate to General Talent Pool
+// Matches the working pattern from applyRoutes.js
+async function addCandidateToTalentPool(candidateId, analysis, evaluatedPosition) {
+    const ADMIN_USER_ID = 1;
+
     try {
-        // Try to find existing General Talent Pool job
-        const jobs = await jobService.findByUserId(userId);
-        let generalJob = jobs.find(job => job.title === 'General Talent Pool');
+        // Use findByTitle (direct SQL query) instead of findByUserId + JS filter
+        let generalJob = await jobService.findByTitle(ADMIN_USER_ID, 'General Talent Pool');
 
         if (!generalJob) {
-            // Create the General Talent Pool job if it doesn't exist
-            generalJob = await jobService.create(userId, {
+            generalJob = await jobService.create(ADMIN_USER_ID, {
                 title: 'General Talent Pool',
-                description: 'Default talent pool for all uploaded resumes',
+                description: 'Default talent pool for all candidates including batch uploads',
                 location: 'All Locations',
                 required_years_experience: 0,
                 vehicle_required: false,
                 position_type: 'General',
-                flexible_on_title: true
+                status: 'active'
             });
-            console.log('Created General Talent Pool job:', generalJob.id);
+            logger.info('Created General Talent Pool job', { jobId: generalJob.id });
         }
-
-        return generalJob;
-    } catch (error) {
-        console.error('Error getting/creating General Talent Pool job:', error);
-        throw error;
-    }
-}
-
-// Helper function to add candidate to General Talent Pool
-async function addCandidateToTalentPool(candidateId, analysis, evaluatedPosition) {
-    try {
-        const userId = 1; // Default user ID
-        const generalJob = await getOrCreateGeneralTalentPoolJob(userId);
 
         // Calculate tier based on score (with NaN protection)
         const score = Number(analysis.overallScore) || 0;
@@ -46,31 +35,31 @@ async function addCandidateToTalentPool(candidateId, analysis, evaluatedPosition
 
         if (score >= 80) {
             tier = 'green';
-            star_rating = 4.0 + (score - 80) / 20; // 4.0 to 5.0
+            star_rating = 4.0 + (score - 80) / 20;
         } else if (score >= 50) {
             tier = 'yellow';
-            star_rating = 2.0 + (score - 50) / 30 * 1.9; // 2.0 to 3.9
+            star_rating = 2.0 + (score - 50) / 30 * 1.9;
         } else {
             tier = 'red';
-            star_rating = Math.max(0, score / 50 * 1.5); // 0 to 1.5
+            star_rating = score / 50 * 1.5;
         }
 
         const pipelineData = {
             tier,
-            tier_score: Math.round(score) || 0,
-            star_rating: Math.round(star_rating * 10) / 10 || 0,
+            tier_score: Math.round(score),
+            star_rating: Math.round(star_rating * 10) / 10,
             give_them_a_chance: score >= 70 && score < 80,
             vehicle_status: 'unknown',
-            ai_summary: analysis.summary || 'Resume analyzed and added to talent pool',
-            internal_notes: 'Auto-added to talent pool',
-            tags: [],
+            ai_summary: `Batch upload. Score: ${score}/100. ${analysis.hiringRecommendation || 'Pending review'}. ${analysis.summary || ''}`.trim(),
+            internal_notes: 'Source: Batch Resume Upload',
+            tags: ['batch-upload'],
             evaluated_position: evaluatedPosition || 'General'
         };
 
         await candidatePipelineService.addToJob(candidateId, generalJob.id, pipelineData);
-        console.log(`Added candidate ${candidateId} to General Talent Pool (evaluated for: ${evaluatedPosition})`);
+        logger.info('Added candidate to General Talent Pool', { candidateId, jobId: generalJob.id, evaluatedPosition });
     } catch (error) {
-        console.error('Error adding candidate to talent pool:', error);
+        logger.error('Talent pool error', { candidateId, error: error.message, stack: error.stack });
         // Don't throw - we don't want to fail the upload if talent pool addition fails
     }
 }
@@ -121,11 +110,15 @@ const upload = multer({
         // Note: files limit is specified in the route handler with .array('resumes', 10)
     },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = /pdf|doc|docx/;
-        const extname = allowedTypes.test(path.extname(file.originalname).toLowerCase());
-        const mimetype = allowedTypes.test(file.mimetype);
+        const allowedMimeTypes = [
+            'application/pdf',
+            'application/msword',
+            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+        ];
+        const allowedExtensions = ['.pdf', '.doc', '.docx'];
+        const ext = path.extname(file.originalname).toLowerCase();
 
-        if (mimetype && extname) {
+        if (allowedMimeTypes.includes(file.mimetype) && allowedExtensions.includes(ext)) {
             return cb(null, true);
         } else {
             cb(new Error('Only PDF and DOC/DOCX files are allowed'));
@@ -149,8 +142,7 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
         const requiredYearsExperience = parseFloat(req.body.requiredYearsExperience) || 2;
         const flexibleOnTitle = req.body.flexibleOnTitle !== 'false'; // Default to true
 
-        // For now, use a default user ID (we'll add real auth later)
-        const userId = 1;
+        const userId = req.user.userId;
 
         // Create a batch record for tracking
         const batchName = `Single Upload ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
@@ -182,11 +174,10 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Resume analysis error:', error);
+        logger.error('Resume analysis error', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
-            message: 'Failed to analyze resume',
-            error: error.message
+            message: 'Failed to analyze resume'
         });
     }
 });
@@ -207,9 +198,7 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
         const requiredYearsExperience = parseFloat(req.body.requiredYearsExperience) || 2;
         const flexibleOnTitle = req.body.flexibleOnTitle !== 'false'; // Default to true
 
-        // For now, use a default user ID (we'll add real auth later)
-        // In production, this would come from the authenticated session
-        const userId = 1;
+        const userId = req.user.userId;
 
         // Create a batch record
         const batchName = `Batch ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
@@ -224,7 +213,7 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
             let candidate = null;
 
             try {
-                console.log(`Analyzing resume ${i + 1}/${req.files.length}: ${file.originalname} for position: ${position}`);
+                logger.info('Analyzing resume', { index: i + 1, total: req.files.length, filename: file.originalname, position });
 
                 // Create candidate record
                 candidate = await candidateService.create(batch.id, file.originalname, file.path);
@@ -248,7 +237,7 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
                     status: 'success'
                 });
             } catch (error) {
-                console.error(`Error analyzing ${file.originalname}:`, error);
+                logger.error('Error analyzing resume in batch', { filename: file.originalname, error: error.message });
 
                 // Update candidate status to error if it was created
                 if (candidate) {
@@ -257,14 +246,14 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
 
                 errors.push({
                     filename: file.originalname,
-                    error: error.message
+                    error: 'Processing failed'
                 });
 
                 results.push({
                     id: candidate?.id || i,
                     filename: file.originalname,
                     status: 'error',
-                    error: error.message
+                    error: 'Processing failed'
                 });
             }
         }
@@ -282,11 +271,10 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Batch resume analysis error:', error);
+        logger.error('Batch resume analysis error', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
-            message: 'Failed to analyze resumes',
-            error: error.message
+            message: 'Failed to analyze resumes'
         });
     }
 });

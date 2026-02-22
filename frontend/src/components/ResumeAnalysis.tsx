@@ -3,6 +3,7 @@ import styled from 'styled-components';
 
 import { Upload, MapPin, Briefcase, FileText } from 'lucide-react';
 import { config } from '../config';
+import { getAuthHeaders } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
 
 const Container = styled.div`
@@ -583,6 +584,7 @@ const ResumeAnalysis: React.FC = () => {
     try {
       const response = await fetch(`${config.apiUrl}/api/resume/upload`, {
         method: 'POST',
+        headers: getAuthHeaders(),
         body: formData,
       });
 
@@ -617,7 +619,7 @@ const ResumeAnalysis: React.FC = () => {
 
   const loadJobs = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}/api/jobs?userId=1`);
+      const response = await fetch(`${config.apiUrl}/api/jobs?userId=1`, { headers: getAuthHeaders() });
       const data = await response.json();
       if (data.status === 'success') {
         setJobs(data.data.jobs.slice(0, 5)); // Show only first 5 jobs in preview

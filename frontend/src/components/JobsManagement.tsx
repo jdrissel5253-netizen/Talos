@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
 import { useNavigate } from 'react-router-dom';
-import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText } from 'lucide-react';
+import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy } from 'lucide-react';
 import { config } from '../config';
+import { getAuthHeaders } from '../utils/auth';
 import AddJobForm from './AddJobForm';
 import ContactRejectionModal from './ContactRejectionModal';
 import { extractCandidateName } from '../utils/templateHelpers';
@@ -241,6 +242,34 @@ const IndeedButton = styled.a`
     }
 `;
 
+const CopyLinkButton = styled.button<{ copied?: boolean }>`
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: ${props => props.copied ? '#4ade80' : '#333333'};
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    margin-top: 1rem;
+    margin-left: 1rem;
+    transition: all 0.2s ease;
+
+    &:hover {
+        background: ${props => props.copied ? '#3bc76a' : '#4ade80'};
+        transform: translateY(-1px);
+    }
+`;
+
+const JobActionsRow = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.5rem;
+`;
+
 const PipelineTabs = styled.div`
     display: flex;
     gap: 0.5rem;
@@ -411,8 +440,8 @@ const ActionIcon = styled.button<{ color: string }>`
     background: ${props => props.color};
     color: white;
     border: none;
-    width: 36px;
-    height: 36px;
+    width: 44px;
+    height: 44px;
     border-radius: 50%;
     cursor: pointer;
     display: flex;
@@ -442,10 +471,12 @@ const MetaRow = styled.div`
 `;
 
 const Checkbox = styled.input`
-    width: 20px;
-    height: 20px;
+    width: 22px;
+    height: 22px;
+    min-width: 44px;
+    min-height: 44px;
     cursor: pointer;
-    margin-right: 1rem;
+    margin-right: 0.5rem;
 `;
 
 const MessageDropdown = styled.div`
@@ -496,6 +527,36 @@ const EmptyState = styled.div`
     color: #999;
 `;
 
+const ErrorBanner = styled.div`
+    background: #2d1b1b;
+    border: 1px solid #ef4444;
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    margin: 0.5rem 1rem;
+    color: #fca5a5;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.9rem;
+`;
+
+const ErrorDismiss = styled.button`
+    background: none;
+    border: none;
+    color: #fca5a5;
+    cursor: pointer;
+    font-size: 1.2rem;
+    padding: 0 0.25rem;
+    &:hover { color: #ef4444; }
+`;
+
+const LoadingSpinner = styled.div`
+    text-align: center;
+    padding: 2rem;
+    color: #999;
+    font-size: 0.9rem;
+`;
+
 const JobsManagement: React.FC = () => {
     const [jobs, setJobs] = useState<Job[]>([]);
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
@@ -511,24 +572,53 @@ const JobsManagement: React.FC = () => {
     const [selectedCandidateForContact, setSelectedCandidateForContact] = useState<{ pipelineId: number; name: string; position: string; } | null>(null);
     const [contactMode, setContactMode] = useState<'contact' | 'rejection'>('contact');
     const [contactCommunicationType, setContactCommunicationType] = useState<'email' | 'sms'>('email');
+    const [copiedJobId, setCopiedJobId] = useState<number | null>(null);
+    const [error, setError] = useState<string | null>(null);
+    const [loadingJobs, setLoadingJobs] = useState(false);
+    const [loadingCandidates, setLoadingCandidates] = useState(false);
 
     const navigate = useNavigate();
+
+    const copyApplyLink = (job: Job) => {
+        const baseUrl = window.location.origin;
+        const applyUrl = `${baseUrl}/apply?job=${job.id}&title=${encodeURIComponent(job.title)}`;
+        navigator.clipboard.writeText(applyUrl).then(() => {
+            setCopiedJobId(job.id);
+            setTimeout(() => setCopiedJobId(null), 2000);
+        });
+    };
 
     // Load jobs on mount
     useEffect(() => {
         loadJobs();
     }, []);
 
-    // Load candidates when job is selected
+    // Load candidates when job is selected (debounced with request cancellation)
     useEffect(() => {
-        if (selectedJob) {
-            loadCandidates(selectedJob.id);
-        }
+        if (!selectedJob) return;
+
+        const abortController = new AbortController();
+        const timeoutId = setTimeout(() => {
+            loadCandidates(selectedJob.id, abortController.signal);
+        }, 300);
+
+        return () => {
+            clearTimeout(timeoutId);
+            abortController.abort();
+        };
     }, [selectedJob, activeTab, filterTier, sortBy]);
 
     const loadJobs = async () => {
+        setLoadingJobs(true);
+        setError(null);
         try {
-            const response = await fetch(`${config.apiUrl}/api/jobs?userId=1`);
+            const response = await fetch(`${config.apiUrl}/api/jobs?userId=1`, { headers: getAuthHeaders() });
+            if (!response.ok) {
+                setError(response.status >= 500
+                    ? 'Something went wrong loading jobs. Please try again later.'
+                    : 'Failed to load jobs. Please try again.');
+                return;
+            }
             const data = await response.json();
             if (data.status === 'success') {
                 setJobs(data.data.jobs);
@@ -538,10 +628,14 @@ const JobsManagement: React.FC = () => {
             }
         } catch (error) {
             console.error('Error loading jobs:', error);
+            setError('Failed to load jobs. Please check your connection and try again.');
+        } finally {
+            setLoadingJobs(false);
         }
     };
 
-    const loadCandidates = async (jobId: number) => {
+    const loadCandidates = async (jobId: number, signal?: AbortSignal) => {
+        setLoadingCandidates(true);
         try {
             const params = new URLSearchParams();
             if (activeTab !== 'all') {
@@ -552,13 +646,23 @@ const JobsManagement: React.FC = () => {
             }
             params.append('sort_by', sortBy);
 
-            const response = await fetch(`${config.apiUrl}/api/jobs/${jobId}?${params}`);
+            const response = await fetch(`${config.apiUrl}/api/jobs/${jobId}?${params}`, { signal, headers: getAuthHeaders() });
+            if (!response.ok) {
+                setError(response.status >= 500
+                    ? 'Something went wrong loading candidates. Please try again later.'
+                    : 'Failed to load candidates. Please try again.');
+                return;
+            }
             const data = await response.json();
             if (data.status === 'success') {
                 setCandidates(data.data.candidates);
             }
-        } catch (error) {
+        } catch (error: any) {
+            if (error.name === 'AbortError') return;
             console.error('Error loading candidates:', error);
+            setError('Failed to load candidates. Please check your connection and try again.');
+        } finally {
+            setLoadingCandidates(false);
         }
     };
 
@@ -566,7 +670,7 @@ const JobsManagement: React.FC = () => {
         try {
             const response = await fetch(`${config.apiUrl}/api/pipeline/${candidatePipelineId}/status`, {
                 method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify({ status: action })
             });
 
@@ -578,6 +682,7 @@ const JobsManagement: React.FC = () => {
             }
         } catch (error) {
             console.error('Error updating candidate:', error);
+            setError('Failed to update candidate status. Please try again.');
         }
     };
 
@@ -587,7 +692,7 @@ const JobsManagement: React.FC = () => {
         try {
             const response = await fetch(`${config.apiUrl}/api/pipeline/bulk-update`, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify({
                     candidatePipelineIds: Array.from(selectedCandidates),
                     status: action
@@ -602,6 +707,7 @@ const JobsManagement: React.FC = () => {
             }
         } catch (error) {
             console.error('Error bulk updating:', error);
+            setError('Failed to update candidates. Please try again.');
         }
     };
 
@@ -672,12 +778,12 @@ const JobsManagement: React.FC = () => {
         );
     };
 
-    // Group candidates by tier
-    const candidatesByTier = {
+    // Group candidates by tier (memoized to avoid re-filtering on unrelated renders)
+    const candidatesByTier = useMemo(() => ({
         green: candidates.filter(c => c.tier === 'green'),
         yellow: candidates.filter(c => c.tier === 'yellow'),
         red: candidates.filter(c => c.tier === 'red')
-    };
+    }), [candidates]);
 
     return (
         <>
@@ -692,6 +798,12 @@ const JobsManagement: React.FC = () => {
             )}
 
             <PageContainer>
+                {error && (
+                    <ErrorBanner>
+                        <span>{error}</span>
+                        <ErrorDismiss onClick={() => setError(null)}>×</ErrorDismiss>
+                    </ErrorBanner>
+                )}
                 <LeftPanel isCollapsed={isLeftPanelCollapsed}>
                     <CollapseButton onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}>
                         {isLeftPanelCollapsed ? '▶' : '◀'}
@@ -713,7 +825,9 @@ const JobsManagement: React.FC = () => {
                             </PanelHeader>
 
                             <JobsList>
-                                {jobs.length === 0 ? (
+                                {loadingJobs ? (
+                                    <LoadingSpinner>Loading jobs...</LoadingSpinner>
+                                ) : jobs.length === 0 ? (
                                     <EmptyState>
                                         <p>No jobs yet.</p>
                                         <p>Click "Add New Job" to get started!</p>
@@ -767,13 +881,29 @@ const JobsManagement: React.FC = () => {
                                         <DetailValue>{selectedJob.description}</DetailValue>
                                     </DetailRow>
                                 )}
-                                <IndeedButton
-                                    href="https://employers.indeed.com/p/posting/orientation?jobId=697e7bd81fa87b7b4f80d2f4"
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                >
-                                    Post to Indeed
-                                </IndeedButton>
+                                <JobActionsRow>
+                                    <CopyLinkButton
+                                        onClick={() => copyApplyLink(selectedJob)}
+                                        copied={copiedJobId === selectedJob.id}
+                                    >
+                                        {copiedJobId === selectedJob.id ? (
+                                            <>
+                                                <Check size={18} /> Copied!
+                                            </>
+                                        ) : (
+                                            <>
+                                                <Link size={18} /> Copy Apply Link
+                                            </>
+                                        )}
+                                    </CopyLinkButton>
+                                    <IndeedButton
+                                        href="https://employers.indeed.com/p/posting/orientation?jobId=697e7bd81fa87b7b4f80d2f4"
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                    >
+                                        Post to Indeed
+                                    </IndeedButton>
+                                </JobActionsRow>
                             </JobDetailsCard>
 
                             <PipelineTabs>
@@ -827,7 +957,9 @@ const JobsManagement: React.FC = () => {
                             )}
 
                             <CandidatesGrid>
-                                {activeTab === 'all' ? (
+                                {loadingCandidates ? (
+                                    <LoadingSpinner>Loading candidates...</LoadingSpinner>
+                                ) : activeTab === 'all' ? (
                                     <>
                                         {candidatesByTier.green.length > 0 && (
                                             <TierSection>

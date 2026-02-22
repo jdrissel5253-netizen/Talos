@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
 import { config } from '../config';
+import { getAuthHeaders } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
 
 const Container = styled.div`
@@ -508,6 +509,7 @@ const BatchResumeAnalysis: React.FC = () => {
     try {
       const response = await fetch(`${config.apiUrl}/api/resume/upload-batch`, {
         method: 'POST',
+        headers: getAuthHeaders(),
         body: formData,
       });
 

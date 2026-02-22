@@ -1,8 +1,9 @@
 const express = require('express');
 const router = express.Router();
-const { candidatePipelineService } = require('../services/databaseService');
+const { candidatePipelineService, sanitize } = require('../services/databaseService');
 const gmailService = require('../services/gmailService');
 const Anthropic = require('@anthropic-ai/sdk');
+const logger = require('../services/logger');
 
 // Initialize Anthropic client for automated messaging
 const anthropic = new Anthropic({
@@ -22,28 +23,40 @@ router.get('/talent-pool', async (req, res) => {
             maxScore,       // Maximum overall score
             status,         // Filter by pipeline status
             sortBy,         // Sort field: score, date, name
-            sortOrder       // Sort order: asc, desc
+            sortOrder,      // Sort order: asc, desc
+            page,           // Page number (default 1)
+            limit           // Results per page (default 50, max 100)
         } = req.query;
 
+        const validTiers = ['green', 'yellow', 'red'];
+        const validStatuses = ['new', 'approved', 'contacted', 'backup', 'rejected'];
+
+        const parsedMinScore = minScore ? sanitize.nonNegativeNumber(minScore) : undefined;
+        const parsedMaxScore = maxScore ? sanitize.nonNegativeNumber(maxScore) : undefined;
+
         const talentPool = await candidatePipelineService.getTalentPool({
-            tier,
-            position,
-            minScore: minScore ? parseInt(minScore) : undefined,
-            maxScore: maxScore ? parseInt(maxScore) : undefined,
-            status,
+            tier: tier ? sanitize.enumValue(tier, validTiers) : undefined,
+            position: position ? sanitize.trimString(position, 100) : undefined,
+            minScore: parsedMinScore !== null ? Math.min(parsedMinScore || 0, 100) : undefined,
+            maxScore: parsedMaxScore !== null ? Math.min(parsedMaxScore || 100, 100) : undefined,
+            status: status ? sanitize.enumValue(status, validStatuses) : undefined,
             sortBy: sortBy || 'score',
-            sortOrder: sortOrder || 'desc'
+            sortOrder: sortOrder || 'desc',
+            page: page ? parseInt(page) : 1,
+            limit: limit ? parseInt(limit) : 50
         });
 
         res.json({
             status: 'success',
             data: {
-                total: talentPool.length,
+                page: parseInt(page) || 1,
+                limit: parseInt(limit) || 50,
+                count: talentPool.length,
                 candidates: talentPool
             }
         });
     } catch (error) {
-        console.error('Error fetching talent pool:', error);
+        logger.error('Error fetching talent pool', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to fetch talent pool'
@@ -64,7 +77,7 @@ router.get('/talent-pool/stats', async (req, res) => {
             data: stats
         });
     } catch (error) {
-        console.error('Error fetching talent pool stats:', error);
+        logger.error('Error fetching talent pool stats', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to fetch talent pool stats'
@@ -78,8 +91,15 @@ router.get('/talent-pool/stats', async (req, res) => {
  */
 router.put('/:id/status', async (req, res) => {
     try {
-        const pipelineId = parseInt(req.params.id);
-        const { status } = req.body; // approved, contacted, backup, rejected
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+        }
+        const validStatuses = ['new', 'approved', 'contacted', 'backup', 'rejected'];
+        const status = sanitize.enumValue(req.body.status, validStatuses);
+        if (!status) {
+            return res.status(400).json({ status: 'error', message: 'Valid status is required (new, approved, contacted, backup, rejected)' });
+        }
 
         const updated = await candidatePipelineService.updateStatus(pipelineId, status);
 
@@ -88,10 +108,11 @@ router.put('/:id/status', async (req, res) => {
             data: { pipeline: updated }
         });
     } catch (error) {
-        console.error('Error updating pipeline status:', error);
-        res.status(500).json({
+        logger.error('Error updating pipeline status', { error: error.message, stack: error.stack });
+        const code = error.statusCode || 500;
+        res.status(code).json({
             status: 'error',
-            message: 'Failed to update pipeline status'
+            message: code === 500 ? 'Failed to update pipeline status' : error.message
         });
     }
 });
@@ -121,10 +142,11 @@ router.post('/bulk-update', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error bulk updating pipeline:', error);
-        res.status(500).json({
+        logger.error('Error bulk updating pipeline', { error: error.message, stack: error.stack });
+        const code = error.statusCode || 500;
+        res.status(code).json({
             status: 'error',
-            message: 'Failed to bulk update pipeline'
+            message: code === 500 ? 'Failed to bulk update pipeline' : error.message
         });
     }
 });
@@ -135,20 +157,22 @@ router.post('/bulk-update', async (req, res) => {
  */
 router.post('/:id/message', async (req, res) => {
     try {
-        const pipelineId = parseInt(req.params.id);
-        const {
-            communicationType,      // 'email' | 'sms'
-            messageContent,         // Pre-rendered message from frontend
-            messageSubject,         // Email subject (optional)
-            category,               // 'contact' | 'rejection'
-            templateType,           // 'video' | 'phone' | 'in-person'
-            templateTone,           // 'conversational' | 'friendly' | 'professional'
-            isNudge,               // boolean
-            schedulingLink,        // URL
-            candidateName,         // string
-            jobTitle,              // string
-            recipientEmail         // Email address to send to
-        } = req.body;
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+        }
+
+        const communicationType = sanitize.enumValue(req.body.communicationType, ['email', 'sms']);
+        const messageContent = sanitize.trimString(req.body.messageContent, 5000);
+        const messageSubject = sanitize.trimString(req.body.messageSubject, 255);
+        const category = sanitize.enumValue(req.body.category, ['contact', 'rejection']);
+        const templateType = sanitize.enumValue(req.body.templateType, ['video', 'phone', 'in-person']);
+        const templateTone = sanitize.enumValue(req.body.templateTone, ['conversational', 'friendly', 'professional']);
+        const isNudge = req.body.isNudge;
+        const schedulingLink = sanitize.trimString(req.body.schedulingLink, 500);
+        const candidateName = sanitize.trimString(req.body.candidateName, 255);
+        const jobTitle = sanitize.trimString(req.body.jobTitle, 255);
+        const recipientEmail = sanitize.email(req.body.recipientEmail);
 
         if (!messageContent) {
             return res.status(400).json({
@@ -157,38 +181,22 @@ router.post('/:id/message', async (req, res) => {
             });
         }
 
-        if (!communicationType || !['email', 'sms'].includes(communicationType)) {
+        if (!communicationType) {
             return res.status(400).json({
                 status: 'error',
                 message: 'Valid communication type is required (email or sms)'
             });
         }
 
-        // Send Email via Gmail API
-        if (communicationType === 'email') {
-            if (!recipientEmail) {
-                return res.status(400).json({
-                    status: 'error',
-                    message: 'Recipient email is required'
-                });
-            }
-
-            try {
-                await gmailService.sendEmail({
-                    to: recipientEmail,
-                    subject: messageSubject || `Regarding your application for ${jobTitle}`,
-                    body: messageContent
-                });
-            } catch (emailError) {
-                console.error('Failed to send email:', emailError);
-                return res.status(500).json({
-                    status: 'error',
-                    message: 'Failed to send email: ' + emailError.message
-                });
-            }
+        // Validate email recipient upfront
+        if (communicationType === 'email' && !recipientEmail) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'A valid recipient email is required'
+            });
         }
 
-        // Log the communication with template metadata
+        // Step 1: Log communication with 'pending' status BEFORE sending
         const commLog = await candidatePipelineService.logCommunication(
             pipelineId,
             communicationType,
@@ -198,11 +206,34 @@ router.post('/:id/message', async (req, res) => {
                 templateTone,
                 isNudge,
                 schedulingLink,
-                category
+                category,
+                initialStatus: 'pending'
             }
         );
 
-        // Status is already updated in logCommunication method
+        // Step 2: Send the email
+        if (communicationType === 'email') {
+            try {
+                await gmailService.sendEmail({
+                    to: recipientEmail,
+                    subject: messageSubject || `Regarding your application for ${jobTitle}`,
+                    body: messageContent
+                });
+                // Step 3a: Update log status to 'sent' on success
+                await candidatePipelineService.updateCommunicationStatus(commLog.id, 'sent');
+            } catch (emailError) {
+                logger.error('Failed to send email', { pipelineId, error: emailError.message, stack: emailError.stack });
+                // Step 3b: Update log status to 'failed' on error
+                await candidatePipelineService.updateCommunicationStatus(commLog.id, 'failed');
+                return res.status(500).json({
+                    status: 'error',
+                    message: 'Failed to send email. Please try again.'
+                });
+            }
+        } else {
+            // For non-email (SMS), mark as sent immediately
+            await candidatePipelineService.updateCommunicationStatus(commLog.id, 'sent');
+        }
 
         res.json({
             status: 'success',
@@ -213,7 +244,7 @@ router.post('/:id/message', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error sending message:', error);
+        logger.error('Error sending message', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to send message'
@@ -227,7 +258,10 @@ router.post('/:id/message', async (req, res) => {
  */
 router.post('/:id/reject', async (req, res) => {
     try {
-        const pipelineId = parseInt(req.params.id);
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+        }
 
         // Update pipeline_status to 'rejected'
         await candidatePipelineService.updateStatus(pipelineId, 'rejected');
@@ -237,10 +271,11 @@ router.post('/:id/reject', async (req, res) => {
             message: 'Candidate rejected successfully'
         });
     } catch (error) {
-        console.error('Error rejecting candidate:', error);
-        res.status(500).json({
+        logger.error('Error rejecting candidate', { error: error.message, stack: error.stack });
+        const code = error.statusCode || 500;
+        res.status(code).json({
             status: 'error',
-            message: 'Failed to reject candidate'
+            message: code === 500 ? 'Failed to reject candidate' : error.message
         });
     }
 });
@@ -310,7 +345,7 @@ router.post('/bulk-message', async (req, res) => {
             }
         });
     } catch (error) {
-        console.error('Error sending bulk messages:', error);
+        logger.error('Error sending bulk messages', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to send bulk messages'
@@ -324,7 +359,10 @@ router.post('/bulk-message', async (req, res) => {
  */
 router.get('/:id/communications', async (req, res) => {
     try {
-        const pipelineId = parseInt(req.params.id);
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+        }
         const communications = await candidatePipelineService.getCommunicationHistory(pipelineId);
 
         res.json({
@@ -332,7 +370,7 @@ router.get('/:id/communications', async (req, res) => {
             data: { communications }
         });
     } catch (error) {
-        console.error('Error fetching communications:', error);
+        logger.error('Error fetching communications', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to fetch communications'
@@ -346,7 +384,10 @@ router.get('/:id/communications', async (req, res) => {
  */
 router.put('/:id/contact-status', async (req, res) => {
     try {
-        const pipelineId = parseInt(req.params.id);
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+        }
         const { isContacted, contactedVia } = req.body;
 
         const updated = await candidatePipelineService.updateContactStatus(
@@ -360,7 +401,7 @@ router.put('/:id/contact-status', async (req, res) => {
             data: { pipeline: updated }
         });
     } catch (error) {
-        console.error('Error updating contact status:', error);
+        logger.error('Error updating contact status', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to update contact status'
@@ -374,7 +415,10 @@ router.put('/:id/contact-status', async (req, res) => {
  */
 router.get('/candidate/:candidateId/job-matches', async (req, res) => {
     try {
-        const candidateId = parseInt(req.params.candidateId);
+        const candidateId = sanitize.positiveInt(req.params.candidateId);
+        if (!candidateId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid candidate ID' });
+        }
         const jobMatches = await candidatePipelineService.evaluateCandidateAcrossAllJobs(candidateId);
 
         res.json({
@@ -382,7 +426,7 @@ router.get('/candidate/:candidateId/job-matches', async (req, res) => {
             data: { matches: jobMatches }
         });
     } catch (error) {
-        console.error('Error evaluating candidate job matches:', error);
+        logger.error('Error evaluating candidate job matches', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
             message: 'Failed to evaluate job matches'
@@ -423,7 +467,7 @@ Generate the SMS text:`;
 
         return message.content[0].text.trim();
     } catch (error) {
-        console.error('Error generating SMS:', error);
+        logger.error('Error generating SMS', { error: error.message });
         return `Hi! We found your resume for our ${jobTitle} position in ${jobLocation}. Interested? Schedule an interview: ${schedulingLink || '[link]'}`;
     }
 }
@@ -462,7 +506,7 @@ Generate the complete email:`;
 
         return message.content[0].text.trim();
     } catch (error) {
-        console.error('Error generating email:', error);
+        logger.error('Error generating email', { error: error.message });
         return `Subject: Opportunity: ${jobTitle} - ${jobLocation}
 
 Dear Candidate,
@@ -509,7 +553,7 @@ Generate the email:`;
 
         return message.content[0].text.trim();
     } catch (error) {
-        console.error('Error generating rejection email:', error);
+        logger.error('Error generating rejection email', { error: error.message });
         return `Subject: Update on Your Application for ${jobTitle}
 
 Dear Candidate,

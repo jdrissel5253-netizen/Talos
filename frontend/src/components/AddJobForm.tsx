@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { config } from '../config';
+import { getAuthHeaders } from '../utils/auth';
 
 const FormContainer = styled.div`
   position: fixed;
@@ -414,7 +415,20 @@ const BENEFITS_OPTIONS = [
 ];
 
 const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
+  const modalRef = useRef<HTMLDivElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState('');
+
+  // Escape key to close & focus trap
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    document.addEventListener('keydown', handleKeyDown);
+    // Focus the modal container
+    modalRef.current?.focus();
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
   const [formData, setFormData] = useState({
     title: '',
     company_name: '',
@@ -502,15 +516,16 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
 
     // Validation
     if (!formData.title.trim()) {
-      alert('Please enter a job title');
+      setError('Please enter a job title');
       return;
     }
 
     if (!formData.key_responsibilities[0] || !formData.key_responsibilities[1] || !formData.key_responsibilities[2]) {
-      alert('Please enter all 3 key job responsibilities');
+      setError('Please enter all 3 key job responsibilities');
       return;
     }
 
@@ -531,23 +546,31 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
       const response = await fetch(`${config.apiUrl}/api/jobs`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          ...getAuthHeaders()
         },
         body: JSON.stringify(payload)
       });
 
+      if (!response.ok) {
+        const data = await response.json().catch(() => null);
+        setError(data?.message || (response.status >= 500
+          ? 'Something went wrong. Please try again later.'
+          : 'Failed to create job. Please check your information.'));
+        return;
+      }
+
       const data = await response.json();
 
       if (data.status === 'success') {
-        alert('Job created successfully with AI-generated description!');
         onJobCreated();
         onClose();
       } else {
-        alert('Error creating job: ' + data.message);
+        setError(data.message || 'Failed to create job');
       }
-    } catch (error) {
-      console.error('Error creating job:', error);
-      alert('Failed to create job. Please try again.');
+    } catch (err) {
+      console.error('Error creating job:', err);
+      setError('Failed to create job. Please check your connection and try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -555,7 +578,13 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
 
   return (
     <FormContainer onClick={(e) => e.target === e.currentTarget && onClose()}>
-      <FormCard>
+      <FormCard
+        ref={modalRef}
+        tabIndex={-1}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-job-form-title"
+      >
         {isSubmitting && (
           <LoadingOverlay>
             <LoadingSpinner />
@@ -563,12 +592,18 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
           </LoadingOverlay>
         )}
 
-        <CloseButton onClick={onClose}>&times;</CloseButton>
+        <CloseButton aria-label="Close" onClick={onClose}>&times;</CloseButton>
 
         <FormHeader>
-          <FormTitle>Create New Job Posting</FormTitle>
+          <FormTitle id="add-job-form-title">Create New Job Posting</FormTitle>
           <FormSubtitle>Fill out the details below and AI will generate a compelling job description</FormSubtitle>
         </FormHeader>
+
+        {error && (
+          <div role="alert" style={{ background: '#7f1d1d', color: '#fca5a5', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem' }}>
+            {error}
+          </div>
+        )}
 
         <form onSubmit={handleSubmit}>
           <FormSection>

@@ -2,15 +2,35 @@ const Anthropic = require('@anthropic-ai/sdk');
 const pdfParse = require('pdf-parse');
 const fs = require('fs').promises;
 const path = require('path');
+const logger = require('./logger');
 
-// Initialize Anthropic client
-if (!process.env.ANTHROPIC_API_KEY) {
-   console.error('CRITICAL ERROR: ANTHROPIC_API_KEY is missing from environment variables');
-}
-
+// Initialize Anthropic client (startup validation in server.js ensures key is set)
 const anthropic = new Anthropic({
    apiKey: process.env.ANTHROPIC_API_KEY
 });
+
+/**
+ * Retry an async function with exponential backoff.
+ * Retries on transient errors (429, 5xx, network errors).
+ */
+async function retryWithBackoff(fn, maxAttempts = 3) {
+   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+         return await fn();
+      } catch (error) {
+         const status = error.status || error.statusCode;
+         const isRetryable = !status || status === 429 || status >= 500;
+
+         if (!isRetryable || attempt === maxAttempts) {
+            throw error;
+         }
+
+         const delayMs = Math.pow(2, attempt - 1) * 1000; // 1s, 2s, 4s
+         logger.warn('API call failed, retrying', { attempt, maxAttempts, status: status || 'network error', retryInMs: delayMs });
+         await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+   }
+}
 
 /**
  * Extract text from PDF resume
@@ -3684,16 +3704,18 @@ ${positionCriteria.additionalNotes}
 Provide thorough, honest, and actionable feedback specifically tailored to the ${positionCriteria.title} position requirements.`;
       }
 
-      // Call Claude API
-      const message = await anthropic.messages.create({
-         model: "claude-sonnet-4-5-20250929",  // Using Claude Sonnet 4.5
-         max_tokens: 4096,
-         temperature: 0,  // Set to 0 for deterministic, consistent grading
-         messages: [{
-            role: "user",
-            content: prompt
-         }]
-      });
+      // Call Claude API with retry on transient failures
+      const message = await retryWithBackoff(() =>
+         anthropic.messages.create({
+            model: "claude-sonnet-4-5-20250929",  // Using Claude Sonnet 4.5
+            max_tokens: 4096,
+            temperature: 0,  // Set to 0 for deterministic, consistent grading
+            messages: [{
+               role: "user",
+               content: prompt
+            }]
+         })
+      );
 
       // Parse the response
       const responseText = message.content[0].text;
@@ -3710,22 +3732,17 @@ Provide thorough, honest, and actionable feedback specifically tailored to the $
       analysis.scoreOutOf10 = Math.round(analysis.overallScore / 10);
 
       // Clean up the uploaded file after analysis
-      await fs.unlink(filePath).catch(err => console.error('Error deleting file:', err));
+      await fs.unlink(filePath).catch(err => logger.error('Error deleting file', { error: err.message }));
 
       return analysis;
 
    } catch (error) {
-      console.error('============ RESUME ANALYSIS ERROR ============');
-      console.error('Error message:', error.message);
-      console.error('Error type:', error.constructor.name);
-      if (error.status) {
-         console.error('API Status:', error.status);
-      }
-      if (error.error) {
-         console.error('API Error details:', JSON.stringify(error.error, null, 2));
-      }
-      console.error('Stack trace:', error.stack);
-      console.error('==============================================');
+      logger.error('Resume analysis error', {
+         error: error.message,
+         type: error.constructor.name,
+         apiStatus: error.status || undefined,
+         stack: error.stack
+      });
       throw error;
    }
 }

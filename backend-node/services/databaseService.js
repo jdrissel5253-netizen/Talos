@@ -1,9 +1,10 @@
 const db = require('../config/database');
+const logger = require('./logger');
 
 // Detect environment - must match database.js logic
 const USE_POSTGRES = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV === 'production';
 
-console.log(`Service Layer DB Mode: ${USE_POSTGRES ? 'POSTGRES' : 'SQLITE'}`);
+logger.info('Service layer DB mode', { mode: USE_POSTGRES ? 'POSTGRES' : 'SQLITE' });
 
 // Helper function to convert arrays to JSON for SQLite (or TEXT columns in PG)
 const toJSON = (value) => {
@@ -68,6 +69,56 @@ const toDecimal = (value, defaultValue = 0) => {
     return isNaN(num) ? defaultValue : Math.round(num * 10) / 10;
 };
 
+// Input sanitization helpers for validation
+const sanitize = {
+    // Trim whitespace and enforce max length. Returns null for empty/missing values.
+    trimString(val, maxLength = 255) {
+        if (val === null || val === undefined) return null;
+        const trimmed = String(val).trim();
+        if (trimmed.length === 0) return null;
+        return trimmed.slice(0, maxLength);
+    },
+
+    // Validate and normalize email. Returns null if invalid.
+    email(val) {
+        if (!val) return null;
+        const trimmed = String(val).trim().toLowerCase();
+        if (trimmed.length > 255) return null;
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        return emailRegex.test(trimmed) ? trimmed : null;
+    },
+
+    // Validate phone number (digits, dashes, parens, spaces, +, dots). Returns null if invalid.
+    phone(val) {
+        if (!val) return null;
+        const trimmed = String(val).trim();
+        if (trimmed.length > 50) return null;
+        const phoneRegex = /^[+]?[\d\s().\-]{7,}$/;
+        return phoneRegex.test(trimmed) ? trimmed : null;
+    },
+
+    // Validate value against an allowed list. Returns defaultVal if not in list.
+    enumValue(val, allowedValues, defaultVal = null) {
+        if (!val) return defaultVal;
+        const trimmed = String(val).trim().toLowerCase();
+        return allowedValues.includes(trimmed) ? trimmed : defaultVal;
+    },
+
+    // Validate that a value is a positive integer. Returns null if invalid.
+    positiveInt(val) {
+        if (val === null || val === undefined) return null;
+        const num = parseInt(val, 10);
+        return (!isNaN(num) && num > 0) ? num : null;
+    },
+
+    // Validate that a value is a non-negative number. Returns null if invalid.
+    nonNegativeNumber(val) {
+        if (val === null || val === undefined) return null;
+        const num = Number(val);
+        return (!isNaN(num) && num >= 0) ? num : null;
+    }
+};
+
 /**
  * User operations
  */
@@ -121,12 +172,25 @@ const batchService = {
  * Candidate operations
  */
 const candidateService = {
-    async create(batchId, filename, filePath) {
+    async create(batchId, filename, filePath, applicantEmail = null) {
         const result = await db.query(
-            'INSERT INTO candidates (batch_id, filename, file_path, status) VALUES ($1, $2, $3, $4) RETURNING *',
-            [batchId, filename, filePath, 'analyzing']
+            'INSERT INTO candidates (batch_id, filename, file_path, status, applicant_email) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [batchId, filename, filePath, 'analyzing', applicantEmail]
         );
         return result.rows[0];
+    },
+
+    async hasRecentApplication(email, jobId, windowHours = 24) {
+        const result = await db.query(
+            `SELECT c.id FROM candidates c
+             JOIN candidate_pipeline cp ON c.id = cp.candidate_id
+             WHERE c.applicant_email = $1
+               AND cp.job_id = $2
+               AND c.upload_date > NOW() - INTERVAL '1 hour' * $3
+             LIMIT 1`,
+            [email, jobId, windowHours]
+        );
+        return result.rows.length > 0;
     },
 
     async updateStatus(id, status) {
@@ -321,24 +385,44 @@ const jobService = {
 
     async findByUserId(userId) {
         const result = await db.query(
-            'SELECT * FROM jobs WHERE user_id = $1 ORDER BY created_at DESC',
+            'SELECT * FROM jobs WHERE user_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC',
             [userId]
         );
         return result.rows;
     },
 
     async findById(id) {
-        const result = await db.query('SELECT * FROM jobs WHERE id = $1', [id]);
+        const result = await db.query('SELECT * FROM jobs WHERE id = $1 AND deleted_at IS NULL', [id]);
         return result.rows[0];
     },
 
-    async update(id, updates) {
+    async findByTitle(userId, title) {
+        const result = await db.query(
+            'SELECT * FROM jobs WHERE user_id = $1 AND title = $2 AND deleted_at IS NULL',
+            [userId, title]
+        );
+        return result.rows[0];
+    },
+
+    async update(id, updates, userId = null) {
+        // Allowlist of valid column names to prevent SQL injection via key names
+        const allowedColumns = [
+            'title', 'company_name', 'description', 'location', 'job_location_type',
+            'city', 'zip_code', 'job_type', 'required_years_experience', 'vehicle_required',
+            'position_type', 'salary_min', 'salary_max', 'pay_range_min', 'pay_range_max',
+            'pay_type', 'expected_hours', 'work_schedule', 'benefits', 'key_responsibilities',
+            'qualifications_years', 'qualifications_certifications', 'qualifications_other',
+            'education_requirements', 'other_relevant_titles', 'advancement_opportunities',
+            'advancement_timeline', 'company_culture', 'ai_generated_description',
+            'flexible_on_title', 'status', 'updated_at'
+        ];
+
         const fields = [];
         const values = [];
         let paramIndex = 1;
 
         Object.keys(updates).forEach(key => {
-            if (updates[key] !== undefined) {
+            if (updates[key] !== undefined && allowedColumns.includes(key)) {
                 fields.push(`${key} = $${paramIndex}`);
                 values.push(updates[key]);
                 paramIndex++;
@@ -352,12 +436,47 @@ const jobService = {
             `UPDATE jobs SET ${fields.join(', ')} WHERE id = $${paramIndex} RETURNING *`,
             values
         );
+
+        // Audit log the job update
+        const changedFields = {};
+        Object.keys(updates).forEach(key => {
+            if (updates[key] !== undefined && allowedColumns.includes(key)) {
+                changedFields[key] = updates[key];
+            }
+        });
+        auditService.log(userId, 'update', 'job', id, null, changedFields);
+
         return result.rows[0];
     },
 
-    async delete(id) {
-        await db.query('DELETE FROM jobs WHERE id = $1', [id]);
+    async delete(id, userId = null) {
+        const result = await db.query(
+            'UPDATE jobs SET deleted_at = CURRENT_TIMESTAMP WHERE id = $1 RETURNING *',
+            [id]
+        );
+
+        // Audit log the soft delete
+        auditService.log(userId, 'soft_delete', 'job', id, null, null);
+
+        return result.rows[0];
+    },
+
+    async restore(id) {
+        const result = await db.query(
+            'UPDATE jobs SET deleted_at = NULL WHERE id = $1 RETURNING *',
+            [id]
+        );
+        return result.rows[0];
     }
+};
+
+// Pipeline status state machine - defines valid transitions
+const PIPELINE_TRANSITIONS = {
+    'new': ['approved', 'backup', 'rejected'],
+    'approved': ['contacted', 'backup', 'rejected'],
+    'contacted': ['approved', 'backup', 'rejected'],
+    'backup': ['contacted', 'approved', 'rejected'],
+    'rejected': [] // terminal state
 };
 
 /**
@@ -399,20 +518,69 @@ const candidatePipelineService = {
     },
 
     async updateStatus(candidatePipelineId, status) {
+        // Fetch current status to enforce state machine
+        const current = await db.query(
+            'SELECT pipeline_status FROM candidate_pipeline WHERE id = $1',
+            [candidatePipelineId]
+        );
+        if (current.rows.length === 0) {
+            throw Object.assign(new Error('Pipeline entry not found'), { statusCode: 404 });
+        }
+        const currentStatus = current.rows[0].pipeline_status;
+        const allowed = PIPELINE_TRANSITIONS[currentStatus];
+        if (!allowed || !allowed.includes(status)) {
+            throw Object.assign(
+                new Error(`Invalid status transition: '${currentStatus}' -> '${status}'. Allowed transitions from '${currentStatus}': ${allowed && allowed.length ? allowed.join(', ') : 'none (terminal state)'}`),
+                { statusCode: 400 }
+            );
+        }
+
         const result = await db.query(
             'UPDATE candidate_pipeline SET pipeline_status = $1 WHERE id = $2 RETURNING *',
             [status, candidatePipelineId]
         );
+
+        // Audit log the status change
+        auditService.log(null, 'status_change', 'candidate_pipeline', candidatePipelineId, { status: currentStatus }, { status });
+
         return result.rows[0];
     },
 
     async bulkUpdateStatus(candidatePipelineIds, status) {
-        const placeholders = candidatePipelineIds.map((_, i) => `$${i + 2}`).join(',');
+        // Fetch current statuses to enforce state machine
+        const placeholders = candidatePipelineIds.map((_, i) => `$${i + 1}`).join(',');
+        const currentRows = await db.query(
+            `SELECT id, pipeline_status FROM candidate_pipeline WHERE id IN (${placeholders})`,
+            candidatePipelineIds
+        );
+
+        const invalid = [];
+        for (const row of currentRows.rows) {
+            const allowed = PIPELINE_TRANSITIONS[row.pipeline_status];
+            if (!allowed || !allowed.includes(status)) {
+                invalid.push({ id: row.id, from: row.pipeline_status });
+            }
+        }
+        if (invalid.length > 0) {
+            const details = invalid.map(i => `id ${i.id}: '${i.from}' -> '${status}'`).join('; ');
+            throw Object.assign(
+                new Error(`Invalid status transitions: ${details}`),
+                { statusCode: 400 }
+            );
+        }
+
+        const updatePlaceholders = candidatePipelineIds.map((_, i) => `$${i + 2}`).join(',');
         const result = await db.query(
             `UPDATE candidate_pipeline SET pipeline_status = $1
-             WHERE id IN (${placeholders}) RETURNING *`,
+             WHERE id IN (${updatePlaceholders}) RETURNING *`,
             [status, ...candidatePipelineIds]
         );
+
+        // Audit log each transition
+        for (const row of currentRows.rows) {
+            auditService.log(null, 'status_change', 'candidate_pipeline', row.id, { status: row.pipeline_status }, { status });
+        }
+
         return result.rows;
     },
 
@@ -449,10 +617,25 @@ const candidatePipelineService = {
             query += ' AND cp.give_them_a_chance = 1';
         }
 
-        // Sorting
-        const sortBy = filters.sort_by || 'tier_score';
-        const sortOrder = filters.sort_order || 'DESC';
+        // Sorting - validate against allowlist to prevent SQL injection
+        const validSortFields = {
+            'tier_score': 'cp.tier_score',
+            'star_rating': 'cp.star_rating',
+            'pipeline_status': 'cp.pipeline_status',
+            'created_at': 'cp.created_at',
+            'filename': 'c.filename',
+            'overall_score': 'a.overall_score'
+        };
+        const sortBy = validSortFields[filters.sort_by] || 'cp.tier_score';
+        const sortOrder = filters.sort_order === 'ASC' ? 'ASC' : 'DESC';
         query += ` ORDER BY ${sortBy} ${sortOrder}`;
+
+        // Pagination
+        const page = Math.max(1, parseInt(filters.page) || 1);
+        const limit = Math.min(100, Math.max(1, parseInt(filters.limit) || 50));
+        const offset = (page - 1) * limit;
+        query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+        params.push(limit, offset);
 
         const result = await db.query(query, params);
 
@@ -470,7 +653,8 @@ const candidatePipelineService = {
             templateTone,
             isNudge,
             schedulingLink,
-            category
+            category,
+            initialStatus
         } = metadata;
 
         const result = await db.query(
@@ -481,8 +665,9 @@ const candidatePipelineService = {
                 template_type,
                 template_tone,
                 is_nudge,
-                scheduling_link
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
+                scheduling_link,
+                status
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
             [
                 candidatePipelineId,
                 communicationType,
@@ -490,7 +675,8 @@ const candidatePipelineService = {
                 templateType || null,
                 templateTone || null,
                 isNudge ? 1 : 0,
-                schedulingLink || null
+                schedulingLink || null,
+                initialStatus || 'sent'
             ]
         );
 
@@ -508,6 +694,14 @@ const candidatePipelineService = {
             [communicationType, messageContent, newStatus, candidatePipelineId]
         );
 
+        return result.rows[0];
+    },
+
+    async updateCommunicationStatus(communicationLogId, status) {
+        const result = await db.query(
+            'UPDATE communication_log SET status = $1 WHERE id = $2 RETURNING *',
+            [status, communicationLogId]
+        );
         return result.rows[0];
     },
 
@@ -555,7 +749,7 @@ const candidatePipelineService = {
             JOIN candidates c ON cp.candidate_id = c.id
             JOIN jobs j ON cp.job_id = j.id
             LEFT JOIN analyses a ON c.id = a.candidate_id
-            WHERE 1=1
+            WHERE j.deleted_at IS NULL
         `;
 
         const params = [];
@@ -604,6 +798,13 @@ const candidatePipelineService = {
         const sortOrder = filters.sortOrder === 'asc' ? 'ASC' : 'DESC';
         query += ` ORDER BY ${sortField} ${sortOrder}`;
 
+        // Pagination
+        const page = Math.max(1, parseInt(filters.page) || 1);
+        const limit = Math.min(100, Math.max(1, parseInt(filters.limit) || 50));
+        const offset = (page - 1) * limit;
+        query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
+        params.push(limit, offset);
+
         const result = await db.query(query, params);
 
         // Parse JSON fields
@@ -616,60 +817,57 @@ const candidatePipelineService = {
     },
 
     async getTalentPoolStats() {
-        // Get tier distribution
-        const tierStats = await db.query(`
-            SELECT tier, COUNT(*) as count
-            FROM candidate_pipeline
-            GROUP BY tier
+        const result = await db.query(`
+            WITH tier_stats AS (
+                SELECT tier, COUNT(*) as count, AVG(tier_score) as avg_score
+                FROM candidate_pipeline
+                GROUP BY tier
+            ),
+            position_stats AS (
+                SELECT j.position_type, COUNT(DISTINCT cp.candidate_id) as count
+                FROM candidate_pipeline cp
+                JOIN jobs j ON cp.job_id = j.id
+                GROUP BY j.position_type
+            ),
+            status_stats AS (
+                SELECT pipeline_status, COUNT(*) as count
+                FROM candidate_pipeline
+                GROUP BY pipeline_status
+            ),
+            total_stats AS (
+                SELECT COUNT(DISTINCT candidate_id) as total
+                FROM candidate_pipeline
+            )
+            SELECT
+                (SELECT total FROM total_stats) as total,
+                (SELECT json_agg(json_build_object('tier', tier, 'count', count, 'avg_score', avg_score)) FROM tier_stats) as tier_data,
+                (SELECT json_agg(json_build_object('position_type', position_type, 'count', count)) FROM position_stats) as position_data,
+                (SELECT json_agg(json_build_object('pipeline_status', pipeline_status, 'count', count)) FROM status_stats) as status_data
         `);
 
-        // Get position breakdown
-        const positionStats = await db.query(`
-            SELECT j.position_type, COUNT(DISTINCT cp.candidate_id) as count
-            FROM candidate_pipeline cp
-            JOIN jobs j ON cp.job_id = j.id
-            GROUP BY j.position_type
-            ORDER BY count DESC
-        `);
-
-        // Get status breakdown
-        const statusStats = await db.query(`
-            SELECT pipeline_status, COUNT(*) as count
-            FROM candidate_pipeline
-            GROUP BY pipeline_status
-        `);
-
-        // Get average scores by tier
-        const avgScoreByTier = await db.query(`
-            SELECT tier, AVG(tier_score) as avg_score, COUNT(*) as count
-            FROM candidate_pipeline
-            GROUP BY tier
-        `);
-
-        // Get total candidates
-        const totalResult = await db.query(`
-            SELECT COUNT(DISTINCT candidate_id) as total
-            FROM candidate_pipeline
-        `);
+        const row = result.rows[0];
+        const tierData = row.tier_data || [];
+        const positionData = row.position_data || [];
+        const statusData = row.status_data || [];
 
         return {
-            total: totalResult.rows[0].total,
-            tierDistribution: tierStats.rows.reduce((acc, row) => {
-                acc[row.tier] = row.count;
+            total: row.total || 0,
+            tierDistribution: tierData.reduce((acc, r) => {
+                acc[r.tier] = r.count;
                 return acc;
             }, {}),
-            positionBreakdown: positionStats.rows.reduce((acc, row) => {
-                acc[row.position_type] = row.count;
+            positionBreakdown: positionData.reduce((acc, r) => {
+                acc[r.position_type] = r.count;
                 return acc;
             }, {}),
-            statusBreakdown: statusStats.rows.reduce((acc, row) => {
-                acc[row.pipeline_status] = row.count;
+            statusBreakdown: statusData.reduce((acc, r) => {
+                acc[r.pipeline_status] = r.count;
                 return acc;
             }, {}),
-            averageScoreByTier: avgScoreByTier.rows.reduce((acc, row) => {
-                acc[row.tier] = {
-                    avgScore: Math.round(row.avg_score * 10) / 10,
-                    count: row.count
+            averageScoreByTier: tierData.reduce((acc, r) => {
+                acc[r.tier] = {
+                    avgScore: Math.round(r.avg_score * 10) / 10,
+                    count: r.count
                 };
                 return acc;
             }, {})
@@ -712,7 +910,7 @@ const candidatePipelineService = {
 
         // Get all active jobs
         const jobsResult = await db.query(
-            `SELECT * FROM jobs WHERE status = 'active' ORDER BY title`
+            `SELECT * FROM jobs WHERE status = 'active' AND deleted_at IS NULL ORDER BY title`
         );
 
         const jobs = jobsResult.rows;
@@ -772,6 +970,32 @@ const candidatePipelineService = {
 };
 
 /**
+ * Audit logging service
+ */
+const auditService = {
+    async log(userId, action, entityType, entityId, oldValue = null, newValue = null, metadata = null) {
+        try {
+            await db.query(
+                `INSERT INTO audit_log (user_id, action, entity_type, entity_id, old_value, new_value, metadata)
+                 VALUES ($1, $2, $3, $4, $5, $6, $7)`,
+                [
+                    userId,
+                    action,
+                    entityType,
+                    entityId,
+                    oldValue ? JSON.stringify(oldValue) : null,
+                    newValue ? JSON.stringify(newValue) : null,
+                    metadata ? JSON.stringify(metadata) : null
+                ]
+            );
+        } catch (error) {
+            // Audit logging should never break the main operation
+            logger.error('Audit log error (non-fatal)', { error: error.message });
+        }
+    }
+};
+
+/**
  * Initialize database (create tables)
  */
 async function initializeDatabase() {
@@ -782,9 +1006,9 @@ async function initializeDatabase() {
         const schemaPath = path.join(__dirname, '../database/schema.sql');
         const schema = fs.readFileSync(schemaPath, 'utf8');
         await db.query(schema);
-        console.log('✅ Database schema initialized');
+        logger.info('Database schema initialized');
     } catch (error) {
-        console.error('❌ Error initializing database:', error);
+        logger.error('Error initializing database', { error: error.message, stack: error.stack });
         throw error;
     }
 }
@@ -796,5 +1020,7 @@ module.exports = {
     analysisService,
     jobService,
     candidatePipelineService,
+    auditService,
+    sanitize,
     initializeDatabase
 };

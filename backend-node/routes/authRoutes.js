@@ -1,11 +1,12 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const { userService } = require('../services/databaseService');
+const { userService, sanitize } = require('../services/databaseService');
+const logger = require('../services/logger');
 
 const router = express.Router();
 
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = '7d';
 
 /**
@@ -13,13 +14,21 @@ const JWT_EXPIRES_IN = '7d';
  */
 router.post('/register', async (req, res) => {
     try {
-        const { email, password, companyName } = req.body;
+        const email = sanitize.email(req.body.email);
+        const password = req.body.password;
+        const companyName = sanitize.trimString(req.body.companyName, 255);
 
-        // Validate input
-        if (!email || !password) {
+        if (!email) {
             return res.status(400).json({
                 status: 'error',
-                message: 'Email and password are required'
+                message: 'A valid email address is required'
+            });
+        }
+
+        if (!password || password.length < 8) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'Password must be at least 8 characters'
             });
         }
 
@@ -59,11 +68,10 @@ router.post('/register', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Registration error:', error);
+        logger.error('Registration error', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
-            message: 'Failed to register user',
-            error: error.message
+            message: 'Failed to register user'
         });
     }
 });
@@ -73,13 +81,13 @@ router.post('/register', async (req, res) => {
  */
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const email = sanitize.email(req.body.email);
+        const password = req.body.password;
 
-        // Validate input
         if (!email || !password) {
             return res.status(400).json({
                 status: 'error',
-                message: 'Email and password are required'
+                message: 'Valid email and password are required'
             });
         }
 
@@ -122,11 +130,10 @@ router.post('/login', async (req, res) => {
         });
 
     } catch (error) {
-        console.error('Login error:', error);
+        logger.error('Login error', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
-            message: 'Failed to login',
-            error: error.message
+            message: 'Failed to login'
         });
     }
 });

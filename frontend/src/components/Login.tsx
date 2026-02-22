@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import DemoModal from './DemoModal';
+import { config } from '../config';
+import { setToken } from '../utils/auth';
 
 const LoginContainer = styled.div`
   min-height: 100vh;
@@ -189,6 +191,7 @@ const Login: React.FC = () => {
     password: ''
   });
   const [isLoading, setIsLoading] = useState(false);
+  const [loginError, setLoginError] = useState('');
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -200,20 +203,39 @@ const Login: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setLoginError('');
 
     if (!formData.username.trim() || !formData.password.trim()) {
-      alert('Please enter both username and password.');
+      setLoginError('Please enter both email and password.');
       return;
     }
 
     setIsLoading(true);
 
-    // Simulate login process
-    setTimeout(() => {
+    try {
+      const response = await fetch(`${config.apiUrl}/api/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: formData.username.trim(),
+          password: formData.password
+        })
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setLoginError(data.message || 'Invalid email or password.');
+        return;
+      }
+
+      setToken(data.data.token);
+      navigate('/jobs-management');
+    } catch (err) {
+      setLoginError('Unable to connect. Please check your internet connection.');
+    } finally {
       setIsLoading(false);
-      // Redirect to Batch Resume Analysis page after successful login
-      navigate('/batch-resume-analysis');
-    }, 1500);
+    }
   };
 
   const handleForgotPassword = () => {
@@ -250,6 +272,12 @@ const Login: React.FC = () => {
 
           <WelcomeTitle>Welcome Back</WelcomeTitle>
           <WelcomeSubtitle>Sign in to your Talos account</WelcomeSubtitle>
+
+          {loginError && (
+            <div role="alert" style={{ background: '#7f1d1d', color: '#fca5a5', padding: '0.75rem 1rem', borderRadius: '8px', marginBottom: '1rem', fontSize: '0.9rem', textAlign: 'center' }}>
+              {loginError}
+            </div>
+          )}
 
           <Form onSubmit={handleSubmit}>
             <FormGroup>

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { config } from '../config';
+import { getAuthHeaders } from '../utils/auth';
 
 const Container = styled.div`
   max-width: 1400px;
@@ -213,7 +214,7 @@ const TalentPoolHome: React.FC<TalentPoolHomeProps> = ({ className }) => {
   const fetchStats = async () => {
     try {
       setLoading(true);
-      const response = await fetch(`${config.apiUrl}/api/pipeline/talent-pool/stats`);
+      const response = await fetch(`${config.apiUrl}/api/pipeline/talent-pool/stats`, { headers: getAuthHeaders() });
       if (response.ok) {
         const data = await response.json();
         setStats(data.data || { green: 0, yellow: 0, red: 0, total: 0 });
