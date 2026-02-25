@@ -114,9 +114,13 @@ router.post('/login', async (req, res) => {
             });
         }
 
+        // Determine effective role — re-apply admin bootstrap in case account predates it
+        const loginAdminEmail = process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL.toLowerCase() : null;
+        const effectiveRole = (loginAdminEmail && user.email === loginAdminEmail) ? 'admin' : (user.role || 'user');
+
         // Generate JWT token
         const token = jwt.sign(
-            { userId: user.id, email: user.email, role: user.role || 'user' },
+            { userId: user.id, email: user.email, role: effectiveRole },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
@@ -130,7 +134,7 @@ router.post('/login', async (req, res) => {
                     id: user.id,
                     email: user.email,
                     companyName: user.company_name,
-                    role: user.role || 'user'
+                    role: effectiveRole
                 }
             }
         });

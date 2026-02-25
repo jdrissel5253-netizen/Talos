@@ -813,6 +813,9 @@ const JobsManagement: React.FC = () => {
                         <>
                             <PanelHeader>
                                 <PanelTitle>My Jobs</PanelTitle>
+                                <BackButton onClick={() => navigate('/dashboard')}>
+                                    ← Dashboard
+                                </BackButton>
                                 <BackButton onClick={() => navigate('/batch-resume-analysis')}>
                                     ← Back to Resume Evaluator
                                 </BackButton>

@@ -274,7 +274,7 @@ const Login: React.FC = () => {
       }
 
       setToken(data.data.token);
-      navigate('/jobs-management');
+      navigate(data.data.user.role === 'admin' ? '/' : '/dashboard');
     } catch (err) {
       setError('Unable to connect. Please check your internet connection.');
     } finally {

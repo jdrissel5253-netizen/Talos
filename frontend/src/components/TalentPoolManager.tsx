@@ -666,6 +666,9 @@ const TalentPoolManager: React.FC = () => {
           <Title>Talent Pool Management</Title>
           <Subtitle>View and manage all candidates in your talent pipeline</Subtitle>
           <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '12px' }}>
+            <NavButton onClick={() => navigate('/dashboard')}>
+              ← Dashboard
+            </NavButton>
             <NavButton onClick={() => navigate('/jobs-management')}>
               ← View My Jobs
             </NavButton>

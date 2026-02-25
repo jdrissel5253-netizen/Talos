@@ -22,6 +22,7 @@ const CandidateRanking = lazy(() => import('./components/CandidateRanking'));
 const CandidateMessages = lazy(() => import('./components/CandidateMessages'));
 const TalentPool = lazy(() => import('./components/TalentPool'));
 const TalentPoolHome = lazy(() => import('./components/TalentPoolHome'));
+const ClientDashboard = lazy(() => import('./components/ClientDashboard'));
 const JobSelectionScreen = lazy(() => import('./components/JobSelectionScreen'));
 const CandidateListScreen = lazy(() => import('./components/CandidateListScreen'));
 const HVACInsights = lazy(() => import('./components/HVACInsights'));
@@ -120,6 +121,7 @@ function AppLayout() {
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/dashboard" element={<ClientDashboard />} />
               <Route path="/resume-analysis" element={<ResumeAnalysis />} />
               <Route path="/batch-resume-analysis" element={<BatchResumeAnalysis />} />
               <Route path="/jobs-management" element={<JobsManagement />} />

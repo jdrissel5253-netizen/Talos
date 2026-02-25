@@ -392,17 +392,30 @@ const jobService = {
     },
 
     async findAll() {
-        const result = await db.query(
-            'SELECT * FROM jobs WHERE deleted_at IS NULL ORDER BY created_at DESC'
-        );
+        const result = await db.query(`
+            SELECT j.*,
+                COUNT(cp.id)::int AS candidate_count,
+                COUNT(CASE WHEN cp.pipeline_status = 'new' THEN 1 END)::int AS new_candidate_count
+            FROM jobs j
+            LEFT JOIN candidate_pipeline cp ON cp.job_id = j.id
+            WHERE j.deleted_at IS NULL
+            GROUP BY j.id
+            ORDER BY j.created_at DESC
+        `);
         return result.rows;
     },
 
     async findByUserId(userId) {
-        const result = await db.query(
-            'SELECT * FROM jobs WHERE user_id = $1 AND deleted_at IS NULL ORDER BY created_at DESC',
-            [userId]
-        );
+        const result = await db.query(`
+            SELECT j.*,
+                COUNT(cp.id)::int AS candidate_count,
+                COUNT(CASE WHEN cp.pipeline_status = 'new' THEN 1 END)::int AS new_candidate_count
+            FROM jobs j
+            LEFT JOIN candidate_pipeline cp ON cp.job_id = j.id
+            WHERE j.user_id = $1 AND j.deleted_at IS NULL
+            GROUP BY j.id
+            ORDER BY j.created_at DESC
+        `, [userId]);
         return result.rows;
     },
 
