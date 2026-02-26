@@ -141,6 +141,15 @@ const authLimiter = rateLimit({
     message: { status: 'error', message: 'Too many login attempts. Please try again later.' }
 });
 
+// Job feed rate limiting (60 per 15 minutes per IP) - for aggregator bots
+const feedLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { status: 'error', message: 'Too many feed requests. Please try again later.' }
+});
+
 app.use(generalLimiter);
 
 // CORS
@@ -163,6 +172,7 @@ const googleAuthRoutes = require('./routes/googleAuthRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 const candidatePipelineRoutes = require('./routes/candidatePipelineRoutes');
 const applyRoutes = require('./routes/applyRoutes');
+const jobFeedRoutes = require('./routes/jobFeedRoutes');
 
 // Root route
 app.get('/', (req, res) => {
@@ -182,6 +192,7 @@ app.use('/api/pipeline', authenticateToken, candidatePipelineRoutes);
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/auth/google', authLimiter, googleAuthRoutes);
 app.use('/api/apply', publicApplyLimiter, applyRoutes);
+app.use('/api/jobs', feedLimiter, jobFeedRoutes); // Public job feed and job details
 app.get('/api/health', async (req, res) => {
     let dbStatus = 'unknown';
     try {

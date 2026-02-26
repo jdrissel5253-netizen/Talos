@@ -495,6 +495,41 @@ const jobService = {
             [id]
         );
         return result.rows[0];
+    },
+
+    /**
+     * Find all active jobs for the public XML feed
+     * Returns jobs that are active and not deleted
+     */
+    async findActiveForFeed() {
+        const result = await db.query(`
+            SELECT id, title, company_name, description, ai_generated_description,
+                   location, city, zip_code, job_location_type, job_type, position_type,
+                   salary_min, salary_max, pay_range_min, pay_range_max, pay_type,
+                   benefits, key_responsibilities, qualifications_certifications,
+                   education_requirements, required_years_experience, created_at
+            FROM jobs
+            WHERE status = 'active' AND deleted_at IS NULL
+            ORDER BY created_at DESC
+        `);
+        return result.rows;
+    },
+
+    /**
+     * Find a single active job by ID for public display
+     * Only returns the job if it's active and not deleted
+     */
+    async findActiveById(id) {
+        const result = await db.query(`
+            SELECT id, title, company_name, description, ai_generated_description,
+                   location, city, zip_code, job_location_type, job_type, position_type,
+                   salary_min, salary_max, pay_range_min, pay_range_max, pay_type,
+                   benefits, key_responsibilities, qualifications_certifications,
+                   education_requirements, required_years_experience, created_at
+            FROM jobs
+            WHERE id = $1 AND status = 'active' AND deleted_at IS NULL
+        `, [id]);
+        return result.rows[0];
     }
 };
 
