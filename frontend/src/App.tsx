@@ -51,8 +51,6 @@ const GlobalStyle = createGlobalStyle`
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     line-height: 1.5;
     color: #e0e0e0;
     background-color: #000000;

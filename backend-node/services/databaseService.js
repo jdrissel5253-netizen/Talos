@@ -424,6 +424,27 @@ const jobService = {
         return result.rows[0];
     },
 
+    async findActiveForFeed() {
+        const result = await db.query(`
+            SELECT id, title, company_name, description, city, zip_code,
+                   job_type, salary_min, salary_max, pay_type, created_at, status
+            FROM jobs
+            WHERE status = 'active' AND deleted_at IS NULL
+            ORDER BY created_at DESC
+        `);
+        return result.rows;
+    },
+
+    async findActiveById(id) {
+        const result = await db.query(
+            `SELECT id, title, company_name, description, city, zip_code,
+                    job_type, salary_min, salary_max, pay_type, created_at, status
+             FROM jobs WHERE id = $1 AND status = 'active' AND deleted_at IS NULL`,
+            [id]
+        );
+        return result.rows[0];
+    },
+
     async findByTitle(userId, title) {
         const result = await db.query(
             'SELECT * FROM jobs WHERE user_id = $1 AND title = $2 AND deleted_at IS NULL',

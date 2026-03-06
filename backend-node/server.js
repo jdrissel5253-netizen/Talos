@@ -1,3 +1,8 @@
+// Polyfills required by pdf-parse / @napi-rs/canvas on Linux EC2 (no browser DOM)
+if (typeof DOMMatrix === 'undefined') { global.DOMMatrix = class DOMMatrix {}; }
+if (typeof ImageData === 'undefined') { global.ImageData = class ImageData {}; }
+if (typeof Path2D === 'undefined') { global.Path2D = class Path2D {}; }
+
 if (process.env.NODE_ENV !== 'production') {
     require('dotenv').config();
 }
@@ -132,6 +137,15 @@ const publicApplyLimiter = rateLimit({
     message: { status: 'error', message: 'Too many applications submitted. Please try again later.' }
 });
 
+// Feed rate limiting (60 per 15 minutes per IP)
+const feedLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 60,
+    standardHeaders: true,
+    legacyHeaders: false,
+    message: { status: 'error', message: 'Too many requests, please try again later.' }
+});
+
 // Auth rate limiting (20 per 15 minutes per IP) - prevents brute force
 const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -170,6 +184,7 @@ const resumeRoutes = require('./routes/resumeRoutes');
 const { router: authRoutes, authenticateToken } = require('./routes/authRoutes');
 const googleAuthRoutes = require('./routes/googleAuthRoutes');
 const jobRoutes = require('./routes/jobRoutes');
+const jobFeedRoutes = require('./routes/jobFeedRoutes');
 const candidatePipelineRoutes = require('./routes/candidatePipelineRoutes');
 const applyRoutes = require('./routes/applyRoutes');
 const jobFeedRoutes = require('./routes/jobFeedRoutes');
@@ -182,6 +197,9 @@ app.get('/', (req, res) => {
         status: 'running'
     });
 });
+
+// Public job feed routes (no auth, feed rate limit) - must come before authenticated job routes
+app.use('/api/jobs', feedLimiter, jobFeedRoutes);
 
 // Protected routes (require authentication)
 app.use('/api/resume', authenticateToken, resumeRoutes);
