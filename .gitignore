@@ -62,6 +62,7 @@ cf_update_source.json
 
 # Debug & Temporary files
 *.zip
+*.tar.gz
 backend-node/cname*.txt
 backend-node/backend_logs*.txt
 backend-node/logs_info*.json
