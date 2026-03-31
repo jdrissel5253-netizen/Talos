@@ -137,13 +137,13 @@ const publicApplyLimiter = rateLimit({
     message: { status: 'error', message: 'Too many applications submitted. Please try again later.' }
 });
 
-// Feed rate limiting (60 per 15 minutes per IP)
+// Feed rate limiting (60 per 15 minutes per IP) - for aggregator bots
 const feedLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 60,
     standardHeaders: true,
     legacyHeaders: false,
-    message: { status: 'error', message: 'Too many requests, please try again later.' }
+    message: { status: 'error', message: 'Too many feed requests. Please try again later.' }
 });
 
 // Auth rate limiting (20 per 15 minutes per IP) - prevents brute force
@@ -153,15 +153,6 @@ const authLimiter = rateLimit({
     standardHeaders: true,
     legacyHeaders: false,
     message: { status: 'error', message: 'Too many login attempts. Please try again later.' }
-});
-
-// Job feed rate limiting (60 per 15 minutes per IP) - for aggregator bots
-const feedLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 60,
-    standardHeaders: true,
-    legacyHeaders: false,
-    message: { status: 'error', message: 'Too many feed requests. Please try again later.' }
 });
 
 app.use(generalLimiter);
@@ -187,7 +178,6 @@ const jobRoutes = require('./routes/jobRoutes');
 const jobFeedRoutes = require('./routes/jobFeedRoutes');
 const candidatePipelineRoutes = require('./routes/candidatePipelineRoutes');
 const applyRoutes = require('./routes/applyRoutes');
-const jobFeedRoutes = require('./routes/jobFeedRoutes');
 
 // Root route
 app.get('/', (req, res) => {
@@ -210,7 +200,6 @@ app.use('/api/pipeline', authenticateToken, candidatePipelineRoutes);
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/auth/google', authLimiter, googleAuthRoutes);
 app.use('/api/apply', publicApplyLimiter, applyRoutes);
-app.use('/api/jobs', feedLimiter, jobFeedRoutes); // Public job feed and job details
 app.get('/api/health', async (req, res) => {
     let dbStatus = 'unknown';
     try {
@@ -242,6 +231,45 @@ app.get('/api/metrics', (req, res) => {
         pid: process.pid,
         nodeVersion: process.version
     });
+});
+
+// Sitemap — must be before the 404 handler; CloudFront routes /sitemap.xml here
+app.get('/sitemap.xml', feedLimiter, async (req, res) => {
+    try {
+        const { jobService } = require('./services/databaseService');
+        const jobs = await jobService.findActiveForFeed();
+        const BASE_URL = process.env.BASE_URL || 'https://gotalos.io';
+
+        let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url>
+    <loc>${BASE_URL}/</loc>
+    <changefreq>weekly</changefreq>
+    <priority>1.0</priority>
+  </url>
+`;
+        for (const job of jobs) {
+            const lastmod = job.updated_at || job.created_at;
+            const lastmodStr = lastmod ? new Date(lastmod).toISOString().split('T')[0] : '';
+            xml += `  <url>
+    <loc>${BASE_URL}/jobs/${job.id}</loc>${lastmodStr ? `\n    <lastmod>${lastmodStr}</lastmod>` : ''}
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+`;
+        }
+        xml += `</urlset>`;
+
+        res.set('Content-Type', 'application/xml');
+        res.set('Cache-Control', 'public, max-age=3600');
+        res.send(xml);
+        logger.info('Sitemap generated', { jobCount: jobs.length });
+    } catch (error) {
+        logger.error('Error generating sitemap', { error: error.message });
+        res.status(500).set('Content-Type', 'application/xml').send(
+            `<?xml version="1.0" encoding="UTF-8"?><error>Failed to generate sitemap</error>`
+        );
+    }
 });
 
 app.post('/api/demo-request', (req, res) => {
