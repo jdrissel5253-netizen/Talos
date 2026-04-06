@@ -278,16 +278,36 @@ function mapEmploymentType(jobType: string): string {
  * Generate JSON-LD schema for Google for Jobs
  */
 function generateJobSchema(job: Job): object {
+    const datePosted = job.created_at?.split('T')[0];
+
+    // Default expiry: 90 days from post date (Google deprioritizes listings without validThrough)
+    let validThrough = '';
+    if (job.created_at) {
+        const expiry = new Date(job.created_at);
+        expiry.setDate(expiry.getDate() + 90);
+        validThrough = expiry.toISOString().split('T')[0];
+    }
+
+    const isRemote = (job.job_location_type || '').toLowerCase().includes('remote');
+
     const schema: Record<string, unknown> = {
         '@context': 'https://schema.org/',
         '@type': 'JobPosting',
         'title': job.title,
-        'description': job.description,
-        'datePosted': job.created_at?.split('T')[0],
+        'description': job.description || '',
+        'datePosted': datePosted,
+        ...(validThrough && { 'validThrough': validThrough }),
         'employmentType': mapEmploymentType(job.job_type),
+        'directApply': true,
+        'identifier': {
+            '@type': 'PropertyValue',
+            'name': job.company_name || 'Talos',
+            'value': String(job.id)
+        },
         'hiringOrganization': {
             '@type': 'Organization',
-            'name': job.company_name || 'Company'
+            'name': job.company_name || 'Company',
+            'sameAs': 'https://gotalos.io'
         },
         'jobLocation': {
             '@type': 'Place',
@@ -299,6 +319,15 @@ function generateJobSchema(job: Job): object {
             }
         }
     };
+
+    // Remote job fields required by Google
+    if (isRemote) {
+        schema['jobLocationType'] = 'TELECOMMUTE';
+        schema['applicantLocationRequirements'] = {
+            '@type': 'Country',
+            'name': 'US'
+        };
+    }
 
     // Add salary if available
     if (job.pay_range_min || job.pay_range_max) {

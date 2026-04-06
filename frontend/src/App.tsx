@@ -127,7 +127,7 @@ function AppLayout() {
               <Route path="/dashboard" element={<ClientDashboard />} />
               <Route path="/resume-analysis" element={<ResumeAnalysis />} />
               <Route path="/batch-resume-analysis" element={<BatchResumeAnalysis />} />
-              <Route path="/jobs-management" element={<JobsManagement />} />
+              <Route path="/jobs-management/:jobId?" element={<JobsManagement />} />
               <Route path="/why-talos" element={<WhyTalos />} />
               <Route path="/why-different" element={<WhyTalosDifferent />} />
               <Route path="/job-board-integration" element={<JobBoardIntegration />} />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy } from 'lucide-react';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
@@ -578,6 +578,7 @@ const JobsManagement: React.FC = () => {
     const [loadingCandidates, setLoadingCandidates] = useState(false);
 
     const navigate = useNavigate();
+    const { jobId } = useParams<{ jobId: string }>();
 
     const copyApplyLink = (job: Job) => {
         const baseUrl = window.location.origin;
@@ -592,6 +593,16 @@ const JobsManagement: React.FC = () => {
     useEffect(() => {
         loadJobs();
     }, []);
+
+    // Sync selectedJob when URL param changes (e.g. browser back/forward)
+    useEffect(() => {
+        if (!jobId || jobs.length === 0) return;
+        const id = parseInt(jobId, 10);
+        const match = jobs.find(j => j.id === id);
+        if (match && match.id !== selectedJob?.id) {
+            setSelectedJob(match);
+        }
+    }, [jobId, jobs]);
 
     // Load candidates when job is selected (debounced with request cancellation)
     useEffect(() => {
@@ -623,7 +634,11 @@ const JobsManagement: React.FC = () => {
             if (data.status === 'success') {
                 setJobs(data.data.jobs);
                 if (data.data.jobs.length > 0 && !selectedJob) {
-                    setSelectedJob(data.data.jobs[0]);
+                    const paramId = jobId ? parseInt(jobId, 10) : null;
+                    const match = paramId ? data.data.jobs.find((j: Job) => j.id === paramId) : null;
+                    const jobToSelect = match || data.data.jobs[0];
+                    setSelectedJob(jobToSelect);
+                    if (!match) navigate(`/jobs-management/${jobToSelect.id}`, { replace: true });
                 }
             }
         } catch (error) {
@@ -840,7 +855,7 @@ const JobsManagement: React.FC = () => {
                                         <JobCard
                                             key={job.id}
                                             isActive={selectedJob?.id === job.id}
-                                            onClick={() => setSelectedJob(job)}
+                                            onClick={() => navigate(`/jobs-management/${job.id}`)}
                                         >
                                             <JobTitle>{job.title}</JobTitle>
                                             <JobMeta>
