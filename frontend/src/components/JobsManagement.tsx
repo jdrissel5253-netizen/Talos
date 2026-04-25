@@ -746,7 +746,7 @@ const JobsManagement: React.FC = () => {
         setLoadingJobs(true);
         setError(null);
         try {
-            const response = await fetch(`${config.apiUrl}/api/jobs?userId=1`, { headers: getAuthHeaders() });
+            const response = await fetch(`${config.apiUrl}/api/jobs?userId=1`, { headers: getAuthHeaders(), cache: 'no-store' });
             if (!response.ok) {
                 setError(response.status >= 500
                     ? 'Something went wrong loading jobs. Please try again later.'
