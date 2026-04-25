@@ -258,6 +258,30 @@ const RadioLabel = styled.label`
   }
 `;
 
+const RegenerateButton = styled.button`
+  background: transparent;
+  color: #4ade80;
+  border: 1px solid #4ade8060;
+  padding: 0.6rem 1.25rem;
+  border-radius: 6px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+  transition: all 0.2s ease;
+  font-family: inherit;
+
+  &:hover {
+    background: #4ade8015;
+    border-color: #4ade80;
+  }
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+`;
+
 const SubmitButton = styled.button`
   background: #4ade80;
   color: white;
@@ -349,12 +373,37 @@ const TooltipIcon = styled.span`
   }
 `;
 
+interface EditJobData {
+  id: number;
+  title?: string;
+  company_name?: string;
+  job_location_type?: string;
+  city?: string;
+  zip_code?: string;
+  job_type?: string;
+  pay_range_min?: number | null;
+  pay_range_max?: number | null;
+  pay_type?: string;
+  required_years_experience?: number;
+  education_requirements?: string;
+  benefits?: string | string[];
+  key_responsibilities?: string | string[];
+  qualifications_certifications?: string | string[];
+  advancement_opportunities?: boolean;
+  advancement_timeline?: string;
+  company_culture?: string;
+  description?: string;
+}
+
 interface AddJobFormProps {
   onClose: () => void;
   onJobCreated: () => void;
+  editJob?: EditJobData;
 }
 
 const JOB_TITLE_OPTIONS = [
+  'HVAC Service Technician',
+  'Preventative Maintenance Technician',
   'HVAC Technician',
   'Lead HVAC Technician',
   'HVAC Dispatcher',
@@ -414,9 +463,22 @@ const BENEFITS_OPTIONS = [
   'Professional development assistance'
 ];
 
-const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
+function parseJsonField<T>(val: string | T[] | undefined, fallback: T[]): T[] {
+  if (!val) return fallback;
+  if (Array.isArray(val)) return val;
+  try { const p = JSON.parse(val as string); return Array.isArray(p) ? p : fallback; } catch {
+    // Recover corrupted data saved as raw JS array .toString() (e.g. "EPA 608,NATE")
+    const str = (val as string).trim();
+    if (str) return str.split(',').map(s => s.trim()).filter(Boolean) as unknown as T[];
+    return fallback;
+  }
+}
+
+const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob }) => {
+  const isEditMode = !!editJob;
   const modalRef = useRef<HTMLDivElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [error, setError] = useState('');
 
   // Escape key to close & focus trap
@@ -425,31 +487,36 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
       if (e.key === 'Escape') onClose();
     };
     document.addEventListener('keydown', handleKeyDown);
-    // Focus the modal container
     modalRef.current?.focus();
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
+
   const [formData, setFormData] = useState({
-    title: '',
-    company_name: '',
-    job_location_type: 'on-site',
-    city: '',
-    zip_code: '',
-    job_type: 'full_time',
-    pay_range_min: '',
-    pay_range_max: '',
-    pay_type: 'hourly',
+    title: editJob?.title || '',
+    company_name: editJob?.company_name || '',
+    job_location_type: editJob?.job_location_type || 'on-site',
+    city: editJob?.city || '',
+    zip_code: editJob?.zip_code || '',
+    job_type: editJob?.job_type || 'full_time',
+    pay_range_min: editJob?.pay_range_min != null ? String(editJob.pay_range_min) : '',
+    pay_range_max: editJob?.pay_range_max != null ? String(editJob.pay_range_max) : '',
+    pay_type: editJob?.pay_type || 'hourly',
     expected_hours: '',
     work_schedule: '',
-    benefits: [] as string[],
-    key_responsibilities: ['', '', ''],
-    qualifications_years: '',
-    qualifications_certifications: [] as string[],
-    education_requirements: 'no_degree',
+    benefits: parseJsonField<string>(editJob?.benefits, []),
+    key_responsibilities: (() => {
+      const r = parseJsonField<string>(editJob?.key_responsibilities, ['', '', '']);
+      while (r.length < 3) r.push('');
+      return r;
+    })(),
+    qualifications_years: editJob?.required_years_experience != null ? String(editJob.required_years_experience) : '',
+    qualifications_certifications: parseJsonField<string>(editJob?.qualifications_certifications, []),
+    education_requirements: editJob?.education_requirements || 'no_degree',
     other_relevant_titles: [] as string[],
-    advancement_opportunities: false,
-    advancement_timeline: '',
-    company_culture: ''
+    advancement_opportunities: editJob?.advancement_opportunities || false,
+    advancement_timeline: editJob?.advancement_timeline || '',
+    company_culture: editJob?.company_culture || '',
+    description: editJob?.description || '',
   });
 
   const [newCertification, setNewCertification] = useState('');
@@ -514,6 +581,34 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
     }));
   };
 
+  const handleRegenerate = async () => {
+    if (!editJob?.id) return;
+    setIsRegenerating(true);
+    setError('');
+    try {
+      const response = await fetch(`${config.apiUrl}/api/jobs/${editJob.id}/regenerate-description`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify({
+          ...formData,
+          required_years_experience: parseFloat(formData.qualifications_years) || 0,
+        }),
+      });
+      if (!response.ok) {
+        setError('Failed to regenerate description. Please try again.');
+        return;
+      }
+      const data = await response.json();
+      if (data.status === 'success') {
+        setFormData(prev => ({ ...prev, description: data.description }));
+      }
+    } catch {
+      setError('Network error. Please try again.');
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -524,7 +619,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
       return;
     }
 
-    if (!formData.key_responsibilities[0] || !formData.key_responsibilities[1] || !formData.key_responsibilities[2]) {
+    if (!isEditMode && (!formData.key_responsibilities[0] || !formData.key_responsibilities[1] || !formData.key_responsibilities[2])) {
       setError('Please enter all 3 key job responsibilities');
       return;
     }
@@ -534,17 +629,28 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
     try {
       const payload = {
         ...formData,
+        benefits: JSON.stringify(formData.benefits || []),
+        key_responsibilities: JSON.stringify(formData.key_responsibilities || []),
+        qualifications_certifications: JSON.stringify(formData.qualifications_certifications || []),
+        other_relevant_titles: JSON.stringify(formData.other_relevant_titles || []),
         location: `${formData.city}, ${formData.zip_code}`,
         required_years_experience: parseFloat(formData.qualifications_years) || 0,
         pay_range_min: parseFloat(formData.pay_range_min) || null,
         pay_range_max: parseFloat(formData.pay_range_max) || null,
         position_type: formData.title,
         vehicle_required: false,
-        flexible_on_title: true
+        flexible_on_title: true,
+        education_requirements: formData.education_requirements === 'no_degree'
+          ? 'High School Diploma'
+          : formData.education_requirements
       };
 
-      const response = await fetch(`${config.apiUrl}/api/jobs`, {
-        method: 'POST',
+      const url = isEditMode
+        ? `${config.apiUrl}/api/jobs/${editJob!.id}`
+        : `${config.apiUrl}/api/jobs`;
+
+      const response = await fetch(url, {
+        method: isEditMode ? 'PUT' : 'POST',
         headers: {
           'Content-Type': 'application/json',
           ...getAuthHeaders()
@@ -556,7 +662,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
         const data = await response.json().catch(() => null);
         setError(data?.message || (response.status >= 500
           ? 'Something went wrong. Please try again later.'
-          : 'Failed to create job. Please check your information.'));
+          : `Failed to ${isEditMode ? 'save' : 'create'} job. Please check your information.`));
         return;
       }
 
@@ -566,11 +672,11 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
         onJobCreated();
         onClose();
       } else {
-        setError(data.message || 'Failed to create job');
+        setError(data.message || `Failed to ${isEditMode ? 'save' : 'create'} job`);
       }
     } catch (err) {
-      console.error('Error creating job:', err);
-      setError('Failed to create job. Please check your connection and try again.');
+      console.error('Error saving job:', err);
+      setError(`Failed to ${isEditMode ? 'save' : 'create'} job. Please check your connection and try again.`);
     } finally {
       setIsSubmitting(false);
     }
@@ -588,15 +694,15 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
         {isSubmitting && (
           <LoadingOverlay>
             <LoadingSpinner />
-            <LoadingText>Creating job and generating AI description...</LoadingText>
+            <LoadingText>{isEditMode ? 'Saving changes...' : 'Creating job and generating AI description...'}</LoadingText>
           </LoadingOverlay>
         )}
 
         <CloseButton aria-label="Close" onClick={onClose}>&times;</CloseButton>
 
         <FormHeader>
-          <FormTitle id="add-job-form-title">Create New Job Posting</FormTitle>
-          <FormSubtitle>Fill out the details below and AI will generate a compelling job description</FormSubtitle>
+          <FormTitle id="add-job-form-title">{isEditMode ? 'Edit Job Posting' : 'Create New Job Posting'}</FormTitle>
+          <FormSubtitle>{isEditMode ? 'Update the job details below' : 'Fill out the details below and AI will generate a compelling job description'}</FormSubtitle>
         </FormHeader>
 
         {error && (
@@ -849,7 +955,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
                 {formData.qualifications_certifications.map((cert, index) => (
                   <ArrayItemRow key={index}>
                     <Input type="text" value={cert} disabled style={{ flex: 1 }} />
-                    <RemoveButton onClick={() => removeCertification(index)}>Remove</RemoveButton>
+                    <RemoveButton type="button" onClick={() => removeCertification(index)}>Remove</RemoveButton>
                   </ArrayItemRow>
                 ))}
                 <ArrayItemRow>
@@ -882,7 +988,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
                     <option value="Sheet Metal License">Sheet Metal License</option>
                     <option value="Custom">Custom (type below)</option>
                   </Select>
-                  <AddButton onClick={addCertification}>Add</AddButton>
+                  <AddButton type="button" onClick={addCertification}>Add</AddButton>
                 </ArrayItemRow>
                 {newCertification === 'Custom' && (
                   <ArrayItemRow style={{ marginTop: '0.5rem' }}>
@@ -928,7 +1034,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
                     style={{ flex: 1 }}
                     onKeyPress={(e) => e.key === 'Enter' && (e.preventDefault(), addTitle())}
                   />
-                  <AddButton onClick={addTitle}>Add</AddButton>
+                  <AddButton type="button" onClick={addTitle}>Add</AddButton>
                 </ArrayItemRow>
               </ArrayInputContainer>
             </FormGroup>
@@ -976,8 +1082,35 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated }) => {
             </FormGroup>
           </FormSection>
 
+          {isEditMode && (
+            <FormSection>
+              <SectionTitle>Job Description</SectionTitle>
+              <FormGroup>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                  <Label style={{ margin: 0 }}>Full Job Description</Label>
+                  <RegenerateButton
+                    type="button"
+                    onClick={handleRegenerate}
+                    disabled={isRegenerating}
+                  >
+                    {isRegenerating ? 'Regenerating...' : '↺ Regenerate with AI'}
+                  </RegenerateButton>
+                </div>
+                <TextArea
+                  name="description"
+                  value={formData.description}
+                  onChange={handleChange}
+                  placeholder="Full job description..."
+                  style={{ minHeight: '300px' }}
+                />
+              </FormGroup>
+            </FormSection>
+          )}
+
           <SubmitButton type="submit" disabled={isSubmitting}>
-            {isSubmitting ? 'Creating Job...' : 'Create Job with AI Description'}
+            {isSubmitting
+              ? (isEditMode ? 'Saving...' : 'Creating Job...')
+              : (isEditMode ? 'Save Changes' : 'Create Job with AI Description')}
           </SubmitButton>
         </form>
       </FormCard>

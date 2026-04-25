@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, Link } from 'react-router-dom';
 import { config } from '../config';
 
 const PageContainer = styled.div`
@@ -26,6 +26,22 @@ const FormCard = styled.div`
 
     @media (min-width: 480px) {
         padding: 2.5rem;
+    }
+`;
+
+const BackButton = styled(Link)`
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #aaa;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    margin-bottom: 1.25rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+        color: #4ade80;
     }
 `;
 
@@ -497,6 +513,8 @@ const PublicApply: React.FC = () => {
     return (
         <PageContainer>
             <FormCard>
+                <BackButton to={jobId ? `/jobs/${jobId}` : '/jobs'}>← Back to Job</BackButton>
+
                 <Logo>
                     <LogoText>TALOS</LogoText>
                 </Logo>

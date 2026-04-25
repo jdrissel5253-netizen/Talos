@@ -515,7 +515,9 @@ CRITICAL RULES:
 7. Be concise - every word should earn its place
 8. Total length: 250-350 words maximum
 9. Tone: Respectful, direct, and genuine - like talking to a colleague
-${certifications.length > 0 ? `10. ALWAYS include the Requirements section with the certifications listed — these are hard requirements for the role` : ''}`;
+10. NO markdown formatting — do NOT use ##, **, *, or any other markdown symbols
+11. Section headers must be plain text on their own line (e.g. write "Responsibilities" not "## Responsibilities")
+${certifications.length > 0 ? `12. ALWAYS include the Requirements section with the certifications listed — these are hard requirements for the role` : ''}`;
 
         const message = await anthropic.messages.create({
             model: "claude-sonnet-4-5-20250929",  // Using Claude Sonnet 4.5
@@ -527,10 +529,25 @@ ${certifications.length > 0 ? `10. ALWAYS include the Requirements section with 
             }]
         });
 
-        return message.content[0].text;
+        let text = message.content[0].text;
+        // Strip markdown regardless of what the model outputs
+        text = text
+            .replace(/^#{1,6}\s*/gm, '')       // ## Section → Section
+            .replace(/\*\*(.+?)\*\*/g, '$1')    // **bold** → bold
+            .replace(/\*([^*\n]+)\*/g, '$1')    // *italic* → italic
+            .replace(/^-\s+/gm, '• ');          // - bullet → • bullet
+
+        // Guarantee Requirements section when certifications exist
+        if (certifications.length > 0 && !text.includes('Requirements')) {
+            const certBullets = certifications.map(c => `• ${c}`).join('\n');
+            const reqSection = `\nRequirements\n\n${certBullets}\n`;
+            text = text.replace(/\nPreferred/, `${reqSection}\nPreferred`);
+            if (!text.includes('Requirements')) text += reqSection;
+        }
+
+        return text;
     } catch (error) {
         logger.error('Error generating job description', { error: error.message });
-        // Return a basic fallback description
         const responsibilities = JSON.parse(jobData.key_responsibilities || '[]');
         return `${jobData.title}\n\nWe are seeking a qualified ${jobData.title} to join our team.\n\nKey Responsibilities:\n${responsibilities.map((r, i) => `${i + 1}. ${r}`).join('\n')}\n\nQualifications:\n- ${jobData.qualifications_years || 0} years of experience\n- ${jobData.education_requirements || 'Relevant education'}\n\nApply today to join our team!`;
     }

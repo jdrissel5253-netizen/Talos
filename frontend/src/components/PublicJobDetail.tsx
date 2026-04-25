@@ -143,6 +143,61 @@ const Description = styled.div`
     white-space: pre-wrap;
 `;
 
+const DescriptionHeader = styled.div`
+    color: #4ade80;
+    font-size: 1rem;
+    font-weight: 600;
+    margin-top: 1.25rem;
+    margin-bottom: 0.25rem;
+    border-bottom: 1px solid #333;
+    padding-bottom: 0.4rem;
+
+    &:first-child {
+        margin-top: 0;
+    }
+`;
+
+const DESCRIPTION_HEADERS = new Set([
+    'About This Role',
+    'Responsibilities',
+    'Qualifications',
+    'Requirements',
+    'Preferred',
+    'What We Offer',
+    'Advancement Opportunities',
+]);
+
+function toTitleCase(str: string) {
+    return str.replace(/\w\S*/g, (word) =>
+        word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+    );
+}
+
+function renderDescription(text: string) {
+    if (!text) return null;
+    const lines = text.split('\n');
+    return lines.map((line, i) => {
+        const trimmed = line.trim();
+
+        if (trimmed === '---') return null;
+
+        // Strip markdown heading prefixes (## About This Role → About This Role)
+        const stripped = trimmed.replace(/^#+\s*/, '');
+        if (DESCRIPTION_HEADERS.has(stripped)) {
+            return <DescriptionHeader key={i}>{stripped}</DescriptionHeader>;
+        }
+
+        // Convert dash bullets to • for existing descriptions
+        const display = trimmed.startsWith('- ') ? '• ' + trimmed.slice(2) : line;
+
+        // First non-empty, non-header line that looks like an ALL CAPS title → fix casing
+        const isAllCaps = trimmed.length > 3 && trimmed === trimmed.toUpperCase() && /[A-Z]/.test(trimmed);
+        const finalDisplay = isAllCaps ? toTitleCase(display) : display;
+
+        return <span key={i} style={{ display: 'block', color: '#ccc', fontSize: '0.95rem', lineHeight: '1.7' }}>{finalDisplay || '\u00A0'}</span>;
+    });
+}
+
 const DetailsList = styled.ul`
     color: #ccc;
     font-size: 0.95rem;
@@ -213,6 +268,22 @@ const BackLink = styled(Link)`
 
     &:hover {
         text-decoration: underline;
+    }
+`;
+
+const BackButton = styled(Link)`
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: #aaa;
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-decoration: none;
+    margin-bottom: 1.25rem;
+    transition: color 0.2s ease;
+
+    &:hover {
+        color: #4ade80;
     }
 `;
 
@@ -449,6 +520,8 @@ const PublicJobDetail: React.FC = () => {
                     <LogoText>TALOS</LogoText>
                 </Logo>
 
+                <BackButton to="/jobs">← Back to Jobs</BackButton>
+
                 <JobCard>
                     <JobHeader>
                         <JobTitle>{job.title}</JobTitle>
@@ -475,55 +548,18 @@ const PublicJobDetail: React.FC = () => {
 
                     {job.description && (
                         <Section>
-                            <SectionTitle>About This Role</SectionTitle>
-                            <Description>{job.description}</Description>
+                            <Description>{renderDescription(job.description)}</Description>
                         </Section>
                     )}
 
-                    {responsibilities.length > 0 && (
-                        <Section>
-                            <SectionTitle>Key Responsibilities</SectionTitle>
-                            <DetailsList>
-                                {responsibilities.map((item, index) => (
-                                    <li key={index}>{item}</li>
-                                ))}
-                            </DetailsList>
-                        </Section>
-                    )}
-
-                    {qualifications.length > 0 && (
-                        <Section>
-                            <SectionTitle>Qualifications</SectionTitle>
-                            <DetailsList>
-                                {qualifications.map((item, index) => (
-                                    <li key={index}>{item}</li>
-                                ))}
-                            </DetailsList>
-                        </Section>
-                    )}
-
-                    {job.required_years_experience > 0 && (
-                        <Section>
-                            <SectionTitle>Experience Required</SectionTitle>
-                            <Description>
-                                {job.required_years_experience}+ years of relevant experience
-                            </Description>
-                        </Section>
-                    )}
-
-                    {job.education_requirements && (
-                        <Section>
-                            <SectionTitle>Education</SectionTitle>
-                            <Description>{job.education_requirements}</Description>
-                        </Section>
-                    )}
-
-                    {job.benefits && (
-                        <Section>
-                            <SectionTitle>Benefits</SectionTitle>
-                            <Description>{job.benefits}</Description>
-                        </Section>
-                    )}
+                    <Section>
+                        <SectionTitle>Education</SectionTitle>
+                        <Description>
+                            {job.education_requirements && job.education_requirements !== 'no_degree'
+                                ? job.education_requirements
+                                : 'High School Diploma'}
+                        </Description>
+                    </Section>
 
                     <ApplyButton to={`/apply?job=${job.id}&title=${encodeURIComponent(job.title)}`}>
                         Apply Now

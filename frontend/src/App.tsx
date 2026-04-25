@@ -99,6 +99,7 @@ function AppLayout() {
       <>
         <GlobalStyle />
         <AppContainer>
+          {isPublicJobPage && <AirflowAnimation />}
           <StandaloneContent>
             <Suspense fallback={<LoadingFallback>Loading...</LoadingFallback>}>
               <Routes>

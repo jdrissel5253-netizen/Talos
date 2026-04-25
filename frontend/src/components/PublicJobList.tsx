@@ -346,8 +346,8 @@ const JobCard = styled(Link)<{ $index: number }>`
     background: rgba(255,255,255,0.025);
     border: 1px solid rgba(74,222,128,0.1);
     border-radius: 9px;
-    padding: 0.9rem 1.1rem;
-    margin-bottom: 0.5rem;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 0.65rem;
     text-decoration: none;
     position: relative;
     overflow: hidden;
@@ -388,7 +388,7 @@ const CardTitles = styled.div`
 
 const JobTitle = styled.div`
     font-family: 'Rajdhani', sans-serif;
-    font-size: 1.05rem;
+    font-size: 1.25rem;
     font-weight: 700;
     color: #f0f0f0;
     letter-spacing: 0.03em;
@@ -397,11 +397,11 @@ const JobTitle = styled.div`
 `;
 
 const CompanyName = styled.div`
-    font-size: 0.75rem;
+    font-size: 0.82rem;
     color: #4ade80;
     font-weight: 500;
     opacity: 0.85;
-    margin-top: 0.15rem;
+    margin-top: 0.2rem;
 `;
 
 const TagRow = styled.div`
@@ -411,11 +411,11 @@ const TagRow = styled.div`
     align-items: center;
 `;
 
-const Tag = styled.span<{ $type?: 'salary' | 'type' | 'location' | 'remote' }>`
-    font-size: 0.7rem;
+const Tag = styled.span<{ $type?: 'salary' | 'type' | 'location' | 'remote' | 'category' }>`
+    font-size: 0.78rem;
     font-weight: 500;
     letter-spacing: 0.03em;
-    padding: 0.18rem 0.55rem;
+    padding: 0.25rem 0.65rem;
     border-radius: 4px;
     text-transform: capitalize;
     white-space: nowrap;
@@ -434,6 +434,11 @@ const Tag = styled.span<{ $type?: 'salary' | 'type' | 'location' | 'remote' }>`
         background: rgba(255,255,255,0.035);
         color: #777;
         border: 1px solid rgba(255,255,255,0.06);
+    `}
+    ${({ $type }) => $type === 'category' && `
+        background: rgba(251,191,36,0.08);
+        color: #fbbf24;
+        border: 1px solid rgba(251,191,36,0.18);
     `}
 `;
 
@@ -517,11 +522,42 @@ function formatJobType(t: string): string {
 }
 
 const EXP_BUCKETS = [
-    { label: '0–2 years',  min: 0, max: 2 },
-    { label: '3–5 years',  min: 3, max: 5 },
-    { label: '6–10 years', min: 6, max: 10 },
+    { label: '0–2 years',  min: 0,  max: 2   },
+    { label: '3–5 years',  min: 3,  max: 5   },
+    { label: '6–10 years', min: 6,  max: 10  },
     { label: '10+ years',  min: 11, max: 999 },
 ];
+
+const CATEGORIES: { label: string; keywords: string[] }[] = [
+    {
+        label: 'Office',
+        keywords: ['administrative', 'admin', 'bookkeeper', 'dispatcher', 'sales rep', 'sales representative', 'customer service', 'receptionist', 'coordinator', 'clerical', 'office'],
+    },
+    {
+        label: 'Field Technician',
+        keywords: ['technician', 'tech', 'installer', 'installation', 'service tech', 'hvac tech', 'refrigeration', 'mechanical'],
+    },
+    {
+        label: 'Management',
+        keywords: ['manager', 'supervisor', 'director', 'lead', 'foreman', 'superintendent', 'operations'],
+    },
+    {
+        label: 'Warehouse & Parts',
+        keywords: ['warehouse', 'parts', 'inventory', 'driver', 'delivery', 'logistics', 'supply'],
+    },
+    {
+        label: 'Apprentice / Entry Level',
+        keywords: ['apprentice', 'helper', 'trainee', 'entry', 'junior', 'assistant tech'],
+    },
+];
+
+function getCategory(title: string): string {
+    const lower = title.toLowerCase();
+    for (const cat of CATEGORIES) {
+        if (cat.keywords.some(kw => lower.includes(kw))) return cat.label;
+    }
+    return 'Other';
+}
 
 // --- Component ---
 const PublicJobList: React.FC = () => {
@@ -531,6 +567,7 @@ const PublicJobList: React.FC = () => {
     const [mobileFilters, setMobileFilters] = useState(false);
 
     // Filter state
+    const [selCategories, setSelCategories] = useState<string[]>([]);
     const [selLocations, setSelLocations]   = useState<string[]>([]);
     const [selJobTypes,  setSelJobTypes]    = useState<string[]>([]);
     const [selWorkTypes, setSelWorkTypes]   = useState<string[]>([]);
@@ -564,6 +601,7 @@ const PublicJobList: React.FC = () => {
     // Filtered results
     const filtered = useMemo(() => {
         return jobs.filter(job => {
+            if (selCategories.length && !selCategories.includes(getCategory(job.title))) return false;
             if (selLocations.length && !selLocations.includes(job.location)) return false;
             if (selJobTypes.length  && !selJobTypes.includes(job.job_type))  return false;
             if (selWorkTypes.length && !selWorkTypes.includes(job.job_location_type)) return false;
@@ -581,13 +619,13 @@ const PublicJobList: React.FC = () => {
 
             return true;
         });
-    }, [jobs, selLocations, selJobTypes, selWorkTypes, selExpBuckets, payMin, payMax]);
+    }, [jobs, selCategories, selLocations, selJobTypes, selWorkTypes, selExpBuckets, payMin, payMax]);
 
-    const hasFilters = selLocations.length || selJobTypes.length || selWorkTypes.length ||
-        selExpBuckets.length || payMin || payMax;
+    const hasFilters = selCategories.length || selLocations.length || selJobTypes.length ||
+        selWorkTypes.length || selExpBuckets.length || payMin || payMax;
 
     function clearAll() {
-        setSelLocations([]); setSelJobTypes([]); setSelWorkTypes([]);
+        setSelCategories([]); setSelLocations([]); setSelJobTypes([]); setSelWorkTypes([]);
         setSelExpBuckets([]); setPayMin(''); setPayMax('');
     }
 
@@ -607,7 +645,22 @@ const PublicJobList: React.FC = () => {
 
     const FiltersContent = () => (
         <>
+            <FilterSection>
+                <FilterLabel>Category</FilterLabel>
+                {CATEGORIES.map(cat => (
+                    <CheckRow key={cat.label}>
+                        <input type="checkbox"
+                            checked={selCategories.includes(cat.label)}
+                            onChange={() => toggle(selCategories, cat.label, setSelCategories)}
+                        />
+                        {cat.label}
+                    </CheckRow>
+                ))}
+            </FilterSection>
+
             {locations.length > 0 && (
+                <>
+                <FilterDivider />
                 <FilterSection>
                     <FilterLabel>Location</FilterLabel>
                     {locations.map(loc => (
@@ -620,6 +673,7 @@ const PublicJobList: React.FC = () => {
                         </CheckRow>
                     ))}
                 </FilterSection>
+                </>
             )}
 
             {jobTypes.length > 0 && (
@@ -763,6 +817,7 @@ const PublicJobList: React.FC = () => {
                                                 <CompanyName>{job.company_name || 'Company'}</CompanyName>
                                             </CardTitles>
                                             <TagRow>
+                                                <Tag $type="category">{getCategory(job.title)}</Tag>
                                                 {job.location && <Tag $type="location">📍 {job.location}</Tag>}
                                                 <Tag $type="type">{jobType}</Tag>
                                                 {salary && <Tag $type="salary">{salary}</Tag>}

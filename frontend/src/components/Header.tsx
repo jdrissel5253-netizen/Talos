@@ -193,7 +193,7 @@ const Header: React.FC = () => {
 
         <NavLink to="/#pricing">Pricing</NavLink>
         <NavLink to="/#knowledge-hub">Knowledge Hub</NavLink>
-        <NavLink to="/jobs">Jobs</NavLink>
+        <NavLink to="/jobs">Apply to HVAC Jobs</NavLink>
       </Navigation>
 
       <ButtonGroup>

@@ -15,12 +15,27 @@ interface Job {
     title: string;
     description: string;
     location: string;
+    city?: string;
+    zip_code?: string;
+    job_type?: string;
+    job_location_type?: string;
+    pay_range_min?: number;
+    pay_range_max?: number;
+    pay_type?: string;
     required_years_experience: number;
     vehicle_required: boolean;
     position_type: string;
     salary_min?: number;
     salary_max?: number;
     status: string;
+    company_name?: string;
+    education_requirements?: string;
+    benefits?: string;
+    key_responsibilities?: string;
+    qualifications_certifications?: string;
+    advancement_opportunities?: boolean;
+    advancement_timeline?: string;
+    company_culture?: string;
 }
 
 interface CandidatePipeline {
@@ -146,9 +161,11 @@ const JobCard = styled.div<{ isActive: boolean }>`
     border: 2px solid ${props => props.isActive ? '#4ade80' : '#333333'};
     border-radius: 8px;
     padding: 1rem;
+    padding-bottom: 2.25rem;
     margin-bottom: 1rem;
     cursor: pointer;
     transition: all 0.2s ease;
+    position: relative;
 
     &:hover {
         border-color: #4ade80;
@@ -168,6 +185,27 @@ const JobMeta = styled.div`
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+`;
+
+const CardEditButton = styled.button`
+    position: absolute;
+    bottom: 0.6rem;
+    right: 0.6rem;
+    background: #4ade8020;
+    border: 1px solid #4ade8060;
+    color: #4ade80;
+    font-size: 0.7rem;
+    font-weight: 600;
+    padding: 0.2rem 0.55rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s ease;
+
+    &:hover {
+        background: #4ade8035;
+        border-color: #4ade80;
+    }
 `;
 
 const MainContent = styled.div`
@@ -268,6 +306,52 @@ const JobActionsRow = styled.div`
     flex-wrap: wrap;
     align-items: center;
     gap: 0.5rem;
+`;
+
+const EditButton = styled.button`
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: #60a5fa;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid #60a5fa60;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.2s ease;
+    font-size: inherit;
+    font-family: inherit;
+
+    &:hover {
+        background: #60a5fa15;
+        border-color: #60a5fa;
+        transform: translateY(-1px);
+    }
+`;
+
+const DeleteButton = styled.button`
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: #ef4444;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    font-weight: 600;
+    border: 1px solid #ef444460;
+    cursor: pointer;
+    margin-top: 1rem;
+    transition: all 0.2s ease;
+    font-size: inherit;
+    font-family: inherit;
+
+    &:hover {
+        background: #ef444415;
+        border-color: #ef4444;
+        transform: translateY(-1px);
+    }
 `;
 
 const PipelineTabs = styled.div`
@@ -568,6 +652,8 @@ const JobsManagement: React.FC = () => {
     const [sortBy, setSortBy] = useState<string>('tier_score');
     const [messageDropdownOpen, setMessageDropdownOpen] = useState<number | null>(null);
     const [showAddJobForm, setShowAddJobForm] = useState(false);
+    const [editingJob, setEditingJob] = useState<Job | null>(null);
+    const [loadingEditJob, setLoadingEditJob] = useState<number | null>(null);
     const [contactModalOpen, setContactModalOpen] = useState(false);
     const [selectedCandidateForContact, setSelectedCandidateForContact] = useState<{ pipelineId: number; name: string; position: string; } | null>(null);
     const [contactMode, setContactMode] = useState<'contact' | 'rejection'>('contact');
@@ -618,6 +704,43 @@ const JobsManagement: React.FC = () => {
             abortController.abort();
         };
     }, [selectedJob, activeTab, filterTier, sortBy]);
+
+    const openEditForm = async (job: Job) => {
+        setLoadingEditJob(job.id);
+        try {
+            const response = await fetch(`${config.apiUrl}/api/jobs/${job.id}`, { headers: getAuthHeaders() });
+            if (response.ok) {
+                const data = await response.json();
+                setEditingJob(data.data?.job ?? job);
+            } else {
+                setEditingJob(job);
+            }
+        } catch {
+            setEditingJob(job);
+        } finally {
+            setLoadingEditJob(null);
+        }
+    };
+
+    const deleteJob = async (job: Job) => {
+        if (!window.confirm(`Delete "${job.title}"? This cannot be undone.`)) return;
+        try {
+            const response = await fetch(`${config.apiUrl}/api/jobs/${job.id}`, {
+                method: 'DELETE',
+                headers: getAuthHeaders(),
+            });
+            if (!response.ok) {
+                alert('Failed to delete job. Please try again.');
+                return;
+            }
+            // Remove from list and clear selection immediately — don't wait for reload
+            setJobs(prev => prev.filter(j => j.id !== job.id));
+            setSelectedJob(null);
+            navigate('/jobs-management', { replace: true });
+        } catch {
+            alert('Failed to delete job. Please try again.');
+        }
+    };
 
     const loadJobs = async () => {
         setLoadingJobs(true);
@@ -812,6 +935,17 @@ const JobsManagement: React.FC = () => {
                 />
             )}
 
+            {editingJob && (
+                <AddJobForm
+                    editJob={editingJob}
+                    onClose={() => setEditingJob(null)}
+                    onJobCreated={() => {
+                        loadJobs();
+                        setEditingJob(null);
+                    }}
+                />
+            )}
+
             <PageContainer>
                 {error && (
                     <ErrorBanner>
@@ -863,6 +997,15 @@ const JobsManagement: React.FC = () => {
                                                 <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Briefcase size={14} /> {job.required_years_experience}+ years</span>
                                                 {job.vehicle_required && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Car size={14} /> Vehicle Required</span>}
                                             </JobMeta>
+                                            <CardEditButton
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    openEditForm(job);
+                                                }}
+                                                disabled={loadingEditJob === job.id}
+                                            >
+                                                {loadingEditJob === job.id ? '...' : 'Edit'}
+                                            </CardEditButton>
                                         </JobCard>
                                     ))
                                 )}
@@ -921,6 +1064,9 @@ const JobsManagement: React.FC = () => {
                                     >
                                         Post to Indeed
                                     </IndeedButton>
+                                    <DeleteButton onClick={() => deleteJob(selectedJob)}>
+                                        <X size={16} /> Delete Job
+                                    </DeleteButton>
                                 </JobActionsRow>
                             </JobDetailsCard>
 
