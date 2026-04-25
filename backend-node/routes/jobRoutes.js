@@ -542,6 +542,26 @@ CRITICAL RULES:
         const expBullet = `• ${years}+ year${years !== 1 ? 's' : ''} of experience as a ${titleStr}`;
         text = text.replace(/(\nQualifications\n\n)(• [^\n]+)/, `$1${expBullet}`);
 
+        // Remove any other bullet in Qualifications that is also a years-of-experience line (dedup)
+        const qualStart = text.indexOf('\nQualifications\n');
+        const qualEnd = text.indexOf('\n\nPreferred') > -1 ? text.indexOf('\n\nPreferred')
+                      : text.indexOf('\n\nWhat We Offer') > -1 ? text.indexOf('\n\nWhat We Offer')
+                      : text.length;
+        if (qualStart > -1) {
+            const before = text.slice(0, qualStart);
+            const qualSection = text.slice(qualStart, qualEnd);
+            const after = text.slice(qualEnd);
+            let firstBullet = true;
+            const deduped = qualSection.split('\n').filter(line => {
+                if (!line.startsWith('• ')) return true;
+                if (firstBullet) { firstBullet = false; return true; } // keep our injected bullet
+                const lower = line.toLowerCase();
+                if ((lower.includes('year') || lower.includes('yr')) && lower.includes('experience')) return false;
+                return true;
+            }).join('\n');
+            text = before + deduped + after;
+        }
+
         // Deterministically inject certifications into Qualifications section (only if not already in Qualifications)
         if (certifications.length > 0) {
             // Only check text before "Preferred" — a cert in Preferred still needs to be in Qualifications
