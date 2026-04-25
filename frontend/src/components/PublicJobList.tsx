@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import styled from 'styled-components';
+import React, { useState, useEffect, useMemo } from 'react';
+import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import { Link } from 'react-router-dom';
 import { config } from '../config';
+
+const FontImport = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@600;700&family=Sora:wght@300;400;500;600&display=swap');
+`;
 
 interface JobSummary {
     id: number;
@@ -13,162 +17,490 @@ interface JobSummary {
     pay_range_min: number;
     pay_range_max: number;
     pay_type: string;
+    required_years_experience: number;
     created_at: string;
 }
 
+// --- Animations ---
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+const pulse = keyframes`
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.5; }
+`;
+const sweep = keyframes`
+  0%   { left: -40%; }
+  100% { left: 100%; }
+`;
+const scanline = keyframes`
+  0%   { transform: translateY(-100%); }
+  100% { transform: translateY(100vh); }
+`;
+
+// --- Base ---
 const PageContainer = styled.div`
     min-height: 100vh;
-    background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-    padding: 1rem;
-
-    @media (min-width: 480px) {
-        padding: 2rem;
-    }
+    overflow-x: hidden;
+    font-family: 'Sora', sans-serif;
 `;
 
-const ContentWrapper = styled.div`
-    max-width: 800px;
+const Scanline = styled.div`
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, rgba(74,222,128,0.15), transparent);
+    z-index: 1;
+    pointer-events: none;
+    animation: ${scanline} 8s linear infinite;
+`;
+
+const GridOverlay = styled.div`
+    position: fixed;
+    inset: 0;
+    z-index: 1;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(74,222,128,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(74,222,128,0.03) 1px, transparent 1px);
+    background-size: 60px 60px;
+`;
+
+const Wrapper = styled.div`
+    position: relative;
+    z-index: 2;
+    max-width: 1400px;
     margin: 0 auto;
-`;
+    padding: 2rem 1.5rem 4rem;
 
-const Logo = styled(Link)`
-    display: block;
-    text-align: center;
-    margin-bottom: 1.5rem;
-    text-decoration: none;
-
-    @media (min-width: 480px) {
-        margin-bottom: 2rem;
+    @media (min-width: 768px) {
+        padding: 2.5rem 2.5rem 5rem;
     }
 `;
 
-const LogoText = styled.h1`
-    font-size: 1.75rem;
-    font-weight: 700;
-    color: #4ade80;
-
-    @media (min-width: 480px) {
-        font-size: 2rem;
-    }
-`;
-
-const PageTitle = styled.h2`
-    font-size: 1.25rem;
-    color: #e0e0e0;
-    font-weight: 600;
-    margin-bottom: 1.5rem;
-
-    @media (min-width: 480px) {
-        font-size: 1.5rem;
-        margin-bottom: 2rem;
-    }
-`;
-
-const JobCount = styled.span`
-    color: #666;
-    font-size: 0.9rem;
-    font-weight: 400;
-    margin-left: 0.5rem;
-`;
-
-const JobCard = styled(Link)`
-    display: block;
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
-    border-radius: 12px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 1rem;
-    text-decoration: none;
-    transition: border-color 0.2s ease, background 0.2s ease;
-
-    &:hover {
-        border-color: #4ade80;
-        background: #1f1f1f;
-    }
-
-    @media (min-width: 480px) {
-        padding: 1.5rem 2rem;
-    }
-`;
-
-const JobTitle = styled.h3`
-    font-size: 1.1rem;
-    color: #e0e0e0;
-    font-weight: 600;
-    margin-bottom: 0.35rem;
-
-    @media (min-width: 480px) {
-        font-size: 1.2rem;
-    }
-`;
-
-const CompanyName = styled.p`
-    font-size: 0.95rem;
-    color: #4ade80;
-    font-weight: 500;
-    margin-bottom: 0.75rem;
-`;
-
-const MetaRow = styled.div`
+// --- Top bar ---
+const TopBar = styled.div`
     display: flex;
-    flex-wrap: wrap;
-    gap: 0.5rem;
     align-items: center;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+    animation: ${fadeUp} 0.4s ease both;
 `;
 
-const Badge = styled.span<{ variant?: 'green' | 'blue' | 'gray' }>`
-    padding: 0.2rem 0.65rem;
-    border-radius: 999px;
-    font-size: 0.8rem;
-    font-weight: 500;
-    background: ${({ variant }) =>
-        variant === 'green' ? '#22c55e20' :
-        variant === 'blue' ? '#3b82f620' :
-        '#ffffff10'};
-    color: ${({ variant }) =>
-        variant === 'green' ? '#4ade80' :
-        variant === 'blue' ? '#60a5fa' :
-        '#999'};
-    text-transform: capitalize;
-`;
-
-const ArrowIcon = styled.span`
-    margin-left: auto;
-    color: #4ade80;
-    font-size: 1rem;
-    align-self: center;
-`;
-
-const CardInner = styled.div`
+const LogoLink = styled(Link)`
+    text-decoration: none;
     display: flex;
-    align-items: flex-start;
-    gap: 1rem;
+    align-items: center;
+    gap: 0.5rem;
 `;
 
-const CardBody = styled.div`
+const LogoMark = styled.div`
+    width: 9px; height: 9px;
+    background: #4ade80;
+    border-radius: 50%;
+    box-shadow: 0 0 10px #4ade80, 0 0 20px rgba(74,222,128,0.4);
+    animation: ${pulse} 2s ease-in-out infinite;
+`;
+
+const LogoText = styled.span`
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    color: #fff;
+    text-transform: uppercase;
+`;
+
+const LiveBadge = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: #4ade80;
+    text-transform: uppercase;
+    opacity: 0.8;
+`;
+
+const LiveDot = styled.div`
+    width: 6px; height: 6px;
+    background: #4ade80;
+    border-radius: 50%;
+    animation: ${pulse} 1.5s ease-in-out infinite;
+`;
+
+// --- Hero (compact) ---
+const Hero = styled.div`
+    margin-bottom: 2rem;
+    animation: ${fadeUp} 0.4s 0.08s ease both;
+`;
+
+const Eyebrow = styled.div`
+    font-size: 0.68rem;
+    letter-spacing: 0.25em;
+    color: #4ade80;
+    text-transform: uppercase;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    opacity: 0.8;
+`;
+
+const HeroTitle = styled.h1`
+    font-family: 'Rajdhani', sans-serif;
+    font-size: clamp(2rem, 5vw, 3.2rem);
+    font-weight: 700;
+    line-height: 0.95;
+    color: #fff;
+    text-transform: uppercase;
+    margin-bottom: 0.6rem;
+
+    span {
+        color: #4ade80;
+        text-shadow: 0 0 30px rgba(74,222,128,0.45);
+    }
+`;
+
+const HeroSub = styled.p`
+    font-size: 0.85rem;
+    color: #555;
+    font-weight: 300;
+    line-height: 1.6;
+`;
+
+// --- Two-column body ---
+const Body = styled.div`
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+    animation: ${fadeUp} 0.4s 0.15s ease both;
+`;
+
+// --- Filters sidebar ---
+const Sidebar = styled.aside`
+    width: 260px;
+    flex-shrink: 0;
+    position: sticky;
+    top: 1.5rem;
+    display: none;
+
+    @media (min-width: 900px) {
+        display: block;
+    }
+`;
+
+const SidebarTitle = styled.div`
+    font-size: 0.65rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #4ade80;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid rgba(74,222,128,0.15);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+`;
+
+const ClearBtn = styled.button`
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 0.65rem;
+    letter-spacing: 0.08em;
+    cursor: pointer;
+    font-family: 'Sora', sans-serif;
+    padding: 0;
+    text-transform: uppercase;
+    transition: color 0.15s;
+
+    &:hover { color: #4ade80; }
+`;
+
+const FilterSection = styled.div`
+    margin-bottom: 1.25rem;
+`;
+
+const FilterLabel = styled.div`
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #666;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+`;
+
+const CheckRow = styled.label`
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: #aaa;
+    cursor: pointer;
+    padding: 0.25rem 0;
+    transition: color 0.15s;
+
+    &:hover { color: #e0e0e0; }
+
+    input[type='checkbox'] {
+        accent-color: #4ade80;
+        width: 13px;
+        height: 13px;
+        cursor: pointer;
+    }
+`;
+
+const RangeRow = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+`;
+
+const RangeInput = styled.input`
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(74,222,128,0.15);
+    border-radius: 5px;
+    color: #ccc;
+    font-size: 0.78rem;
+    padding: 0.35rem 0.5rem;
+    width: 100%;
+    font-family: 'Sora', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+
+    &:focus { border-color: rgba(74,222,128,0.45); }
+    &::placeholder { color: #444; }
+`;
+
+const RangeSep = styled.span`
+    color: #444;
+    font-size: 0.75rem;
+    flex-shrink: 0;
+`;
+
+const FilterDivider = styled.div`
+    height: 1px;
+    background: rgba(255,255,255,0.05);
+    margin: 1rem 0;
+`;
+
+// --- Job list (right side) ---
+const JobListArea = styled.div`
     flex: 1;
     min-width: 0;
 `;
 
-const EmptyState = styled.div`
-    text-align: center;
-    padding: 3rem 1rem;
-    color: #666;
-    background: #1a1a1a;
-    border-radius: 12px;
-    border: 1px solid #2a2a2a;
-`;
-
-const LoadingContainer = styled.div`
+const ListMeta = styled.div`
     display: flex;
     align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    background: #000;
-    color: #4ade80;
-    font-size: 1rem;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
 `;
 
+const ResultCount = styled.div`
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: #444;
+`;
+
+const MobileFilterToggle = styled.button`
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(74,222,128,0.07);
+    border: 1px solid rgba(74,222,128,0.2);
+    border-radius: 6px;
+    color: #4ade80;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    padding: 0.35rem 0.75rem;
+    cursor: pointer;
+    font-family: 'Sora', sans-serif;
+    transition: background 0.15s;
+
+    &:hover { background: rgba(74,222,128,0.12); }
+
+    @media (min-width: 900px) { display: none; }
+`;
+
+const MobileFilters = styled.div<{ $open: boolean }>`
+    display: ${({ $open }) => ($open ? 'block' : 'none')};
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(74,222,128,0.12);
+    border-radius: 10px;
+    padding: 1rem 1.25rem;
+    margin-bottom: 1rem;
+
+    @media (min-width: 900px) { display: none; }
+`;
+
+const JobCard = styled(Link)<{ $index: number }>`
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    background: rgba(255,255,255,0.025);
+    border: 1px solid rgba(74,222,128,0.1);
+    border-radius: 9px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 0.5rem;
+    text-decoration: none;
+    position: relative;
+    overflow: hidden;
+    transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
+    backdrop-filter: blur(6px);
+    animation: ${fadeUp} 0.4s ${({ $index }) => 0.15 + $index * 0.04}s ease both;
+
+    &::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(90deg, rgba(74,222,128,0.03), transparent);
+        opacity: 0;
+        transition: opacity 0.2s;
+    }
+
+    &:hover {
+        border-color: rgba(74,222,128,0.45);
+        background: rgba(74,222,128,0.035);
+        transform: translateX(3px);
+        box-shadow: 0 4px 24px rgba(74,222,128,0.08);
+        &::before { opacity: 1; }
+    }
+`;
+
+const CardMain = styled.div`
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 1.25rem;
+    flex-wrap: wrap;
+`;
+
+const CardTitles = styled.div`
+    min-width: 180px;
+`;
+
+const JobTitle = styled.div`
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f0f0f0;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    line-height: 1.15;
+`;
+
+const CompanyName = styled.div`
+    font-size: 0.75rem;
+    color: #4ade80;
+    font-weight: 500;
+    opacity: 0.85;
+    margin-top: 0.15rem;
+`;
+
+const TagRow = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    align-items: center;
+`;
+
+const Tag = styled.span<{ $type?: 'salary' | 'type' | 'location' | 'remote' }>`
+    font-size: 0.7rem;
+    font-weight: 500;
+    letter-spacing: 0.03em;
+    padding: 0.18rem 0.55rem;
+    border-radius: 4px;
+    text-transform: capitalize;
+    white-space: nowrap;
+
+    ${({ $type }) => $type === 'salary' && `
+        background: rgba(74,222,128,0.08);
+        color: #4ade80;
+        border: 1px solid rgba(74,222,128,0.18);
+    `}
+    ${({ $type }) => $type === 'type' && `
+        background: rgba(96,165,250,0.07);
+        color: #60a5fa;
+        border: 1px solid rgba(96,165,250,0.12);
+    `}
+    ${({ $type }) => ($type === 'location' || $type === 'remote') && `
+        background: rgba(255,255,255,0.035);
+        color: #777;
+        border: 1px solid rgba(255,255,255,0.06);
+    `}
+`;
+
+const ArrowWrap = styled.div`
+    flex-shrink: 0;
+    color: rgba(74,222,128,0.4);
+    font-size: 1rem;
+    transition: color 0.2s, transform 0.2s;
+
+    ${JobCard}:hover & {
+        color: #4ade80;
+        transform: translateX(3px);
+    }
+`;
+
+// --- Empty / Loading ---
+const CenterScreen = styled.div`
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: #000;
+    gap: 1rem;
+    font-family: 'Sora', sans-serif;
+`;
+
+const LoadingText = styled.div`
+    font-family: 'Rajdhani', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #4ade80;
+    animation: ${pulse} 1.5s ease-in-out infinite;
+`;
+
+const LoadingBar = styled.div`
+    width: 120px;
+    height: 2px;
+    background: rgba(74,222,128,0.12);
+    border-radius: 2px;
+    overflow: hidden;
+    position: relative;
+
+    &::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        width: 40%;
+        height: 100%;
+        background: #4ade80;
+        animation: ${sweep} 1.2s ease-in-out infinite;
+    }
+`;
+
+const EmptyBox = styled.div`
+    text-align: center;
+    padding: 3rem 2rem;
+    border: 1px dashed rgba(74,222,128,0.12);
+    border-radius: 10px;
+    color: #444;
+    font-size: 0.85rem;
+    letter-spacing: 0.04em;
+`;
+
+// --- Helpers ---
 function formatSalary(job: JobSummary): string {
     const min = job.pay_range_min;
     const max = job.pay_range_max;
@@ -179,85 +511,272 @@ function formatSalary(job: JobSummary): string {
     return min ? `$${min.toLocaleString()}+${suffix}` : `Up to $${max.toLocaleString()}${suffix}`;
 }
 
-function formatJobType(jobType: string): string {
-    if (!jobType) return 'Full-time';
-    return jobType.replace(/[_-]/g, ' ');
+function formatJobType(t: string): string {
+    if (!t) return 'Full-time';
+    return t.replace(/[_-]/g, ' ');
 }
 
+const EXP_BUCKETS = [
+    { label: '0–2 years',  min: 0, max: 2 },
+    { label: '3–5 years',  min: 3, max: 5 },
+    { label: '6–10 years', min: 6, max: 10 },
+    { label: '10+ years',  min: 11, max: 999 },
+];
+
+// --- Component ---
 const PublicJobList: React.FC = () => {
-    const [jobs, setJobs] = useState<JobSummary[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const [jobs, setJobs]         = useState<JobSummary[]>([]);
+    const [loading, setLoading]   = useState(true);
+    const [error, setError]       = useState('');
+    const [mobileFilters, setMobileFilters] = useState(false);
+
+    // Filter state
+    const [selLocations, setSelLocations]   = useState<string[]>([]);
+    const [selJobTypes,  setSelJobTypes]    = useState<string[]>([]);
+    const [selWorkTypes, setSelWorkTypes]   = useState<string[]>([]);
+    const [selExpBuckets, setSelExpBuckets] = useState<string[]>([]);
+    const [payMin, setPayMin] = useState('');
+    const [payMax, setPayMax] = useState('');
 
     useEffect(() => {
-        document.title = 'Open Positions | Talos';
-        const fetchJobs = async () => {
-            try {
-                const response = await fetch(`${config.apiUrl}/api/jobs/public`);
-                const data = await response.json();
-                if (data.status === 'success') {
-                    setJobs(data.jobs);
-                } else {
-                    setError('Failed to load job listings');
-                }
-            } catch {
-                setError('Failed to load job listings');
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchJobs();
+        document.title = 'HVAC Jobs | Talos';
+        fetch(`${config.apiUrl}/api/jobs/public`)
+            .then(r => r.json())
+            .then(d => { if (d.status === 'success') setJobs(d.jobs); else setError('Failed to load'); })
+            .catch(() => setError('Failed to load'))
+            .finally(() => setLoading(false));
         return () => { document.title = 'Talos'; };
     }, []);
 
-    if (loading) {
-        return <LoadingContainer>Loading open positions...</LoadingContainer>;
+    // Unique filter options derived from jobs
+    const locations = useMemo(() =>
+        Array.from(new Set(jobs.map(j => j.location).filter(Boolean))).sort(),
+    [jobs]);
+
+    const jobTypes = useMemo(() =>
+        Array.from(new Set(jobs.map(j => j.job_type).filter(Boolean))).sort(),
+    [jobs]);
+
+    const workTypes = useMemo(() =>
+        Array.from(new Set(jobs.map(j => j.job_location_type).filter(Boolean))).sort(),
+    [jobs]);
+
+    // Filtered results
+    const filtered = useMemo(() => {
+        return jobs.filter(job => {
+            if (selLocations.length && !selLocations.includes(job.location)) return false;
+            if (selJobTypes.length  && !selJobTypes.includes(job.job_type))  return false;
+            if (selWorkTypes.length && !selWorkTypes.includes(job.job_location_type)) return false;
+
+            if (selExpBuckets.length) {
+                const exp = job.required_years_experience ?? 0;
+                const match = EXP_BUCKETS.filter(b => selExpBuckets.includes(b.label))
+                    .some(b => exp >= b.min && exp <= b.max);
+                if (!match) return false;
+            }
+
+            const rate = job.pay_range_max || job.pay_range_min || 0;
+            if (payMin && rate < parseFloat(payMin)) return false;
+            if (payMax && rate > parseFloat(payMax)) return false;
+
+            return true;
+        });
+    }, [jobs, selLocations, selJobTypes, selWorkTypes, selExpBuckets, payMin, payMax]);
+
+    const hasFilters = selLocations.length || selJobTypes.length || selWorkTypes.length ||
+        selExpBuckets.length || payMin || payMax;
+
+    function clearAll() {
+        setSelLocations([]); setSelJobTypes([]); setSelWorkTypes([]);
+        setSelExpBuckets([]); setPayMin(''); setPayMax('');
     }
+
+    function toggle<T>(arr: T[], val: T, set: (v: T[]) => void) {
+        set(arr.includes(val) ? arr.filter(x => x !== val) : [...arr, val]);
+    }
+
+    if (loading) {
+        return (
+            <CenterScreen>
+                <FontImport />
+                <LoadingText>Loading positions</LoadingText>
+                <LoadingBar />
+            </CenterScreen>
+        );
+    }
+
+    const FiltersContent = () => (
+        <>
+            {locations.length > 0 && (
+                <FilterSection>
+                    <FilterLabel>Location</FilterLabel>
+                    {locations.map(loc => (
+                        <CheckRow key={loc}>
+                            <input type="checkbox"
+                                checked={selLocations.includes(loc)}
+                                onChange={() => toggle(selLocations, loc, setSelLocations)}
+                            />
+                            {loc}
+                        </CheckRow>
+                    ))}
+                </FilterSection>
+            )}
+
+            {jobTypes.length > 0 && (
+                <>
+                    <FilterDivider />
+                    <FilterSection>
+                        <FilterLabel>Job Type</FilterLabel>
+                        {jobTypes.map(t => (
+                            <CheckRow key={t}>
+                                <input type="checkbox"
+                                    checked={selJobTypes.includes(t)}
+                                    onChange={() => toggle(selJobTypes, t, setSelJobTypes)}
+                                />
+                                {formatJobType(t)}
+                            </CheckRow>
+                        ))}
+                    </FilterSection>
+                </>
+            )}
+
+            {workTypes.length > 0 && (
+                <>
+                    <FilterDivider />
+                    <FilterSection>
+                        <FilterLabel>Work Type</FilterLabel>
+                        {workTypes.map(t => (
+                            <CheckRow key={t}>
+                                <input type="checkbox"
+                                    checked={selWorkTypes.includes(t)}
+                                    onChange={() => toggle(selWorkTypes, t, setSelWorkTypes)}
+                                />
+                                {t}
+                            </CheckRow>
+                        ))}
+                    </FilterSection>
+                </>
+            )}
+
+            <FilterDivider />
+            <FilterSection>
+                <FilterLabel>Pay Rate</FilterLabel>
+                <RangeRow>
+                    <RangeInput
+                        type="number"
+                        placeholder="Min"
+                        value={payMin}
+                        onChange={e => setPayMin(e.target.value)}
+                    />
+                    <RangeSep>–</RangeSep>
+                    <RangeInput
+                        type="number"
+                        placeholder="Max"
+                        value={payMax}
+                        onChange={e => setPayMax(e.target.value)}
+                    />
+                </RangeRow>
+            </FilterSection>
+
+            <FilterDivider />
+            <FilterSection>
+                <FilterLabel>Experience</FilterLabel>
+                {EXP_BUCKETS.map(b => (
+                    <CheckRow key={b.label}>
+                        <input type="checkbox"
+                            checked={selExpBuckets.includes(b.label)}
+                            onChange={() => toggle(selExpBuckets, b.label, setSelExpBuckets)}
+                        />
+                        {b.label}
+                    </CheckRow>
+                ))}
+            </FilterSection>
+        </>
+    );
 
     return (
         <PageContainer>
-            <ContentWrapper>
-                <Logo to="/">
-                    <LogoText>TALOS</LogoText>
-                </Logo>
+            <FontImport />
+            <Scanline />
+            <GridOverlay />
 
-                <PageTitle>
-                    Open Positions
-                    {!error && <JobCount>{jobs.length} {jobs.length === 1 ? 'job' : 'jobs'}</JobCount>}
-                </PageTitle>
+            <Wrapper>
+                <TopBar>
+                    <LogoLink to="/">
+                        <LogoMark />
+                        <LogoText>Talos</LogoText>
+                    </LogoLink>
+                    <LiveBadge><LiveDot />Live openings</LiveBadge>
+                </TopBar>
 
-                {error ? (
-                    <EmptyState>{error}</EmptyState>
-                ) : jobs.length === 0 ? (
-                    <EmptyState>No open positions at this time. Check back soon.</EmptyState>
-                ) : (
-                    jobs.map(job => {
-                        const salary = formatSalary(job);
-                        const jobType = formatJobType(job.job_type);
-                        const location = job.location || 'Location not specified';
+                <Hero>
+                    <Eyebrow>HVAC Career Opportunities</Eyebrow>
+                    <HeroTitle>Apply to <span>HVAC Jobs</span></HeroTitle>
+                    <HeroSub>Direct applications. No middleman. Get hired faster.</HeroSub>
+                </Hero>
 
-                        return (
-                            <JobCard key={job.id} to={`/jobs/${job.id}`}>
-                                <CardInner>
-                                    <CardBody>
-                                        <JobTitle>{job.title}</JobTitle>
-                                        <CompanyName>{job.company_name || 'Company'}</CompanyName>
-                                        <MetaRow>
-                                            <Badge variant="gray">📍 {location}</Badge>
-                                            <Badge variant="blue">{jobType}</Badge>
-                                            {salary && <Badge variant="green">{salary}</Badge>}
-                                            {job.job_location_type && (
-                                                <Badge variant="gray">{job.job_location_type}</Badge>
-                                            )}
-                                        </MetaRow>
-                                    </CardBody>
-                                    <ArrowIcon>→</ArrowIcon>
-                                </CardInner>
-                            </JobCard>
-                        );
-                    })
-                )}
-            </ContentWrapper>
+                <Body>
+                    {/* Desktop sidebar */}
+                    <Sidebar>
+                        <SidebarTitle>
+                            Filters
+                            {hasFilters ? <ClearBtn onClick={clearAll}>Clear all</ClearBtn> : null}
+                        </SidebarTitle>
+                        <FiltersContent />
+                    </Sidebar>
+
+                    {/* Job list */}
+                    <JobListArea>
+                        <ListMeta>
+                            <ResultCount>
+                                {filtered.length} {filtered.length === 1 ? 'position' : 'positions'} found
+                            </ResultCount>
+                            <MobileFilterToggle onClick={() => setMobileFilters(v => !v)}>
+                                ⚙ Filters {hasFilters ? `(${[selLocations, selJobTypes, selWorkTypes, selExpBuckets].flat().length + (payMin ? 1 : 0) + (payMax ? 1 : 0)})` : ''}
+                            </MobileFilterToggle>
+                        </ListMeta>
+
+                        {/* Mobile filters */}
+                        <MobileFilters $open={mobileFilters}>
+                            <SidebarTitle>
+                                Filters
+                                {hasFilters ? <ClearBtn onClick={clearAll}>Clear all</ClearBtn> : null}
+                            </SidebarTitle>
+                            <FiltersContent />
+                        </MobileFilters>
+
+                        {error ? (
+                            <EmptyBox>Failed to load positions — please try again.</EmptyBox>
+                        ) : filtered.length === 0 ? (
+                            <EmptyBox>
+                                {hasFilters ? 'No positions match your filters.' : 'No open positions at this time.'}
+                            </EmptyBox>
+                        ) : (
+                            filtered.map((job, i) => {
+                                const salary = formatSalary(job);
+                                const jobType = formatJobType(job.job_type);
+                                return (
+                                    <JobCard key={job.id} to={`/jobs/${job.id}`} $index={i}>
+                                        <CardMain>
+                                            <CardTitles>
+                                                <JobTitle>{job.title}</JobTitle>
+                                                <CompanyName>{job.company_name || 'Company'}</CompanyName>
+                                            </CardTitles>
+                                            <TagRow>
+                                                {job.location && <Tag $type="location">📍 {job.location}</Tag>}
+                                                <Tag $type="type">{jobType}</Tag>
+                                                {salary && <Tag $type="salary">{salary}</Tag>}
+                                                {job.job_location_type && <Tag $type="remote">{job.job_location_type}</Tag>}
+                                            </TagRow>
+                                        </CardMain>
+                                        <ArrowWrap>→</ArrowWrap>
+                                    </JobCard>
+                                );
+                            })
+                        )}
+                    </JobListArea>
+                </Body>
+            </Wrapper>
         </PageContainer>
     );
 };

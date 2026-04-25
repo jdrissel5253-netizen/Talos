@@ -134,6 +134,7 @@ router.get('/public', async (req, res) => {
                 pay_range_min: job.pay_range_min || job.salary_min,
                 pay_range_max: job.pay_range_max || job.salary_max,
                 pay_type: job.pay_type,
+                required_years_experience: job.required_years_experience,
                 created_at: job.created_at
             }))
         });
