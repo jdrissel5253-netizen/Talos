@@ -489,9 +489,13 @@ Responsibilities
 
 Qualifications
 
-[List 4-5 required qualifications as bullet points using • symbol. Include experience, certifications, and essential skills. Be clear about what's mandatory.]
+[List 4-5 required qualifications as bullet points using • symbol. Include experience and essential skills. Be clear about what's mandatory.]
 
-Preferred
+${certifications.length > 0 ? `Requirements
+
+[List the following required certifications as bullet points using • symbol: ${certifications.join(', ')}. State clearly that these are required for the role.]
+
+` : ''}Preferred
 
 [List 2-3 nice-to-have qualifications using • symbol. Keep it brief.]
 
@@ -510,7 +514,8 @@ CRITICAL RULES:
 6. Keep language professional but approachable - write for skilled tradespeople, not corporate executives
 7. Be concise - every word should earn its place
 8. Total length: 250-350 words maximum
-9. Tone: Respectful, direct, and genuine - like talking to a colleague`;
+9. Tone: Respectful, direct, and genuine - like talking to a colleague
+${certifications.length > 0 ? `10. ALWAYS include the Requirements section with the certifications listed — these are hard requirements for the role` : ''}`;
 
         const message = await anthropic.messages.create({
             model: "claude-sonnet-4-5-20250929",  // Using Claude Sonnet 4.5
