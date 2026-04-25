@@ -116,6 +116,34 @@ router.get('/feed.xml', async (req, res) => {
 });
 
 /**
+ * GET /public - Public job listings endpoint (no auth required)
+ * Returns all active jobs for the public job board
+ */
+router.get('/public', async (req, res) => {
+    try {
+        const jobs = await jobService.findActiveForFeed();
+        res.json({
+            status: 'success',
+            jobs: jobs.map(job => ({
+                id: job.id,
+                title: job.title,
+                company_name: job.company_name,
+                location: job.city || job.location,
+                job_location_type: job.job_location_type,
+                job_type: job.job_type,
+                pay_range_min: job.pay_range_min || job.salary_min,
+                pay_range_max: job.pay_range_max || job.salary_max,
+                pay_type: job.pay_type,
+                created_at: job.created_at
+            }))
+        });
+    } catch (error) {
+        logger.error('Error fetching public job listings', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to fetch job listings' });
+    }
+});
+
+/**
  * GET /public/:id - Public job detail endpoint (no auth required)
  * Used by the public job detail page
  */

@@ -411,7 +411,7 @@ const PublicJobDetail: React.FC = () => {
         return (
             <PageContainer>
                 <ContentWrapper>
-                    <Logo to="/">
+                    <Logo to="/jobs">
                         <LogoText>TALOS</LogoText>
                     </Logo>
                     <JobCard>
@@ -445,7 +445,7 @@ const PublicJobDetail: React.FC = () => {
     return (
         <PageContainer>
             <ContentWrapper>
-                <Logo to="/">
+                <Logo to="/jobs">
                     <LogoText>TALOS</LogoText>
                 </Logo>
 

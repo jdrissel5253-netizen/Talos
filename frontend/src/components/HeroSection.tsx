@@ -1,5 +1,6 @@
 import React from 'react';
 import styled from 'styled-components';
+import { Link } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
 
 const HeroContainer = styled.section`
@@ -59,6 +60,32 @@ const HeroSubtitle = styled.p`
 
   @media (max-width: 768px) {
     font-size: 1.1rem;
+  }
+`;
+
+const CTAGroup = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+`;
+
+const JobsLink = styled(Link)`
+  display: inline-block;
+  background: transparent;
+  border: 1px solid #4ade80;
+  color: #4ade80;
+  padding: 1rem 2rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: all 0.3s ease;
+
+  &:hover {
+    background: #4ade8015;
+    transform: translateY(-2px);
   }
 `;
 
@@ -151,9 +178,12 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
             job board posting, and intelligent candidate ranking.
             Find the right talent faster.
           </HeroSubtitle>
-          <CTAButton onClick={onDemoClick}>
-            Get Demo
-          </CTAButton>
+          <CTAGroup>
+            <CTAButton onClick={onDemoClick}>
+              Get Demo
+            </CTAButton>
+            <JobsLink to="/jobs">View Open Positions</JobsLink>
+          </CTAGroup>
 
           <TrustIndicators>
             <TrustBadge>

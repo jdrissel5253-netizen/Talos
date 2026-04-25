@@ -28,6 +28,7 @@ const CandidateListScreen = lazy(() => import('./components/CandidateListScreen'
 const HVACInsights = lazy(() => import('./components/HVACInsights'));
 const PublicApply = lazy(() => import('./components/PublicApply'));
 const PublicJobDetail = lazy(() => import('./components/PublicJobDetail'));
+const PublicJobList = lazy(() => import('./components/PublicJobList'));
 
 // Loading fallback for lazy-loaded routes
 const LoadingFallback = styled.div`
@@ -90,7 +91,7 @@ const StandaloneContent = styled.main`
 function AppLayout() {
   const location = useLocation();
   const isApplyPage = location.pathname === '/apply';
-  const isPublicJobPage = location.pathname.startsWith('/jobs/');
+  const isPublicJobPage = location.pathname === '/jobs' || location.pathname.startsWith('/jobs/');
 
   // For public pages (/apply, /jobs/:id), render a minimal standalone version for fast load
   if (isApplyPage || isPublicJobPage) {
@@ -102,6 +103,7 @@ function AppLayout() {
             <Suspense fallback={<LoadingFallback>Loading...</LoadingFallback>}>
               <Routes>
                 <Route path="/apply" element={<PublicApply />} />
+                <Route path="/jobs" element={<PublicJobList />} />
                 <Route path="/jobs/:id" element={<PublicJobDetail />} />
               </Routes>
             </Suspense>
