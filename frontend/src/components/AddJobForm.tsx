@@ -390,6 +390,7 @@ interface EditJobData {
   key_responsibilities?: string | string[];
   qualifications_certifications?: string | string[];
   other_relevant_titles?: string | string[];
+  flexible_on_title?: boolean;
   advancement_opportunities?: boolean;
   advancement_timeline?: string;
   company_culture?: string;
@@ -514,6 +515,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
     qualifications_certifications: parseJsonField<string>(editJob?.qualifications_certifications, []),
     education_requirements: editJob?.education_requirements || 'no_degree',
     other_relevant_titles: parseJsonField<string>(editJob?.other_relevant_titles, []),
+    flexible_on_title: editJob?.flexible_on_title !== undefined ? editJob.flexible_on_title : true,
     advancement_opportunities: editJob?.advancement_opportunities || false,
     advancement_timeline: editJob?.advancement_timeline || '',
     company_culture: editJob?.company_culture || '',
@@ -644,7 +646,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
         pay_range_max: parseFloat(formData.pay_range_max) || null,
         position_type: formData.title,
         vehicle_required: false,
-        flexible_on_title: true,
+        flexible_on_title: formData.flexible_on_title,
         education_requirements: formData.education_requirements === 'no_degree'
           ? 'High School Diploma'
           : formData.education_requirements
@@ -1014,6 +1016,24 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
 
           <FormSection>
             <SectionTitle>Additional Information</SectionTitle>
+
+            <FormGroup>
+              <CheckboxLabel style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', cursor: 'pointer' }}>
+                <input
+                  type="checkbox"
+                  name="flexible_on_title"
+                  checked={formData.flexible_on_title}
+                  onChange={handleChange}
+                  style={{ marginTop: '3px', width: '16px', height: '16px', accentColor: '#4ade80', cursor: 'pointer' }}
+                />
+                <span>
+                  <strong style={{ color: '#e0e0e0' }}>Flexible on role title</strong>
+                  <span style={{ display: 'block', color: '#999', fontSize: '0.85rem', marginTop: '2px' }}>
+                    If checked, candidates from equivalent roles with transferable skills will qualify under the required experience tier. If unchecked, those candidates score 9 points lower.
+                  </span>
+                </span>
+              </CheckboxLabel>
+            </FormGroup>
 
             <FormGroup>
               <Label>
