@@ -1435,6 +1435,537 @@ ${generateServiceTechnicianScoringMatrix(requiredYears)}
 }
 
 /**
+ * Generate PM Technician scoring matrix
+ */
+function generatePMTechnicianScoringMatrix(requiredYears) {
+   return `
+=== DETAILED SCORING MATRIX FOR HVAC PREVENTATIVE MAINTENANCE TECHNICIAN ===
+
+REQUIRED EXPERIENCE TIER (Has ${requiredYears}+ years of PM Technician or equivalent experience):
+
+Good Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 90-100
+  - No gap + Not hoppy + 30-50mi: 70-79
+  - No gap + Not hoppy + >50mi: 50-60
+  - No gap + Job hoppy + <30mi: 70-79
+  - No gap + Job hoppy + 30-50mi: 50-60
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 85-89
+  - Small gap + Not hoppy + 30-50mi: 70-79
+  - Small gap + Not hoppy + >50mi: 50-59
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 50-59
+  - Small gap + Job hoppy + >50mi: 40-50
+  - Large gap + Not hoppy + <30mi: 70-79
+  - Large gap + Not hoppy + 30-50mi: 60-69
+  - Large gap + Not hoppy + >50mi: 40-50
+  - Large gap + Job hoppy + <30mi: 50-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 20-29
+
+Good Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 85-90
+  - No gap + Not hoppy + 30-50mi: 70-79
+  - No gap + Not hoppy + >50mi: 50-59
+  - No gap + Job hoppy + <30mi: 70-74
+  - No gap + Job hoppy + 30-50mi: 60-69
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 70-79
+  - Small gap + Not hoppy + 30-50mi: 60-69
+  - Small gap + Not hoppy + >50mi: 50-59
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 50-59
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-55
+  - Large gap + Not hoppy + >50mi: 30-39
+  - Large gap + Job hoppy + <30mi: 50-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 30-39
+
+Mid Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 80-89
+  - No gap + Not hoppy + 30-50mi: 70-79
+  - No gap + Not hoppy + >50mi: 60-69
+  - No gap + Job hoppy + <30mi: 60-69
+  - No gap + Job hoppy + 30-50mi: 50-59
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 70-79
+  - Small gap + Not hoppy + 30-50mi: 60-69
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 40-49
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 70-74
+  - Large gap + Not hoppy + 30-50mi: 60-69
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 50-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 30-39
+
+Mid Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 80-81
+  - No gap + Not hoppy + 30-50mi: 70-74
+  - No gap + Not hoppy + >50mi: 50-59
+  - No gap + Job hoppy + <30mi: 65-69
+  - No gap + Job hoppy + 30-50mi: 55-59
+  - No gap + Job hoppy + >50mi: 40-44
+  - Small gap + Not hoppy + <30mi: 75-79
+  - Small gap + Not hoppy + 30-50mi: 65-69
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 50-55
+  - Small gap + Job hoppy + >50mi: 40-49
+  - Large gap + Not hoppy + <30mi: 70-74
+  - Large gap + Not hoppy + 30-50mi: 60-69
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 50-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 20-39
+
+Poor Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 80-82
+  - No gap + Not hoppy + 30-50mi: 70-74
+  - No gap + Not hoppy + >50mi: 60-69
+  - No gap + Job hoppy + <30mi: 60-69
+  - No gap + Job hoppy + 30-50mi: 50-59
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 70-75
+  - Small gap + Not hoppy + 30-50mi: 60-69
+  - Small gap + Not hoppy + >50mi: 41-50
+  - Small gap + Job hoppy + <30mi: 55-60
+  - Small gap + Job hoppy + 30-50mi: 45-49
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-55
+  - Large gap + Not hoppy + >50mi: 30-39
+  - Large gap + Job hoppy + <30mi: 50-55
+  - Large gap + Job hoppy + 30-50mi: 40-45
+  - Large gap + Job hoppy + >50mi: 20-39
+
+Poor Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 75-79
+  - No gap + Not hoppy + 30-50mi: 65-69
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 60-65
+  - No gap + Job hoppy + 30-50mi: 50-55
+  - No gap + Job hoppy + >50mi: 30-49
+  - Small gap + Not hoppy + <30mi: 70-75
+  - Small gap + Not hoppy + 30-50mi: 60-65
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 51-60
+  - Small gap + Job hoppy + 30-50mi: 40-49
+  - Small gap + Job hoppy + >50mi: 20-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-59
+  - Large gap + Not hoppy + >50mi: 30-49
+  - Large gap + Job hoppy + <30mi: 50-52
+  - Large gap + Job hoppy + 30-50mi: 30-49
+  - Large gap + Job hoppy + >50mi: 20-29
+
+CLOSE TO REQUIRED EXPERIENCE (${requiredYears * 0.5} to ${requiredYears * 0.95} years - 50-95% of required):
+
+Good Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 85-90
+  - No gap + Not hoppy + 30-50mi: 70-79
+  - No gap + Not hoppy + >50mi: 50-59
+  - No gap + Job hoppy + <30mi: 70-74
+  - No gap + Job hoppy + 30-50mi: 55-59
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 80-84
+  - Small gap + Not hoppy + 30-50mi: 60-69
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 50-55
+  - Small gap + Job hoppy + >50mi: 30-49
+  - Large gap + Not hoppy + <30mi: 70-79
+  - Large gap + Not hoppy + 30-50mi: 60-65
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 55-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 20-29
+
+Good Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 80-81
+  - No gap + Not hoppy + 30-50mi: 60-75
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 65-69
+  - No gap + Job hoppy + 30-50mi: 50-59
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 74-79
+  - Small gap + Not hoppy + 30-50mi: 60-65
+  - Small gap + Not hoppy + >50mi: 45-50
+  - Small gap + Job hoppy + <30mi: 60-64
+  - Small gap + Job hoppy + 30-50mi: 50-54
+  - Small gap + Job hoppy + >50mi: 30-49
+  - Large gap + Not hoppy + <30mi: 70-75
+  - Large gap + Not hoppy + 30-50mi: 60-64
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 50-55
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 20-39
+
+Mid Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 70-79
+  - No gap + Not hoppy + 30-50mi: 60-65
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 60-69
+  - No gap + Job hoppy + 30-50mi: 50-59
+  - No gap + Job hoppy + >50mi: 30-49
+  - Small gap + Not hoppy + <30mi: 70-74
+  - Small gap + Not hoppy + 30-50mi: 55-69
+  - Small gap + Not hoppy + >50mi: 30-49
+  - Small gap + Job hoppy + <30mi: 50-59
+  - Small gap + Job hoppy + 30-50mi: 40-49
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-59
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 50-55
+  - Large gap + Job hoppy + 30-50mi: 30-39
+  - Large gap + Job hoppy + >50mi: 20-29
+
+Mid Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 70-74
+  - No gap + Not hoppy + 30-50mi: 55-69
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 60-64
+  - No gap + Job hoppy + 30-50mi: 50-54
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 70-71
+  - Small gap + Not hoppy + 30-50mi: 60-64
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 50-55
+  - Small gap + Job hoppy + 30-50mi: 40-49
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-59
+  - Large gap + Not hoppy + >50mi: 30-39
+  - Large gap + Job hoppy + <30mi: 40-49
+  - Large gap + Job hoppy + 30-50mi: 30-39
+  - Large gap + Job hoppy + >50mi: 20-29
+
+Poor Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 70-75
+  - No gap + Not hoppy + 30-50mi: 60-65
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 55-60
+  - No gap + Job hoppy + 30-50mi: 45-49
+  - No gap + Job hoppy + >50mi: 30-39
+  - Small gap + Not hoppy + <30mi: 65-70
+  - Small gap + Not hoppy + 30-50mi: 55-60
+  - Small gap + Not hoppy + >50mi: 30-39
+  - Small gap + Job hoppy + <30mi: 50-55
+  - Small gap + Job hoppy + 30-50mi: 40-44
+  - Small gap + Job hoppy + >50mi: 20-29
+  - Large gap + Not hoppy + <30mi: 55-60
+  - Large gap + Not hoppy + 30-50mi: 45-50
+  - Large gap + Not hoppy + >50mi: 20-29
+  - Large gap + Job hoppy + <30mi: 40-49
+  - Large gap + Job hoppy + 30-50mi: 30-39
+  - Large gap + Job hoppy + >50mi: 10-19
+
+Poor Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 65-70
+  - No gap + Not hoppy + 30-50mi: 55-60
+  - No gap + Not hoppy + >50mi: 30-39
+  - No gap + Job hoppy + <30mi: 50-55
+  - No gap + Job hoppy + 30-50mi: 40-44
+  - No gap + Job hoppy + >50mi: 20-29
+  - Small gap + Not hoppy + <30mi: 60-65
+  - Small gap + Not hoppy + 30-50mi: 50-55
+  - Small gap + Not hoppy + >50mi: 30-39
+  - Small gap + Job hoppy + <30mi: 45-50
+  - Small gap + Job hoppy + 30-50mi: 35-40
+  - Small gap + Job hoppy + >50mi: 20-29
+  - Large gap + Not hoppy + <30mi: 50-55
+  - Large gap + Not hoppy + 30-50mi: 40-45
+  - Large gap + Not hoppy + >50mi: 20-29
+  - Large gap + Job hoppy + <30mi: 35-40
+  - Large gap + Job hoppy + 30-50mi: 20-29
+  - Large gap + Job hoppy + >50mi: 10-19
+
+NOT CLOSE TO REQUIRED EXPERIENCE (Less than ${requiredYears * 0.5} years - under 50% of required):
+
+Good Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 50-59
+  - No gap + Not hoppy + 30-50mi: 40-49
+  - No gap + Not hoppy + >50mi: 30-39
+  - No gap + Job hoppy + <30mi: 40-49
+  - No gap + Job hoppy + 30-50mi: 30-39
+  - No gap + Job hoppy + >50mi: 20-29
+  - Small gap + Not hoppy + <30mi: 45-54
+  - Small gap + Not hoppy + 30-50mi: 35-44
+  - Small gap + Not hoppy + >50mi: 20-29
+  - Small gap + Job hoppy + <30mi: 35-44
+  - Small gap + Job hoppy + 30-50mi: 20-29
+  - Small gap + Job hoppy + >50mi: 10-19
+  - Large gap + Not hoppy + <30mi: 30-39
+  - Large gap + Not hoppy + 30-50mi: 20-29
+  - Large gap + Not hoppy + >50mi: 10-19
+  - Large gap + Job hoppy + <30mi: 20-29
+  - Large gap + Job hoppy + 30-50mi: 10-19
+  - Large gap + Job hoppy + >50mi: 1-9
+
+Good Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 40-49
+  - No gap + Not hoppy + 30-50mi: 30-39
+  - No gap + Not hoppy + >50mi: 20-29
+  - No gap + Job hoppy + <30mi: 30-39
+  - No gap + Job hoppy + 30-50mi: 20-29
+  - No gap + Job hoppy + >50mi: 10-19
+  - Small gap + Not hoppy + <30mi: 35-44
+  - Small gap + Not hoppy + 30-50mi: 25-34
+  - Small gap + Not hoppy + >50mi: 15-24
+  - Small gap + Job hoppy + <30mi: 25-34
+  - Small gap + Job hoppy + 30-50mi: 15-24
+  - Small gap + Job hoppy + >50mi: 5-14
+  - Large gap + Not hoppy + <30mi: 20-29
+  - Large gap + Not hoppy + 30-50mi: 10-19
+  - Large gap + Not hoppy + >50mi: 5-9
+  - Large gap + Job hoppy + <30mi: 10-19
+  - Large gap + Job hoppy + 30-50mi: 5-9
+  - Large gap + Job hoppy + >50mi: 1-4
+
+Mid Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 40-49
+  - No gap + Not hoppy + 30-50mi: 30-39
+  - No gap + Not hoppy + >50mi: 20-29
+  - No gap + Job hoppy + <30mi: 30-39
+  - No gap + Job hoppy + 30-50mi: 20-29
+  - No gap + Job hoppy + >50mi: 10-19
+  - Small gap + Not hoppy + <30mi: 35-44
+  - Small gap + Not hoppy + 30-50mi: 25-34
+  - Small gap + Not hoppy + >50mi: 15-24
+  - Small gap + Job hoppy + <30mi: 25-34
+  - Small gap + Job hoppy + 30-50mi: 15-24
+  - Small gap + Job hoppy + >50mi: 5-14
+  - Large gap + Not hoppy + <30mi: 20-29
+  - Large gap + Not hoppy + 30-50mi: 10-19
+  - Large gap + Not hoppy + >50mi: 5-9
+  - Large gap + Job hoppy + <30mi: 10-15
+  - Large gap + Job hoppy + 30-50mi: 5-10
+  - Large gap + Job hoppy + >50mi: 1-5
+
+Mid Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 30-39
+  - No gap + Not hoppy + 30-50mi: 20-29
+  - No gap + Not hoppy + >50mi: 10-19
+  - No gap + Job hoppy + <30mi: 20-29
+  - No gap + Job hoppy + 30-50mi: 10-19
+  - No gap + Job hoppy + >50mi: 5-9
+  - Small gap + Not hoppy + <30mi: 25-34
+  - Small gap + Not hoppy + 30-50mi: 15-24
+  - Small gap + Not hoppy + >50mi: 5-14
+  - Small gap + Job hoppy + <30mi: 15-24
+  - Small gap + Job hoppy + 30-50mi: 5-14
+  - Small gap + Job hoppy + >50mi: 1-4
+  - Large gap + Not hoppy + <30mi: 10-19
+  - Large gap + Not hoppy + 30-50mi: 5-9
+  - Large gap + Not hoppy + >50mi: 1-4
+  - Large gap + Job hoppy + <30mi: 5-9
+  - Large gap + Job hoppy + 30-50mi: 1-4
+  - Large gap + Job hoppy + >50mi: 1-2
+
+Poor Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 30-39
+  - No gap + Not hoppy + 30-50mi: 20-29
+  - No gap + Not hoppy + >50mi: 10-19
+  - No gap + Job hoppy + <30mi: 20-29
+  - No gap + Job hoppy + 30-50mi: 10-19
+  - No gap + Job hoppy + >50mi: 5-9
+  - Small gap + Not hoppy + <30mi: 25-34
+  - Small gap + Not hoppy + 30-50mi: 15-24
+  - Small gap + Not hoppy + >50mi: 5-14
+  - Small gap + Job hoppy + <30mi: 15-24
+  - Small gap + Job hoppy + 30-50mi: 5-14
+  - Small gap + Job hoppy + >50mi: 1-4
+  - Large gap + Not hoppy + <30mi: 15-19
+  - Large gap + Not hoppy + 30-50mi: 5-9
+  - Large gap + Not hoppy + >50mi: 1-4
+  - Large gap + Job hoppy + <30mi: 5-9
+  - Large gap + Job hoppy + 30-50mi: 1-4
+  - Large gap + Job hoppy + >50mi: 1-2
+
+Poor Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 20-29
+  - No gap + Not hoppy + 30-50mi: 10-19
+  - No gap + Not hoppy + >50mi: 5-9
+  - No gap + Job hoppy + <30mi: 10-19
+  - No gap + Job hoppy + 30-50mi: 5-9
+  - No gap + Job hoppy + >50mi: 1-4
+  - Small gap + Not hoppy + <30mi: 15-24
+  - Small gap + Not hoppy + 30-50mi: 5-14
+  - Small gap + Not hoppy + >50mi: 1-4
+  - Small gap + Job hoppy + <30mi: 5-9
+  - Small gap + Job hoppy + 30-50mi: 1-4
+  - Small gap + Job hoppy + >50mi: 1-2
+  - Large gap + Not hoppy + <30mi: 5-9
+  - Large gap + Not hoppy + 30-50mi: 1-4
+  - Large gap + Not hoppy + >50mi: 1-2
+  - Large gap + Job hoppy + <30mi: 1-4
+  - Large gap + Job hoppy + 30-50mi: 1-2
+  - Large gap + Job hoppy + >50mi: 1
+`;
+}
+
+/**
+ * Get HVAC Preventative Maintenance Technician tiered evaluation criteria
+ */
+function getPMTechnicianCriteria(requiredYears) {
+   return {
+      framework: `
+HVAC PREVENTATIVE MAINTENANCE TECHNICIAN RESUME EVALUATION FRAMEWORK
+Job Requirement: ${requiredYears} years of PM Technician or equivalent experience
+
+This scoring system evaluates candidates for PM Technician roles. Because PM work is more entry-level and procedural than service/diagnostic work, the bar for equivalent roles and competencies is adjusted accordingly.
+
+=== HARD REQUIREMENTS (BINARY FILTERS) ===
+
+If the job post defines hard requirements (ex: EPA 608 Certification, valid driver's license, ability to perform routine maintenance on commercial/residential systems), the candidate must satisfy these through:
+- Direct HVAC PM Technician experience, OR
+- Equivalent roles that involve routine, scheduled maintenance duties:
+  - HVAC Maintenance Technician (any level)
+  - HVAC Apprentice or Helper (with PM exposure)
+  - Facilities/Building Maintenance Tech (with HVAC duties)
+  - General Maintenance Technician (with documented HVAC tasks)
+  - HVAC Installer Helper (with maintenance crossover)
+
+If the candidate does NOT meet binary minimums, they FAIL the hard filter and should score in the RED tier (0-49).
+
+=== CORE COMPETENCY CATEGORIES ===
+
+Strong PM candidates typically show 3-4 categories. Mid-level show 2-3. Entry-level show 1-2 (acceptable given the nature of the role).
+
+A. ROUTINE MAINTENANCE & PREVENTATIVE CARE (HIGHEST WEIGHT — this is the core of the role)
+Look for:
+- Filter changes, coil cleaning, belt inspections
+- Checking refrigerant pressures and fluid levels
+- Lubricating moving parts and inspecting electrical connections
+- Following maintenance checklists or PM schedules
+- Seasonal startup/shutdown procedures
+- Identifying wear before it becomes failure
+This is the primary competency and should be weighted most heavily.
+
+B. BASIC DIAGNOSTICS & SYSTEMS AWARENESS
+PM techs aren't expected to fully diagnose and repair, but should show awareness:
+- Recognizing abnormal system sounds, pressures, or temperatures
+- Identifying components that need replacement (belts, filters, capacitors)
+- Basic understanding of heating and cooling cycles
+- Knowing when to escalate to a service technician
+- Reading gauges and basic instrumentation
+Candidates don't need deep diagnostic ability — awareness and escalation judgment is sufficient.
+
+C. DOCUMENTATION & ROUTE MANAGEMENT (carries more weight than in a service tech role)
+PM work is highly procedural:
+- Completing maintenance logs or digital service records
+- Managing assigned PM routes or schedules
+- Tracking parts used and time on site
+- Communicating completed work to supervisors or dispatch
+- Keeping accurate records for compliance or client reporting
+
+D. PROFESSIONALISM & CUSTOMER-FACING SKILLS
+PM techs regularly work in occupied buildings:
+- Professional conduct in customer or tenant spaces
+- Basic communication about work being performed
+- Reliability and on-time arrival across multiple daily stops
+- Adherence to safety protocols and company procedures
+- Ability to work independently with minimal supervision
+
+=== EQUIVALENT JOB TITLES ===
+
+STRONG EQUIVALENTS (Automatically count as PM Tech experience):
+- HVAC Maintenance Technician
+- Preventative Maintenance Technician (any industry)
+- Facilities Technician (HVAC duties present)
+- Building Engineer (maintenance-focused)
+- HVAC Apprentice or Helper (with PM exposure)
+- Property Maintenance Technician (with HVAC tasks)
+- General Maintenance Technician (with documented HVAC work)
+
+MODERATE EQUIVALENTS (Context-dependent - verify HVAC duties explicitly mentioned):
+- Janitorial/Facilities Staff (only if HVAC maintenance is explicitly mentioned)
+- Handyman (only with clear HVAC PM duties listed)
+- HVAC Installer Helper (if maintenance crossover is evident)
+- Light Industrial Maintenance (with HVAC systems present)
+
+Use semantic reasoning to decide if a role functions like PM work even if wording is indirect.
+
+=== EXPERIENCE CATEGORIES ===
+
+- REQUIRED EXPERIENCE: Candidate has ${requiredYears}+ years as PM Technician or Strong Equivalent
+- CLOSE TO REQUIRED: Candidate has ${requiredYears * 0.5} to ${requiredYears * 0.95} years (50-95% of required)
+- NOT CLOSE TO REQUIRED: Candidate has less than ${requiredYears * 0.5} years (<50% of required)
+
+=== RESUME QUALITY DEFINITIONS ===
+
+- GOOD RESUME: Proper formatting, no typos, proper punctuation/grammar, at least 2 substantive bullets per experience
+- MID RESUME: Professional formatting with few grammatical errors, but missing key elements like bullets under experiences, or has limited bullets, or has small formatting issues
+- POOR RESUME: Multiple punctuation errors + multiple typos, numerous formatting issues, AND lacks substantive content
+
+=== CERTIFICATIONS ===
+
+- EPA 608 is the primary cert to look for
+- Also look for: NATE, state HVAC licenses, manufacturer certifications
+- Having certifications listed ALWAYS scores higher than not having them listed
+- For PM roles, missing EPA 608 is a significant red flag if the job explicitly requires it
+
+=== WORK GAPS ===
+
+- NO WORK GAP: Under 6 months of unemployment (continuous employment OR overlapping jobs OR gaps less than 6 months)
+- SMALL WORK GAP: 6 months to 1 year of unemployment with no job listed
+- LARGE WORK GAP: Over 1 year of unemployment with no job listed
+- IMPORTANT: Overlapping jobs (multiple jobs at once) is NOT a work gap - it's POSITIVE
+- Career transitions FROM other industries INTO HVAC/maintenance should NOT be penalized
+
+=== JOB HOPPINESS ===
+
+- JOB HOPPY: Frequent job changes (significant negative factor - really hurts score)
+- NOT JOB HOPPY: Stable employment history
+
+=== LOCATION/DISTANCE ===
+
+- WITHIN 30 MILES: Minimal impact on score
+- 30-50 MILES: Moderate negative impact
+- OVER 50 MILES: Major negative impact (most will fall into red tier)
+
+${generatePMTechnicianScoringMatrix(requiredYears)}
+
+=== EVALUATION INSTRUCTIONS ===
+
+1. First check HARD REQUIREMENTS - if candidate fails binary filters, score in RED tier
+
+2. Evaluate against the 4 CORE COMPETENCY CATEGORIES (Category A carries highest weight):
+   - Strong candidates (3-4 categories): Higher end of score range
+   - Mid-level candidates (2-3 categories): Middle of score range
+   - Weak candidates (0-1 categories): Lower end of score range
+
+3. Count experience across ALL equivalent titles (not just exact "PM Technician" matches)
+
+4. Carefully analyze the resume to determine:
+   - Years of PM Technician/equivalent experience (count years carefully)
+   - Resume quality (good/mid/poor)
+   - Certifications present (EPA 608 is most important)
+   - Work gaps (ONLY count periods with NO employment)
+   - Job stability (not hoppy vs job hoppy)
+   - Location if mentioned
+
+5. Find the matching combination in the scoring matrix
+
+6. Assign a score within the specified range based on:
+   - Competency category strength (3-4 = high end, 2-3 = middle, 0-1 = low end)
+   - Category A (Routine Maintenance) strength should most influence score placement
+   - Overall impression of candidate quality
+`,
+      scoring: {
+         greenTier: { min: 80, max: 100 },
+         yellowTier: { min: 50, max: 79 },
+         redTier: { min: 0, max: 49 }
+      }
+   };
+}
+
+/**
  * Get Apprentice tiered evaluation criteria
  */
 function getApprenticeCriteria(requiredYears, flexibleOnTitle = true) {
@@ -2505,6 +3036,7 @@ async function analyzeResume(filePath, position = 'HVAC Technician', requiredYea
 
       // Check if we're using the tiered framework for HVAC Service Technician, Lead HVAC Technician, Dispatcher, Administrative Assistant, Customer Service Rep, Apprentice, Bookkeeper, Warehouse Associate, or Sales Rep
       const useServiceTechFramework = position === 'HVAC Service Technician';
+      const usePMTechFramework = position === 'Preventative Maintenance Technician';
       const useLeadHVACTechFramework = position === 'Lead HVAC Technician';
       const useDispatcherFramework = position === 'HVAC Dispatcher';
       const useAdminAssistantFramework = position === 'Administrative Assistant';
@@ -3477,6 +4009,122 @@ STEP 9: VALIDATE YOUR ANSWER
     "feedback": "<specific feedback on resume quality - typos, formatting, organization>"
   },
   "strengths": ["<top 3-5 strengths relevant to Service Technician role>"],
+  "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
+  "recommendations": ["<3-5 specific recommendations for improvement>"],
+  "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>"
+}
+
+IMPORTANT: Your overallScore MUST align with the tier ranges specified in the framework (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair in your evaluation.`;
+
+      } else if (usePMTechFramework) {
+         const pmTechCriteria = getPMTechnicianCriteria(requiredYearsExperience);
+
+         prompt = `You are an expert HVAC industry recruiter specializing in Preventative Maintenance Technician evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
+
+${pmTechCriteria.framework}
+
+Resume Content:
+${resumeText}
+
+CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
+
+STEP 1: CALCULATE TOTAL PM/MAINTENANCE EXPERIENCE
+   a) List EVERY maintenance-related job position with start/end dates
+   b) Calculate the duration of EACH position in years and months
+   c) SUM all durations to get TOTAL relevant experience
+   d) IMPORTANT: Count ALL PM/maintenance roles including: PM Technician, Maintenance Tech, Facilities Tech, HVAC Apprentice, Building Engineer, General Maintenance, etc.
+   e) Example: If someone has "2022-Present (3 years)" + "2019-2022 (3 years)" = 6 years TOTAL
+   f) Do NOT count roles with no maintenance or HVAC component
+
+STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO NOT SKIP)
+   a) If TOTAL years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
+   b) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
+   c) If TOTAL years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
+   d) ALWAYS use TOTAL years from Step 1, not just the most recent position
+
+STEP 3: FIND ALL CERTIFICATIONS
+   a) Search the ENTIRE resume including: header, summary, certifications section, AND within job descriptions
+   b) Look for: EPA 608, NATE, state licenses, manufacturer certifications, HVAC Excellence, etc.
+   c) EPA 608 is the most important cert for this role
+   d) Mark as "Certifications Listed" if ANY HVAC certifications are found
+   e) Mark as "Certifications NOT Listed" ONLY if zero certifications are mentioned
+
+STEP 4: ASSESS RESUME QUALITY (BE OBJECTIVE)
+   a) GOOD RESUME = Professional formatting + No major typos + No grammar errors + 2+ substantive bullets per position
+   b) MID RESUME = Professional formatting BUT missing bullets OR few grammatical errors OR small formatting issues
+   c) POOR RESUME = Multiple typos AND multiple grammar errors AND poor formatting AND no substantive content
+   d) When in doubt between Good and Mid, choose Good if the resume is professionally presented
+
+STEP 5: CHECK FOR WORK GAPS
+   a) List ALL employment periods
+   b) Calculate gaps between jobs (unemployment periods with NO job listed)
+   c) NO WORK GAP = Gaps under 6 months OR overlapping jobs OR currently employed with no prior gaps
+   d) SMALL WORK GAP = 6 months to 1 year of unemployment
+   e) LARGE WORK GAP = Over 1 year of unemployment
+
+STEP 6: ASSESS JOB STABILITY
+   a) Count number of employers (not positions, but different companies)
+   b) Calculate average tenure at each employer
+   c) NOT JOB HOPPY = Long tenures (2+ years per employer) OR few employers relative to career length
+   d) JOB HOPPY = Many employers with short tenures (under 1 year each) OR 5+ employers in 5 years
+
+STEP 7: CHECK FOR OVERQUALIFICATION
+   a) Compare candidate's most recent or highest job title to PM Technician
+   b) OVERQUALIFIED if applying DOWN from senior roles:
+      - Service Manager, HVAC General Manager, Director → PM Technician
+      - Senior/Lead Service Technician (10+ years) → PM Technician (only if extreme)
+   c) NOT OVERQUALIFIED if:
+      - Same level or lateral move (Maintenance Tech → PM Tech)
+      - Step up from helper/apprentice
+      - Career change into maintenance from unrelated field
+   d) If OVERQUALIFIED: Score becomes 70-75 REGARDLESS of other factors
+
+STEP 8: APPLY THE RUBRIC (if not overqualified)
+   a) Use the experience tier from Step 2
+   b) Use resume quality from Step 4
+   c) Use certifications status from Step 3
+   d) Use work gap status from Step 5
+   e) Use job stability from Step 6
+   f) Find the EXACT matching line in the rubric above
+   g) Assign a score within that specific range based on competency category strength (Category A weighted most)
+
+STEP 9: VALIDATE YOUR ANSWER
+   a) If overqualified, score must be 70-75
+   b) Double-check that your experience tier matches the total years calculated
+   c) Verify the score matches the rubric line for the combination of factors
+
+4. Provide your evaluation in the following JSON format:
+
+{
+  "overallScore": <number 0-100 based on the tiered framework>,
+  "isOverqualified": <true if candidate is overqualified per Step 7, false otherwise>,
+  "overqualificationReason": "<if overqualified, explain which senior title is applying to which lower position, otherwise null>",
+  "summary": "<brief 3-sentence summary explaining why the candidate received their score, which resume highlights influenced it, and any stand-out positives or negatives.>",
+  "technicalSkills": {
+    "score": <number 0-100>,
+    "found": ["<list of maintenance-related skills found>"],
+    "missing": ["<important PM skills missing>"],
+    "feedback": "<specific feedback on technical competencies, especially routine maintenance abilities>"
+  },
+  "certifications": {
+    "score": <number 0-100>,
+    "found": ["<certifications found (EPA 608, NATE, etc.)>"],
+    "recommended": ["<certifications they should pursue>"],
+    "feedback": "<specific feedback on certifications>"
+  },
+  "experience": {
+    "score": <number 0-100>,
+    "yearsOfExperience": <number>,
+    "relevantExperience": ["<list relevant PM/maintenance experience with years at each role>"],
+    "feedback": "<specific feedback on experience level, work gaps, job stability>"
+  },
+  "presentationQuality": {
+    "score": <number 0-100>,
+    "strengths": ["<formatting, clarity, professionalism strengths>"],
+    "improvements": ["<areas to improve>"],
+    "feedback": "<specific feedback on resume quality>"
+  },
+  "strengths": ["<top 3-5 strengths relevant to PM Technician role>"],
   "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
   "recommendations": ["<3-5 specific recommendations for improvement>"],
   "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>"
