@@ -437,8 +437,6 @@ ${jobData.company_culture ? '- Culture: ' + jobData.company_culture : ''}
 
 Write the job description using this EXACT format. No emojis. No decorative lines. Clean and professional like a well-written business document.
 
----
-
 [JOB TITLE]
 
 [COMPANY NAME] | [LOCATION] | [JOB TYPE]
@@ -465,8 +463,6 @@ What We Offer
 [List benefits as bullet points using • symbol. Use the exact benefits provided.]
 
 ${jobData.advancement_opportunities ? '[Include one sentence about growth opportunities.]' : ''}
-
----
 
 CRITICAL RULES:
 1. NO emojis anywhere
