@@ -127,7 +127,8 @@ router.post('/', async (req, res) => {
             advancement_opportunities: sanitize.trimString(req.body.advancement_opportunities, 2000),
             advancement_timeline: sanitize.trimString(req.body.advancement_timeline, 255),
             company_culture: sanitize.trimString(req.body.company_culture, 2000),
-            flexible_on_title: req.body.flexible_on_title !== false // Default to true
+            flexible_on_title: req.body.flexible_on_title !== false, // Default to true
+            drivers_license_required: req.body.drivers_license_required === true || req.body.drivers_license_required === 'true'
         };
 
         // Validate salary/pay range ordering
@@ -560,6 +561,22 @@ CRITICAL RULES:
                 return true;
             }).join('\n');
             text = before + deduped + after;
+        }
+
+        // Deterministically inject driver's license bullet if required and not already present
+        if (jobData.drivers_license_required === true || jobData.drivers_license_required === 'true') {
+            const dlText = "• Valid driver's license with a clean driving record is required";
+            const preferredIdx2 = text.indexOf('\n\nPreferred');
+            const qualCheck = (preferredIdx2 > -1 ? text.slice(0, preferredIdx2) : text).toLowerCase();
+            if (!qualCheck.includes("driver's license") && !qualCheck.includes('drivers license')) {
+                if (text.includes('\n\nPreferred')) {
+                    text = text.replace('\n\nPreferred', `\n${dlText}\n\nPreferred`);
+                } else if (text.includes('\n\nWhat We Offer')) {
+                    text = text.replace('\n\nWhat We Offer', `\n${dlText}\n\nWhat We Offer`);
+                } else {
+                    text += `\n${dlText}`;
+                }
+            }
         }
 
         // Deterministically inject certifications into Qualifications section (only if not already in Qualifications)

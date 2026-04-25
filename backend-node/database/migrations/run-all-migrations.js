@@ -192,6 +192,11 @@ const roleMigration = [
     END $$`,
 ];
 
+// Driver's license required field
+const driversLicenseMigration = [
+    'ALTER TABLE jobs ADD COLUMN IF NOT EXISTS drivers_license_required BOOLEAN DEFAULT FALSE',
+];
+
 // Constraint fixes
 const constraintFixes = [
     `DO $$ BEGIN
@@ -303,6 +308,21 @@ async function runMigrations() {
             try {
                 await query(sql);
                 console.log('  ✓ Role migration applied');
+            } catch (e) {
+                if (e.code === '42701') {
+                    console.log('  - Column already exists, skipping');
+                } else {
+                    console.error(`  ✗ Error: ${e.message}`);
+                }
+            }
+        }
+
+        // Run driver's license migration
+        console.log('\nAdding drivers_license_required column...');
+        for (const sql of driversLicenseMigration) {
+            try {
+                await query(sql);
+                console.log('  ✓ drivers_license_required column added');
             } catch (e) {
                 if (e.code === '42701') {
                     console.log('  - Column already exists, skipping');
