@@ -1812,11 +1812,21 @@ Poor Resume + NO Certs Listed:
 /**
  * Get HVAC Preventative Maintenance Technician tiered evaluation criteria
  */
-function getPMTechnicianCriteria(requiredYears) {
+function getPMTechnicianCriteria(requiredYears, flexibleOnTitle = true) {
+   const flexibilityNote = flexibleOnTitle
+      ? `FLEXIBLE ON TITLE: YES — Equivalent roles with transferable PM/maintenance skills qualify as "Required Experience" if the candidate's resume bullets demonstrate routine maintenance duties.`
+      : `FLEXIBLE ON TITLE: NO — Candidates from equivalent roles who would normally qualify as "Required Experience" are instead scored in the "Close to Required" tier. Apply an additional 9-point deduction from their Close-to-Required score.`;
+
+   const zeroYearsNote = requiredYears === 0
+      ? `ZERO EXPERIENCE REQUIRED: This is an entry-level posting. Experience tier classification is secondary. Resume presentation quality is the primary scoring factor. A good resume with no experience should score in the 60-80 range; a poor resume with no experience should score 20-40.`
+      : '';
+
    return {
       framework: `
 HVAC PREVENTATIVE MAINTENANCE TECHNICIAN RESUME EVALUATION FRAMEWORK
 Job Requirement: ${requiredYears} years of PM Technician or equivalent experience
+${flexibilityNote}
+${zeroYearsNote}
 
 This scoring system evaluates candidates for PM Technician roles. Because PM work is more entry-level and procedural than service/diagnostic work, the bar for equivalent roles and competencies is adjusted accordingly.
 
@@ -1833,11 +1843,11 @@ If the job post defines hard requirements (ex: EPA 608 Certification, valid driv
 
 If the candidate does NOT meet binary minimums, they FAIL the hard filter and should score in the RED tier (0-49).
 
-=== CORE COMPETENCY CATEGORIES ===
+=== CORE COMPETENCY CATEGORIES (weight Category A most heavily) ===
 
 Strong PM candidates typically show 3-4 categories. Mid-level show 2-3. Entry-level show 1-2 (acceptable given the nature of the role).
 
-A. ROUTINE MAINTENANCE & PREVENTATIVE CARE (HIGHEST WEIGHT — this is the core of the role)
+A. ROUTINE MAINTENANCE & PREVENTATIVE CARE (PRIMARY — highest weight)
 Look for:
 - Filter changes, coil cleaning, belt inspections
 - Checking refrigerant pressures and fluid levels
@@ -1856,7 +1866,7 @@ PM techs aren't expected to fully diagnose and repair, but should show awareness
 - Reading gauges and basic instrumentation
 Candidates don't need deep diagnostic ability — awareness and escalation judgment is sufficient.
 
-C. DOCUMENTATION & ROUTE MANAGEMENT (carries more weight than in a service tech role)
+C. DOCUMENTATION & ROUTE MANAGEMENT (carries more weight here than in a service tech role)
 PM work is highly procedural:
 - Completing maintenance logs or digital service records
 - Managing assigned PM routes or schedules
@@ -1890,6 +1900,7 @@ MODERATE EQUIVALENTS (Context-dependent - verify HVAC duties explicitly mentione
 - Light Industrial Maintenance (with HVAC systems present)
 
 Use semantic reasoning to decide if a role functions like PM work even if wording is indirect.
+${!flexibleOnTitle ? `\nIMPORTANT: When flexibility is OFF, equivalent-title candidates with ${requiredYears}+ years fall into "Close to Required" tier with an additional -9 point penalty.` : ''}
 
 === EXPERIENCE CATEGORIES ===
 
@@ -4462,7 +4473,7 @@ STEP 9: VALIDATE YOUR ANSWER
 IMPORTANT: Your overallScore MUST align with the tier ranges specified in the framework (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair in your evaluation.`;
 
       } else if (usePMTechFramework) {
-         const pmTechCriteria = getPMTechnicianCriteria(requiredYearsExperience);
+         const pmTechCriteria = getPMTechnicianCriteria(requiredYearsExperience, flexibleOnTitle);
 
          prompt = `You are an expert HVAC industry recruiter specializing in Preventative Maintenance Technician evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
 
@@ -4477,15 +4488,18 @@ STEP 1: CALCULATE TOTAL PM/MAINTENANCE EXPERIENCE
    a) List EVERY maintenance-related job position with start/end dates
    b) Calculate the duration of EACH position in years and months
    c) SUM all durations to get TOTAL relevant experience
-   d) IMPORTANT: Count ALL PM/maintenance roles including: PM Technician, Maintenance Tech, Facilities Tech, HVAC Apprentice, Building Engineer, General Maintenance, etc.
-   e) Example: If someone has "2022-Present (3 years)" + "2019-2022 (3 years)" = 6 years TOTAL
-   f) Do NOT count roles with no maintenance or HVAC component
+   d) Count ALL PM/maintenance roles including: PM Technician, Maintenance Tech, Facilities Tech, HVAC Apprentice, Building Engineer, General Maintenance, etc.
+   e) If flexible on title is YES: count equivalent roles per the equivalents list above
+   f) If flexible on title is NO: equivalent role experience counts toward "Close to Required" only, not "Required"
+   g) Example: If someone has "2022-Present (3 years)" + "2019-2022 (3 years)" = 6 years TOTAL
 
 STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO NOT SKIP)
    a) If TOTAL years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
    b) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
    c) If TOTAL years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
-   d) ALWAYS use TOTAL years from Step 1, not just the most recent position
+   d) If flexible on title is NO and candidate qualifies only via equivalent titles: apply -9 point penalty to their Close-to-Required score
+   e) ALWAYS use TOTAL years from Step 1, not just the most recent position
+   ${requiredYearsExperience === 0 ? 'f) ZERO YEARS REQUIRED: Skip tier classification. Score is driven primarily by resume presentation quality.' : ''}
 
 STEP 3: FIND ALL CERTIFICATIONS
    a) Search the ENTIRE resume including: header, summary, certifications section, AND within job descriptions
@@ -4537,6 +4551,7 @@ STEP 9: VALIDATE YOUR ANSWER
    a) If overqualified, score must be 70-75
    b) Double-check that your experience tier matches the total years calculated
    c) Verify the score matches the rubric line for the combination of factors
+   d) If flexible on title is NO and candidate qualified via equivalent titles only: confirm the -9 point penalty was applied
 
 4. Provide your evaluation in the following JSON format:
 
