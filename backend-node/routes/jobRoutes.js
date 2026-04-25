@@ -226,6 +226,43 @@ router.put('/:id', async (req, res) => {
 });
 
 /**
+ * POST /api/jobs/:id/regenerate-description
+ * Regenerate AI job description using current form data (does not save automatically)
+ */
+router.post('/:id/regenerate-description', async (req, res) => {
+    try {
+        const jobId = sanitize.positiveInt(req.params.id);
+        if (!jobId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid job ID' });
+        }
+
+        // Use posted form data to generate the description
+        const jobData = {
+            ...req.body,
+            key_responsibilities: Array.isArray(req.body.key_responsibilities)
+                ? JSON.stringify(req.body.key_responsibilities)
+                : req.body.key_responsibilities || '[]',
+            benefits: Array.isArray(req.body.benefits)
+                ? JSON.stringify(req.body.benefits)
+                : req.body.benefits || '[]',
+            qualifications_certifications: Array.isArray(req.body.qualifications_certifications)
+                ? JSON.stringify(req.body.qualifications_certifications)
+                : req.body.qualifications_certifications || '[]',
+            other_relevant_titles: Array.isArray(req.body.other_relevant_titles)
+                ? JSON.stringify(req.body.other_relevant_titles)
+                : req.body.other_relevant_titles || '[]',
+        };
+
+        const description = await generateJobDescription(jobData);
+
+        res.json({ status: 'success', description });
+    } catch (error) {
+        logger.error('Error regenerating job description', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to regenerate description' });
+    }
+});
+
+/**
  * DELETE /api/jobs/:id
  * Delete a job posting
  */
