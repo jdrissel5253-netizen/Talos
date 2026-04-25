@@ -627,12 +627,16 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
     setIsSubmitting(true);
 
     try {
-      const payload = {
-        ...formData,
+      // PUT expects JSON strings (backend passes through as-is); POST backend stringifies raw arrays itself
+      const arrayFields = isEditMode ? {
         benefits: JSON.stringify(formData.benefits || []),
         key_responsibilities: JSON.stringify(formData.key_responsibilities || []),
         qualifications_certifications: JSON.stringify(formData.qualifications_certifications || []),
         other_relevant_titles: JSON.stringify(formData.other_relevant_titles || []),
+      } : {};
+      const payload = {
+        ...formData,
+        ...arrayFields,
         location: `${formData.city}, ${formData.zip_code}`,
         required_years_experience: parseFloat(formData.qualifications_years) || 0,
         pay_range_min: parseFloat(formData.pay_range_min) || null,
