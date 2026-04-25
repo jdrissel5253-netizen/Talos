@@ -537,10 +537,10 @@ CRITICAL RULES:
         if (certifications.length > 0) {
             const certLines = certifications.map(c => `• ${c} is required`).join('\n');
             // Insert before "Preferred" section if it exists, otherwise before "What We Offer"
-            if (text.includes('\nPreferred')) {
-                text = text.replace('\nPreferred', `\n${certLines}\n\nPreferred`);
-            } else if (text.includes('\nWhat We Offer')) {
-                text = text.replace('\nWhat We Offer', `\n${certLines}\n\nWhat We Offer`);
+            if (text.includes('\n\nPreferred')) {
+                text = text.replace('\n\nPreferred', `\n${certLines}\n\nPreferred`);
+            } else if (text.includes('\n\nWhat We Offer')) {
+                text = text.replace('\n\nWhat We Offer', `\n${certLines}\n\nWhat We Offer`);
             } else {
                 text += `\n\n${certLines}`;
             }
