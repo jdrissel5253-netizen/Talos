@@ -533,6 +533,15 @@ CRITICAL RULES:
             .replace(/\*([^*\n]+)\*/g, '$1')    // *italic* → italic
             .replace(/^-\s+/gm, '• ');          // - bullet → • bullet
 
+        // Deterministically replace first Qualifications bullet with specific experience line
+        const years = jobData.required_years_experience || jobData.qualifications_years || 0;
+        const allTitles = [jobData.title, ...otherTitles].filter(Boolean);
+        const titleStr = allTitles.length > 1
+            ? allTitles.slice(0, -1).join(', ') + ', or ' + allTitles[allTitles.length - 1]
+            : allTitles[0] || jobData.title;
+        const expBullet = `• ${years}+ year${years !== 1 ? 's' : ''} of experience as a ${titleStr}`;
+        text = text.replace(/(\nQualifications\n\n)(• [^\n]+)/, `$1${expBullet}`);
+
         // Deterministically inject certifications into Qualifications section
         if (certifications.length > 0) {
             const certLines = certifications.map(c => `• ${c} is required`).join('\n');
