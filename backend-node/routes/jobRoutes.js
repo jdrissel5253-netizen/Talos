@@ -489,13 +489,9 @@ Responsibilities
 
 Qualifications
 
-[List 4-5 required qualifications as bullet points using • symbol. Include experience and essential skills. Be clear about what's mandatory.]
+[List 4-5 required qualifications as bullet points using • symbol. Include experience and essential skills.${certifications.length > 0 ? ` Include these exact lines as the LAST bullets: ${certifications.map(c => `"${c} is required"`).join(', ')}` : ''} Be clear about what's mandatory.]
 
-${certifications.length > 0 ? `Requirements
-
-[List the following required certifications as bullet points using • symbol: ${certifications.join(', ')}. State clearly that these are required for the role.]
-
-` : ''}Preferred
+Preferred
 
 [List 2-3 nice-to-have qualifications using • symbol. Keep it brief.]
 
@@ -516,8 +512,8 @@ CRITICAL RULES:
 8. Total length: 250-350 words maximum
 9. Tone: Respectful, direct, and genuine - like talking to a colleague
 10. NO markdown formatting — do NOT use ##, **, *, or any other markdown symbols
-11. Section headers must be plain text on their own line (e.g. write "Responsibilities" not "## Responsibilities")
-${certifications.length > 0 ? `12. ALWAYS include the Requirements section with the certifications listed — these are hard requirements for the role` : ''}`;
+11. Section headers must be plain text on their own line (e.g. write "Responsibilities" not "## Responsibilities")`;
+
 
         const message = await anthropic.messages.create({
             model: "claude-sonnet-4-5-20250929",  // Using Claude Sonnet 4.5
@@ -536,14 +532,6 @@ ${certifications.length > 0 ? `12. ALWAYS include the Requirements section with 
             .replace(/\*\*(.+?)\*\*/g, '$1')    // **bold** → bold
             .replace(/\*([^*\n]+)\*/g, '$1')    // *italic* → italic
             .replace(/^-\s+/gm, '• ');          // - bullet → • bullet
-
-        // Guarantee Requirements section when certifications exist
-        if (certifications.length > 0 && !text.includes('Requirements')) {
-            const certBullets = certifications.map(c => `• ${c}`).join('\n');
-            const reqSection = `\nRequirements\n\n${certBullets}\n`;
-            text = text.replace(/\nPreferred/, `${reqSection}\nPreferred`);
-            if (!text.includes('Requirements')) text += reqSection;
-        }
 
         return text;
     } catch (error) {
