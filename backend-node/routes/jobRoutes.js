@@ -450,19 +450,19 @@ About This Role
 
 Responsibilities
 
-[List 5-6 bullet points using simple dashes (-). Start each with a strong action verb. Be specific about the actual work. Keep each bullet to one line when possible.]
+[List 5-6 bullet points using • symbol. Start each with a strong action verb. Be specific about the actual work. Keep each bullet to one line when possible.]
 
 Qualifications
 
-[List 4-5 required qualifications as bullet points. Include experience, certifications, and essential skills. Be clear about what's mandatory.]
+[List 4-5 required qualifications as bullet points using • symbol. Include experience, certifications, and essential skills. Be clear about what's mandatory.]
 
 Preferred
 
-[List 2-3 nice-to-have qualifications. Keep it brief.]
+[List 2-3 nice-to-have qualifications using • symbol. Keep it brief.]
 
 What We Offer
 
-[List benefits as bullet points. Use the exact benefits provided.]
+[List benefits as bullet points using • symbol. Use the exact benefits provided.]
 
 ${jobData.advancement_opportunities ? '[Include one sentence about growth opportunities.]' : ''}
 
@@ -472,11 +472,12 @@ CRITICAL RULES:
 1. NO emojis anywhere
 2. NO decorative lines or borders
 3. NO excessive spacing or blank lines
-4. Use simple dashes (-) for all bullet points
-5. Keep language professional but approachable - write for skilled tradespeople, not corporate executives
-6. Be concise - every word should earn its place
-7. Total length: 250-350 words maximum
-8. Tone: Respectful, direct, and genuine - like talking to a colleague`;
+4. Use • for all bullet points (NOT dashes)
+5. Write the job title in Title Case (e.g. "Preventative Maintenance Technician") — NOT ALL CAPS
+6. Keep language professional but approachable - write for skilled tradespeople, not corporate executives
+7. Be concise - every word should earn its place
+8. Total length: 250-350 words maximum
+9. Tone: Respectful, direct, and genuine - like talking to a colleague`;
 
         const message = await anthropic.messages.create({
             model: "claude-sonnet-4-5-20250929",  // Using Claude Sonnet 4.5
