@@ -542,10 +542,12 @@ CRITICAL RULES:
         const expBullet = `• ${years}+ year${years !== 1 ? 's' : ''} of experience as a ${titleStr}`;
         text = text.replace(/(\nQualifications\n\n)(• [^\n]+)/, `$1${expBullet}`);
 
-        // Deterministically inject certifications into Qualifications section (only if not already mentioned)
+        // Deterministically inject certifications into Qualifications section (only if not already in Qualifications)
         if (certifications.length > 0) {
-            const textLower = text.toLowerCase();
-            const missingCerts = certifications.filter(c => !textLower.includes(c.toLowerCase()));
+            // Only check text before "Preferred" — a cert in Preferred still needs to be in Qualifications
+            const preferredIdx = text.indexOf('\n\nPreferred');
+            const qualSectionText = (preferredIdx > -1 ? text.slice(0, preferredIdx) : text).toLowerCase();
+            const missingCerts = certifications.filter(c => !qualSectionText.includes(c.toLowerCase()));
             if (missingCerts.length > 0) {
                 const certLines = missingCerts.map(c => `• ${c} is required`).join('\n');
                 if (text.includes('\n\nPreferred')) {
