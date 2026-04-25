@@ -1966,6 +1966,450 @@ ${generatePMTechnicianScoringMatrix(requiredYears)}
 }
 
 /**
+ * Generate HVAC Installer scoring matrix
+ */
+function generateInstallerScoringMatrix(requiredYears) {
+   return `
+=== DETAILED SCORING MATRIX FOR HVAC INSTALLER ===
+
+REQUIRED EXPERIENCE TIER (Has ${requiredYears}+ years of HVAC Installer or equivalent experience):
+
+Good Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 90-100
+  - No gap + Not hoppy + 30-50mi: 70-79
+  - No gap + Not hoppy + >50mi: 50-60
+  - No gap + Job hoppy + <30mi: 70-79
+  - No gap + Job hoppy + 30-50mi: 50-60
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 85-89
+  - Small gap + Not hoppy + 30-50mi: 70-79
+  - Small gap + Not hoppy + >50mi: 50-59
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 50-59
+  - Small gap + Job hoppy + >50mi: 40-50
+  - Large gap + Not hoppy + <30mi: 70-79
+  - Large gap + Not hoppy + 30-50mi: 60-69
+  - Large gap + Not hoppy + >50mi: 40-50
+  - Large gap + Job hoppy + <30mi: 50-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 20-29
+
+Good Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 85-90
+  - No gap + Not hoppy + 30-50mi: 70-79
+  - No gap + Not hoppy + >50mi: 50-59
+  - No gap + Job hoppy + <30mi: 70-74
+  - No gap + Job hoppy + 30-50mi: 60-69
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 70-79
+  - Small gap + Not hoppy + 30-50mi: 60-69
+  - Small gap + Not hoppy + >50mi: 50-59
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 50-59
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-55
+  - Large gap + Not hoppy + >50mi: 30-39
+  - Large gap + Job hoppy + <30mi: 50-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 30-39
+
+Mid Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 80-89
+  - No gap + Not hoppy + 30-50mi: 70-79
+  - No gap + Not hoppy + >50mi: 60-69
+  - No gap + Job hoppy + <30mi: 60-69
+  - No gap + Job hoppy + 30-50mi: 50-59
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 70-79
+  - Small gap + Not hoppy + 30-50mi: 60-69
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 40-49
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 70-74
+  - Large gap + Not hoppy + 30-50mi: 60-69
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 50-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 30-39
+
+Mid Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 80-81
+  - No gap + Not hoppy + 30-50mi: 70-74
+  - No gap + Not hoppy + >50mi: 50-59
+  - No gap + Job hoppy + <30mi: 65-69
+  - No gap + Job hoppy + 30-50mi: 55-59
+  - No gap + Job hoppy + >50mi: 40-44
+  - Small gap + Not hoppy + <30mi: 75-79
+  - Small gap + Not hoppy + 30-50mi: 65-69
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 50-55
+  - Small gap + Job hoppy + >50mi: 40-49
+  - Large gap + Not hoppy + <30mi: 70-74
+  - Large gap + Not hoppy + 30-50mi: 60-69
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 50-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 20-39
+
+Poor Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 80-82
+  - No gap + Not hoppy + 30-50mi: 70-74
+  - No gap + Not hoppy + >50mi: 60-69
+  - No gap + Job hoppy + <30mi: 60-69
+  - No gap + Job hoppy + 30-50mi: 50-59
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 70-75
+  - Small gap + Not hoppy + 30-50mi: 60-69
+  - Small gap + Not hoppy + >50mi: 41-50
+  - Small gap + Job hoppy + <30mi: 55-60
+  - Small gap + Job hoppy + 30-50mi: 45-49
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-55
+  - Large gap + Not hoppy + >50mi: 30-39
+  - Large gap + Job hoppy + <30mi: 50-55
+  - Large gap + Job hoppy + 30-50mi: 40-45
+  - Large gap + Job hoppy + >50mi: 20-39
+
+Poor Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 75-79
+  - No gap + Not hoppy + 30-50mi: 65-69
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 60-65
+  - No gap + Job hoppy + 30-50mi: 50-55
+  - No gap + Job hoppy + >50mi: 30-49
+  - Small gap + Not hoppy + <30mi: 70-75
+  - Small gap + Not hoppy + 30-50mi: 60-65
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 51-60
+  - Small gap + Job hoppy + 30-50mi: 40-49
+  - Small gap + Job hoppy + >50mi: 20-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-59
+  - Large gap + Not hoppy + >50mi: 30-49
+  - Large gap + Job hoppy + <30mi: 50-52
+  - Large gap + Job hoppy + 30-50mi: 30-49
+  - Large gap + Job hoppy + >50mi: 20-29
+
+CLOSE TO REQUIRED EXPERIENCE TIER (Has ${requiredYears * 0.5}-${requiredYears * 0.95} years of installer or equivalent experience):
+
+Good Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 85-90
+  - No gap + Not hoppy + 30-50mi: 70-79
+  - No gap + Not hoppy + >50mi: 50-59
+  - No gap + Job hoppy + <30mi: 70-74
+  - No gap + Job hoppy + 30-50mi: 55-59
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 80-84
+  - Small gap + Not hoppy + 30-50mi: 60-69
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 60-69
+  - Small gap + Job hoppy + 30-50mi: 50-55
+  - Small gap + Job hoppy + >50mi: 30-49
+  - Large gap + Not hoppy + <30mi: 70-79
+  - Large gap + Not hoppy + 30-50mi: 60-65
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 55-59
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 20-29
+
+Good Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 80-81
+  - No gap + Not hoppy + 30-50mi: 60-75
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 65-69
+  - No gap + Job hoppy + 30-50mi: 50-59
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 74-79
+  - Small gap + Not hoppy + 30-50mi: 60-65
+  - Small gap + Not hoppy + >50mi: 45-50
+  - Small gap + Job hoppy + <30mi: 60-64
+  - Small gap + Job hoppy + 30-50mi: 50-54
+  - Small gap + Job hoppy + >50mi: 30-49
+  - Large gap + Not hoppy + <30mi: 70-75
+  - Large gap + Not hoppy + 30-50mi: 60-64
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 50-55
+  - Large gap + Job hoppy + 30-50mi: 40-49
+  - Large gap + Job hoppy + >50mi: 20-39
+
+Mid Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 70-79
+  - No gap + Not hoppy + 30-50mi: 60-65
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 60-69
+  - No gap + Job hoppy + 30-50mi: 50-59
+  - No gap + Job hoppy + >50mi: 30-49
+  - Small gap + Not hoppy + <30mi: 70-74
+  - Small gap + Not hoppy + 30-50mi: 55-69
+  - Small gap + Not hoppy + >50mi: 30-49
+  - Small gap + Job hoppy + <30mi: 50-59
+  - Small gap + Job hoppy + 30-50mi: 40-49
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 60-69
+  - Large gap + Not hoppy + 30-50mi: 50-59
+  - Large gap + Not hoppy + >50mi: 40-49
+  - Large gap + Job hoppy + <30mi: 50-55
+  - Large gap + Job hoppy + 30-50mi: 30-39
+  - Large gap + Job hoppy + >50mi: 20-29
+
+Mid Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 70-74
+  - No gap + Not hoppy + 30-50mi: 55-69
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 60-64
+  - No gap + Job hoppy + 30-50mi: 50-54
+  - No gap + Job hoppy + >50mi: 40-49
+  - Small gap + Not hoppy + <30mi: 70-71
+  - Small gap + Not hoppy + 30-50mi: 60-64
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 50-55
+  - Small gap + Job hoppy + 30-50mi: 40-49
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 60-64
+  - Large gap + Not hoppy + 30-50mi: 50-54
+  - Large gap + Not hoppy + >50mi: 30-49
+  - Large gap + Job hoppy + <30mi: 40-49
+  - Large gap + Job hoppy + 30-50mi: 30-39
+  - Large gap + Job hoppy + >50mi: 10-29
+
+Poor Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 70-75
+  - No gap + Not hoppy + 30-50mi: 60-65
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 50-59
+  - No gap + Job hoppy + 30-50mi: 40-49
+  - No gap + Job hoppy + >50mi: 20-39
+  - Small gap + Not hoppy + <30mi: 60-65
+  - Small gap + Not hoppy + 30-50mi: 50-59
+  - Small gap + Not hoppy + >50mi: 30-49
+  - Small gap + Job hoppy + <30mi: 50-55
+  - Small gap + Job hoppy + 30-50mi: 41-45
+  - Small gap + Job hoppy + >50mi: 30-39
+  - Large gap + Not hoppy + <30mi: 55-59
+  - Large gap + Not hoppy + 30-50mi: 41-50
+  - Large gap + Not hoppy + >50mi: 20-35
+  - Large gap + Job hoppy + <30mi: 40-49
+  - Large gap + Job hoppy + 30-50mi: 30-39
+  - Large gap + Job hoppy + >50mi: 20-29
+
+Poor Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 70-71
+  - No gap + Not hoppy + 30-50mi: 55-65
+  - No gap + Not hoppy + >50mi: 40-49
+  - No gap + Job hoppy + <30mi: 50-59
+  - No gap + Job hoppy + 30-50mi: 40-49
+  - No gap + Job hoppy + >50mi: 30-39
+  - Small gap + Not hoppy + <30mi: 60-65
+  - Small gap + Not hoppy + 30-50mi: 50-59
+  - Small gap + Not hoppy + >50mi: 40-49
+  - Small gap + Job hoppy + <30mi: 40-49
+  - Small gap + Job hoppy + 30-50mi: 30-39
+  - Small gap + Job hoppy + >50mi: 20-29
+  - Large gap + Not hoppy + <30mi: 55-65
+  - Large gap + Not hoppy + 30-50mi: 50-54
+  - Large gap + Not hoppy + >50mi: 30-49
+  - Large gap + Job hoppy + <30mi: 40-49
+  - Large gap + Job hoppy + 30-50mi: 30-39
+  - Large gap + Job hoppy + >50mi: 20-29
+
+NOT CLOSE TO REQUIRED EXPERIENCE TIER (Less than ${requiredYears * 0.5} years of installer or equivalent experience):
+
+Good Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 50-59
+  - No gap + Not hoppy + 30-50mi: 40-49
+  - No gap + Not hoppy + >50mi: 20-39
+  - No gap + Job hoppy + <30mi: 40-49
+  - No gap + Job hoppy + 30-50mi: 30-39
+  - No gap + Job hoppy + >50mi: 20-29
+  - Small gap + Not hoppy + <30mi: 50-54
+  - Small gap + Not hoppy + 30-50mi: 40-49
+  - Small gap + Not hoppy + >50mi: 30-39
+  - Small gap + Job hoppy + <30mi: 40-49
+  - Small gap + Job hoppy + 30-50mi: 30-39
+  - Small gap + Job hoppy + >50mi: 20-29
+  - Large gap + Not hoppy + <30mi: 50-51
+  - Large gap + Not hoppy + 30-50mi: 40-45
+  - Large gap + Not hoppy + >50mi: 30-39
+  - Large gap + Job hoppy + <30mi: 30-39
+  - Large gap + Job hoppy + 30-50mi: 20-29
+  - Large gap + Job hoppy + >50mi: 10-19
+
+Good Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 50-54
+  - No gap + Not hoppy + 30-50mi: 40-49
+  - No gap + Not hoppy + >50mi: 30-39
+  - No gap + Job hoppy + <30mi: 40-49
+  - No gap + Job hoppy + 30-50mi: 30-39
+  - No gap + Job hoppy + >50mi: 20-29
+  - Small gap + Not hoppy + <30mi: 50-51
+  - Small gap + Not hoppy + 30-50mi: 40-45
+  - Small gap + Not hoppy + >50mi: 20-35
+  - Small gap + Job hoppy + <30mi: 40-49
+  - Small gap + Job hoppy + 30-50mi: 30-39
+  - Small gap + Job hoppy + >50mi: 20-29
+  - Large gap + Not hoppy + <30mi: 40-49
+  - Large gap + Not hoppy + 30-50mi: 30-39
+  - Large gap + Not hoppy + >50mi: 20-29
+  - Large gap + Job hoppy + <30mi: 30-39
+  - Large gap + Job hoppy + 30-50mi: 20-29
+  - Large gap + Job hoppy + >50mi: 10-19
+
+Mid Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 40-49
+  - No gap + Not hoppy + 30-50mi: 30-39
+  - No gap + Not hoppy + >50mi: 20-29
+  - No gap + Job hoppy + <30mi: 40-45
+  - No gap + Job hoppy + 30-50mi: 30-35
+  - No gap + Job hoppy + >50mi: 20-25
+  - Small gap + Not hoppy + <30mi: 40-49
+  - Small gap + Not hoppy + 30-50mi: 30-39
+  - Small gap + Not hoppy + >50mi: 20-29
+  - Small gap + Job hoppy + <30mi: 30-49
+  - Small gap + Job hoppy + 30-50mi: 30-39
+  - Small gap + Job hoppy + >50mi: 20-29
+  - Large gap + Not hoppy + <30mi: 40-49
+  - Large gap + Not hoppy + 30-50mi: 30-39
+  - Large gap + Not hoppy + >50mi: 20-29
+  - Large gap + Job hoppy + <30mi: 30-39
+  - Large gap + Job hoppy + 30-50mi: 20-29
+  - Large gap + Job hoppy + >50mi: 10-19
+
+Mid Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 40-49
+  - No gap + Not hoppy + 30-50mi: 30-39
+  - No gap + Not hoppy + >50mi: 20-29
+  - No gap + Job hoppy + <30mi: 40-45
+  - No gap + Job hoppy + 30-50mi: 30-39
+  - No gap + Job hoppy + >50mi: 20-29
+  - Small gap + Not hoppy + <30mi: 40-49
+  - Small gap + Not hoppy + 30-50mi: 30-39
+  - Small gap + Not hoppy + >50mi: 20-29
+  - Small gap + Job hoppy + <30mi: 30-39
+  - Small gap + Job hoppy + 30-50mi: 20-29
+  - Small gap + Job hoppy + >50mi: 10-19
+  - Large gap + Not hoppy + <30mi: 40-45
+  - Large gap + Not hoppy + 30-50mi: 30-39
+  - Large gap + Not hoppy + >50mi: 20-29
+  - Large gap + Job hoppy + <30mi: 30-39
+  - Large gap + Job hoppy + 30-50mi: 20-29
+  - Large gap + Job hoppy + >50mi: 10-19
+
+Poor Resume + Certs Listed:
+  - No gap + Not hoppy + <30mi: 40-45
+  - No gap + Not hoppy + 30-50mi: 30-35
+  - No gap + Not hoppy + >50mi: 20-25
+  - No gap + Job hoppy + <30mi: 30-39
+  - No gap + Job hoppy + 30-50mi: 20-29
+  - No gap + Job hoppy + >50mi: 10-19
+  - Small gap + Not hoppy + <30mi: 40-45
+  - Small gap + Not hoppy + 30-50mi: 30-35
+  - Small gap + Not hoppy + >50mi: 20-25
+  - Small gap + Job hoppy + <30mi: 20-29
+  - Small gap + Job hoppy + 30-50mi: 10-19
+  - Small gap + Job hoppy + >50mi: 5-10
+  - Large gap + Not hoppy + <30mi: 30-39
+  - Large gap + Not hoppy + 30-50mi: 20-29
+  - Large gap + Not hoppy + >50mi: 10-19
+  - Large gap + Job hoppy + <30mi: 20-25
+  - Large gap + Job hoppy + 30-50mi: 10-15
+  - Large gap + Job hoppy + >50mi: 5-10
+
+Poor Resume + NO Certs Listed:
+  - No gap + Not hoppy + <30mi: 40-45
+  - No gap + Not hoppy + 30-50mi: 30-35
+  - No gap + Not hoppy + >50mi: 20-25
+  - No gap + Job hoppy + <30mi: 20-29
+  - No gap + Job hoppy + 30-50mi: 10-19
+  - No gap + Job hoppy + >50mi: 5-10
+  - Small gap + Not hoppy + <30mi: 30-39
+  - Small gap + Not hoppy + 30-50mi: 20-29
+  - Small gap + Not hoppy + >50mi: 10-19
+  - Small gap + Job hoppy + <30mi: 10-19
+  - Small gap + Job hoppy + 30-50mi: 5-9
+  - Small gap + Job hoppy + >50mi: 4-6
+  - Large gap + Not hoppy + <30mi: 20-29
+  - Large gap + Not hoppy + 30-50mi: 10-19
+  - Large gap + Not hoppy + >50mi: 5-10
+  - Large gap + Job hoppy + <30mi: 10-15
+  - Large gap + Job hoppy + 30-50mi: 5-10
+  - Large gap + Job hoppy + >50mi: 1-5
+`;
+}
+
+/**
+ * Get HVAC Installer tiered evaluation criteria
+ */
+function getInstallerCriteria(requiredYears, flexibleOnTitle = true) {
+   const flexibilityNote = flexibleOnTitle
+      ? `FLEXIBLE ON TITLE: YES — Equivalent roles with transferable installation skills qualify as "Required Experience" if the candidate's resume bullets demonstrate hands-on installation duties.`
+      : `FLEXIBLE ON TITLE: NO — Candidates from equivalent roles who would normally qualify as "Required Experience" are instead scored in the "Close to Required" tier. Apply an additional 9-point deduction from their Close-to-Required score.`;
+
+   const zeroYearsNote = requiredYears === 0
+      ? `ZERO EXPERIENCE REQUIRED: This is an entry-level posting. Experience tier classification is secondary. Resume presentation quality is the primary scoring factor. A good resume with no experience should score in the 60-80 range; a poor resume with no experience should score 20-40.`
+      : '';
+
+   return {
+      framework: `
+HVAC INSTALLER RESUME EVALUATION FRAMEWORK
+Job Requirement: ${requiredYears} years of HVAC Installer or equivalent experience
+${flexibilityNote}
+${zeroYearsNote}
+
+${generateInstallerScoringMatrix(requiredYears)}
+
+HARD REQUIREMENTS (Binary Filters):
+If the job defines hard requirements (e.g., EPA 608, 2+ years experience, residential/light commercial installation), the candidate must satisfy them through:
+- Direct HVAC Installer experience
+- OR equivalent roles with hands-on installation duties (if flexible on title):
+  STRONG EQUIVALENTS: HVAC Installer (any level), HVAC Apprentice/Helper (with documented installation), HVAC Mechanic (installation-focused), Sheet Metal Installer (with HVAC ductwork), Refrigeration Installer (HVAC crossover), HVAC Technician (installation-heavy), Plumber/Pipefitter (mechanical system overlap)
+  MODERATE EQUIVALENTS (context-dependent): General Construction Worker (only if HVAC/mechanical explicitly mentioned), Electrician's Helper (with HVAC wiring/controls exposure), Facilities Maintenance Tech (with documented installation work), Handyman (only if HVAC installation clearly listed)
+  NOTE: Service Technician or Maintenance Technician experience counts if the resume bullets explicitly describe performing installations.
+If the candidate fails hard requirements, they should not be scored further.
+
+CORE COMPETENCY CATEGORIES (weight Category A most heavily):
+A. Equipment & System Installation (PRIMARY — highest weight):
+   Installing complete systems: furnaces, air handlers, condensers, heat pumps, mini-splits
+   Running and connecting line sets, refrigerant piping, and drain lines
+   Installing ductwork, registers, and grilles
+   Mounting and wiring thermostats and control systems
+   Working from blueprints, load calculations, or cut sheets
+   Following manufacturer specs and local code requirements
+
+B. Startup, Testing & Commissioning (expected at 2+ year level):
+   Starting up systems and verifying operation after installation
+   Checking refrigerant pressures and electrical connections
+   Testing airflow, static pressure, and system performance
+   Brazing, soldering, and pressure testing refrigerant lines
+   Basic troubleshooting to distinguish installation issues from equipment defects
+   (Entry-level candidates: awareness and assisted experience is sufficient)
+
+C. Job Site Management & Coordination:
+   Coordinating with GCs, electricians, or plumbers on job sites
+   Managing material and equipment delivery timing
+   Reading and interpreting blueprints or installation drawings
+   Working across multiple job sites or phases simultaneously
+
+D. Professionalism, Safety & Reliability:
+   Consistent on-time arrival and job completion
+   Following OSHA and job site safety protocols
+   Operating lifts, ladders, and power tools safely
+   Professional conduct in customer homes or commercial properties
+
+Strong candidates show 3-4 categories. Mid-level show 2-3. Entry-level show 1-2 (acceptable for junior installer roles).
+`,
+      scoring: {
+         greenTier: { min: 80, max: 100 },
+         yellowTier: { min: 50, max: 79 },
+         redTier: { min: 0, max: 49 }
+      }
+   };
+}
+
+/**
  * Get Apprentice tiered evaluation criteria
  */
 function getApprenticeCriteria(requiredYears, flexibleOnTitle = true) {
@@ -3037,6 +3481,7 @@ async function analyzeResume(filePath, position = 'HVAC Technician', requiredYea
       // Check if we're using the tiered framework for HVAC Service Technician, Lead HVAC Technician, Dispatcher, Administrative Assistant, Customer Service Rep, Apprentice, Bookkeeper, Warehouse Associate, or Sales Rep
       const useServiceTechFramework = position === 'HVAC Service Technician';
       const usePMTechFramework = position === 'Preventative Maintenance Technician';
+      const useInstallerFramework = position === 'HVAC Installer' || position === 'Lead HVAC Installer';
       const useLeadHVACTechFramework = position === 'Lead HVAC Technician';
       const useDispatcherFramework = position === 'HVAC Dispatcher';
       const useAdminAssistantFramework = position === 'Administrative Assistant';
@@ -4125,6 +4570,120 @@ STEP 9: VALIDATE YOUR ANSWER
     "feedback": "<specific feedback on resume quality>"
   },
   "strengths": ["<top 3-5 strengths relevant to PM Technician role>"],
+  "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
+  "recommendations": ["<3-5 specific recommendations for improvement>"],
+  "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>"
+}
+
+IMPORTANT: Your overallScore MUST align with the tier ranges specified in the framework (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair in your evaluation.`;
+
+      } else if (useInstallerFramework) {
+         const installerCriteria = getInstallerCriteria(requiredYearsExperience, flexibleOnTitle);
+
+         prompt = `You are an expert HVAC industry recruiter specializing in HVAC Installer evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
+
+${installerCriteria.framework}
+
+Resume Content:
+${resumeText}
+
+CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
+
+STEP 1: CALCULATE TOTAL INSTALLER EXPERIENCE
+   a) List EVERY installation-related job position with start/end dates
+   b) Calculate the duration of EACH position in years and months
+   c) SUM all durations to get TOTAL relevant experience
+   d) Count ALL installer roles including: HVAC Installer, HVAC Apprentice/Helper (with installation duties), HVAC Mechanic, Sheet Metal Installer, Refrigeration Installer, HVAC Technician (if resume mentions installations), Plumber/Pipefitter, Service/Maintenance Tech (ONLY if resume bullets explicitly describe performing installations)
+   e) If flexible on title is YES: count equivalent roles per the equivalents list above
+   f) If flexible on title is NO: equivalent role experience counts toward "Close to Required" only, not "Required"
+   g) Example: If someone has "2022-Present (3 years)" + "2019-2022 (3 years)" = 6 years TOTAL
+
+STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO NOT SKIP)
+   a) If TOTAL years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
+   b) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
+   c) If TOTAL years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
+   d) If flexible on title is NO and candidate qualifies only via equivalent titles: apply -9 point penalty to their Close-to-Required score
+   e) ALWAYS use TOTAL years from Step 1, not just the most recent position
+   ${requiredYearsExperience === 0 ? 'f) ZERO YEARS REQUIRED: Skip tier classification. Score is driven primarily by resume presentation quality.' : ''}
+
+STEP 3: FIND ALL CERTIFICATIONS
+   a) Search the ENTIRE resume including header, summary, certifications section, AND within job descriptions
+   b) Look for: EPA 608, NATE, state licenses, manufacturer certifications, HVAC Excellence, OSHA 10/30, etc.
+   c) Mark as "Certifications Listed" if ANY relevant certifications are found
+   d) Mark as "Certifications NOT Listed" ONLY if zero certifications are mentioned
+
+STEP 4: ASSESS RESUME QUALITY (BE OBJECTIVE)
+   a) GOOD RESUME = Professional formatting + No major typos + No grammar errors + 2+ substantive bullets per position
+   b) MID RESUME = Professional formatting BUT missing bullets OR few grammatical errors OR small formatting issues
+   c) POOR RESUME = Multiple typos AND multiple grammar errors AND poor formatting AND no substantive content
+   d) When in doubt between Good and Mid, choose Good if the resume is professionally presented
+
+STEP 5: CHECK FOR WORK GAPS
+   a) List ALL employment periods
+   b) Calculate gaps between jobs
+   c) NO WORK GAP = Gaps under 6 months OR overlapping jobs OR currently employed
+   d) SMALL WORK GAP = 6 months to 1 year of unemployment
+   e) LARGE WORK GAP = Over 1 year of unemployment
+
+STEP 6: ASSESS JOB STABILITY
+   a) Count number of employers (different companies, not positions)
+   b) NOT JOB HOPPY = Long tenures (2+ years per employer) OR few employers relative to career length
+   c) JOB HOPPY = Many employers with short tenures (under 1 year each) OR 5+ employers in 5 years
+
+STEP 7: CHECK FOR OVERQUALIFICATION
+   a) OVERQUALIFIED if applying DOWN from clearly senior roles:
+      - HVAC Service Manager, HVAC General Manager, Project Manager → Installer
+      - Senior Lead Installer (10+ years) applying to entry installer (only if extreme)
+   b) NOT OVERQUALIFIED if lateral move, career change, or step up from helper/apprentice
+   c) If OVERQUALIFIED: Score becomes 70-75 REGARDLESS of other factors
+
+STEP 8: APPLY THE RUBRIC (if not overqualified)
+   a) Use experience tier from Step 2
+   b) Use resume quality from Step 4
+   c) Use certifications from Step 3
+   d) Use work gap from Step 5
+   e) Use job stability from Step 6
+   f) Find the EXACT matching line in the rubric above
+   g) Assign score within that range, weighted by Category A (Equipment & System Installation) strength
+   ${requiredYearsExperience === 0 ? 'h) ZERO YEARS REQUIRED: Weight presentation quality (Step 4) as the dominant factor.' : ''}
+
+STEP 9: VALIDATE YOUR ANSWER
+   a) If overqualified, score must be 70-75
+   b) Double-check experience tier matches total years calculated
+   c) Verify score matches the rubric line for the combination of factors
+
+4. Provide your evaluation in the following JSON format:
+
+{
+  "overallScore": <number 0-100 based on the tiered framework>,
+  "isOverqualified": <true if candidate is overqualified per Step 7, false otherwise>,
+  "overqualificationReason": "<if overqualified, explain which senior title is applying to which lower position, otherwise null>",
+  "summary": "<brief 3-sentence summary explaining why the candidate received their score, which resume highlights influenced it, and any stand-out positives or negatives.>",
+  "technicalSkills": {
+    "score": <number 0-100>,
+    "found": ["<list of installation-related skills found>"],
+    "missing": ["<important installer skills missing>"],
+    "feedback": "<specific feedback on technical competencies, especially installation abilities>"
+  },
+  "certifications": {
+    "score": <number 0-100>,
+    "found": ["<certifications found>"],
+    "recommended": ["<certifications they should pursue>"],
+    "feedback": "<specific feedback on certifications>"
+  },
+  "experience": {
+    "score": <number 0-100>,
+    "yearsOfExperience": <number>,
+    "relevantExperience": ["<list relevant installation experience with years at each role>"],
+    "feedback": "<specific feedback on experience level, work gaps, job stability>"
+  },
+  "presentationQuality": {
+    "score": <number 0-100>,
+    "strengths": ["<formatting, clarity, professionalism strengths>"],
+    "improvements": ["<areas to improve>"],
+    "feedback": "<specific feedback on resume quality>"
+  },
+  "strengths": ["<top 3-5 strengths relevant to HVAC Installer role>"],
   "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
   "recommendations": ["<3-5 specific recommendations for improvement>"],
   "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>"
