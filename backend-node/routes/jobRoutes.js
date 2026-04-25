@@ -542,16 +542,19 @@ CRITICAL RULES:
         const expBullet = `• ${years}+ year${years !== 1 ? 's' : ''} of experience as a ${titleStr}`;
         text = text.replace(/(\nQualifications\n\n)(• [^\n]+)/, `$1${expBullet}`);
 
-        // Deterministically inject certifications into Qualifications section
+        // Deterministically inject certifications into Qualifications section (only if not already mentioned)
         if (certifications.length > 0) {
-            const certLines = certifications.map(c => `• ${c} is required`).join('\n');
-            // Insert before "Preferred" section if it exists, otherwise before "What We Offer"
-            if (text.includes('\n\nPreferred')) {
-                text = text.replace('\n\nPreferred', `\n${certLines}\n\nPreferred`);
-            } else if (text.includes('\n\nWhat We Offer')) {
-                text = text.replace('\n\nWhat We Offer', `\n${certLines}\n\nWhat We Offer`);
-            } else {
-                text += `\n\n${certLines}`;
+            const textLower = text.toLowerCase();
+            const missingCerts = certifications.filter(c => !textLower.includes(c.toLowerCase()));
+            if (missingCerts.length > 0) {
+                const certLines = missingCerts.map(c => `• ${c} is required`).join('\n');
+                if (text.includes('\n\nPreferred')) {
+                    text = text.replace('\n\nPreferred', `\n${certLines}\n\nPreferred`);
+                } else if (text.includes('\n\nWhat We Offer')) {
+                    text = text.replace('\n\nWhat We Offer', `\n${certLines}\n\nWhat We Offer`);
+                } else {
+                    text += `\n\n${certLines}`;
+                }
             }
         }
 
