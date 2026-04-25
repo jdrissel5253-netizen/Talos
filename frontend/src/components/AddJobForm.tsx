@@ -389,6 +389,7 @@ interface EditJobData {
   benefits?: string | string[];
   key_responsibilities?: string | string[];
   qualifications_certifications?: string | string[];
+  other_relevant_titles?: string | string[];
   advancement_opportunities?: boolean;
   advancement_timeline?: string;
   company_culture?: string;
@@ -512,7 +513,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
     qualifications_years: editJob?.required_years_experience != null ? String(editJob.required_years_experience) : '',
     qualifications_certifications: parseJsonField<string>(editJob?.qualifications_certifications, []),
     education_requirements: editJob?.education_requirements || 'no_degree',
-    other_relevant_titles: [] as string[],
+    other_relevant_titles: parseJsonField<string>(editJob?.other_relevant_titles, []),
     advancement_opportunities: editJob?.advancement_opportunities || false,
     advancement_timeline: editJob?.advancement_timeline || '',
     company_culture: editJob?.company_culture || '',
