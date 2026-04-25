@@ -489,7 +489,7 @@ Responsibilities
 
 Qualifications
 
-[List 4-5 required qualifications as bullet points using • symbol. Include experience and essential skills.${certifications.length > 0 ? ` Include these exact lines as the LAST bullets: ${certifications.map(c => `"${c} is required"`).join(', ')}` : ''} Be clear about what's mandatory.]
+[List 4-5 required qualifications as bullet points using • symbol. Include experience and essential skills. Be clear about what's mandatory.]
 
 Preferred
 
@@ -532,6 +532,19 @@ CRITICAL RULES:
             .replace(/\*\*(.+?)\*\*/g, '$1')    // **bold** → bold
             .replace(/\*([^*\n]+)\*/g, '$1')    // *italic* → italic
             .replace(/^-\s+/gm, '• ');          // - bullet → • bullet
+
+        // Deterministically inject certifications into Qualifications section
+        if (certifications.length > 0) {
+            const certLines = certifications.map(c => `• ${c} is required`).join('\n');
+            // Insert before "Preferred" section if it exists, otherwise before "What We Offer"
+            if (text.includes('\nPreferred')) {
+                text = text.replace('\nPreferred', `\n${certLines}\n\nPreferred`);
+            } else if (text.includes('\nWhat We Offer')) {
+                text = text.replace('\nWhat We Offer', `\n${certLines}\n\nWhat We Offer`);
+            } else {
+                text += `\n\n${certLines}`;
+            }
+        }
 
         return text;
     } catch (error) {
