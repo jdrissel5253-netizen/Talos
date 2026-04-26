@@ -110,7 +110,7 @@ router.post('/', (req, res, next) => {
         });
 
         // Process resume analysis in the background (after response is sent)
-        processResumeInBackground(candidate, req.file.path, name, email, phone, jobId, jobTitle);
+        processResumeInBackground(candidate, s3Key, name, email, phone, jobId, jobTitle);
 
     } catch (error) {
         logger.error('Error processing application', { error: error.message, stack: error.stack });
