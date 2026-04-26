@@ -1,399 +1,759 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
-import { Check, X, Cpu, BarChart3, BookOpen, RefreshCw, Wrench, LineChart } from 'lucide-react';
+import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import DemoModal from './DemoModal';
 
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    z-index: 1;
-  }
+const FontImport = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Sora:wght@300;400;500;600&display=swap');
 `;
 
-const ContentWrapper = styled.div`
+// ─── Animations ───────────────────────────────────────────────────────────────
+
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to   { opacity: 1; }
+`;
+
+// ─── Page Shell ───────────────────────────────────────────────────────────────
+
+const Page = styled.div`
+  background: #080808;
+  color: #e8e8e8;
+  font-family: 'Sora', sans-serif;
+  overflow-x: hidden;
+`;
+
+// ─── Hero ─────────────────────────────────────────────────────────────────────
+
+const HeroWrap = styled.section`
   position: relative;
-  z-index: 2;
-  max-width: 1200px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 4rem 2rem;
-`;
-
-const HeroSection = styled.section`
-  text-align: center;
-  margin-bottom: 4rem;
-`;
-
-const MainTitle = styled.h1`
-  font-size: 3.5rem;
-  font-weight: 700;
-  color: #e0e0e0;
-  margin-bottom: 1.5rem;
-  line-height: 1.2;
+  padding: 7rem 3rem 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  border-bottom: 1px solid #1a1a1a;
+  overflow: hidden;
 
   @media (max-width: 768px) {
-    font-size: 2.5rem;
+    padding: 5rem 2rem 4rem;
   }
 `;
 
-const MainSubtitle = styled.p`
-  font-size: 1.25rem;
-  color: #e0e0e0;
-  max-width: 800px;
-  margin: 0 auto 2rem;
-  line-height: 1.6;
+const BackgroundWord = styled.div`
+  position: absolute;
+  right: -2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(8rem, 16vw, 18rem);
+  font-weight: 900;
+  font-style: italic;
+  color: transparent;
+  -webkit-text-stroke: 1px #1c1c1c;
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+  white-space: nowrap;
+  animation: ${fadeIn} 1.2s ease both;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
-const ContentSection = styled.section`
-  background: #1a1a1a;
-  border-radius: 12px;
-  padding: 3rem;
-  margin-bottom: 3rem;
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+const HeroTop = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  animation: ${fadeUp} 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
 `;
 
-const SectionTitle = styled.h2`
-  font-size: 2rem;
-  font-weight: 700;
-  color: #4ade80;
-  margin-bottom: 1.5rem;
-  text-align: center;
-`;
-
-const ContentText = styled.p`
-  font-size: 1.125rem;
-  color: #e0e0e0;
-  line-height: 1.8;
-  margin-bottom: 1.5rem;
-  text-align: center;
-  max-width: 900px;
-  margin-left: auto;
-  margin-right: auto;
-`;
-
-const HighlightBox = styled.div`
-  background: linear-gradient(135deg, #4ade80 0%, #4ade80 100%);
-  color: white;
-  padding: 2rem;
-  border-radius: 12px;
-  margin: 2rem auto;
-  max-width: 800px;
-  text-align: center;
-`;
-
-const HighlightText = styled.p`
-  font-size: 1.25rem;
+const SideLabel = styled.div`
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 0.65rem;
   font-weight: 600;
-  line-height: 1.6;
-  margin: 0;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #4ade80;
+  padding-top: 0.5rem;
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
-const ComparisonSection = styled.div`
+const HeroContent = styled.div`
+  flex: 1;
+`;
+
+const HeroHeadline = styled.h1`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3rem, 6vw, 6.5rem);
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin-bottom: 0;
+
+  em {
+    font-style: italic;
+    color: #4ade80;
+  }
+`;
+
+const HeroBottom = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 2rem;
-  margin: 3rem 0;
+  gap: 4rem;
+  align-items: end;
+  animation: ${fadeUp} 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
+    gap: 2rem;
   }
 `;
 
-const ComparisonCard = styled.div`
-  padding: 2rem;
-  border-radius: 12px;
-  text-align: center;
+const HeroDesc = styled.p`
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.85;
+  color: #777;
+  max-width: 480px;
 `;
 
-const OldWayCard = styled(ComparisonCard)`
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid #333;
-  opacity: 0.7;
+const HeroMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1.25rem;
+
+  @media (max-width: 768px) {
+    align-items: flex-start;
+  }
 `;
 
-const NewWayCard = styled(ComparisonCard)`
-  background: rgba(74, 222, 128, 0.05);
-  border: 1px solid #4ade80;
-`;
-
-const ComparisonTitle = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-`;
-
-const OldWayTitle = styled(ComparisonTitle)`
-  color: #d32f2f;
-`;
-
-const NewWayTitle = styled(ComparisonTitle)`
-  color: #4ade80;
-`;
-
-const ComparisonList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 0;
-`;
-
-const ComparisonItem = styled.li`
-  padding: 0.75rem 0;
-  line-height: 1.5;
+const MetaLine = styled.div`
   display: flex;
   align-items: center;
-  justify-content: center;
-`;
-
-const OldWayItem = styled(ComparisonItem)`
-  color: #888;
-`;
-
-const NewWayItem = styled(ComparisonItem)`
-  color: #e0e0e0;
-`;
-
-const FeatureGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin: 3rem 0;
-`;
-
-const FeatureCard = styled.div`
-  background: #000000;
-  padding: 2.5rem;
-  border-radius: 12px;
-  border: 1px solid #333;
-  text-align: left;
-  transition: transform 0.3s ease;
-
-  &:hover {
-    transform: translateY(-5px);
-    border-color: #4ade80;
-  }
-`;
-
-const FeatureIcon = styled.div`
-  color: #4ade80;
-  margin-bottom: 1.5rem;
-  background: rgba(74, 222, 128, 0.1);
-  padding: 1rem;
-  border-radius: 8px;
-  display: inline-flex;
-`;
-
-const FeatureTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #4ade80;
-  margin-bottom: 1rem;
-`;
-
-const FeatureDescription = styled.p`
-  color: #e0e0e0;
-  line-height: 1.6;
-`;
-
-const CTASection = styled.section`
-  text-align: center;
-  margin-top: 4rem;
-`;
-
-const CTAButton = styled.button`
-  background-color: #4ade80;
-  border: none;
-  color: #000000;
-  padding: 1rem 2.5rem;
-  font-size: 1.125rem;
-  font-weight: 700;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
-  position: relative;
-  overflow: hidden;
+  gap: 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 400;
+  color: #444;
+  letter-spacing: 0.05em;
 
   &::before {
     content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.4),
-      transparent
-    );
-    transition: 0.5s;
-  }
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
-    background-color: #5ce08e;
-
-    &::before {
-      left: 100%;
-    }
-  }
-
-  &:active {
-    transform: translateY(0);
+    display: block;
+    width: 20px;
+    height: 1px;
+    background: #333;
   }
 `;
+
+const HeroCTA = styled.button`
+  align-self: flex-end;
+  background: #4ade80;
+  color: #000;
+  border: none;
+  padding: 0.9rem 2rem;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: #6ee89a;
+    transform: translateY(-2px);
+  }
+
+  @media (max-width: 768px) {
+    align-self: flex-start;
+  }
+`;
+
+// ─── Philosophy Strip ─────────────────────────────────────────────────────────
+
+const PhilosophyStrip = styled.section`
+  background: #0d0d0d;
+  border-bottom: 1px solid #1a1a1a;
+  padding: 5rem 3rem;
+
+  @media (max-width: 768px) {
+    padding: 4rem 2rem;
+  }
+`;
+
+const PhilosophyInner = styled.div`
+  max-width: 1320px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  gap: 5rem;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+`;
+
+const PhilosophyLabel = styled.div`
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #444;
+  padding-top: 0.5rem;
+  line-height: 1.8;
+`;
+
+const PhilosophyQuote = styled.blockquote`
+  margin: 0;
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-style: italic;
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.3;
+
+  span {
+    color: #4ade80;
+  }
+`;
+
+// ─── Comparison Table ─────────────────────────────────────────────────────────
+
+const ComparisonSection = styled.section`
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 7rem 3rem;
+  border-bottom: 1px solid #1a1a1a;
+
+  @media (max-width: 768px) {
+    padding: 5rem 2rem;
+  }
+`;
+
+const ComparisonHeader = styled.div`
+  margin-bottom: 3.5rem;
+`;
+
+const ComparisonEyebrow = styled.div`
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 1.25rem;
+`;
+
+const ComparisonTitle = styled.h2`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.15;
+
+  em {
+    font-style: italic;
+    color: #4ade80;
+  }
+`;
+
+const Table = styled.div`
+  width: 100%;
+  border: 1px solid #1a1a1a;
+`;
+
+const TableHead = styled.div`
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  background: #0d0d0d;
+  border-bottom: 1px solid #1a1a1a;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const TableHeadCell = styled.div<{ accent?: boolean; hide?: boolean }>`
+  padding: 1.1rem 1.5rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: ${p => p.accent ? '#4ade80' : '#444'};
+  border-right: 1px solid #1a1a1a;
+
+  &:last-child { border-right: none; }
+
+  @media (max-width: 600px) {
+    display: ${p => p.hide ? 'none' : 'block'};
+  }
+`;
+
+const TableRow = styled.div`
+  display: grid;
+  grid-template-columns: 1.2fr 1fr 1fr;
+  border-bottom: 1px solid #111;
+  transition: background 0.15s ease;
+
+  &:last-child { border-bottom: none; }
+  &:hover { background: #0d0d0d; }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr 1fr;
+  }
+`;
+
+const TableCell = styled.div<{ dim?: boolean; bright?: boolean; hide?: boolean }>`
+  padding: 1.4rem 1.5rem;
+  font-size: 0.875rem;
+  font-weight: ${p => p.bright ? '500' : '300'};
+  color: ${p => p.bright ? '#e8e8e8' : p.dim ? '#3a3a3a' : '#777'};
+  line-height: 1.5;
+  border-right: 1px solid #111;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+
+  &:last-child { border-right: none; }
+
+  .dot {
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: ${p => p.bright ? '#4ade80' : '#2a2a2a'};
+    flex-shrink: 0;
+  }
+
+  @media (max-width: 600px) {
+    display: ${p => p.hide ? 'none' : 'flex'};
+  }
+`;
+
+const CategoryCell = styled(TableCell)`
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #555;
+`;
+
+// ─── AI Deep Dive ─────────────────────────────────────────────────────────────
+
+const AISection = styled.section`
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 7rem 3rem;
+  border-bottom: 1px solid #1a1a1a;
+
+  @media (max-width: 768px) {
+    padding: 5rem 2rem;
+  }
+`;
+
+const AIHeader = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  margin-bottom: 5rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+`;
+
+const AITitle = styled.h2`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.15;
+
+  em {
+    font-style: italic;
+    color: #4ade80;
+  }
+`;
+
+const AISubtext = styled.p`
+  font-size: 0.9rem;
+  font-weight: 300;
+  line-height: 1.85;
+  color: #666;
+  padding-top: 0.5rem;
+`;
+
+const AIList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+`;
+
+const AIItem = styled.div`
+  display: grid;
+  grid-template-columns: 48px 1fr;
+  gap: 2rem;
+  padding: 2.5rem 0;
+  border-bottom: 1px solid #131313;
+  align-items: start;
+  cursor: default;
+
+  &:first-child { border-top: 1px solid #131313; }
+
+  &:hover .ai-num {
+    color: #4ade80;
+  }
+`;
+
+const AINum = styled.span`
+  font-family: 'Playfair Display', serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #222;
+  padding-top: 3px;
+  transition: color 0.2s ease;
+`;
+
+const AIContent = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1.4fr;
+  gap: 2.5rem;
+  align-items: start;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 0.75rem;
+  }
+`;
+
+const AIItemTitle = styled.h3`
+  font-family: 'Sora', sans-serif;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e8e8e8;
+  letter-spacing: -0.01em;
+  line-height: 1.4;
+`;
+
+const AIItemDesc = styled.p`
+  font-size: 0.85rem;
+  font-weight: 300;
+  line-height: 1.85;
+  color: #666;
+`;
+
+// ─── Full-Bleed CTA ───────────────────────────────────────────────────────────
+
+const ClosingSection = styled.section`
+  padding: 8rem 3rem;
+  max-width: 1320px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6rem;
+  align-items: center;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    padding: 5rem 2rem;
+    gap: 3rem;
+  }
+`;
+
+const ClosingLeft = styled.div``;
+
+const ClosingEyebrow = styled.div`
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #4ade80;
+  margin-bottom: 1.5rem;
+`;
+
+const ClosingHeadline = styled.h2`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.2rem, 4vw, 3.5rem);
+  font-weight: 700;
+  color: #ffffff;
+  line-height: 1.12;
+`;
+
+const ClosingRight = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+`;
+
+const ClosingBody = styled.p`
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.85;
+  color: #777;
+`;
+
+const ClosingCTARow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+`;
+
+const ClosingCTA = styled.button`
+  background: #4ade80;
+  color: #000;
+  border: none;
+  padding: 1rem 2.25rem;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: #6ee89a;
+    transform: translateY(-2px);
+  }
+`;
+
+const ClosingNote = styled.span`
+  font-size: 0.8rem;
+  font-weight: 300;
+  color: #444;
+  letter-spacing: 0.03em;
+`;
+
+// ─── Data ─────────────────────────────────────────────────────────────────────
+
+const COMPARISON_ROWS = [
+  {
+    category: 'Job Descriptions',
+    generic: 'Copy-paste templates, generic language',
+    talos: 'AI-written, HVAC-optimized, role-specific',
+  },
+  {
+    category: 'Resume Screening',
+    generic: 'Manual review, hours per posting',
+    talos: 'AI-scored 0–100 in seconds, every applicant',
+  },
+  {
+    category: 'Candidate Ranking',
+    generic: 'Gut feeling, seniority bias',
+    talos: '11 role-specific frameworks with industry benchmarks',
+  },
+  {
+    category: 'Certifications',
+    generic: 'Checked manually if at all',
+    talos: 'Automatically detected and weighted per role',
+  },
+  {
+    category: 'Distance & Location',
+    generic: 'Not factored in',
+    talos: 'Scored against job location, commute risk weighted',
+  },
+  {
+    category: 'Time to Interview',
+    generic: '2–4 weeks of sourcing',
+    talos: '3 clicks from job post to qualified candidate',
+  },
+  {
+    category: 'Cost',
+    generic: '$10–20K+ per agency hire',
+    talos: 'Flat platform fee. No placement fees. Ever.',
+  },
+];
+
+const AI_ITEMS = [
+  {
+    num: '01',
+    title: 'Eleven Role-Specific Scoring Frameworks',
+    desc: 'From HVAC Installer to Dispatcher to Bookkeeper — each role has its own AI scoring model built on the skills, certifications, and experience patterns that actually predict success in that position.',
+  },
+  {
+    num: '02',
+    title: 'Equivalent Title Recognition',
+    desc: 'A "Service Coordinator" with scheduling duties gets evaluated the same as a "Dispatcher." Talos reads the bullets on a resume, not just the job title — so good candidates don\'t get filtered out on a technicality.',
+  },
+  {
+    num: '03',
+    title: 'Multi-Factor Candidate Scoring',
+    desc: 'Every resume is evaluated across six dimensions: years of experience, resume quality, certifications, work gaps, job stability, and proximity to the job site. The result is a single honest score.',
+  },
+  {
+    num: '04',
+    title: 'AI Job Description Generation',
+    desc: 'Talos generates job descriptions that attract the right candidates from the start. Written to rank for the searches real technicians make, with language that filters out poor fits before they apply.',
+  },
+];
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const WhyTalosDifferent: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
-  const handleDemoClick = () => {
-    setIsDemoModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsDemoModalOpen(false);
-  };
-
   return (
     <>
-      <PageContainer>
-        <ContentWrapper>
-          <HeroSection>
-            <MainTitle>Why Talos Is Different</MainTitle>
-            <MainSubtitle>
-              The first true AI recruiting expert built exclusively for HVAC
-            </MainSubtitle>
-          </HeroSection>
+      <FontImport />
+      <Page>
 
-          <ContentSection>
-            <ContentText>
-              Talos was built from the ground up for HVAC companies, and only HVAC companies. After countless hours of research, it was designed to patch the cracks that cause technician turnover and bridge the gap between dependable candidates and employers.
-            </ContentText>
+        {/* ── Hero ── */}
+        <HeroWrap>
+          <BackgroundWord>Different.</BackgroundWord>
 
-            <HighlightBox>
-              <HighlightText>
-                The method is simple: Talos uses AI trained specifically for HVAC. Job descriptions are written to attract the right kind of techs. Candidates are rated against benchmarks built on the best workers in each role. Talos is the first true AI recruiting expert in HVAC.
-              </HighlightText>
-            </HighlightBox>
-          </ContentSection>
+          <HeroTop>
+            <SideLabel>Why Talos is different</SideLabel>
+            <HeroContent>
+              <HeroHeadline>
+                The first AI<br />
+                recruiter that<br />
+                actually <em>knows</em><br />
+                your trade.
+              </HeroHeadline>
+            </HeroContent>
+          </HeroTop>
 
-          <ContentSection>
-            <SectionTitle>Generic Recruiting vs. Talos</SectionTitle>
+          <HeroBottom>
+            <HeroDesc>
+              Generic recruiting platforms treat HVAC like any other industry.
+              Talos was built from scratch on the assumption that hiring a
+              residential service tech and hiring a commercial installer are
+              fundamentally different problems — and they deserve fundamentally
+              different tools.
+            </HeroDesc>
+            <HeroMeta>
+              <MetaLine>Built exclusively for HVAC</MetaLine>
+              <MetaLine>11 role-specific AI models</MetaLine>
+              <MetaLine>No staffing agency fees</MetaLine>
+              <HeroCTA onClick={() => setIsDemoModalOpen(true)}>
+                See the Difference
+              </HeroCTA>
+            </HeroMeta>
+          </HeroBottom>
+        </HeroWrap>
 
-            <ComparisonSection>
-              <OldWayCard>
-                <OldWayTitle>Generic Recruiting Platforms</OldWayTitle>
-                <ComparisonList>
-                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> One-size-fits-all approach</OldWayItem>
-                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> Generic job description templates</OldWayItem>
-                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> No industry-specific screening</OldWayItem>
-                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> Manual candidate ranking</OldWayItem>
-                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> High turnover rates</OldWayItem>
-                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> Expensive staffing agency fees</OldWayItem>
-                  <OldWayItem><X size={16} style={{ marginRight: '8px', color: '#666' }} /> Weeks of sourcing time</OldWayItem>
-                </ComparisonList>
-              </OldWayCard>
+        {/* ── Philosophy ── */}
+        <PhilosophyStrip>
+          <PhilosophyInner>
+            <PhilosophyLabel>
+              Our philosophy<br />on recruiting
+            </PhilosophyLabel>
+            <PhilosophyQuote>
+              "The method is simple: use AI trained specifically for HVAC.
+              Write job descriptions that attract the right kind of techs.
+              Rate candidates against <span>benchmarks built on the best workers
+              in each role.</span> Talos is the first true AI recruiting expert in HVAC."
+            </PhilosophyQuote>
+          </PhilosophyInner>
+        </PhilosophyStrip>
 
-              <NewWayCard>
-                <NewWayTitle>Talos HVAC-Specific Platform</NewWayTitle>
-                <ComparisonList>
-                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> Built exclusively for HVAC</NewWayItem>
-                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> HVAC-optimized job descriptions</NewWayItem>
-                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> Industry-specific AI screening</NewWayItem>
-                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> AI-powered candidate ranking</NewWayItem>
-                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> Reduced turnover with better matching</NewWayItem>
-                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> No staffing agency fees</NewWayItem>
-                  <NewWayItem><Check size={16} style={{ marginRight: '8px', color: '#4ade80' }} /> Top candidates in 3 clicks</NewWayItem>
-                </ComparisonList>
-              </NewWayCard>
-            </ComparisonSection>
-          </ContentSection>
+        {/* ── Comparison Table ── */}
+        <ComparisonSection>
+          <ComparisonHeader>
+            <ComparisonEyebrow>Side by side</ComparisonEyebrow>
+            <ComparisonTitle>
+              Generic platforms<br />
+              vs. <em>Talos.</em>
+            </ComparisonTitle>
+          </ComparisonHeader>
 
-          <ContentSection>
-            <SectionTitle>What Makes Our AI Different</SectionTitle>
+          <Table>
+            <TableHead>
+              <TableHeadCell>Category</TableHeadCell>
+              <TableHeadCell hide>Generic Platforms</TableHeadCell>
+              <TableHeadCell accent>Talos</TableHeadCell>
+            </TableHead>
+            {COMPARISON_ROWS.map((row, i) => (
+              <TableRow key={i}>
+                <CategoryCell>{row.category}</CategoryCell>
+                <TableCell dim hide>{row.generic}</TableCell>
+                <TableCell bright>
+                  <span className="dot" />
+                  {row.talos}
+                </TableCell>
+              </TableRow>
+            ))}
+          </Table>
+        </ComparisonSection>
 
-            <FeatureGrid>
-              <FeatureCard>
-                <FeatureIcon>
-                  <Cpu size={32} />
-                </FeatureIcon>
-                <FeatureTitle>HVAC-Trained AI</FeatureTitle>
-                <FeatureDescription>
-                  Our AI has been specifically trained on HVAC roles, understanding the nuances between residential, commercial, and service technicians.
-                </FeatureDescription>
-              </FeatureCard>
+        {/* ── AI Deep Dive ── */}
+        <AISection>
+          <AIHeader>
+            <AITitle>
+              What makes the<br />
+              AI <em>actually</em><br />
+              different.
+            </AITitle>
+            <AISubtext>
+              Most "AI recruiting" tools run the same large language model
+              with a generic prompt. Talos built scoring frameworks from the
+              ground up for each HVAC role — which changes everything about
+              the quality of results you get.
+            </AISubtext>
+          </AIHeader>
 
-              <FeatureCard>
-                <FeatureIcon>
-                  <BarChart3 size={32} />
-                </FeatureIcon>
-                <FeatureTitle>Industry Benchmarks</FeatureTitle>
-                <FeatureDescription>
-                  Candidates are scored against proven benchmarks from top-performing HVAC professionals, not generic criteria.
-                </FeatureDescription>
-              </FeatureCard>
+          <AIList>
+            {AI_ITEMS.map((item, i) => (
+              <AIItem key={i}>
+                <AINum className="ai-num">{item.num}</AINum>
+                <AIContent>
+                  <AIItemTitle>{item.title}</AIItemTitle>
+                  <AIItemDesc>{item.desc}</AIItemDesc>
+                </AIContent>
+              </AIItem>
+            ))}
+          </AIList>
+        </AISection>
 
-              <FeatureCard>
-                <FeatureIcon>
-                  <BookOpen size={32} />
-                </FeatureIcon>
-                <FeatureTitle>Deep Industry Knowledge</FeatureTitle>
-                <FeatureDescription>
-                  Understands HVAC certifications, seasonal demands, geographic considerations, and company culture fits.
-                </FeatureDescription>
-              </FeatureCard>
+        {/* ── Closing ── */}
+        <ClosingSection>
+          <ClosingLeft>
+            <ClosingEyebrow>Ready to see it live</ClosingEyebrow>
+            <ClosingHeadline>
+              See exactly how<br />
+              Talos would work<br />
+              for your company.
+            </ClosingHeadline>
+          </ClosingLeft>
+          <ClosingRight>
+            <ClosingBody>
+              A live walkthrough takes 20 minutes. You'll see the AI score
+              a real resume, generate a job description for one of your open
+              roles, and get a full picture of what your pipeline would look
+              like inside Talos — with no commitment required.
+            </ClosingBody>
+            <ClosingCTARow>
+              <ClosingCTA onClick={() => setIsDemoModalOpen(true)}>
+                Book a Demo
+              </ClosingCTA>
+              <ClosingNote>No commitment. 20 minutes.</ClosingNote>
+            </ClosingCTARow>
+          </ClosingRight>
+        </ClosingSection>
 
-              <FeatureCard>
-                <FeatureIcon>
-                  <RefreshCw size={32} />
-                </FeatureIcon>
-                <FeatureTitle>Continuous Learning</FeatureTitle>
-                <FeatureDescription>
-                  Our AI constantly learns from successful hires and failed placements to improve matching accuracy.
-                </FeatureDescription>
-              </FeatureCard>
-
-              <FeatureCard>
-                <FeatureIcon>
-                  <Wrench size={32} />
-                </FeatureIcon>
-                <FeatureTitle>Technical Expertise</FeatureTitle>
-                <FeatureDescription>
-                  Evaluates candidates based on specific HVAC skills, from basic installation to advanced diagnostics.
-                </FeatureDescription>
-              </FeatureCard>
-
-              <FeatureCard>
-                <FeatureIcon>
-                  <LineChart size={32} />
-                </FeatureIcon>
-                <FeatureTitle>Predictive Analytics</FeatureTitle>
-                <FeatureDescription>
-                  Predicts candidate success and longevity based on historical data from the HVAC industry.
-                </FeatureDescription>
-              </FeatureCard>
-            </FeatureGrid>
-          </ContentSection>
-
-          <CTASection>
-            <CTAButton onClick={handleDemoClick}>
-              Experience the Difference - Get Your Demo
-            </CTAButton>
-          </CTASection>
-        </ContentWrapper>
-      </PageContainer>
-
-      <DemoModal isOpen={isDemoModalOpen} onClose={handleCloseModal} />
+      </Page>
+      <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
     </>
   );
 };
