@@ -4,69 +4,52 @@ const gmailService = require('../services/gmailService');
 const logger = require('../services/logger');
 
 /**
- * POST /api/auth/google/callback
- * Exchange authorization code for tokens
+ * GET /api/auth/google/callback
+ * Google redirects here with ?code=...&state=...
+ * Exchange code for token then redirect back to the app.
  */
-router.post('/callback', async (req, res) => {
+router.get('/callback', async (req, res) => {
     try {
-        const { code } = req.body;
+        const { code, state } = req.query;
         if (!code) {
-            return res.status(400).json({
-                status: 'error',
-                message: 'Authorization code is required'
-            });
+            return res.redirect(`${process.env.FRONTEND_URL || 'https://gotalos.io'}?gmail_error=missing_code`);
         }
 
         await gmailService.exchangeCodeForToken(code);
 
-        res.json({
-            status: 'success',
-            message: 'Successfully connected to Gmail'
-        });
+        const returnPath = state || '/talent-pool';
+        const frontendUrl = process.env.FRONTEND_URL || 'https://gotalos.io';
+        res.redirect(`${frontendUrl}${returnPath}?gmail_connected=1`);
     } catch (error) {
-        logger.error('Error exchanging token', { error: error.message, stack: error.stack });
-        res.status(500).json({
-            status: 'error',
-            message: 'Failed to connect to Gmail'
-        });
+        logger.error('Error exchanging Google token', { error: error.message });
+        const frontendUrl = process.env.FRONTEND_URL || 'https://gotalos.io';
+        res.redirect(`${frontendUrl}/talent-pool?gmail_error=1`);
     }
 });
 
 /**
  * GET /api/auth/google/url
- * Get the authorization URL
+ * Returns the Google OAuth URL. Accepts ?return= to set the post-auth redirect.
  */
 router.get('/url', (req, res) => {
     try {
-        const url = gmailService.getAuthUrl();
-        res.json({
-            status: 'success',
-            data: { url }
-        });
+        const returnPath = req.query.return || '/talent-pool';
+        const url = gmailService.getAuthUrl(returnPath);
+        res.json({ status: 'success', data: { url } });
     } catch (error) {
-        res.status(500).json({
-            status: 'error',
-            message: 'Failed to generate auth URL'
-        });
+        res.status(500).json({ status: 'error', message: 'Failed to generate auth URL' });
     }
 });
 
 /**
  * GET /api/auth/google/status
- * Check if connected
  */
 router.get('/status', async (req, res) => {
     try {
         const isConnected = await gmailService.isAuthenticated();
-        res.json({
-            status: 'success',
-            data: { isConnected }
-        });
+        res.json({ status: 'success', data: { isConnected } });
     } catch (error) {
-        res.status(500).json({
-            status: 'error',
-            message: 'Failed to check status'
-        });
+        res.status(500).json({ status: 'error', message: 'Failed to check status' });
     }
 });
 

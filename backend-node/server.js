@@ -54,6 +54,14 @@ const USE_POSTGRES = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV
             if (tables.length < 6) {
                 logger.warn('Some tables are missing. Run: node database/migrations/run-all-migrations.js');
             }
+            // Auto-create system_settings table if missing
+            await db.query(`
+                CREATE TABLE IF NOT EXISTS system_settings (
+                    key VARCHAR(255) PRIMARY KEY,
+                    value TEXT,
+                    updated_at TIMESTAMPTZ DEFAULT NOW()
+                )
+            `);
         } else {
             // SQLite — apply schema directly for local dev
             const fs_schema = require('fs');

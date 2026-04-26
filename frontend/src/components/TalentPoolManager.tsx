@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
@@ -443,6 +443,7 @@ const EmptyIcon = styled.div`
 
 const TalentPoolManager: React.FC = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const [candidates, setCandidates] = useState<Candidate[]>([]);
   const [stats, setStats] = useState<TalentPoolStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -481,6 +482,13 @@ const TalentPoolManager: React.FC = () => {
     checkGmailConnection();
   }, [tierFilter, positionFilter, statusFilter, minScore, maxScore, sortBy, sortOrder]);
 
+  useEffect(() => {
+    if (searchParams.get('gmail_connected')) {
+      checkGmailConnection();
+      navigate('/talent-pool', { replace: true });
+    }
+  }, [searchParams]);
+
   const checkGmailConnection = async () => {
     try {
       const response = await fetch(`${config.apiUrl}/api/auth/google/status`);
@@ -493,17 +501,8 @@ const TalentPoolManager: React.FC = () => {
     }
   };
 
-  const handleConnectGmail = async () => {
-    try {
-      const response = await fetch(`${config.apiUrl}/api/auth/google/url`);
-      const data = await response.json();
-      if (data.status === 'success') {
-        window.location.href = data.data.url;
-      }
-    } catch (error) {
-      console.error('Error fetching auth URL:', error);
-      alert('Failed to initiate Gmail connection');
-    }
+  const handleConnectGmail = () => {
+    window.location.href = `${config.apiUrl}/api/auth/google/url?return=/talent-pool`;
   };
 
   const fetchTalentPool = async () => {

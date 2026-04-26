@@ -1,88 +1,57 @@
 const { google } = require('googleapis');
-const fs = require('fs').promises;
-const path = require('path');
+const db = require('../config/database');
+const logger = require('./logger');
 
-// Path to store tokens
-const TOKEN_PATH = path.join(__dirname, '..', 'credentials', 'token.json');
-// Ensure credentials directory exists
-const CREDENTIALS_DIR = path.join(__dirname, '..', 'credentials');
+const SETTINGS_KEY = 'google_oauth_token';
 
-// Initialize OAuth2 client
 const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    process.env.GOOGLE_REDIRECT_URI || 'http://localhost:3000'
+    process.env.GOOGLE_REDIRECT_URI
 );
 
-/**
- * Ensure the credentials directory exists
- */
-async function ensureCredentialsDir() {
-    try {
-        await fs.access(CREDENTIALS_DIR);
-    } catch {
-        await fs.mkdir(CREDENTIALS_DIR, { recursive: true });
-    }
+async function saveCredentials(tokens) {
+    const value = JSON.stringify(tokens);
+    await db.query(
+        `INSERT INTO system_settings (key, value, updated_at)
+         VALUES ($1, $2, NOW())
+         ON CONFLICT (key) DO UPDATE SET value = $2, updated_at = NOW()`,
+        [SETTINGS_KEY, value]
+    );
 }
 
-/**
- * Save credentials to disk
- */
-async function saveCredentials(payload) {
-    await ensureCredentialsDir();
-    const content = JSON.stringify(payload);
-    await fs.writeFile(TOKEN_PATH, content);
-}
-
-/**
- * Load credentials from disk
- */
 async function loadCredentials() {
     try {
-        const content = await fs.readFile(TOKEN_PATH);
-        const credentials = JSON.parse(content);
-        return google.auth.fromJSON(credentials);
+        const result = await db.query(
+            'SELECT value FROM system_settings WHERE key = $1',
+            [SETTINGS_KEY]
+        );
+        if (!result.rows.length || !result.rows[0].value) return null;
+        return JSON.parse(result.rows[0].value);
     } catch (err) {
+        logger.error('Failed to load Gmail credentials from DB', { error: err.message });
         return null;
     }
 }
 
-/**
- * Initialize the client with stored credentials if available
- */
 async function authorize() {
-    const client = await loadCredentials();
-    if (client) {
-        oauth2Client.setCredentials(client.credentials);
+    const tokens = await loadCredentials();
+    if (tokens) {
+        oauth2Client.setCredentials(tokens);
         return oauth2Client;
     }
     return null;
 }
 
-/**
- * Exchange authorization code for tokens
- */
 async function exchangeCodeForToken(code) {
     const { tokens } = await oauth2Client.getToken(code);
     oauth2Client.setCredentials(tokens);
-    await saveCredentials({
-        type: 'authorized_user',
-        client_id: process.env.GOOGLE_CLIENT_ID,
-        client_secret: process.env.GOOGLE_CLIENT_SECRET,
-        refresh_token: tokens.refresh_token,
-        credentials: tokens // store full tokens
-    });
+    await saveCredentials(tokens);
     return tokens;
 }
 
-/**
- * Send an email via Gmail API
- */
 async function sendEmail({ to, subject, body, html }) {
-    // Ensure we are authorized
     await authorize();
-
-    // If logic to refresh token is needed, googleapis handles it automatically if refresh_token is present
 
     const gmail = google.gmail({ version: 'v1', auth: oauth2Client });
 
@@ -97,7 +66,6 @@ async function sendEmail({ to, subject, body, html }) {
     ];
     const message = messageParts.join('\n');
 
-    // The body needs to be base64url encoded.
     const encodedMessage = Buffer.from(message)
         .toString('base64')
         .replace(/\+/g, '-')
@@ -106,26 +74,18 @@ async function sendEmail({ to, subject, body, html }) {
 
     const res = await gmail.users.messages.send({
         userId: 'me',
-        requestBody: {
-            raw: encodedMessage,
-        },
+        requestBody: { raw: encodedMessage }
     });
 
     return res.data;
 }
 
-/**
- * Check if the service is currently authenticated
- */
 async function isAuthenticated() {
-    const client = await loadCredentials();
-    return !!client;
+    const tokens = await loadCredentials();
+    return !!tokens;
 }
 
-/**
- * Get the Authorization URL
- */
-function getAuthUrl() {
+function getAuthUrl(returnPath = '/talent-pool') {
     const scopes = [
         'https://www.googleapis.com/auth/gmail.send',
         'https://www.googleapis.com/auth/gmail.compose'
@@ -134,7 +94,9 @@ function getAuthUrl() {
     return oauth2Client.generateAuthUrl({
         access_type: 'offline',
         scope: scopes,
-        include_granted_scopes: true
+        include_granted_scopes: true,
+        prompt: 'consent',
+        state: returnPath
     });
 }
 
