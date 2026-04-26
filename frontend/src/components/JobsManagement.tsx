@@ -641,6 +641,7 @@ const LoadingSpinner = styled.div`
     font-size: 0.9rem;
 `;
 
+
 const JobsManagement: React.FC = () => {
     const [jobs, setJobs] = useState<Job[]>([]);
     const [selectedJob, setSelectedJob] = useState<Job | null>(null);
