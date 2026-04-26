@@ -1,443 +1,912 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
-import { Wrench, Snowflake, Home, Building2, Settings, Hammer, Briefcase, BarChart3, GraduationCap, ClipboardList, Search, Zap, Target, TrendingUp, Clock, Thermometer, PenTool } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import DemoModal from './DemoModal';
 
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-  position: relative;
+const FontImport = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+`;
+
+// ─── Animations ───────────────────────────────────────────────────────────────
+
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+const blink = keyframes`
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+`;
+
+const shimmer = keyframes`
+  0%   { background-position: -200% center; }
+  100% { background-position:  200% center; }
+`;
+
+const slideIn = keyframes`
+  from { opacity: 0; transform: translateX(20px); }
+  to   { opacity: 1; transform: translateX(0); }
+`;
+
+// ─── Page ─────────────────────────────────────────────────────────────────────
+
+const Page = styled.div`
+  background: #080808;
+  color: #e8e8e8;
+  font-family: 'Sora', sans-serif;
+  overflow-x: hidden;
+`;
+
+// ─── Hero ─────────────────────────────────────────────────────────────────────
+
+const HeroSection = styled.section`
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 6rem 3rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 5rem;
+  align-items: center;
+  border-bottom: 1px solid #141414;
+
+  @media (max-width: 960px) {
+    grid-template-columns: 1fr;
+    padding: 5rem 2rem 4rem;
+    gap: 3rem;
+  }
+`;
+
+const HeroLeft = styled.div`
+  animation: ${fadeUp} 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+`;
+
+const HeroEyebrow = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #4ade80;
+  margin-bottom: 1.75rem;
 
   &::before {
     content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    z-index: 1;
-    pointer-events: none;
+    display: block;
+    width: 24px;
+    height: 1px;
+    background: #4ade80;
   }
 `;
 
-const ContentWrapper = styled.div`
-  position: relative;
-  z-index: 2;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 4rem 2rem;
+const HeroHeadline = styled.h1`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2.8rem, 5vw, 5.5rem);
+  font-weight: 900;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+  color: #fff;
+  margin-bottom: 1.75rem;
+
+  em {
+    font-style: italic;
+    color: #4ade80;
+  }
 `;
 
-const HeroSection = styled.section`
-  text-align: center;
-  margin-bottom: 4rem;
+const HeroBody = styled.p`
+  font-size: 1rem;
+  font-weight: 300;
+  line-height: 1.85;
+  color: #777;
+  max-width: 420px;
+  margin-bottom: 2.5rem;
 `;
 
-const MainTitle = styled.h1`
-  font-size: 3.5rem;
+const HeroCTA = styled.button`
+  background: #4ade80;
+  color: #000;
+  border: none;
+  padding: 1rem 2.25rem;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  transition: background 0.2s ease, transform 0.2s ease;
+
+  &:hover {
+    background: #6ee89a;
+    transform: translateY(-2px);
+  }
+`;
+
+// ─── Mock Document Preview ────────────────────────────────────────────────────
+
+const PreviewCard = styled.div`
+  background: #0d0d0d;
+  border: 1px solid #1e1e1e;
+  padding: 0;
+  overflow: hidden;
+  animation: ${slideIn} 1s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6), 0 0 0 1px #1a1a1a;
+`;
+
+const PreviewBar = styled.div`
+  background: #111;
+  border-bottom: 1px solid #1e1e1e;
+  padding: 0.75rem 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const PreviewDot = styled.div<{ color: string }>`
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: ${p => p.color};
+  opacity: 0.6;
+`;
+
+const PreviewLabel = styled.span`
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  color: #333;
+  letter-spacing: 0.08em;
+`;
+
+const GeneratingBadge = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(74, 222, 128, 0.08);
+  border: 1px solid rgba(74, 222, 128, 0.2);
+  padding: 0.2rem 0.6rem;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: #4ade80;
+  letter-spacing: 0.1em;
+
+  &::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #4ade80;
+    animation: ${blink} 1.2s ease-in-out infinite;
+  }
+`;
+
+const PreviewBody = styled.div`
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+`;
+
+const PreviewRole = styled.div`
+  font-family: 'Sora', sans-serif;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.25em;
+  text-transform: uppercase;
+  color: #4ade80;
+`;
+
+const PreviewTitle = styled.div`
+  font-family: 'Playfair Display', serif;
+  font-size: 1.5rem;
   font-weight: 700;
-  background: linear-gradient(to right, #ffffff, #4ade80);
+  color: #fff;
+  line-height: 1.2;
+`;
+
+const PreviewDivider = styled.div`
+  height: 1px;
+  background: #1a1a1a;
+`;
+
+const PreviewText = styled.div`
+  font-size: 0.78rem;
+  font-weight: 300;
+  line-height: 1.85;
+  color: #555;
+
+  background: linear-gradient(90deg, #555 0%, #777 40%, #555 60%, #555 100%);
+  background-size: 200% auto;
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
-  margin-bottom: 1.5rem;
-  line-height: 1.2;
+  background-clip: text;
+  animation: ${shimmer} 3s linear infinite;
+`;
 
-  @media (max-width: 768px) {
-    font-size: 2.5rem;
+const PreviewBullets = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+`;
+
+const PreviewBullet = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.78rem;
+  font-weight: 400;
+  color: #e8e8e8;
+
+  &::before {
+    content: '';
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #4ade80;
+    flex-shrink: 0;
   }
 `;
 
-const MainSubtitle = styled.p`
-  font-size: 1.25rem;
-  color: #e0e0e0;
-  max-width: 800px;
-  margin: 0 auto 2rem;
-  line-height: 1.6;
+const PreviewCursor = styled.span`
+  display: inline-block;
+  width: 2px;
+  height: 0.85em;
+  background: #4ade80;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: ${blink} 1s step-end infinite;
 `;
 
-const ContentSection = styled.section`
-  background: #1a1a1a;
-  border-radius: 12px;
-  padding: 3rem;
+const PreviewFooter = styled.div`
+  border-top: 1px solid #141414;
+  padding: 0.9rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+`;
+
+const PreviewFooterText = styled.span`
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: #2a2a2a;
+  letter-spacing: 0.06em;
+`;
+
+const PreviewWordCount = styled.span`
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.6rem;
+  color: #4ade80;
+  letter-spacing: 0.06em;
+`;
+
+// ─── Roles Section ────────────────────────────────────────────────────────────
+
+const RolesSection = styled.section`
+  border-bottom: 1px solid #141414;
+  padding: 5rem 3rem;
+
+  @media (max-width: 768px) {
+    padding: 4rem 2rem;
+  }
+`;
+
+const RolesInner = styled.div`
+  max-width: 1320px;
+  margin: 0 auto;
+`;
+
+const RolesHeader = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 2rem;
   margin-bottom: 3rem;
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
+  flex-wrap: wrap;
 `;
 
-const FeatureBox = styled.div`
-  background: linear-gradient(135deg, #4ade80 0%, #4ade80 100%);
-  color: white;
-  padding: 2rem;
-  border-radius: 12px;
-  margin: 2rem auto;
-  max-width: 700px;
-  text-align: center;
+const RolesTitle = styled.h2`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.8rem, 3vw, 2.5rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.15;
+
+  em {
+    font-style: italic;
+    color: #4ade80;
+  }
 `;
 
-const FeatureText = styled.p`
-  font-size: 1.25rem;
-  font-weight: 600;
-  line-height: 1.6;
-  margin: 0;
+const RolesCount = styled.span`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3rem, 6vw, 6rem);
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 1px #222;
+  line-height: 1;
+  flex-shrink: 0;
 `;
 
-const RoleGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin: 3rem 0;
+const RolesTagWrap = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
 `;
 
-const RoleCard = styled.div`
-  background: #000000;
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 2px solid #333333;
-  text-align: center;
-  transition: all 0.3s ease;
+const RoleTag = styled.div<{ featured?: boolean }>`
+  padding: 0.55rem 1.1rem;
+  font-size: 0.78rem;
+  font-weight: ${p => p.featured ? '600' : '400'};
+  letter-spacing: 0.03em;
+  color: ${p => p.featured ? '#000' : '#555'};
+  background: ${p => p.featured ? '#4ade80' : 'transparent'};
+  border: 1px solid ${p => p.featured ? '#4ade80' : '#1e1e1e'};
+  cursor: default;
+  transition: all 0.2s ease;
+  clip-path: ${p => p.featured ? 'polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px))' : 'none'};
 
   &:hover {
     border-color: #4ade80;
-    transform: translateY(-2px);
+    color: ${p => p.featured ? '#000' : '#4ade80'};
   }
 `;
 
-const RoleIcon = styled.div`
-  font-size: 2rem;
-  margin-bottom: 1rem;
-`;
+// ─── How It Works ─────────────────────────────────────────────────────────────
 
-const RoleName = styled.h3`
-  font-size: 1rem;
-  font-weight: 700;
-  color: #4ade80;
-  margin: 0;
-`;
-
-const ProcessSection = styled.div`
-  margin: 3rem 0;
-`;
-
-const ProcessTitle = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: #4ade80;
-  text-align: center;
-  margin-bottom: 2rem;
-`;
-
-const ProcessSteps = styled.div`
+const ProcessSection = styled.section`
+  max-width: 1320px;
+  margin: 0 auto;
+  padding: 7rem 3rem;
+  border-bottom: 1px solid #141414;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: 1fr 1.4fr;
+  gap: 6rem;
+  align-items: start;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    padding: 5rem 2rem;
+    gap: 3rem;
+  }
+`;
+
+const ProcessLeft = styled.div`
+  position: sticky;
+  top: 4rem;
+
+  @media (max-width: 900px) {
+    position: static;
+  }
+`;
+
+const ProcessEyebrow = styled.div`
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 1.25rem;
+`;
+
+const ProcessTitle = styled.h2`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 3.5vw, 2.8rem);
+  font-weight: 700;
+  color: #fff;
+  line-height: 1.15;
+  margin-bottom: 1.5rem;
+
+  em {
+    font-style: italic;
+    color: #4ade80;
+  }
+`;
+
+const ProcessSubtext = styled.p`
+  font-size: 0.9rem;
+  font-weight: 300;
+  line-height: 1.85;
+  color: #555;
+`;
+
+const Timeline = styled.div`
+  display: flex;
+  flex-direction: column;
+  position: relative;
+`;
+
+const TimelineItem = styled.div`
+  display: grid;
+  grid-template-columns: 48px 1fr;
   gap: 2rem;
+  padding-bottom: 3rem;
+  position: relative;
+
+  &:last-child {
+    padding-bottom: 0;
+  }
+
+  &:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 23px;
+    top: 40px;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, #222, transparent);
+  }
 `;
 
-const ProcessStep = styled.div`
-  text-align: center;
-  padding: 1.5rem;
-`;
-
-const StepNumber = styled.div`
-  width: 50px;
-  height: 50px;
-  background: #4ade80;
-  color: white;
-  border-radius: 50%;
+const TimelineNode = styled.div`
+  width: 48px;
+  height: 48px;
+  border: 1px solid #222;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  background: #080808;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  transition: border-color 0.2s ease;
+
+  ${TimelineItem}:hover & {
+    border-color: #4ade80;
+  }
+`;
+
+const TimelineNodeNum = styled.span`
+  font-family: 'Playfair Display', serif;
+  font-size: 0.85rem;
   font-weight: 700;
-  font-size: 1.25rem;
-  margin: 0 auto 1rem;
+  color: #333;
+  transition: color 0.2s ease;
+
+  ${TimelineItem}:hover & {
+    color: #4ade80;
+  }
 `;
 
-const StepTitle = styled.h4`
-  font-size: 1.125rem;
+const TimelineContent = styled.div`
+  padding-top: 0.75rem;
+`;
+
+const TimelineTitle = styled.h3`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #e8e8e8;
+  margin-bottom: 0.6rem;
+  letter-spacing: -0.01em;
+`;
+
+const TimelineDesc = styled.p`
+  font-size: 0.85rem;
+  font-weight: 300;
+  line-height: 1.8;
+  color: #555;
+`;
+
+// ─── Why It Works ─────────────────────────────────────────────────────────────
+
+const WhySection = styled.section`
+  background: #0a0a0a;
+  border-bottom: 1px solid #141414;
+  padding: 7rem 3rem;
+
+  @media (max-width: 768px) {
+    padding: 5rem 2rem;
+  }
+`;
+
+const WhyInner = styled.div`
+  max-width: 1320px;
+  margin: 0 auto;
+`;
+
+const WhyHeader = styled.div`
+  margin-bottom: 4rem;
+  max-width: 600px;
+`;
+
+const WhyEyebrow = styled.div`
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 1.25rem;
+`;
+
+const WhyTitle = styled.h2`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 3.5vw, 2.8rem);
   font-weight: 700;
-  color: #e0e0e0;
-  margin-bottom: 0.5rem;
+  color: #fff;
+  line-height: 1.15;
+
+  em {
+    font-style: italic;
+    color: #4ade80;
+  }
 `;
 
-const StepDescription = styled.p`
-  color: #e0e0e0;
-  line-height: 1.5;
-  font-size: 0.875rem;
-`;
-
-const BenefitsList = styled.div`
+const WhyGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin: 3rem 0;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+  border: 1px solid #141414;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-const BenefitCard = styled.div`
-  background: #000000;
-  padding: 2rem;
-  border-radius: 12px;
-  border-left: 4px solid #4ade80;
+const WhyItem = styled.div`
+  padding: 2.5rem;
+  border-right: 1px solid #141414;
+  border-bottom: 1px solid #141414;
+  cursor: default;
+  transition: background 0.2s ease;
+
+  &:nth-child(3n) { border-right: none; }
+  &:nth-last-child(-n+3) { border-bottom: none; }
+
+  &:hover {
+    background: #0d0d0d;
+  }
+
+  &:hover .why-num {
+    color: #4ade80;
+  }
+
+  @media (max-width: 900px) {
+    border-right: none;
+
+    &:last-child { border-bottom: none; }
+    &:nth-last-child(-n+3) { border-bottom: 1px solid #141414; }
+    &:last-child { border-bottom: none; }
+  }
 `;
 
-const BenefitIcon = styled.div`
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-`;
-
-const BenefitTitle = styled.h3`
-  font-size: 1.25rem;
+const WhyNum = styled.div`
+  font-family: 'Playfair Display', serif;
+  font-size: 0.75rem;
   font-weight: 700;
-  color: #4ade80;
-  margin-bottom: 1rem;
+  color: #222;
+  margin-bottom: 1.25rem;
+  transition: color 0.2s ease;
 `;
 
-const BenefitDescription = styled.p`
-  color: #e0e0e0;
-  line-height: 1.6;
+const WhyItemTitle = styled.h3`
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #e8e8e8;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.01em;
+  line-height: 1.3;
 `;
+
+const WhyItemDesc = styled.p`
+  font-size: 0.82rem;
+  font-weight: 300;
+  line-height: 1.85;
+  color: #555;
+`;
+
+// ─── CTA ─────────────────────────────────────────────────────────────────────
 
 const CTASection = styled.section`
+  background: #4ade80;
+  padding: 6rem 3rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   text-align: center;
-  margin-top: 4rem;
+  gap: 2rem;
+
+  @media (max-width: 768px) {
+    padding: 4rem 2rem;
+  }
+`;
+
+const CTAEyebrow = styled.div`
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(0,0,0,0.4);
+`;
+
+const CTAHeadline = styled.h2`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 700;
+  color: #000;
+  line-height: 1.12;
+  max-width: 640px;
+`;
+
+const CTABody = styled.p`
+  font-size: 1rem;
+  font-weight: 400;
+  color: rgba(0,0,0,0.55);
+  max-width: 480px;
+  line-height: 1.7;
 `;
 
 const CTAButton = styled.button`
-  background-color: #4ade80;
+  background: #000;
+  color: #4ade80;
   border: none;
-  color: #000000;
-  padding: 1rem 2.5rem;
-  font-size: 1.125rem;
-  font-weight: 700;
-  border-radius: 8px;
+  padding: 1.1rem 2.5rem;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.4),
-      transparent
-    );
-    transition: 0.5s;
-  }
+  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
+  transition: background 0.2s ease, transform 0.2s ease;
 
   &:hover {
+    background: #111;
     transform: translateY(-2px);
-    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
-    background-color: #5ce08e;
-
-    &::before {
-      left: 100%;
-    }
-  }
-
-  &:active {
-    transform: translateY(0);
   }
 `;
 
+// ─── Data ─────────────────────────────────────────────────────────────────────
+
+const ROLES = [
+  { label: 'HVAC Service Technician', featured: true },
+  { label: 'HVAC Installer' },
+  { label: 'Lead HVAC Technician' },
+  { label: 'Preventative Maintenance Tech' },
+  { label: 'HVAC Apprentice' },
+  { label: 'Refrigeration Technician' },
+  { label: 'Commercial HVAC Tech' },
+  { label: 'Residential HVAC Tech' },
+  { label: 'HVAC Dispatcher', featured: true },
+  { label: 'Service Manager' },
+  { label: 'HVAC Sales Representative' },
+  { label: 'Controls Technician' },
+  { label: 'Sheet Metal Worker' },
+  { label: 'Warehouse Associate' },
+  { label: 'Administrative Assistant', featured: true },
+  { label: 'Customer Service Rep' },
+  { label: 'Bookkeeper' },
+  { label: 'HVAC Project Manager' },
+  { label: 'Field Supervisor' },
+  { label: 'HVAC Inspector' },
+  { label: 'Energy Auditor' },
+  { label: 'HVAC Estimator' },
+];
+
+const PROCESS_STEPS = [
+  {
+    num: '01',
+    title: 'Enter Your Job Details',
+    desc: 'Provide the role, location, pay range, certifications required, and experience level. Talos takes it from there.',
+  },
+  {
+    num: '02',
+    title: 'AI Generates the Description',
+    desc: 'The AI writes a complete job description using language tuned to attract the right candidates for that specific HVAC role — not generic boilerplate.',
+  },
+  {
+    num: '03',
+    title: 'Review and Adjust Tone',
+    desc: 'Put your own spin on it. Adjust tone, add company culture details, or use it exactly as written.',
+  },
+  {
+    num: '04',
+    title: 'Post and Start Receiving Applications',
+    desc: 'Publish directly or copy to your preferred job board. The description is structured for both search visibility and candidate resonance.',
+  },
+];
+
+const WHY_ITEMS = [
+  {
+    num: '01',
+    title: 'Industry-Specific Language',
+    desc: 'Uses terminology that real HVAC professionals use and search for. No generic "dynamic team environment" filler.',
+  },
+  {
+    num: '02',
+    title: 'Certification Auto-Detection',
+    desc: 'Automatically surfaces the relevant certifications for each role — EPA 608, NATE, OSHA, and others.',
+  },
+  {
+    num: '03',
+    title: 'Filters Poor Fits Early',
+    desc: 'Well-written descriptions with clear requirements reduce unqualified applications before they reach your inbox.',
+  },
+  {
+    num: '04',
+    title: 'Structured for Search',
+    desc: 'Formatted to perform well on job boards. Candidates searching for specific HVAC roles will find your posting.',
+  },
+  {
+    num: '05',
+    title: 'Minutes, Not Hours',
+    desc: 'No blank-page paralysis. No copying from old postings. A complete, polished description in under 60 seconds.',
+  },
+  {
+    num: '06',
+    title: 'Customizable Every Time',
+    desc: 'Use it as a starting point or post as-is. Every output is editable before it goes live.',
+  },
+];
+
+// ─── Animated Preview ─────────────────────────────────────────────────────────
+
+const PREVIEW_BULLETS = [
+  'EPA 608 Universal Certification required',
+  '2+ years residential & commercial experience',
+  'Valid driver\'s license, clean record',
+  'Ability to work independently on service calls',
+];
+
 const JobDescriptionWriter: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const [visibleBullets, setVisibleBullets] = useState(0);
 
-  const handleDemoClick = () => {
-    setIsDemoModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsDemoModalOpen(false);
-  };
+  useEffect(() => {
+    if (visibleBullets >= PREVIEW_BULLETS.length) return;
+    const t = setTimeout(() => setVisibleBullets(v => v + 1), 900);
+    return () => clearTimeout(t);
+  }, [visibleBullets]);
 
   return (
     <>
-      <PageContainer>
-        <ContentWrapper>
-          <HeroSection>
-            <MainTitle>Job Description Writer</MainTitle>
-            <MainSubtitle>
-              AI-generated, HVAC-specific job descriptions that attract reliable candidates
-            </MainSubtitle>
-          </HeroSection>
+      <FontImport />
+      <Page>
 
-          <ContentSection>
-            <p style={{ fontSize: '1.125rem', color: '#333', lineHeight: '1.8', textAlign: 'center', marginBottom: '2rem' }}>
-              Give Talos a few key details, and it will generate a complete HVAC-specific job description for you. With training across 20+ HVAC positions, the wording is tuned to attract reliable candidates.
-            </p>
+        {/* ── Hero ── */}
+        <HeroSection>
+          <HeroLeft>
+            <HeroEyebrow>AI Job Description Writer</HeroEyebrow>
+            <HeroHeadline>
+              Write job posts<br />
+              that attract the<br />
+              <em>right</em> techs.
+            </HeroHeadline>
+            <HeroBody>
+              Give Talos a few details about the role and it generates a
+              complete, HVAC-specific job description in seconds — written
+              to filter out poor fits before they even apply.
+            </HeroBody>
+            <HeroCTA onClick={() => setIsDemoModalOpen(true)}>
+              Try It in the Demo
+            </HeroCTA>
+          </HeroLeft>
 
-            <FeatureBox>
-              <FeatureText>
-                Prefer to put your own spin on it? You can adjust the tone before posting.
-              </FeatureText>
-            </FeatureBox>
+          {/* Mock document preview */}
+          <PreviewCard>
+            <PreviewBar>
+              <PreviewDot color="#ff5f57" />
+              <PreviewDot color="#ffbd2e" />
+              <PreviewDot color="#28ca41" />
+              <PreviewLabel>talos_output.md</PreviewLabel>
+              <GeneratingBadge>Generating</GeneratingBadge>
+            </PreviewBar>
 
-            <ProcessSection>
-              <ProcessTitle>How It Works</ProcessTitle>
-              <ProcessSteps>
-                <ProcessStep>
-                  <StepNumber>1</StepNumber>
-                  <StepTitle>Smart Input Processing</StepTitle>
-                  <StepDescription>
-                    Our AI analyzes your job requirements and company information to understand exactly what kind of candidate you need.
-                  </StepDescription>
-                </ProcessStep>
+            <PreviewBody>
+              <PreviewRole>HVAC Service Technician — Miami, FL</PreviewRole>
+              <PreviewTitle>Senior HVAC Service Technician</PreviewTitle>
+              <PreviewDivider />
+              <PreviewText>
+                Join our team as a Senior HVAC Service Technician and take ownership
+                of residential and light-commercial service calls across the Greater Miami
+                area. You'll diagnose and repair a wide range of systems — from split
+                systems and package units to heat pumps and mini-splits — while delivering
+                the kind of service that turns first-time customers into repeat clients.
+              </PreviewText>
+              <PreviewDivider />
+              <PreviewBullets>
+                {PREVIEW_BULLETS.slice(0, visibleBullets).map((b, i) => (
+                  <PreviewBullet key={i}>{b}</PreviewBullet>
+                ))}
+                {visibleBullets < PREVIEW_BULLETS.length && (
+                  <PreviewBullet>
+                    <PreviewCursor />
+                  </PreviewBullet>
+                )}
+              </PreviewBullets>
+            </PreviewBody>
 
-                <ProcessStep>
-                  <StepNumber>2</StepNumber>
-                  <StepTitle>Intelligent Content Generation</StepTitle>
-                  <StepDescription>
-                    Advanced algorithms trained on successful HVAC job postings craft compelling, industry-specific descriptions that resonate with qualified candidates.
-                  </StepDescription>
-                </ProcessStep>
+            <PreviewFooter>
+              <PreviewFooterText>Generated by Talos AI · HVAC-specific model</PreviewFooterText>
+              <PreviewWordCount>412 words</PreviewWordCount>
+            </PreviewFooter>
+          </PreviewCard>
+        </HeroSection>
 
-                <ProcessStep>
-                  <StepNumber>3</StepNumber>
-                  <StepTitle>Optimization & Refinement</StepTitle>
-                  <StepDescription>
-                    The system refines language, tone, and structure based on data from thousands of high-performing HVAC job listings to maximize candidate engagement.
-                  </StepDescription>
-                </ProcessStep>
+        {/* ── Roles ── */}
+        <RolesSection>
+          <RolesInner>
+            <RolesHeader>
+              <RolesTitle>
+                <em>20+</em> HVAC roles<br />covered out of the box.
+              </RolesTitle>
+              <RolesCount>20+</RolesCount>
+            </RolesHeader>
+            <RolesTagWrap>
+              {ROLES.map((r, i) => (
+                <RoleTag key={i} featured={r.featured}>{r.label}</RoleTag>
+              ))}
+            </RolesTagWrap>
+          </RolesInner>
+        </RolesSection>
 
-                <ProcessStep>
-                  <StepNumber>4</StepNumber>
-                  <StepTitle>Multi-Channel Distribution</StepTitle>
-                  <StepDescription>
-                    Your polished job description is formatted and ready for seamless distribution across all major job platforms with optimized visibility.
-                  </StepDescription>
-                </ProcessStep>
-              </ProcessSteps>
-            </ProcessSection>
-          </ContentSection>
+        {/* ── Process ── */}
+        <ProcessSection>
+          <ProcessLeft>
+            <ProcessEyebrow>How it works</ProcessEyebrow>
+            <ProcessTitle>
+              From details<br />
+              to <em>done</em><br />
+              in 60 seconds.
+            </ProcessTitle>
+            <ProcessSubtext>
+              No blank pages, no copy-paste from old postings.
+              Enter what you need, and Talos handles the rest.
+            </ProcessSubtext>
+          </ProcessLeft>
 
-          <ContentSection>
-            <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#4ade80', marginBottom: '2rem', textAlign: 'center' }}>
-              20+ HVAC Positions Covered
-            </h2>
+          <Timeline>
+            {PROCESS_STEPS.map((step, i) => (
+              <TimelineItem key={i}>
+                <TimelineNode>
+                  <TimelineNodeNum>{step.num}</TimelineNodeNum>
+                </TimelineNode>
+                <TimelineContent>
+                  <TimelineTitle>{step.title}</TimelineTitle>
+                  <TimelineDesc>{step.desc}</TimelineDesc>
+                </TimelineContent>
+              </TimelineItem>
+            ))}
+          </Timeline>
+        </ProcessSection>
 
-            <RoleGrid>
-              <RoleCard>
-                <RoleIcon><Wrench size={32} color="#4ade80" /></RoleIcon>
-                <RoleName>HVAC Technician</RoleName>
-              </RoleCard>
-              <RoleCard>
-                <RoleIcon><Snowflake size={32} color="#4ade80" /></RoleIcon>
-                <RoleName>Refrigeration Tech</RoleName>
-              </RoleCard>
-              <RoleCard>
-                <RoleIcon><Home size={32} color="#4ade80" /></RoleIcon>
-                <RoleName>Residential HVAC</RoleName>
-              </RoleCard>
-              <RoleCard>
-                <RoleIcon><Building2 size={32} color="#4ade80" /></RoleIcon>
-                <RoleName>Commercial HVAC</RoleName>
-              </RoleCard>
-              <RoleCard>
-                <RoleIcon><Settings size={32} color="#4ade80" /></RoleIcon>
-                <RoleName>Service Technician</RoleName>
-              </RoleCard>
-              <RoleCard>
-                <RoleIcon><Hammer size={32} color="#4ade80" /></RoleIcon>
-                <RoleName>Installation Tech</RoleName>
-              </RoleCard>
-              <RoleCard>
-                <RoleIcon><Briefcase size={32} color="#4ade80" /></RoleIcon>
-                <RoleName>HVAC Sales Rep</RoleName>
-              </RoleCard>
-              <RoleCard>
-                <RoleIcon><BarChart3 size={32} color="#4ade80" /></RoleIcon>
-                <RoleName>Field Supervisor</RoleName>
-              </RoleCard>
-              <RoleCard>
-                <RoleIcon><GraduationCap size={32} color="#4ade80" /></RoleIcon>
-                <RoleName>HVAC Apprentice</RoleName>
-              </RoleCard>
-              <RoleCard>
-                <RoleIcon><ClipboardList size={32} color="#4ade80" /></RoleIcon>
-                <RoleName>Service Manager</RoleName>
-              </RoleCard>
-              <RoleCard>
-                <RoleIcon><Search size={32} color="#4ade80" /></RoleIcon>
-                <RoleName>HVAC Inspector</RoleName>
-              </RoleCard>
-              <RoleCard>
-                <RoleIcon><Zap size={32} color="#4ade80" /></RoleIcon>
-                <RoleName>Controls Technician</RoleName>
-              </RoleCard>
-            </RoleGrid>
-          </ContentSection>
+        {/* ── Why It Works ── */}
+        <WhySection>
+          <WhyInner>
+            <WhyHeader>
+              <WhyEyebrow>Why it works</WhyEyebrow>
+              <WhyTitle>
+                Not a template.<br />
+                <em>Trained</em> on HVAC.
+              </WhyTitle>
+            </WhyHeader>
+            <WhyGrid>
+              {WHY_ITEMS.map((item, i) => (
+                <WhyItem key={i}>
+                  <WhyNum className="why-num">{item.num}</WhyNum>
+                  <WhyItemTitle>{item.title}</WhyItemTitle>
+                  <WhyItemDesc>{item.desc}</WhyItemDesc>
+                </WhyItem>
+              ))}
+            </WhyGrid>
+          </WhyInner>
+        </WhySection>
 
-          <ContentSection>
-            <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#4ade80', marginBottom: '2rem', textAlign: 'center' }}>
-              Why Our AI-Generated Descriptions Work Better
-            </h2>
+        {/* ── CTA ── */}
+        <CTASection>
+          <CTAEyebrow>See it live</CTAEyebrow>
+          <CTAHeadline>
+            Watch Talos write a job description for your open role.
+          </CTAHeadline>
+          <CTABody>
+            Book a 20-minute demo and we'll generate a description for one of your
+            actual open positions live — so you can see exactly what you'd get.
+          </CTABody>
+          <CTAButton onClick={() => setIsDemoModalOpen(true)}>
+            Book a Demo
+          </CTAButton>
+        </CTASection>
 
-            <BenefitsList>
-              <BenefitCard>
-                <BenefitIcon><Target size={40} color="#4ade80" /></BenefitIcon>
-                <BenefitTitle>Industry-Specific Language</BenefitTitle>
-                <BenefitDescription>
-                  Uses terminology and requirements that HVAC professionals understand and respond to, improving application quality.
-                </BenefitDescription>
-              </BenefitCard>
-
-              <BenefitCard>
-                <BenefitIcon><TrendingUp size={40} color="#4ade80" /></BenefitIcon>
-                <BenefitTitle>Optimized for Results</BenefitTitle>
-                <BenefitDescription>
-                  Based on analysis of thousands of successful HVAC job postings to maximize candidate attraction and conversion.
-                </BenefitDescription>
-              </BenefitCard>
-
-              <BenefitCard>
-                <BenefitIcon><Clock size={40} color="#4ade80" /></BenefitIcon>
-                <BenefitTitle>Save Hours of Work</BenefitTitle>
-                <BenefitDescription>
-                  No more struggling with blank pages or copying generic templates. Get professional descriptions in minutes.
-                </BenefitDescription>
-              </BenefitCard>
-
-              <BenefitCard>
-                <BenefitIcon><Wrench size={40} color="#4ade80" /></BenefitIcon>
-                <BenefitTitle>Certification Requirements</BenefitTitle>
-                <BenefitDescription>
-                  Automatically includes relevant certifications, licenses, and technical requirements for each HVAC role.
-                </BenefitDescription>
-              </BenefitCard>
-
-              <BenefitCard>
-                <BenefitIcon><Thermometer size={40} color="#4ade80" /></BenefitIcon>
-                <BenefitTitle>Seasonal Considerations</BenefitTitle>
-                <BenefitDescription>
-                  Accounts for seasonal demands, peak periods, and geographic climate considerations in job descriptions.
-                </BenefitDescription>
-              </BenefitCard>
-
-              <BenefitCard>
-                <RoleIcon><PenTool size={40} color="#4ade80" /></RoleIcon>
-                <BenefitTitle>Customizable Tone</BenefitTitle>
-                <BenefitDescription>
-                  Adjust the description tone to match your company culture - from corporate professional to family-friendly local business.
-                </BenefitDescription>
-              </BenefitCard>
-            </BenefitsList>
-          </ContentSection>
-
-          <CTASection>
-            <CTAButton onClick={handleDemoClick}>
-              Try the Job Description Writer
-            </CTAButton>
-          </CTASection>
-        </ContentWrapper>
-      </PageContainer>
-
-      <DemoModal isOpen={isDemoModalOpen} onClose={handleCloseModal} />
+      </Page>
+      <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
     </>
   );
 };
