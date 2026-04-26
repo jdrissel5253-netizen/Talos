@@ -261,7 +261,7 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({ isOpen, onClose
               <div style={{ textAlign: 'right' }}>
                 <InfoLabel>Overall Match Score</InfoLabel>
                 <div style={{ fontSize: '2rem', fontWeight: '800', color: '#2d3748' }}>
-                  {candidate.overall_score || 0}%
+                  {candidate.overall_score || candidate.tier_score || 0}%
                 </div>
               </div>
             </div>
@@ -296,7 +296,7 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({ isOpen, onClose
 
             <SummaryBox>
               <InfoLabel>AI Summary</InfoLabel>
-              <p style={{ margin: '0.5rem 0 0 0', color: '#2d3748' }}>{candidate.ai_summary || "No summary available."}</p>
+              <p style={{ margin: '0.5rem 0 0 0', color: '#2d3748', whiteSpace: 'pre-wrap' }}>{candidate.summary || candidate.ai_summary || "No summary available."}</p>
             </SummaryBox>
           </Section>
 

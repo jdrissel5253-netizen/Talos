@@ -5,6 +5,7 @@ import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
 import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2 } from 'lucide-react';
 import ResumePreviewModal from './ResumePreviewModal';
+import ResumeFileModal from './ResumeFileModal';
 import ContactRejectionModal from './ContactRejectionModal';
 import { extractCandidateName } from '../utils/templateHelpers';
 
@@ -447,7 +448,11 @@ const TalentPoolManager: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Resume Modal State
+  // Resume File Modal State
+  const [resumeFileCandidate, setResumeFileCandidate] = useState<{ id: number; filename: string } | null>(null);
+  const [isResumeFileModalOpen, setIsResumeFileModalOpen] = useState(false);
+
+  // Quick Summary Modal State
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
 
@@ -645,9 +650,15 @@ const TalentPoolManager: React.FC = () => {
       </MetaRow>
 
       <ActionButtons>
-        <ActionButton onClick={() => handleViewResume(candidate)}>
-          <FileText size={16} /> View Resume Preview
-        </ActionButton>
+        <ActionButton onClick={() => {
+            setResumeFileCandidate({ id: candidate.candidate_id, filename: candidate.filename });
+            setIsResumeFileModalOpen(true);
+          }}>
+            <FileText size={16} /> Resume
+          </ActionButton>
+          <ActionButton onClick={() => handleViewResume(candidate)}>
+            Quick Summary
+          </ActionButton>
 
         <MessageDropdown>
           <ActionIcon
@@ -842,6 +853,13 @@ const TalentPoolManager: React.FC = () => {
           </CandidatesGrid>
         )}
       </MainCard>
+
+      <ResumeFileModal
+        isOpen={isResumeFileModalOpen}
+        onClose={() => { setIsResumeFileModalOpen(false); setResumeFileCandidate(null); }}
+        candidateId={resumeFileCandidate?.id ?? null}
+        filename={resumeFileCandidate?.filename ?? ''}
+      />
 
       <ResumePreviewModal
         isOpen={isResumeModalOpen}

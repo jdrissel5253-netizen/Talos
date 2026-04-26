@@ -126,6 +126,35 @@ const upload = multer({
     }
 });
 
+// Serve the actual resume PDF for a candidate
+router.get('/file/:candidateId', async (req, res) => {
+    try {
+        const candidateId = parseInt(req.params.candidateId);
+        if (!candidateId || isNaN(candidateId)) {
+            return res.status(400).json({ status: 'error', message: 'Invalid candidate ID' });
+        }
+
+        const candidate = await candidateService.findById(candidateId);
+        if (!candidate || !candidate.file_path) {
+            return res.status(404).json({ status: 'error', message: 'Resume not found' });
+        }
+
+        // Ensure the path stays within the applications directory
+        const applicationsDir = path.resolve(__dirname, '../applications');
+        const resolvedPath = path.resolve(candidate.file_path);
+        if (!resolvedPath.startsWith(applicationsDir)) {
+            return res.status(403).json({ status: 'error', message: 'Access denied' });
+        }
+
+        res.setHeader('Content-Type', 'application/pdf');
+        res.setHeader('Content-Disposition', `inline; filename="${candidate.filename}"`);
+        res.sendFile(resolvedPath);
+    } catch (error) {
+        logger.error('Error serving resume file', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to retrieve resume' });
+    }
+});
+
 // Upload and analyze resume (single)
 router.post('/upload', upload.single('resume'), async (req, res) => {
     try {
