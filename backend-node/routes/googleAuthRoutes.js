@@ -29,13 +29,13 @@ router.get('/callback', async (req, res) => {
 
 /**
  * GET /api/auth/google/url
- * Returns the Google OAuth URL. Accepts ?return= to set the post-auth redirect.
+ * Redirects directly to Google OAuth. Accepts ?return= to set the post-auth destination.
  */
 router.get('/url', (req, res) => {
     try {
         const returnPath = req.query.return || '/talent-pool';
         const url = gmailService.getAuthUrl(returnPath);
-        res.json({ status: 'success', data: { url } });
+        res.redirect(url);
     } catch (error) {
         res.status(500).json({ status: 'error', message: 'Failed to generate auth URL' });
     }
