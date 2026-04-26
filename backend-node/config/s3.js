@@ -29,8 +29,13 @@ async function uploadResume(buffer, originalFilename) {
 async function downloadResumeToTemp(s3Key) {
     const response = await s3.send(new GetObjectCommand({ Bucket: BUCKET, Key: s3Key }));
     const tmpPath = path.join(os.tmpdir(), path.basename(s3Key));
-    const bytes = await response.Body.transformToByteArray();
-    fs.writeFileSync(tmpPath, bytes);
+    await new Promise((resolve, reject) => {
+        const writeStream = fs.createWriteStream(tmpPath);
+        response.Body.pipe(writeStream);
+        writeStream.on('finish', resolve);
+        writeStream.on('error', reject);
+        response.Body.on('error', reject);
+    });
     return tmpPath;
 }
 
