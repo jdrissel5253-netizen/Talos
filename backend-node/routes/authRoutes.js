@@ -153,7 +153,7 @@ router.post('/login', async (req, res) => {
  */
 const authenticateToken = (req, res, next) => {
     const authHeader = req.headers['authorization'];
-    const token = (authHeader && authHeader.split(' ')[1]) || req.query.token;
+    const token = authHeader && authHeader.split(' ')[1]; // Bearer TOKEN
 
     if (!token) {
         return res.status(401).json({

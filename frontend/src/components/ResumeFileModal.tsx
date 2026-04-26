@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { X, FileText } from 'lucide-react';
 import { config } from '../config';
-import { getToken } from '../utils/auth';
+import { getAuthHeaders } from '../utils/auth';
 
 interface Props {
   isOpen: boolean;
@@ -60,7 +60,7 @@ const CloseButton = styled.button`
   border-radius: 50%;
   display: flex;
   align-items: center;
-  justify-content:: center;
+  justify-content: center;
 
   &:hover {
     color: white;
@@ -71,6 +71,9 @@ const CloseButton = styled.button`
 const IframeWrapper = styled.div`
   flex: 1;
   background: #333;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 `;
 
 const StyledIframe = styled.iframe`
@@ -79,11 +82,52 @@ const StyledIframe = styled.iframe`
   border: none;
 `;
 
-const ResumeFileModal: React.FC<Props> = ({ isOpen, onClose, candidateId, filename }) => {
-  if (!isOpen || !candidateId) return null;
+const StatusText = styled.p`
+  color: #aaa;
+  font-size: 0.95rem;
+`;
 
-  const token = getToken();
-  const src = `${config.apiUrl}/api/resume/file/${candidateId}${token ? `?token=${encodeURIComponent(token)}` : ''}`;
+const ResumeFileModal: React.FC<Props> = ({ isOpen, onClose, candidateId, filename }) => {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
+  const prevCandidateId = useRef<number | null>(null);
+
+  useEffect(() => {
+    if (!isOpen || !candidateId) return;
+    if (candidateId === prevCandidateId.current && blobUrl) return;
+
+    prevCandidateId.current = candidateId;
+    setStatus('loading');
+    setBlobUrl(null);
+
+    let objectUrl: string;
+
+    fetch(`${config.apiUrl}/api/resume/file/${candidateId}`, {
+      headers: getAuthHeaders()
+    })
+      .then(res => {
+        if (!res.ok) throw new Error(`${res.status}`);
+        return res.blob();
+      })
+      .then(blob => {
+        objectUrl = URL.createObjectURL(blob);
+        setBlobUrl(objectUrl);
+        setStatus('ready');
+      })
+      .catch(() => setStatus('error'));
+
+    return () => {
+      if (objectUrl) URL.revokeObjectURL(objectUrl);
+    };
+  }, [isOpen, candidateId]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setBlobUrl(null);
+      setStatus('loading');
+      prevCandidateId.current = null;
+    }
+  }, [isOpen]);
 
   return (
     <Overlay isOpen={isOpen} onClick={onClose}>
@@ -98,7 +142,11 @@ const ResumeFileModal: React.FC<Props> = ({ isOpen, onClose, candidateId, filena
           </CloseButton>
         </Header>
         <IframeWrapper>
-          <StyledIframe src={src} title="Resume" />
+          {status === 'loading' && <StatusText>Loading resume...</StatusText>}
+          {status === 'error' && <StatusText>Failed to load resume. The file may no longer be available.</StatusText>}
+          {status === 'ready' && blobUrl && (
+            <StyledIframe src={blobUrl} title="Resume" />
+          )}
         </IframeWrapper>
       </Modal>
     </Overlay>
