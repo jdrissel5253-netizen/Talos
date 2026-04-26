@@ -351,8 +351,8 @@ const jobService = {
                 qualifications_years, qualifications_certifications, qualifications_other,
                 education_requirements, other_relevant_titles, advancement_opportunities,
                 advancement_timeline, company_culture, ai_generated_description,
-                flexible_on_title, status
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32) RETURNING *`,
+                flexible_on_title, drivers_license_required, status
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33) RETURNING *`,
             [
                 userId,
                 jobData.title,
@@ -385,6 +385,7 @@ const jobService = {
                 jobData.company_culture,
                 jobData.ai_generated_description,
                 jobData.flexible_on_title !== false ? 1 : 0,
+                jobData.drivers_license_required ? 1 : 0,
                 'active'
             ]
         );
@@ -463,7 +464,7 @@ const jobService = {
             'qualifications_years', 'qualifications_certifications', 'qualifications_other',
             'education_requirements', 'other_relevant_titles', 'advancement_opportunities',
             'advancement_timeline', 'company_culture', 'ai_generated_description',
-            'flexible_on_title', 'status', 'updated_at'
+            'flexible_on_title', 'drivers_license_required', 'status', 'updated_at'
         ];
 
         const fields = [];
