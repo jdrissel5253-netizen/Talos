@@ -136,21 +136,27 @@ router.get('/file/:candidateId', async (req, res) => {
 
         const candidate = await candidateService.findById(candidateId);
         if (!candidate || !candidate.file_path) {
+            logger.warn('Resume file not found in DB', { candidateId, hasCandidate: !!candidate, hasFilePath: !!candidate?.file_path });
             return res.status(404).json({ status: 'error', message: 'Resume not found' });
         }
 
         // Ensure the path stays within the applications directory
         const applicationsDir = path.resolve(__dirname, '../applications');
         const resolvedPath = path.resolve(candidate.file_path);
+        logger.info('Resume file request', { candidateId, applicationsDir, resolvedPath, storedPath: candidate.file_path });
+
         if (!resolvedPath.startsWith(applicationsDir)) {
+            logger.warn('Path traversal check failed', { resolvedPath, applicationsDir });
             return res.status(403).json({ status: 'error', message: 'Access denied' });
         }
 
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `inline; filename="${candidate.filename}"`);
-        res.sendFile(resolvedPath);
+        res.sendFile(resolvedPath, (err) => {
+            if (err) logger.error('sendFile error', { error: err.message, resolvedPath });
+        });
     } catch (error) {
-        logger.error('Error serving resume file', { error: error.message });
+        logger.error('Error serving resume file', { error: error.message, stack: error.stack });
         res.status(500).json({ status: 'error', message: 'Failed to retrieve resume' });
     }
 });
