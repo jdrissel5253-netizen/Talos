@@ -48,19 +48,19 @@ const barExpand = keyframes`
 
 const Page = styled.div`
   min-height: 100vh;
-  background: #080808;
+  background: #111318;
   font-family: 'Sora', sans-serif;
   padding: 0 0 5rem;
 `;
 
 const TopBar = styled.div`
-  border-bottom: 1px solid #141414;
+  border-bottom: 1px solid #232830;
   padding: 1.75rem 2.5rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 2rem;
-  background: #080808;
+  background: #111318;
   position: sticky;
   top: 0;
   z-index: 50;
@@ -86,7 +86,7 @@ const GreetingText = styled.h1`
 const EmailText = styled.p`
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
-  color: #333;
+  color: #555;
   margin-top: 0.2rem;
   letter-spacing: 0.04em;
 `;
@@ -154,7 +154,7 @@ const StatsRow = styled.div`
   display: grid;
   grid-template-columns: repeat(6, 1fr);
   gap: 1px;
-  border: 1px solid #141414;
+  border: 1px solid #232830;
   margin-bottom: 2rem;
 
   @media (max-width: 1024px) { grid-template-columns: repeat(3, 1fr); }
@@ -162,17 +162,17 @@ const StatsRow = styled.div`
 `;
 
 const StatTile = styled.div<{ accent?: string }>`
-  background: #0d0d0d;
+  background: #1a1f2a;
   padding: 1.5rem 1.25rem;
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
-  border-right: 1px solid #141414;
-  border-bottom: 1px solid #141414;
+  border-right: 1px solid #232830;
+  border-bottom: 1px solid #232830;
   cursor: default;
   transition: background 0.15s ease;
 
-  &:hover { background: #111; }
+  &:hover { background: #1e2330; }
   &:last-child { border-right: none; }
 
   @media (max-width: 1024px) {
@@ -188,7 +188,7 @@ const StatLabel = styled.span`
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #333;
+  color: #555;
 `;
 
 const StatValue = styled.span<{ accent?: string }>`
@@ -202,7 +202,7 @@ const StatValue = styled.span<{ accent?: string }>`
 
 const StatSub = styled.span`
   font-size: 0.7rem;
-  color: #2a2a2a;
+  color: #4a5060;
   font-weight: 400;
 `;
 
@@ -222,8 +222,8 @@ const TwoCol = styled.div`
 // ─── section card ─────────────────────────────────────────────────────────────
 
 const Card = styled.div`
-  background: #0d0d0d;
-  border: 1px solid #141414;
+  background: #1a1f2a;
+  border: 1px solid #232830;
 `;
 
 const CardHeader = styled.div`
@@ -280,11 +280,11 @@ const FunnelLabel = styled.span`
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #444;
+  color: #667;
 `;
 
 const FunnelTrack = styled.div`
-  background: #141414;
+  background: #232830;
   height: 4px;
   position: relative;
   overflow: visible;
@@ -323,7 +323,7 @@ const TierDistRow = styled.div`
   align-items: center;
   justify-content: space-between;
   padding: 0.75rem 0;
-  border-bottom: 1px solid #0f0f0f;
+  border-bottom: 1px solid #1e2330;
 
   &:last-child { border-bottom: none; }
 `;
@@ -351,7 +351,7 @@ const TierDistName = styled.span`
 const TierDistRange = styled.span`
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
-  color: #333;
+  color: #555;
   margin-left: 0.35rem;
 `;
 
@@ -374,12 +374,12 @@ const AttentionRow = styled.div`
   align-items: center;
   gap: 1rem;
   padding: 1rem 1.5rem;
-  border-bottom: 1px solid #0f0f0f;
+  border-bottom: 1px solid #1e2330;
   cursor: pointer;
   transition: background 0.15s ease;
 
   &:last-child { border-bottom: none; }
-  &:hover { background: #111; }
+  &:hover { background: #1e2330; }
 `;
 
 const AttentionDot = styled.div`
@@ -411,7 +411,7 @@ const AttentionBadge = styled.span`
 
 const AttentionCity = styled.span`
   font-size: 0.75rem;
-  color: #333;
+  color: #555;
 `;
 
 // ─── jobs grid ────────────────────────────────────────────────────────────────
@@ -420,7 +420,7 @@ const JobsBody = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1px;
-  background: #141414;
+  background: #232830;
 
   @media (max-width: 700px) {
     grid-template-columns: 1fr;
@@ -428,7 +428,7 @@ const JobsBody = styled.div`
 `;
 
 const JobTile = styled.div`
-  background: #0d0d0d;
+  background: #1a1f2a;
   padding: 1.4rem 1.5rem;
   cursor: pointer;
   transition: background 0.15s ease;
@@ -436,7 +436,7 @@ const JobTile = styled.div`
   flex-direction: column;
   gap: 0.5rem;
 
-  &:hover { background: #111; }
+  &:hover { background: #1e2330; }
 `;
 
 const JobTileTitle = styled.h3`
@@ -474,7 +474,7 @@ const JobMetaItem = styled.span`
   align-items: center;
   gap: 0.3rem;
   font-size: 0.72rem;
-  color: #333;
+  color: #555;
 `;
 
 const JobTileFooter = styled.div`
@@ -482,7 +482,7 @@ const JobTileFooter = styled.div`
   align-items: center;
   justify-content: space-between;
   padding-top: 0.6rem;
-  border-top: 1px solid #141414;
+  border-top: 1px solid #232830;
   margin-top: 0.25rem;
 `;
 
@@ -507,7 +507,7 @@ const CandidateItem = styled.div`
   align-items: center;
   gap: 0.75rem;
   padding: 0.9rem 1.5rem;
-  border-bottom: 1px solid #0f0f0f;
+  border-bottom: 1px solid #1e2330;
 
   &:last-child { border-bottom: none; }
 `;
@@ -536,7 +536,7 @@ const CandidateNameText = styled.span`
 
 const CandidateJobText = styled.span`
   font-size: 0.72rem;
-  color: #333;
+  color: #555;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -556,7 +556,7 @@ const CandidateScore = styled.span`
 const EmptyCell = styled.div`
   padding: 3rem 1.5rem;
   text-align: center;
-  color: #2a2a2a;
+  color: #4a5060;
   font-size: 0.82rem;
   font-weight: 400;
 `;
@@ -585,7 +585,7 @@ const LoadingRow = styled.div`
   text-align: center;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.72rem;
-  color: #2a2a2a;
+  color: #4a5060;
   letter-spacing: 0.1em;
 `;
 
