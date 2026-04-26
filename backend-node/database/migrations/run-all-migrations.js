@@ -2,6 +2,7 @@
  * Consolidated migration script for production database
  * Run this to create all missing tables and columns
  */
+require('dotenv').config();
 const { pool, query } = require('../../config/database-pg');
 
 const migrations = `

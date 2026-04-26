@@ -285,6 +285,16 @@ app.post('/api/demo-request', (req, res) => {
     }, 500);
 });
 
+// ONE-TIME MIGRATION: add drivers_license_required column — DELETE after use
+app.post('/api/admin/migrate-drivers-license', async (req, res) => {
+    try {
+        await db.query('ALTER TABLE jobs ADD COLUMN IF NOT EXISTS drivers_license_required BOOLEAN DEFAULT FALSE');
+        res.json({ status: 'success', message: 'drivers_license_required column added' });
+    } catch (err) {
+        res.status(500).json({ status: 'error', message: err.message });
+    }
+});
+
 // Error handling middleware
 app.use((error, req, res, next) => {
     logger.error('Unhandled route error', { error: error.message, stack: error.stack, requestId: req.requestId });
