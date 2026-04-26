@@ -3475,7 +3475,7 @@ ${generateUnifiedScoringRubric(requiredYears, false)}
 /**
  * Analyze resume using Claude AI with HVAC-specific criteria
  */
-async function analyzeResume(filePath, position = 'HVAC Technician', requiredYearsExperience = 2, flexibleOnTitle = true) {
+async function analyzeResume(filePath, position = 'HVAC Technician', requiredYearsExperience = 2, flexibleOnTitle = true, jobLocation = null) {
    try {
       // Extract text from resume
       let resumeText;
@@ -3488,6 +3488,8 @@ async function analyzeResume(filePath, position = 'HVAC Technician', requiredYea
          // For now, we'll handle PDF only
          throw new Error('Only PDF files are currently supported');
       }
+
+      const jobLocationLine = jobLocation ? `Job Location: ${jobLocation}\n\n` : '';
 
       // Check if we're using the tiered framework for HVAC Service Technician, Lead HVAC Technician, Dispatcher, Administrative Assistant, Customer Service Rep, Apprentice, Bookkeeper, Warehouse Associate, or Sales Rep
       const useServiceTechFramework = position === 'HVAC Service Technician';
@@ -3512,7 +3514,7 @@ async function analyzeResume(filePath, position = 'HVAC Technician', requiredYea
 
 ${salesRepCriteria.framework}
 
-Resume Content:
+${jobLocationLine}Resume Content:
 ${resumeText}
 
 CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
@@ -3631,7 +3633,7 @@ Return your analysis in this EXACT JSON format:
 
 ${warehouseCriteria.framework}
 
-Resume Content:
+${jobLocationLine}Resume Content:
 ${resumeText}
 
 CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
@@ -3753,7 +3755,7 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
 
 ${bookkeeperCriteria.framework}
 
-Resume Content:
+${jobLocationLine}Resume Content:
 ${resumeText}
 
 CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
@@ -3883,7 +3885,7 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
 
 ${apprenticeCriteria.framework}
 
-Resume Content:
+${jobLocationLine}Resume Content:
 ${resumeText}
 
 CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
@@ -4002,7 +4004,7 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
 
 ${csrCriteria.framework}
 
-Resume Content:
+${jobLocationLine}Resume Content:
 ${resumeText}
 
 CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
@@ -4116,7 +4118,7 @@ CRITICAL RULES:
 
 ${adminCriteria.framework}
 
-Resume Content:
+${jobLocationLine}Resume Content:
 ${resumeText}
 
 CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
@@ -4230,7 +4232,7 @@ CRITICAL RULES:
 
 ${dispatcherCriteria.framework}
 
-Resume Content:
+${jobLocationLine}Resume Content:
 ${resumeText}
 
 CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
@@ -4361,7 +4363,7 @@ IMPORTANT: Your overallScore MUST align with the tier ranges (Green: 80-100, Yel
 
 ${serviceTechCriteria.framework}
 
-Resume Content:
+${jobLocationLine}Resume Content:
 ${resumeText}
 
 CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
@@ -4479,7 +4481,7 @@ IMPORTANT: Your overallScore MUST align with the tier ranges specified in the fr
 
 ${pmTechCriteria.framework}
 
-Resume Content:
+${jobLocationLine}Resume Content:
 ${resumeText}
 
 CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
@@ -4599,7 +4601,7 @@ IMPORTANT: Your overallScore MUST align with the tier ranges specified in the fr
 
 ${installerCriteria.framework}
 
-Resume Content:
+${jobLocationLine}Resume Content:
 ${resumeText}
 
 CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
@@ -4714,7 +4716,7 @@ IMPORTANT: Your overallScore MUST align with the tier ranges specified in the fr
 
 ${leadTechCriteria.framework}
 
-Resume Content:
+${jobLocationLine}Resume Content:
 ${resumeText}
 
 CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
@@ -4876,7 +4878,7 @@ CRITICAL RULES:
 
          prompt = `You are an expert HVAC industry recruiter. Analyze the following resume for a ${positionCriteria.title} position and provide a detailed evaluation.
 
-Resume Content:
+${jobLocationLine}Resume Content:
 ${resumeText}
 
 Please analyze this resume for the ${positionCriteria.title} position and provide your evaluation in the following JSON format:

@@ -142,14 +142,26 @@ async function processResumeInBackground(candidate, filePath, name, email, phone
     try {
         logger.info('Starting background analysis', { candidateId: candidate.id });
 
-        // HARDCODED FOR INITIAL TEST: Always evaluate as Service Technician with 2 years required
-        const positionType = 'HVAC Technician';
-        const requiredYearsExperience = 2;
+        // Look up job to get the correct position type and requirements
+        let positionType = 'HVAC Service Technician';
+        let requiredYearsExperience = 2;
+        let flexibleOnTitle = true;
+        let jobLocation = null;
+        let jobForAnalysis = null;
+        if (jobId) {
+            jobForAnalysis = await jobService.findById(parseInt(jobId));
+            if (jobForAnalysis) {
+                positionType = jobForAnalysis.position_type || jobForAnalysis.title || positionType;
+                requiredYearsExperience = jobForAnalysis.required_years_experience || requiredYearsExperience;
+                flexibleOnTitle = jobForAnalysis.flexible_on_title !== false;
+                jobLocation = [jobForAnalysis.city, jobForAnalysis.zip_code].filter(Boolean).join(', ') || null;
+            }
+        }
 
         // Analyze the resume
         let analysisResult;
         try {
-            analysisResult = await analyzeResume(filePath, positionType, requiredYearsExperience, true);
+            analysisResult = await analyzeResume(filePath, positionType, requiredYearsExperience, flexibleOnTitle, jobLocation);
             logger.info('Resume analyzed', {
                 candidateId: candidate.id,
                 score: analysisResult?.overallScore,
@@ -230,7 +242,7 @@ async function processResumeInBackground(candidate, filePath, name, email, phone
                         ai_summary: `Applied via public link. Score: ${score}/100. ${analysisResult?.hiringRecommendation || 'Pending review'}.`,
                         internal_notes: `Source: Public Apply Page`,
                         tags: ['public-application'],
-                        evaluated_position: 'HVAC Technician'
+                        evaluated_position: positionType
                     };
 
                     await candidatePipelineService.addToJob(candidate.id, parseInt(jobId), pipelineData);
@@ -241,7 +253,7 @@ async function processResumeInBackground(candidate, filePath, name, email, phone
 
             // Only add to General Talent Pool if NOT added to a specific job
             if (candidate && !addedToSpecificJob) {
-                await addToGeneralTalentPool(candidate.id, name, email, phone, score, tier, star_rating, analysisResult);
+                await addToGeneralTalentPool(candidate.id, name, email, phone, score, tier, star_rating, analysisResult, positionType);
                 logger.info('Added candidate to General Talent Pool', { candidateId: candidate.id });
             }
 
@@ -269,7 +281,7 @@ async function processResumeInBackground(candidate, filePath, name, email, phone
  * Add candidate to the General Talent Pool
  * Creates the pool if it doesn't exist (uses userId 1 as admin user)
  */
-async function addToGeneralTalentPool(candidateId, name, email, phone, score, tier, star_rating, analysisResult) {
+async function addToGeneralTalentPool(candidateId, name, email, phone, score, tier, star_rating, analysisResult, positionType = 'HVAC Service Technician') {
     const ADMIN_USER_ID = 1; // Default admin user
 
     // Find or create General Talent Pool job
@@ -298,7 +310,7 @@ async function addToGeneralTalentPool(candidateId, name, email, phone, score, ti
         ai_summary: `Public application. Score: ${score}/100. ${analysisResult?.hiringRecommendation || 'Pending review'}.`,
         internal_notes: 'Source: Public Apply Page',
         tags: ['public-application'],
-        evaluated_position: 'HVAC Technician'
+        evaluated_position: positionType
     };
 
     await candidatePipelineService.addToJob(candidateId, generalJob.id, pipelineData);
