@@ -153,7 +153,12 @@ router.get('/file/:candidateId', async (req, res) => {
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `inline; filename="${candidate.filename}"`);
         res.sendFile(resolvedPath, (err) => {
-            if (err) logger.error('sendFile error', { error: err.message, resolvedPath });
+            if (err) {
+                logger.error('sendFile error', { error: err.message, code: err.code, resolvedPath });
+                if (!res.headersSent) {
+                    res.status(404).json({ status: 'error', message: 'Resume file not found on server' });
+                }
+            }
         });
     } catch (error) {
         logger.error('Error serving resume file', { error: error.message, stack: error.stack });
