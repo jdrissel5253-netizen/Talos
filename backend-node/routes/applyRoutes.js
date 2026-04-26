@@ -5,33 +5,16 @@ const fs = require('fs');
 const { candidateService, analysisService, candidatePipelineService, jobService, sanitize } = require('../services/databaseService');
 const { analyzeResume } = require('../services/resumeAnalyzer');
 const { calculateTier, calculateStarRating } = require('../services/scoringService');
+const { uploadResume, downloadResumeToTemp, isS3Key } = require('../config/s3');
 const db = require('../config/database');
 const logger = require('../services/logger');
 
 const router = express.Router();
 
-// Create applications directory if it doesn't exist
-const applicationsDir = path.join(__dirname, '../applications');
-if (!fs.existsSync(applicationsDir)) {
-    fs.mkdirSync(applicationsDir, { recursive: true });
-}
-
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, applicationsDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'application-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
+// Use memory storage — files go to S3, not local disk
 const upload = multer({
-    storage: storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit
-    },
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowedTypes = [
             'application/pdf',
@@ -108,10 +91,13 @@ router.post('/', (req, res, next) => {
             }
         }
 
-        logger.info('New application received', { jobId, jobTitle, filename: req.file.filename });
+        logger.info('New application received', { jobId, jobTitle, filename: req.file.originalname });
+
+        // Upload file to S3 and store the S3 key
+        const s3Key = await uploadResume(req.file.buffer, req.file.originalname);
 
         // Create candidate record immediately (null batch_id for public applications)
-        const candidate = await candidateService.create(null, req.file.originalname, req.file.path, email);
+        const candidate = await candidateService.create(null, req.file.originalname, s3Key, email);
         logger.info('Candidate record created', { candidateId: candidate.id });
 
         // Return success immediately - don't wait for analysis
@@ -138,9 +124,15 @@ router.post('/', (req, res, next) => {
 /**
  * Background processing function - runs after response is sent to user
  */
-async function processResumeInBackground(candidate, filePath, name, email, phone, jobId, jobTitle) {
+async function processResumeInBackground(candidate, s3KeyOrPath, name, email, phone, jobId, jobTitle) {
+    let tempPath = null;
     try {
         logger.info('Starting background analysis', { candidateId: candidate.id });
+
+        // Download from S3 to a temp file for analysis
+        const filePath = isS3Key(s3KeyOrPath)
+            ? (tempPath = await downloadResumeToTemp(s3KeyOrPath))
+            : s3KeyOrPath;
 
         // Look up job to get the correct position type and requirements
         let positionType = 'HVAC Service Technician';
@@ -268,11 +260,14 @@ async function processResumeInBackground(candidate, filePath, name, email, phone
         logger.info('Background processing completed', { candidateId: candidate.id });
     } catch (error) {
         logger.error('Error in background processing', { candidateId: candidate.id, error: error.message, stack: error.stack });
-        // Update status to indicate error
         try {
             await candidateService.updateStatus(candidate.id, 'error');
         } catch (e) {
             logger.error('Failed to update candidate status to error', { candidateId: candidate.id, error: e.message });
+        }
+    } finally {
+        if (tempPath) {
+            try { fs.unlinkSync(tempPath); } catch (_) {}
         }
     }
 }

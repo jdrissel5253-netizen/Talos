@@ -1,8 +1,10 @@
 const express = require('express');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
 const { analyzeResume } = require('../services/resumeAnalyzer');
 const { batchService, candidateService, analysisService, jobService, candidatePipelineService } = require('../services/databaseService');
+const { uploadResume, downloadResumeToTemp, streamResumeTo, isS3Key } = require('../config/s3');
 const logger = require('../services/logger');
 
 const router = express.Router();
@@ -92,23 +94,10 @@ function mapPositionValue(positionValue) {
     return positionMap[positionValue] || positionValue || 'HVAC Service Technician';
 }
 
-// Configure multer for file uploads
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, 'uploads/');
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-        cb(null, 'resume-' + uniqueSuffix + path.extname(file.originalname));
-    }
-});
-
+// Use memory storage — files go to S3, not local disk
 const upload = multer({
-    storage: storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit per file
-        // Note: files limit is specified in the route handler with .array('resumes', 10)
-    },
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowedMimeTypes = [
             'application/pdf',
@@ -117,12 +106,10 @@ const upload = multer({
         ];
         const allowedExtensions = ['.pdf', '.doc', '.docx'];
         const ext = path.extname(file.originalname).toLowerCase();
-
         if (allowedMimeTypes.includes(file.mimetype) && allowedExtensions.includes(ext)) {
             return cb(null, true);
-        } else {
-            cb(new Error('Only PDF and DOC/DOCX files are allowed'));
         }
+        cb(new Error('Only PDF and DOC/DOCX files are allowed'));
     }
 });
 
@@ -136,30 +123,15 @@ router.get('/file/:candidateId', async (req, res) => {
 
         const candidate = await candidateService.findById(candidateId);
         if (!candidate || !candidate.file_path) {
-            logger.warn('Resume file not found in DB', { candidateId, hasCandidate: !!candidate, hasFilePath: !!candidate?.file_path });
             return res.status(404).json({ status: 'error', message: 'Resume not found' });
         }
 
-        // Ensure the path stays within the applications directory
-        const applicationsDir = path.resolve(__dirname, '../applications');
-        const resolvedPath = path.resolve(candidate.file_path);
-        logger.info('Resume file request', { candidateId, applicationsDir, resolvedPath, storedPath: candidate.file_path });
-
-        if (!resolvedPath.startsWith(applicationsDir)) {
-            logger.warn('Path traversal check failed', { resolvedPath, applicationsDir });
-            return res.status(403).json({ status: 'error', message: 'Access denied' });
+        if (!isS3Key(candidate.file_path)) {
+            return res.status(404).json({ status: 'error', message: 'Resume file not available — please re-upload' });
         }
 
-        res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', `inline; filename="${candidate.filename}"`);
-        res.sendFile(resolvedPath, (err) => {
-            if (err) {
-                logger.error('sendFile error', { error: err.message, code: err.code, resolvedPath });
-                if (!res.headersSent) {
-                    res.status(404).json({ status: 'error', message: 'Resume file not found on server' });
-                }
-            }
-        });
+        await streamResumeTo(candidate.file_path, res);
     } catch (error) {
         logger.error('Error serving resume file', { error: error.message, stack: error.stack });
         res.status(500).json({ status: 'error', message: 'Failed to retrieve resume' });
@@ -188,11 +160,18 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
         const batchName = `Single Upload ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
         const batch = await batchService.create(userId, batchName, 1);
 
-        // Create candidate record
-        const candidate = await candidateService.create(batch.id, req.file.originalname, req.file.path);
+        // Upload to S3 and create candidate record
+        const s3Key = await uploadResume(req.file.buffer, req.file.originalname);
+        const candidate = await candidateService.create(batch.id, req.file.originalname, s3Key);
 
-        // Analyze the resume using AI with the selected position
-        const analysis = await analyzeResume(req.file.path, position, requiredYearsExperience, flexibleOnTitle);
+        // Download to temp for analysis, then clean up
+        const tempPath = await downloadResumeToTemp(s3Key);
+        let analysis;
+        try {
+            analysis = await analyzeResume(tempPath, position, requiredYearsExperience, flexibleOnTitle);
+        } finally {
+            try { fs.unlinkSync(tempPath); } catch (_) {}
+        }
 
         // Save analysis to database
         await analysisService.create(candidate.id, analysis);
@@ -255,11 +234,18 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
             try {
                 logger.info('Analyzing resume', { index: i + 1, total: req.files.length, filename: file.originalname, position });
 
-                // Create candidate record
-                candidate = await candidateService.create(batch.id, file.originalname, file.path);
+                // Upload to S3 and create candidate record
+                const s3Key = await uploadResume(file.buffer, file.originalname);
+                candidate = await candidateService.create(batch.id, file.originalname, s3Key);
 
-                // Analyze the resume using AI with the selected position
-                const analysis = await analyzeResume(file.path, position, requiredYearsExperience, flexibleOnTitle);
+                // Download to temp for analysis, then clean up
+                const tempPath = await downloadResumeToTemp(s3Key);
+                let analysis;
+                try {
+                    analysis = await analyzeResume(tempPath, position, requiredYearsExperience, flexibleOnTitle);
+                } finally {
+                    try { fs.unlinkSync(tempPath); } catch (_) {}
+                }
 
                 // Save analysis to database
                 await analysisService.create(candidate.id, analysis);
