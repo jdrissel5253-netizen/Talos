@@ -333,6 +333,23 @@ const SuccessDetails = styled.div`
     text-align: left;
 `;
 
+const BackToJobsButton = styled(Link)`
+    display: inline-block;
+    margin-top: 1.75rem;
+    padding: 0.75rem 1.75rem;
+    background: #4ade80;
+    color: #000;
+    border-radius: 8px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    text-decoration: none;
+    transition: background 0.2s ease;
+
+    &:hover, &:active {
+        background: #3bc76a;
+    }
+`;
+
 const SuccessDetailRow = styled.p`
     color: #999;
     font-size: 0.9rem;
@@ -500,10 +517,11 @@ const PublicApply: React.FC = () => {
                             If your qualifications match our needs, we'll be in touch.
                         </SuccessText>
                         <SuccessDetails>
-                            <SuccessDetailRow><strong>Position:</strong> HVAC Service Technician</SuccessDetailRow>
+                            <SuccessDetailRow><strong>Position:</strong> {jobTitle}</SuccessDetailRow>
                             <SuccessDetailRow><strong>Name:</strong> {formData.name}</SuccessDetailRow>
                             <SuccessDetailRow><strong>Email:</strong> {formData.email}</SuccessDetailRow>
                         </SuccessDetails>
+                        <BackToJobsButton to="/jobs">← View All Jobs</BackToJobsButton>
                     </SuccessContainer>
                 </FormCard>
             </PageContainer>
