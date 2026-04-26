@@ -1051,6 +1051,14 @@ const candidatePipelineService = {
         matches.sort((a, b) => b.match_score - a.match_score);
 
         return matches;
+    },
+
+    async removeFromPipeline(pipelineId) {
+        const result = await db.query(
+            'DELETE FROM candidate_pipeline WHERE id = $1 RETURNING id',
+            [pipelineId]
+        );
+        return result.rows[0] || null;
     }
 };
 

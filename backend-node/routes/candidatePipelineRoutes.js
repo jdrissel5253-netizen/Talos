@@ -435,6 +435,27 @@ router.get('/candidate/:candidateId/job-matches', async (req, res) => {
 });
 
 /**
+ * DELETE /api/pipeline/:id
+ * Remove a candidate from the pipeline/talent pool
+ */
+router.delete('/:id', async (req, res) => {
+    try {
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+        }
+        const removed = await candidatePipelineService.removeFromPipeline(pipelineId);
+        if (!removed) {
+            return res.status(404).json({ status: 'error', message: 'Candidate not found in pipeline' });
+        }
+        res.json({ status: 'success', message: 'Candidate removed from pipeline' });
+    } catch (error) {
+        logger.error('Error removing candidate from pipeline', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to remove candidate' });
+    }
+});
+
+/**
  * Helper: Generate automated SMS outreach using Claude Haiku
  */
 async function generateOutreachSMS(jobTitle, jobLocation, schedulingLink) {

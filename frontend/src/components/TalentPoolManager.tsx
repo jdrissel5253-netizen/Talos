@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
-import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X } from 'lucide-react';
+import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2 } from 'lucide-react';
 import ResumePreviewModal from './ResumePreviewModal';
 import ContactRejectionModal from './ContactRejectionModal';
 import { extractCandidateName } from '../utils/templateHelpers';
@@ -578,6 +578,22 @@ const TalentPoolManager: React.FC = () => {
     setContactModalOpen(true);
   };
 
+  const handleRemoveCandidate = async (pipelineId: number) => {
+    if (!window.confirm('Remove this candidate from the talent pool?')) return;
+    try {
+      const response = await fetch(`${config.apiUrl}/api/pipeline/${pipelineId}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders()
+      });
+      if (!response.ok) throw new Error('Failed to remove');
+      setCandidates(prev => prev.filter(c => c.pipeline_id !== pipelineId));
+      fetchStats();
+    } catch (err) {
+      console.error('Error removing candidate:', err);
+      setError('Failed to remove candidate');
+    }
+  };
+
   const handleContactSuccess = () => {
     setContactModalOpen(false);
     setSelectedCandidateForContact(null);
@@ -655,6 +671,14 @@ const TalentPoolManager: React.FC = () => {
             </DropdownItem>
           </DropdownContent>
         </MessageDropdown>
+
+        <ActionIcon
+          color="#ef4444"
+          onClick={() => handleRemoveCandidate(candidate.pipeline_id)}
+          title="Remove from talent pool"
+        >
+          <Trash2 size={16} />
+        </ActionIcon>
       </ActionButtons>
     </CandidateCard>
   );
