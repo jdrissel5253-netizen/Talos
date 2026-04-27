@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import { ArrowLeft, User, Briefcase, Star, Shield, AlertTriangle, Award, Phone, Mail, MapPin, Calendar, Clock } from 'lucide-react';
+import { ArrowLeft, User, Briefcase, Star, Shield, AlertTriangle, Award, Phone, Mail, MapPin, Calendar, Clock, FileText } from 'lucide-react';
 import { getAuthHeaders } from '../utils/auth';
 import { config as appConfig } from '../config';
+import ResumeFileModal from './ResumeFileModal';
 
 const FontImport = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -340,6 +341,65 @@ const ContactValue = styled.span`
   font-weight: 500;
 `;
 
+// ─── action bar ───────────────────────────────────────────────────────────────
+
+const ActionBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+`;
+
+const ActionBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.55rem 1.1rem;
+  background: transparent;
+  border: 1px solid #2a3040;
+  color: #8a9ab0;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.15s ease;
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+
+  &:hover {
+    border-color: #4ade80;
+    color: #4ade80;
+  }
+`;
+
+const StatusSelect = styled.select`
+  padding: 0.55rem 1.1rem;
+  background: #1a1f2a;
+  border: 1px solid #2a3040;
+  color: #8a9ab0;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  outline: none;
+  transition: border-color 0.15s ease;
+
+  &:hover, &:focus { border-color: #4ade80; color: #c8d0dc; }
+
+  option { background: #1a1f2a; }
+`;
+
+const StatusLabel = styled.span`
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6e7d8e;
+  align-self: center;
+`;
+
 // ─── loading / error ──────────────────────────────────────────────────────────
 
 const CenterMsg = styled.div`
@@ -396,6 +456,8 @@ const CandidateProfile: React.FC = () => {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [resumeOpen, setResumeOpen] = useState(false);
+  const [statusUpdating, setStatusUpdating] = useState(false);
 
   useEffect(() => {
     const headers = { ...getAuthHeaders(), 'Content-Type': 'application/json' };
@@ -413,6 +475,21 @@ const CandidateProfile: React.FC = () => {
     ? profile.applicant_name || friendlyName(profile.filename)
     : '';
 
+  const handleStatusChange = async (newStatus: string) => {
+    if (!profile || statusUpdating) return;
+    setStatusUpdating(true);
+    try {
+      const res = await fetch(`${appConfig.apiUrl}/api/pipeline/${profile.pipeline_id}/status`, {
+        method: 'PUT',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus }),
+      });
+      if (res.ok) setProfile(p => p ? { ...p, pipeline_status: newStatus } : p);
+    } finally {
+      setStatusUpdating(false);
+    }
+  };
+
   return (
     <>
       <FontImport />
@@ -428,8 +505,34 @@ const CandidateProfile: React.FC = () => {
           {loading && <CenterMsg>Loading profile...</CenterMsg>}
           {error && <CenterMsg>Could not load candidate profile.</CenterMsg>}
 
+          <ResumeFileModal
+            isOpen={resumeOpen}
+            onClose={() => setResumeOpen(false)}
+            candidateId={profile?.candidate_id ?? null}
+            filename={profile?.filename ?? ''}
+          />
+
           {profile && (
             <>
+              {/* ── Action Bar ── */}
+              <ActionBar>
+                <ActionBtn onClick={() => setResumeOpen(true)}>
+                  <FileText size={13} /> View Resume
+                </ActionBtn>
+                <StatusLabel>Status</StatusLabel>
+                <StatusSelect
+                  value={profile.pipeline_status}
+                  onChange={e => handleStatusChange(e.target.value)}
+                  disabled={statusUpdating}
+                >
+                  <option value="new">New</option>
+                  <option value="approved">Approved</option>
+                  <option value="contacted">Contacted</option>
+                  <option value="backup">Backup</option>
+                  <option value="rejected">Rejected</option>
+                </StatusSelect>
+              </ActionBar>
+
               {/* ── Hero ── */}
               <Hero>
                 <HeroLeft>

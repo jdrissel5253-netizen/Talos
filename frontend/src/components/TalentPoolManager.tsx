@@ -649,11 +649,14 @@ const TalentPoolManager: React.FC = () => {
       </MetaRow>
 
       <ActionButtons>
-        <ActionButton onClick={() => {
+        <ActionButton onClick={() => navigate(`/candidates/${candidate.pipeline_id}`)}>
+            <FileText size={16} /> View Profile
+          </ActionButton>
+          <ActionButton onClick={() => {
             setResumeFileCandidate({ id: candidate.candidate_id, filename: candidate.filename });
             setIsResumeFileModalOpen(true);
           }}>
-            <FileText size={16} /> Resume
+            Resume
           </ActionButton>
           <ActionButton onClick={() => handleViewResume(candidate)}>
             Quick Summary
