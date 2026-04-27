@@ -1,12 +1,258 @@
-import React, { useState } from 'react';
-import styled from 'styled-components';
+import React, { useState, useEffect, useRef } from 'react';
+import styled, { createGlobalStyle, keyframes, css } from 'styled-components';
 import { Calendar, Phone, CheckSquare, X } from 'lucide-react';
 import DemoModal from './DemoModal';
 
-const PageContainer = styled.div`
+const FontImport = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
+`;
+
+// ─── animations ───────────────────────────────────────────────────────────────
+
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to   { opacity: 1; }
+`;
+
+const slideRight = keyframes`
+  from { width: 0; }
+  to   { width: 100%; }
+`;
+
+const blink = keyframes`
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0; }
+`;
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+`;
+
+// ─── page ─────────────────────────────────────────────────────────────────────
+
+const Page = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  background: #f7f3ec;
+  font-family: 'DM Sans', sans-serif;
+  color: #1c1409;
   position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 10% 20%, rgba(176,120,50,0.06) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(176,120,50,0.04) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+`;
+
+const Wrapper = styled.div`
+  position: relative;
+  z-index: 1;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
+
+  @media (max-width: 768px) {
+    padding: 0 1.25rem;
+  }
+`;
+
+// ─── header rule ──────────────────────────────────────────────────────────────
+
+const TopRule = styled.div`
+  border-top: 2px solid #1c1409;
+  padding-top: 3rem;
+  margin-top: 3.5rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2rem;
+  animation: ${fadeIn} 0.6s ease both;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+`;
+
+const TopLabel = styled.span`
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #b07832;
+`;
+
+const TopMeta = styled.span`
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9a8872;
+`;
+
+// ─── hero ─────────────────────────────────────────────────────────────────────
+
+const HeroSection = styled.div`
+  padding: 4rem 0 3rem;
+  text-align: center;
+  animation: ${fadeUp} 0.7s ease 0.1s both;
+`;
+
+const HeroKicker = styled.p`
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: #b07832;
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.01em;
+`;
+
+const HeroTitle = styled.h1`
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 400;
+  line-height: 1.08;
+  color: #1c1409;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.75rem;
+
+  em {
+    font-style: italic;
+    color: #b07832;
+  }
+`;
+
+const HeroSub = styled.p`
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: #6b5a45;
+  max-width: 560px;
+  margin: 0 auto 3rem;
+  line-height: 1.7;
+`;
+
+const MidRule = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 4.5rem;
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #d4c4a8;
+  }
+`;
+
+const MidRuleOrb = styled.div`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #b07832;
+  flex-shrink: 0;
+`;
+
+// ─── preview card ─────────────────────────────────────────────────────────────
+
+const PreviewWrap = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 6rem;
+  align-items: center;
+  animation: ${fadeUp} 0.7s ease 0.25s both;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const PreviewLeft = styled.div``;
+
+const PreviewTag = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #b07832;
+  border: 1px solid #d4b07a;
+  padding: 0.3rem 0.75rem;
+  margin-bottom: 1.5rem;
+`;
+
+const PreviewHeading = styled.h2`
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.4rem;
+  font-weight: 400;
+  line-height: 1.2;
+  color: #1c1409;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
+
+  em { font-style: italic; color: #b07832; }
+`;
+
+const PreviewBody = styled.p`
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: #6b5a45;
+  line-height: 1.75;
+  margin-bottom: 1.5rem;
+`;
+
+const StatRow = styled.div`
+  display: flex;
+  gap: 2.5rem;
+  margin-top: 1.5rem;
+`;
+
+const Stat = styled.div``;
+
+const StatNum = styled.div`
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.2rem;
+  color: #1c1409;
+  line-height: 1;
+  margin-bottom: 0.2rem;
+
+  span { color: #b07832; }
+`;
+
+const StatDesc = styled.div`
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #9a8872;
+`;
+
+const LetterCard = styled.div`
+  background: #fffef9;
+  border: 1px solid #e8dcc8;
+  box-shadow:
+    0 2px 0 #e0d0b8,
+    0 12px 40px rgba(28,20,9,0.08),
+    0 2px 8px rgba(28,20,9,0.04);
+  padding: 2rem 2rem 1.5rem;
+  position: relative;
+  animation: ${float} 6s ease-in-out infinite;
 
   &::before {
     content: '';
@@ -14,242 +260,543 @@ const PageContainer = styled.div`
     top: 0;
     left: 0;
     right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    z-index: 1;
+    height: 3px;
+    background: linear-gradient(90deg, #b07832, #d4a050, #b07832);
+  }
+`;
+
+const LetterHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e8dcc8;
+`;
+
+const LetterFrom = styled.div`
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9a8872;
+`;
+
+const LetterBadge = styled.div`
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #b07832;
+  background: rgba(176,120,50,0.08);
+  border: 1px solid rgba(176,120,50,0.2);
+  padding: 0.2rem 0.6rem;
+`;
+
+const LetterBody = styled.div`
+  font-size: 0.88rem;
+  line-height: 1.75;
+  color: #3a2e1e;
+  min-height: 120px;
+`;
+
+const Cursor = styled.span`
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  background: #b07832;
+  margin-left: 2px;
+  vertical-align: text-bottom;
+  animation: ${blink} 1s step-end infinite;
+`;
+
+const LetterSig = styled.div`
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #e8dcc8;
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #6b5a45;
+`;
+
+// ─── message types ────────────────────────────────────────────────────────────
+
+const TypesSection = styled.div`
+  margin-bottom: 6rem;
+`;
+
+const TypesHeader = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  animation: ${fadeUp} 0.7s ease 0.35s both;
+`;
+
+const TypesTitle = styled.h2`
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #1c1409;
+  letter-spacing: -0.02em;
+`;
+
+const TypesRule = styled.div`
+  flex: 1;
+  height: 1px;
+  background: #d4c4a8;
+`;
+
+const TypesCount = styled.span`
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #9a8872;
+  white-space: nowrap;
+`;
+
+const TypesGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1px;
+  background: #d4c4a8;
+  border: 1px solid #d4c4a8;
+
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const TypeCard = styled.div<{ delay: number }>`
+  background: #f7f3ec;
+  padding: 2.5rem;
+  position: relative;
+  transition: background 0.2s ease;
+  animation: ${fadeUp} 0.6s ease ${p => p.delay}s both;
+
+  &:hover {
+    background: #fffef9;
+  }
+`;
+
+const TypeNum = styled.div`
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 3.5rem;
+  color: rgba(176,120,50,0.18);
+  line-height: 1;
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  pointer-events: none;
+`;
+
+const TypeIcon = styled.div`
+  width: 42px;
+  height: 42px;
+  border: 1.5px solid #d4b07a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  color: #b07832;
+`;
+
+const TypeName = styled.h3`
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+  color: #1c1409;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.75rem;
+`;
+
+const TypeDesc = styled.p`
+  font-size: 0.875rem;
+  font-weight: 300;
+  color: #6b5a45;
+  line-height: 1.75;
+  margin-bottom: 1.25rem;
+`;
+
+const TypeList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+`;
+
+const TypeListItem = styled.li`
+  font-size: 0.8rem;
+  color: #8a7458;
+  padding-left: 1.1rem;
+  position: relative;
+  line-height: 1.5;
+
+  &::before {
+    content: '—';
+    position: absolute;
+    left: 0;
+    color: #b07832;
+    font-size: 0.7rem;
+  }
+`;
+
+// ─── pull quote ───────────────────────────────────────────────────────────────
+
+const PullQuote = styled.blockquote`
+  text-align: center;
+  padding: 4rem 2rem;
+  margin-bottom: 5rem;
+  position: relative;
+  animation: ${fadeUp} 0.7s ease 0.5s both;
+
+  &::before {
+    content: '"';
+    font-family: 'DM Serif Display', serif;
+    font-size: 10rem;
+    color: rgba(176,120,50,0.1);
+    position: absolute;
+    top: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    line-height: 1;
     pointer-events: none;
   }
 `;
 
-const ContentWrapper = styled.div`
-  position: relative;
-  z-index: 2;
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 4rem 2rem;
-`;
-
-const MainTitle = styled.h1`
-  font-size: 3.5rem;
-  font-weight: 700;
-  background: linear-gradient(to right, #ffffff, #4ade80);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 1.5rem;
-  line-height: 1.2;
-  text-align: center;
-
-  @media (max-width: 768px) {
-    font-size: 2.5rem;
-  }
-`;
-
-const MainSubtitle = styled.p`
-  font-size: 1.25rem;
-  color: #e0e0e0;
-  max-width: 800px;
-  margin: 0 auto 4rem;
-  line-height: 1.6;
-  text-align: center;
-`;
-
-const ContentSection = styled.section`
-  background: #1a1a1a;
-  border-radius: 12px;
-  padding: 3rem;
-  margin-bottom: 3rem;
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
-`;
-
-const FeatureBox = styled.div`
-  background: linear-gradient(135deg, #4ade80 0%, #4ade80 100%);
-  color: white;
-  padding: 2rem;
-  border-radius: 12px;
-  margin: 2rem auto;
-  max-width: 700px;
-  text-align: center;
-`;
-
-const MessageTypeGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin: 3rem 0;
-`;
-
-const MessageTypeCard = styled.div`
-  background: #000000;
-  padding: 2rem;
-  border-radius: 12px;
-  border: 2px solid #333333;
-  transition: all 0.3s ease;
-
-  &:hover {
-    border-color: #4ade80;
-    transform: translateY(-2px);
-  }
-`;
-
-const MessageIcon = styled.div`
-  font-size: 3rem;
-  text-align: center;
-  margin-bottom: 1rem;
-`;
-
-const MessageTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #4ade80;
-  margin-bottom: 1rem;
-  text-align: center;
-`;
-
-const MessageExample = styled.div`
-  background: #1a1a1a;
-  padding: 1.5rem;
-  border-radius: 8px;
-  border-left: 4px solid #4ade80;
-  margin-top: 1rem;
+const PullQuoteText = styled.p`
+  font-family: 'DM Serif Display', serif;
   font-style: italic;
-  color: #555;
-  line-height: 1.5;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  color: #1c1409;
+  line-height: 1.4;
+  max-width: 720px;
+  margin: 0 auto 1.5rem;
+  position: relative;
+  z-index: 1;
+`;
+
+const PullQuoteAttr = styled.cite`
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #b07832;
+`;
+
+// ─── CTA ──────────────────────────────────────────────────────────────────────
+
+const CTASection = styled.div`
+  border-top: 2px solid #1c1409;
+  padding: 4rem 0 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  animation: ${fadeUp} 0.7s ease 0.55s both;
+
+  @media (max-width: 700px) {
+    flex-direction: column;
+    text-align: center;
+  }
+`;
+
+const CTALeft = styled.div``;
+
+const CTALabel = styled.p`
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #b07832;
+  margin-bottom: 0.5rem;
+`;
+
+const CTATitle = styled.h2`
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #1c1409;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 `;
 
 const CTAButton = styled.button`
-  background-color: #4ade80;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #1c1409;
+  color: #f7f3ec;
   border: none;
-  color: #000000;
-  padding: 1rem 2.5rem;
-  font-size: 1.125rem;
-  font-weight: 700;
-  border-radius: 8px;
+  padding: 1.1rem 2.25rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
-  display: block;
-  margin: 4rem auto 0;
   position: relative;
   overflow: hidden;
+  transition: background 0.2s ease;
 
-  &::before {
+  &::after {
     content: '';
     position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.4),
-      transparent
-    );
-    transition: 0.5s;
+    left: 0;
+    bottom: 0;
+    height: 2px;
+    background: #b07832;
+    width: 0;
+    transition: width 0.3s ease;
   }
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
-    background-color: #5ce08e;
+    background: #2e2010;
 
-    &::before {
-      left: 100%;
+    &::after {
+      width: 100%;
     }
   }
 
-  &:active {
-    transform: translateY(0);
+  svg {
+    transition: transform 0.2s ease;
+  }
+
+  &:hover svg {
+    transform: translateX(4px);
   }
 `;
 
+const ArrowRight = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+// ─── typewriter hook ──────────────────────────────────────────────────────────
+
+const MESSAGES = [
+  `Hi Marcus,\n\nFollowing your application for the HVAC Service Technician role, we'd love to schedule a quick 20-minute phone screen.\n\nAre you available this week? We're flexible on timing and can work around your schedule.`,
+  `Dear Jordan,\n\nThank you for your interest in the Commercial HVAC Installer position. After reviewing your EPA 608 certification and 6 years of experience, we'd like to invite you for an interview.\n\nWould Thursday at 10am work for you?`,
+  `Hi Reyna,\n\nWe wanted to follow up on your recent interview for the PM Technician role. The team was genuinely impressed — particularly with your background in preventative maintenance programs.\n\nWe're finalizing our decision this week.`,
+];
+
+function useTypewriter(messages: string[], speed = 28) {
+  const [msgIdx, setMsgIdx] = useState(0);
+  const [displayed, setDisplayed] = useState('');
+  const [typing, setTyping] = useState(true);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    const full = messages[msgIdx];
+    if (typing) {
+      if (displayed.length < full.length) {
+        timeoutRef.current = setTimeout(() => {
+          setDisplayed(full.slice(0, displayed.length + 1));
+        }, speed);
+      } else {
+        timeoutRef.current = setTimeout(() => setTyping(false), 2400);
+      }
+    } else {
+      if (displayed.length > 0) {
+        timeoutRef.current = setTimeout(() => {
+          setDisplayed(d => d.slice(0, -1));
+        }, 10);
+      } else {
+        setMsgIdx(i => (i + 1) % messages.length);
+        setTyping(true);
+      }
+    }
+    return () => { if (timeoutRef.current) clearTimeout(timeoutRef.current); };
+  }, [displayed, typing, msgIdx, messages, speed]);
+
+  return displayed;
+}
+
+// ─── message types data ───────────────────────────────────────────────────────
+
+const MESSAGE_TYPES = [
+  {
+    icon: <Calendar size={18} />,
+    name: 'Interview Invitations',
+    desc: 'Personalized invitations that balance professionalism with warmth, automatically surfacing the candidate qualifications most relevant to the role.',
+    bullets: [
+      'Personalized opening based on candidate background',
+      'Strategic timing suggestions for higher acceptance',
+      'Optimized call-to-action for quick confirmations',
+      'Tone that reflects your company culture',
+    ],
+    num: '01',
+    delay: 0.45,
+  },
+  {
+    icon: <Phone size={18} />,
+    name: 'Phone Screen Requests',
+    desc: "Concise, engaging outreach that respects candidates' time while generating genuine curiosity about the opportunity.",
+    bullets: [
+      'Brief format optimized for busy professionals',
+      'Highlight key opportunity factors per candidate',
+      'Flexible scheduling language to maximize response',
+      'Clear expectations for call duration and format',
+    ],
+    num: '02',
+    delay: 0.5,
+  },
+  {
+    icon: <CheckSquare size={18} />,
+    name: 'Follow-Up Communications',
+    desc: 'Thoughtfully timed messages that reference specific conversation points, demonstrating genuine interest and keeping top candidates engaged.',
+    bullets: [
+      'Personalized callbacks to interview discussions',
+      'Timeline updates that manage expectations',
+      'Enthusiasm signals to prevent candidate drop-off',
+      'Stage-appropriate tone and detail level',
+    ],
+    num: '03',
+    delay: 0.55,
+  },
+  {
+    icon: <X size={18} />,
+    name: 'Professional Rejections',
+    desc: 'Tactful messages that preserve your employer brand and leave the door open for future opportunities — protecting your reputation in the talent market.',
+    bullets: [
+      'Respectful language that maintains candidate dignity',
+      'Appreciation for time invested in the process',
+      'Future opportunity language for qualified candidates',
+      'Tone calibrated to stage and candidate quality',
+    ],
+    num: '04',
+    delay: 0.6,
+  },
+];
+
+// ─── component ────────────────────────────────────────────────────────────────
+
 const CandidateMessages: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const text = useTypewriter(MESSAGES);
+
+  const formatted = text.split('\n').map((line, i, arr) => (
+    <React.Fragment key={i}>
+      {line}
+      {i < arr.length - 1 && <br />}
+    </React.Fragment>
+  ));
 
   return (
     <>
-      <PageContainer>
-        <ContentWrapper>
-          <MainTitle>Candidate Message Generator</MainTitle>
-          <MainSubtitle>
-            AI-powered message drafting for interviews, follow-ups, and professional communication
-          </MainSubtitle>
+      <FontImport />
+      <Page>
+        <Wrapper>
 
-          <ContentSection>
-            <p style={{ fontSize: '1.125rem', color: '#333', lineHeight: '1.8', textAlign: 'center', marginBottom: '2rem' }}>
-              Need to reach out? Talos can draft messages for interviews, phone screens, rejections, or follow-ups. No overthinking—just click, send, and move forward.
-            </p>
+          {/* ── Top rule ── */}
+          <TopRule>
+            <TopLabel>Talos &mdash; Candidate Messaging</TopLabel>
+            <TopMeta>AI-Drafted &bull; Personalized &bull; Instant</TopMeta>
+          </TopRule>
 
-            <FeatureBox>
-              <p style={{ fontSize: '1.25rem', fontWeight: '600', lineHeight: '1.6', margin: '0' }}>
-                Professional, personalized messages in seconds. Maintain your brand voice while saving hours of writing time.
-              </p>
-            </FeatureBox>
+          {/* ── Hero ── */}
+          <HeroSection>
+            <HeroKicker>The right words, every time</HeroKicker>
+            <HeroTitle>
+              Messages that <em>move</em><br />candidates forward
+            </HeroTitle>
+            <HeroSub>
+              AI-drafted outreach for every stage of the hiring process — personalized to each candidate, refined for your industry.
+            </HeroSub>
+            <MidRule>
+              <MidRuleOrb />
+            </MidRule>
+          </HeroSection>
 
-            <MessageTypeGrid>
-              <MessageTypeCard>
-                <MessageIcon><Calendar size={48} color="#4ade80" /></MessageIcon>
-                <MessageTitle>Interview Invitations</MessageTitle>
-                <p style={{ color: '#e0e0e0', lineHeight: '1.8', marginBottom: '1rem' }}>
-                  Our AI crafts personalized interview invitations that balance professionalism with warmth. Messages automatically highlight relevant candidate qualifications, suggest optimal meeting times based on scheduling patterns, and include all necessary logistical details formatted for maximum response rates.
-                </p>
-                <ul style={{ color: '#e0e0e0', lineHeight: '1.8', textAlign: 'left', paddingLeft: '1.5rem' }}>
-                  <li>Personalized opening based on candidate background</li>
-                  <li>Strategic timing suggestions for higher acceptance rates</li>
-                  <li>Optimized call-to-action for quick confirmations</li>
-                  <li>Professional tone that reflects your company culture</li>
-                </ul>
-              </MessageTypeCard>
+          {/* ── Live preview ── */}
+          <PreviewWrap>
+            <PreviewLeft>
+              <PreviewTag>Live preview</PreviewTag>
+              <PreviewHeading>
+                Watch it<br /><em>write itself</em>
+              </PreviewHeading>
+              <PreviewBody>
+                Talos analyses the candidate's background, the role requirements, and the stage of your pipeline — then drafts a message that sounds like it came from you, not a robot.
+              </PreviewBody>
+              <StatRow>
+                <Stat>
+                  <StatNum>3<span>s</span></StatNum>
+                  <StatDesc>avg. draft time</StatDesc>
+                </Stat>
+                <Stat>
+                  <StatNum>4<span>×</span></StatNum>
+                  <StatDesc>faster outreach</StatDesc>
+                </Stat>
+              </StatRow>
+            </PreviewLeft>
 
-              <MessageTypeCard>
-                <MessageIcon><Phone size={48} color="#4ade80" /></MessageIcon>
-                <MessageTitle>Phone Screen Requests</MessageTitle>
-                <p style={{ color: '#e0e0e0', lineHeight: '1.8', marginBottom: '1rem' }}>
-                  Generate concise, engaging phone screen invitations that respect candidates' time while generating curiosity. Our system analyzes candidate profiles to emphasize the most relevant aspects of the opportunity, increasing screening call acceptance rates.
-                </p>
-                <ul style={{ color: '#e0e0e0', lineHeight: '1.8', textAlign: 'left', paddingLeft: '1.5rem' }}>
-                  <li>Brief format optimized for busy professionals</li>
-                  <li>Highlight key opportunity factors for each candidate</li>
-                  <li>Flexible scheduling language to maximize responses</li>
-                  <li>Clear expectations for call duration and format</li>
-                </ul>
-              </MessageTypeCard>
+            <LetterCard>
+              <LetterHeader>
+                <LetterFrom>Talos &bull; Message Draft</LetterFrom>
+                <LetterBadge>Generating</LetterBadge>
+              </LetterHeader>
+              <LetterBody>
+                {formatted}
+                <Cursor />
+              </LetterBody>
+              <LetterSig>The Hiring Team</LetterSig>
+            </LetterCard>
+          </PreviewWrap>
 
-              <MessageTypeCard>
-                <MessageIcon><CheckSquare size={48} color="#4ade80" /></MessageIcon>
-                <MessageTitle>Follow-Up Communications</MessageTitle>
-                <p style={{ color: '#e0e0e0', lineHeight: '1.8', marginBottom: '1rem' }}>
-                  Maintain candidate engagement with thoughtfully timed follow-up messages. The system references specific conversation points from interviews and applications, demonstrating genuine interest while keeping top candidates engaged throughout your hiring process.
-                </p>
-                <ul style={{ color: '#e0e0e0', lineHeight: '1.8', textAlign: 'left', paddingLeft: '1.5rem' }}>
-                  <li>Personalized callbacks to interview discussions</li>
-                  <li>Timeline updates that manage candidate expectations</li>
-                  <li>Enthusiasm indicators to keep top candidates interested</li>
-                  <li>Strategic messaging to prevent candidate drop-off</li>
-                </ul>
-              </MessageTypeCard>
+          {/* ── Message types ── */}
+          <TypesSection>
+            <TypesHeader>
+              <TypesTitle>Four message types</TypesTitle>
+              <TypesRule />
+              <TypesCount>Covered end-to-end</TypesCount>
+            </TypesHeader>
 
-              <MessageTypeCard>
-                <MessageIcon><X size={48} color="#ef4444" /></MessageIcon>
-                <MessageTitle>Professional Rejections</MessageTitle>
-                <p style={{ color: '#e0e0e0', lineHeight: '1.8', marginBottom: '1rem' }}>
-                  Deliver tactful rejection messages that preserve your employer brand and maintain positive candidate relationships. Messages are crafted to provide closure while leaving the door open for future opportunities, protecting your company's reputation in the talent market.
-                </p>
-                <ul style={{ color: '#e0e0e0', lineHeight: '1.8', textAlign: 'left', paddingLeft: '1.5rem' }}>
-                  <li>Respectful language that maintains candidate dignity</li>
-                  <li>Appreciation for time invested in the process</li>
-                  <li>Future opportunity language for qualified candidates</li>
-                  <li>Tone calibrated to interview stage and candidate quality</li>
-                </ul>
-              </MessageTypeCard>
-            </MessageTypeGrid>
-          </ContentSection>
+            <TypesGrid>
+              {MESSAGE_TYPES.map(t => (
+                <TypeCard key={t.num} delay={t.delay}>
+                  <TypeNum>{t.num}</TypeNum>
+                  <TypeIcon>{t.icon}</TypeIcon>
+                  <TypeName>{t.name}</TypeName>
+                  <TypeDesc>{t.desc}</TypeDesc>
+                  <TypeList>
+                    {t.bullets.map((b, i) => (
+                      <TypeListItem key={i}>{b}</TypeListItem>
+                    ))}
+                  </TypeList>
+                </TypeCard>
+              ))}
+            </TypesGrid>
+          </TypesSection>
 
-          <CTAButton onClick={() => setIsDemoModalOpen(true)}>
-            Try the Message Generator
-          </CTAButton>
-        </ContentWrapper>
-      </PageContainer>
+          {/* ── Pull quote ── */}
+          <PullQuote>
+            <PullQuoteText>
+              No more staring at a blank screen. Just click, review, and send — in under a minute.
+            </PullQuoteText>
+            <PullQuoteAttr>Talos Candidate Messaging</PullQuoteAttr>
+          </PullQuote>
+
+          {/* ── CTA ── */}
+          <CTASection>
+            <CTALeft>
+              <CTALabel>Ready to start?</CTALabel>
+              <CTATitle>Try the Message Generator</CTATitle>
+            </CTALeft>
+            <CTAButton onClick={() => setIsDemoModalOpen(true)}>
+              Get a Demo <ArrowRight />
+            </CTAButton>
+          </CTASection>
+
+        </Wrapper>
+      </Page>
 
       <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
     </>
