@@ -435,8 +435,6 @@ interface Profile {
   filename: string;
   upload_date: string;
   applicant_email: string | null;
-  applicant_phone: string | null;
-  applicant_name: string | null;
   overall_score: number;
   summary: string;
   years_of_experience: number;
@@ -471,9 +469,7 @@ const CandidateProfile: React.FC = () => {
       .finally(() => setLoading(false));
   }, [pipelineId]);
 
-  const displayName = profile
-    ? profile.applicant_name || friendlyName(profile.filename)
-    : '';
+  const displayName = profile ? friendlyName(profile.filename) : '';
 
   const handleStatusChange = async (newStatus: string) => {
     if (!profile || statusUpdating) return;
@@ -651,7 +647,7 @@ const CandidateProfile: React.FC = () => {
               )}
 
               {/* ── Contact Info ── */}
-              {(profile.applicant_email || profile.applicant_phone) && (
+              {(profile.applicant_email || profile.contacted_at) && (
                 <Card>
                   <CardHeader>
                     <Phone size={13} color="#8a9ab0" />
@@ -659,22 +655,16 @@ const CandidateProfile: React.FC = () => {
                   </CardHeader>
                   <CardBody>
                     <ContactGrid>
-                      {profile.applicant_name && (
-                        <ContactItem>
-                          <ContactLabel>Name</ContactLabel>
-                          <ContactValue>{profile.applicant_name}</ContactValue>
-                        </ContactItem>
-                      )}
                       {profile.applicant_email && (
                         <ContactItem>
                           <ContactLabel>Email</ContactLabel>
                           <ContactValue>{profile.applicant_email}</ContactValue>
                         </ContactItem>
                       )}
-                      {profile.applicant_phone && (
+                      {profile.contacted_via && (
                         <ContactItem>
-                          <ContactLabel>Phone</ContactLabel>
-                          <ContactValue>{profile.applicant_phone}</ContactValue>
+                          <ContactLabel>Contacted Via</ContactLabel>
+                          <ContactValue>{profile.contacted_via}</ContactValue>
                         </ContactItem>
                       )}
                       {profile.contacted_at && (
