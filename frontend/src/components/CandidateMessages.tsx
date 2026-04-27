@@ -38,9 +38,9 @@ const float = keyframes`
 
 const Page = styled.div`
   min-height: 100vh;
-  background: #f7f3ec;
+  background: #111318;
   font-family: 'DM Sans', sans-serif;
-  color: #1c1409;
+  color: #e8eaf0;
   position: relative;
   overflow: hidden;
 
@@ -49,8 +49,8 @@ const Page = styled.div`
     position: fixed;
     inset: 0;
     background-image:
-      radial-gradient(ellipse 80% 50% at 10% 20%, rgba(176,120,50,0.06) 0%, transparent 60%),
-      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(176,120,50,0.04) 0%, transparent 50%);
+      radial-gradient(ellipse 80% 50% at 10% 20%, rgba(74,222,128,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(74,222,128,0.03) 0%, transparent 50%);
     pointer-events: none;
     z-index: 0;
   }
@@ -71,7 +71,7 @@ const Wrapper = styled.div`
 // ─── header rule ──────────────────────────────────────────────────────────────
 
 const TopRule = styled.div`
-  border-top: 2px solid #1c1409;
+  border-top: 2px solid #232830;
   padding-top: 3rem;
   margin-top: 3.5rem;
   display: flex;
@@ -92,7 +92,7 @@ const TopLabel = styled.span`
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #b07832;
+  color: #4ade80;
 `;
 
 const TopMeta = styled.span`
@@ -100,7 +100,7 @@ const TopMeta = styled.span`
   font-size: 0.7rem;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #9a8872;
+  color: #6e7d8e;
 `;
 
 // ─── hero ─────────────────────────────────────────────────────────────────────
@@ -115,7 +115,7 @@ const HeroKicker = styled.p`
   font-family: 'DM Serif Display', serif;
   font-style: italic;
   font-size: 1.05rem;
-  color: #b07832;
+  color: #4ade80;
   margin-bottom: 1.25rem;
   letter-spacing: 0.01em;
 `;
@@ -125,20 +125,20 @@ const HeroTitle = styled.h1`
   font-size: clamp(3rem, 7vw, 5.5rem);
   font-weight: 400;
   line-height: 1.08;
-  color: #1c1409;
+  color: #ffffff;
   letter-spacing: -0.02em;
   margin-bottom: 1.75rem;
 
   em {
     font-style: italic;
-    color: #b07832;
+    color: #4ade80;
   }
 `;
 
 const HeroSub = styled.p`
   font-size: 1.1rem;
   font-weight: 300;
-  color: #6b5a45;
+  color: #8a9ab0;
   max-width: 560px;
   margin: 0 auto 3rem;
   line-height: 1.7;
@@ -154,7 +154,7 @@ const MidRule = styled.div`
     content: '';
     flex: 1;
     height: 1px;
-    background: #d4c4a8;
+    background: #232830;
   }
 `;
 
@@ -162,7 +162,7 @@ const MidRuleOrb = styled.div`
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #b07832;
+  background: #4ade80;
   flex-shrink: 0;
 `;
 
@@ -191,8 +191,8 @@ const PreviewTag = styled.div`
   font-weight: 600;
   letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #b07832;
-  border: 1px solid #d4b07a;
+  color: #4ade80;
+  border: 1px solid rgba(74,222,128,0.25);
   padding: 0.3rem 0.75rem;
   margin-bottom: 1.5rem;
 `;
@@ -202,17 +202,17 @@ const PreviewHeading = styled.h2`
   font-size: 2.4rem;
   font-weight: 400;
   line-height: 1.2;
-  color: #1c1409;
+  color: #ffffff;
   letter-spacing: -0.02em;
   margin-bottom: 1rem;
 
-  em { font-style: italic; color: #b07832; }
+  em { font-style: italic; color: #4ade80; }
 `;
 
 const PreviewBody = styled.p`
   font-size: 0.95rem;
   font-weight: 300;
-  color: #6b5a45;
+  color: #8a9ab0;
   line-height: 1.75;
   margin-bottom: 1.5rem;
 `;
@@ -228,11 +228,11 @@ const Stat = styled.div``;
 const StatNum = styled.div`
   font-family: 'DM Serif Display', serif;
   font-size: 2.2rem;
-  color: #1c1409;
+  color: #ffffff;
   line-height: 1;
   margin-bottom: 0.2rem;
 
-  span { color: #b07832; }
+  span { color: #4ade80; }
 `;
 
 const StatDesc = styled.div`
@@ -240,16 +240,16 @@ const StatDesc = styled.div`
   font-weight: 500;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #9a8872;
+  color: #6e7d8e;
 `;
 
 const LetterCard = styled.div`
-  background: #fffef9;
-  border: 1px solid #e8dcc8;
+  background: #1a1f2a;
+  border: 1px solid #232830;
   box-shadow:
-    0 2px 0 #e0d0b8,
-    0 12px 40px rgba(28,20,9,0.08),
-    0 2px 8px rgba(28,20,9,0.04);
+    0 2px 0 #1a1f2a,
+    0 12px 40px rgba(0,0,0,0.4),
+    0 2px 8px rgba(0,0,0,0.2);
   padding: 2rem 2rem 1.5rem;
   position: relative;
   animation: ${float} 6s ease-in-out infinite;
@@ -261,7 +261,7 @@ const LetterCard = styled.div`
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, #b07832, #d4a050, #b07832);
+    background: linear-gradient(90deg, #4ade80, #6ee89a, #4ade80);
   }
 `;
 
@@ -271,7 +271,7 @@ const LetterHeader = styled.div`
   justify-content: space-between;
   margin-bottom: 1.25rem;
   padding-bottom: 1rem;
-  border-bottom: 1px solid #e8dcc8;
+  border-bottom: 1px solid #232830;
 `;
 
 const LetterFrom = styled.div`
@@ -279,7 +279,7 @@ const LetterFrom = styled.div`
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #9a8872;
+  color: #6e7d8e;
 `;
 
 const LetterBadge = styled.div`
@@ -287,16 +287,16 @@ const LetterBadge = styled.div`
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #b07832;
-  background: rgba(176,120,50,0.08);
-  border: 1px solid rgba(176,120,50,0.2);
+  color: #4ade80;
+  background: rgba(74,222,128,0.08);
+  border: 1px solid rgba(74,222,128,0.2);
   padding: 0.2rem 0.6rem;
 `;
 
 const LetterBody = styled.div`
   font-size: 0.88rem;
   line-height: 1.75;
-  color: #3a2e1e;
+  color: #c8d0dc;
   min-height: 120px;
 `;
 
@@ -304,7 +304,7 @@ const Cursor = styled.span`
   display: inline-block;
   width: 2px;
   height: 1em;
-  background: #b07832;
+  background: #4ade80;
   margin-left: 2px;
   vertical-align: text-bottom;
   animation: ${blink} 1s step-end infinite;
@@ -313,11 +313,11 @@ const Cursor = styled.span`
 const LetterSig = styled.div`
   margin-top: 1.25rem;
   padding-top: 1rem;
-  border-top: 1px solid #e8dcc8;
+  border-top: 1px solid #232830;
   font-family: 'DM Serif Display', serif;
   font-style: italic;
   font-size: 1.1rem;
-  color: #6b5a45;
+  color: #8a9ab0;
 `;
 
 // ─── message types ────────────────────────────────────────────────────────────
@@ -338,14 +338,14 @@ const TypesTitle = styled.h2`
   font-family: 'DM Serif Display', serif;
   font-size: 2rem;
   font-weight: 400;
-  color: #1c1409;
+  color: #ffffff;
   letter-spacing: -0.02em;
 `;
 
 const TypesRule = styled.div`
   flex: 1;
   height: 1px;
-  background: #d4c4a8;
+  background: #232830;
 `;
 
 const TypesCount = styled.span`
@@ -353,7 +353,7 @@ const TypesCount = styled.span`
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #9a8872;
+  color: #6e7d8e;
   white-space: nowrap;
 `;
 
@@ -361,8 +361,8 @@ const TypesGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 1px;
-  background: #d4c4a8;
-  border: 1px solid #d4c4a8;
+  background: #232830;
+  border: 1px solid #232830;
 
   @media (max-width: 700px) {
     grid-template-columns: 1fr;
@@ -370,14 +370,14 @@ const TypesGrid = styled.div`
 `;
 
 const TypeCard = styled.div<{ delay: number }>`
-  background: #f7f3ec;
+  background: #111318;
   padding: 2.5rem;
   position: relative;
   transition: background 0.2s ease;
   animation: ${fadeUp} 0.6s ease ${p => p.delay}s both;
 
   &:hover {
-    background: #fffef9;
+    background: #1a1f2a;
   }
 `;
 
@@ -385,7 +385,7 @@ const TypeNum = styled.div`
   font-family: 'DM Serif Display', serif;
   font-style: italic;
   font-size: 3.5rem;
-  color: rgba(176,120,50,0.18);
+  color: rgba(74,222,128,0.12);
   line-height: 1;
   position: absolute;
   top: 1.5rem;
@@ -396,19 +396,19 @@ const TypeNum = styled.div`
 const TypeIcon = styled.div`
   width: 42px;
   height: 42px;
-  border: 1.5px solid #d4b07a;
+  border: 1.5px solid rgba(74,222,128,0.3);
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 1.25rem;
-  color: #b07832;
+  color: #4ade80;
 `;
 
 const TypeName = styled.h3`
   font-family: 'DM Serif Display', serif;
   font-size: 1.35rem;
   font-weight: 400;
-  color: #1c1409;
+  color: #ffffff;
   letter-spacing: -0.01em;
   margin-bottom: 0.75rem;
 `;
@@ -416,7 +416,7 @@ const TypeName = styled.h3`
 const TypeDesc = styled.p`
   font-size: 0.875rem;
   font-weight: 300;
-  color: #6b5a45;
+  color: #8a9ab0;
   line-height: 1.75;
   margin-bottom: 1.25rem;
 `;
@@ -432,7 +432,7 @@ const TypeList = styled.ul`
 
 const TypeListItem = styled.li`
   font-size: 0.8rem;
-  color: #8a7458;
+  color: #8a9ab0;
   padding-left: 1.1rem;
   position: relative;
   line-height: 1.5;
@@ -441,7 +441,7 @@ const TypeListItem = styled.li`
     content: '—';
     position: absolute;
     left: 0;
-    color: #b07832;
+    color: #4ade80;
     font-size: 0.7rem;
   }
 `;
@@ -459,7 +459,7 @@ const PullQuote = styled.blockquote`
     content: '"';
     font-family: 'DM Serif Display', serif;
     font-size: 10rem;
-    color: rgba(176,120,50,0.1);
+    color: rgba(74,222,128,0.07);
     position: absolute;
     top: -1rem;
     left: 50%;
@@ -473,7 +473,7 @@ const PullQuoteText = styled.p`
   font-family: 'DM Serif Display', serif;
   font-style: italic;
   font-size: clamp(1.5rem, 3vw, 2.25rem);
-  color: #1c1409;
+  color: #ffffff;
   line-height: 1.4;
   max-width: 720px;
   margin: 0 auto 1.5rem;
@@ -487,13 +487,13 @@ const PullQuoteAttr = styled.cite`
   font-style: normal;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #b07832;
+  color: #4ade80;
 `;
 
 // ─── CTA ──────────────────────────────────────────────────────────────────────
 
 const CTASection = styled.div`
-  border-top: 2px solid #1c1409;
+  border-top: 2px solid #232830;
   padding: 4rem 0 5rem;
   display: flex;
   align-items: center;
@@ -514,7 +514,7 @@ const CTALabel = styled.p`
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #b07832;
+  color: #4ade80;
   margin-bottom: 0.5rem;
 `;
 
@@ -522,7 +522,7 @@ const CTATitle = styled.h2`
   font-family: 'DM Serif Display', serif;
   font-size: 2rem;
   font-weight: 400;
-  color: #1c1409;
+  color: #ffffff;
   letter-spacing: -0.02em;
   line-height: 1.2;
 `;
@@ -532,8 +532,8 @@ const CTAButton = styled.button`
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  background: #1c1409;
-  color: #f7f3ec;
+  background: #4ade80;
+  color: #000;
   border: none;
   padding: 1.1rem 2.25rem;
   font-family: 'DM Sans', sans-serif;
@@ -552,13 +552,13 @@ const CTAButton = styled.button`
     left: 0;
     bottom: 0;
     height: 2px;
-    background: #b07832;
+    background: #4ade80;
     width: 0;
     transition: width 0.3s ease;
   }
 
   &:hover {
-    background: #2e2010;
+    background: #6ee89a;
 
     &::after {
       width: 100%;
