@@ -590,4 +590,25 @@ The Hiring Team`;
     }
 }
 
+/**
+ * GET /api/pipeline/:id/profile
+ * Get full profile for a single candidate pipeline entry
+ */
+router.get('/:id/profile', async (req, res) => {
+    try {
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+        }
+        const profile = await candidatePipelineService.getCandidateProfile(pipelineId);
+        if (!profile) {
+            return res.status(404).json({ status: 'error', message: 'Candidate not found' });
+        }
+        res.json({ status: 'success', data: profile });
+    } catch (error) {
+        logger.error('Error fetching candidate profile', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to fetch candidate profile' });
+    }
+});
+
 module.exports = router;

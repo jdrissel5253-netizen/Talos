@@ -1,0 +1,595 @@
+import React, { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import styled, { createGlobalStyle, keyframes } from 'styled-components';
+import { ArrowLeft, User, Briefcase, Star, Shield, AlertTriangle, Award, Phone, Mail, MapPin, Calendar, Clock } from 'lucide-react';
+import { getAuthHeaders } from '../utils/auth';
+import { config as appConfig } from '../config';
+
+const FontImport = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+`;
+
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+// ─── layout ───────────────────────────────────────────────────────────────────
+
+const Page = styled.div`
+  min-height: 100vh;
+  background: #111318;
+  font-family: 'Sora', sans-serif;
+  padding: 0 0 5rem;
+`;
+
+const TopBar = styled.div`
+  border-bottom: 1px solid #232830;
+  padding: 1.75rem 2.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  background: #111318;
+  position: sticky;
+  top: 0;
+  z-index: 50;
+`;
+
+const BackButton = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: 1px solid #2a3040;
+  color: #8a9ab0;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.15s ease;
+  clip-path: polygon(0 0, calc(100% - 6px) 0, 100% 6px, 100% 100%, 6px 100%, 0 calc(100% - 6px));
+
+  &:hover {
+    border-color: #4ade80;
+    color: #4ade80;
+  }
+`;
+
+const TopBarTitle = styled.h1`
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+`;
+
+const Inner = styled.div`
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2.5rem 2.5rem 0;
+  animation: ${fadeUp} 0.5s ease both;
+
+  @media (max-width: 768px) {
+    padding: 1.5rem 1.5rem 0;
+  }
+`;
+
+// ─── hero ─────────────────────────────────────────────────────────────────────
+
+const Hero = styled.div`
+  background: #1a1f2a;
+  border: 1px solid #232830;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 2rem;
+  align-items: start;
+
+  @media (max-width: 600px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const HeroLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+`;
+
+const CandidateName = styled.h2`
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+`;
+
+const JobBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: #8a9ab0;
+`;
+
+const MetaRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+  margin-top: 0.25rem;
+`;
+
+const MetaItem = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.72rem;
+  color: #6e7d8e;
+  font-family: 'JetBrains Mono', monospace;
+`;
+
+const HeroRight = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.75rem;
+`;
+
+const ScoreRing = styled.div<{ tier: string }>`
+  width: 90px;
+  height: 90px;
+  border-radius: 50%;
+  border: 3px solid ${p =>
+    p.tier === 'green' ? '#4ade80' :
+    p.tier === 'yellow' ? '#fbbf24' : '#f87171'};
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: ${p =>
+    p.tier === 'green' ? 'rgba(74,222,128,0.05)' :
+    p.tier === 'yellow' ? 'rgba(251,191,36,0.05)' : 'rgba(248,113,113,0.05)'};
+`;
+
+const ScoreNumber = styled.span<{ tier: string }>`
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 1.6rem;
+  font-weight: 600;
+  line-height: 1;
+  color: ${p =>
+    p.tier === 'green' ? '#4ade80' :
+    p.tier === 'yellow' ? '#fbbf24' : '#f87171'};
+`;
+
+const ScoreLabel = styled.span`
+  font-size: 0.55rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6e7d8e;
+  margin-top: 2px;
+`;
+
+const TierBadge = styled.span<{ tier: string }>`
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  padding: 0.3rem 0.75rem;
+  color: ${p =>
+    p.tier === 'green' ? '#4ade80' :
+    p.tier === 'yellow' ? '#fbbf24' : '#f87171'};
+  background: ${p =>
+    p.tier === 'green' ? 'rgba(74,222,128,0.08)' :
+    p.tier === 'yellow' ? 'rgba(251,191,36,0.08)' : 'rgba(248,113,113,0.08)'};
+  border: 1px solid ${p =>
+    p.tier === 'green' ? 'rgba(74,222,128,0.2)' :
+    p.tier === 'yellow' ? 'rgba(251,191,36,0.2)' : 'rgba(248,113,113,0.2)'};
+`;
+
+const StatusBadge = styled.span`
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  padding: 0.25rem 0.6rem;
+  color: #8a9ab0;
+  border: 1px solid #2a3040;
+  text-transform: uppercase;
+`;
+
+// ─── cards ────────────────────────────────────────────────────────────────────
+
+const Card = styled.div`
+  background: #1a1f2a;
+  border: 1px solid #232830;
+  margin-bottom: 1.5rem;
+`;
+
+const CardHeader = styled.div`
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid #1e2330;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+`;
+
+const CardTitle = styled.h3`
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #8a9ab0;
+`;
+
+const CardBody = styled.div`
+  padding: 1.5rem;
+`;
+
+// ─── summary ──────────────────────────────────────────────────────────────────
+
+const SummaryText = styled.p`
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: #c8d0dc;
+  font-weight: 400;
+`;
+
+// ─── strengths / weaknesses ───────────────────────────────────────────────────
+
+const TwoCol = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+
+  @media (max-width: 640px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const BulletList = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+`;
+
+const StrengthItem = styled.li`
+  display: flex;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  color: #c8d0dc;
+  line-height: 1.5;
+
+  &::before {
+    content: '•';
+    color: #4ade80;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+`;
+
+const WeaknessItem = styled.li`
+  display: flex;
+  gap: 0.6rem;
+  font-size: 0.82rem;
+  color: #c8d0dc;
+  line-height: 1.5;
+
+  &::before {
+    content: '•';
+    color: #f59e0b;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+`;
+
+// ─── certs ────────────────────────────────────────────────────────────────────
+
+const CertList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+`;
+
+const CertChip = styled.span`
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 500;
+  color: #a78bfa;
+  background: rgba(167,139,250,0.08);
+  border: 1px solid rgba(167,139,250,0.2);
+  padding: 0.3rem 0.75rem;
+  letter-spacing: 0.04em;
+`;
+
+// ─── contact ──────────────────────────────────────────────────────────────────
+
+const ContactGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1rem;
+`;
+
+const ContactItem = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+`;
+
+const ContactLabel = styled.span`
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6e7d8e;
+`;
+
+const ContactValue = styled.span`
+  font-size: 0.82rem;
+  color: #c8d0dc;
+  font-weight: 500;
+`;
+
+// ─── loading / error ──────────────────────────────────────────────────────────
+
+const CenterMsg = styled.div`
+  padding: 4rem 2rem;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.78rem;
+  color: #6e7d8e;
+  letter-spacing: 0.08em;
+`;
+
+// ─── helpers ──────────────────────────────────────────────────────────────────
+
+function friendlyName(filename: string): string {
+  return filename.replace(/\.[^.]+$/, '').replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, c => c.toUpperCase()).trim();
+}
+
+// ─── types ────────────────────────────────────────────────────────────────────
+
+interface Profile {
+  pipeline_id: number;
+  candidate_id: number;
+  job_id: number;
+  tier: 'green' | 'yellow' | 'red';
+  tier_score: number;
+  star_rating: number;
+  pipeline_status: string;
+  vehicle_status: string;
+  ai_summary: string;
+  contacted_via: string | null;
+  contacted_at: string | null;
+  filename: string;
+  upload_date: string;
+  applicant_email: string | null;
+  applicant_phone: string | null;
+  applicant_name: string | null;
+  overall_score: number;
+  summary: string;
+  years_of_experience: number;
+  certifications_found: string[];
+  hiring_recommendation: string;
+  strengths: string[];
+  weaknesses: string[];
+  job_title: string;
+  job_city: string;
+}
+
+// ─── component ────────────────────────────────────────────────────────────────
+
+const CandidateProfile: React.FC = () => {
+  const { pipelineId } = useParams<{ pipelineId: string }>();
+  const navigate = useNavigate();
+  const [profile, setProfile] = useState<Profile | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const headers = { ...getAuthHeaders(), 'Content-Type': 'application/json' };
+    fetch(`${appConfig.apiUrl}/api/pipeline/${pipelineId}/profile`, { headers })
+      .then(r => r.json())
+      .then(res => {
+        if (res.status === 'success') setProfile(res.data);
+        else setError(true);
+      })
+      .catch(() => setError(true))
+      .finally(() => setLoading(false));
+  }, [pipelineId]);
+
+  const displayName = profile
+    ? profile.applicant_name || friendlyName(profile.filename)
+    : '';
+
+  return (
+    <>
+      <FontImport />
+      <Page>
+        <TopBar>
+          <BackButton onClick={() => navigate(-1)}>
+            <ArrowLeft size={13} /> Back
+          </BackButton>
+          <TopBarTitle>Candidate Profile</TopBarTitle>
+        </TopBar>
+
+        <Inner>
+          {loading && <CenterMsg>Loading profile...</CenterMsg>}
+          {error && <CenterMsg>Could not load candidate profile.</CenterMsg>}
+
+          {profile && (
+            <>
+              {/* ── Hero ── */}
+              <Hero>
+                <HeroLeft>
+                  <CandidateName>{displayName}</CandidateName>
+                  <JobBadge>
+                    <Briefcase size={13} /> {profile.job_title}
+                    {profile.job_city && <><MapPin size={11} style={{ marginLeft: '0.5rem' }} />{profile.job_city}</>}
+                  </JobBadge>
+                  <MetaRow>
+                    {profile.years_of_experience > 0 && (
+                      <MetaItem><Clock size={11} />{profile.years_of_experience} yrs exp</MetaItem>
+                    )}
+                    {profile.upload_date && (
+                      <MetaItem><Calendar size={11} />{new Date(profile.upload_date).toLocaleDateString()}</MetaItem>
+                    )}
+                    {profile.contacted_via && (
+                      <MetaItem><Mail size={11} />Contacted via {profile.contacted_via}</MetaItem>
+                    )}
+                  </MetaRow>
+                  <MetaRow>
+                    <StatusBadge>{profile.pipeline_status}</StatusBadge>
+                    {profile.hiring_recommendation && (
+                      <StatusBadge style={{ color: '#4ade80', borderColor: 'rgba(74,222,128,0.2)' }}>
+                        {profile.hiring_recommendation}
+                      </StatusBadge>
+                    )}
+                  </MetaRow>
+                </HeroLeft>
+
+                <HeroRight>
+                  <ScoreRing tier={profile.tier}>
+                    <ScoreNumber tier={profile.tier}>{profile.tier_score}</ScoreNumber>
+                    <ScoreLabel>/ 100</ScoreLabel>
+                  </ScoreRing>
+                  <TierBadge tier={profile.tier}>{profile.tier.toUpperCase()} TIER</TierBadge>
+                </HeroRight>
+              </Hero>
+
+              {/* ── AI Summary ── */}
+              {profile.ai_summary && (
+                <Card>
+                  <CardHeader>
+                    <Star size={13} color="#8a9ab0" />
+                    <CardTitle>AI Assessment</CardTitle>
+                  </CardHeader>
+                  <CardBody>
+                    <SummaryText>{profile.ai_summary}</SummaryText>
+                  </CardBody>
+                </Card>
+              )}
+
+              {/* ── Resume Summary ── */}
+              {profile.summary && (
+                <Card>
+                  <CardHeader>
+                    <User size={13} color="#8a9ab0" />
+                    <CardTitle>Resume Summary</CardTitle>
+                  </CardHeader>
+                  <CardBody>
+                    <SummaryText>{profile.summary}</SummaryText>
+                  </CardBody>
+                </Card>
+              )}
+
+              {/* ── Strengths + Weaknesses ── */}
+              {((profile.strengths?.length > 0) || (profile.weaknesses?.length > 0)) && (
+                <TwoCol>
+                  {profile.strengths?.length > 0 && (
+                    <Card style={{ marginBottom: 0 }}>
+                      <CardHeader>
+                        <Shield size={13} color="#4ade80" />
+                        <CardTitle>Strengths</CardTitle>
+                      </CardHeader>
+                      <CardBody>
+                        <BulletList>
+                          {profile.strengths.map((s, i) => (
+                            <StrengthItem key={i}>{s}</StrengthItem>
+                          ))}
+                        </BulletList>
+                      </CardBody>
+                    </Card>
+                  )}
+                  {profile.weaknesses?.length > 0 && (
+                    <Card style={{ marginBottom: 0 }}>
+                      <CardHeader>
+                        <AlertTriangle size={13} color="#f59e0b" />
+                        <CardTitle>Areas for Development</CardTitle>
+                      </CardHeader>
+                      <CardBody>
+                        <BulletList>
+                          {profile.weaknesses.map((w, i) => (
+                            <WeaknessItem key={i}>{w}</WeaknessItem>
+                          ))}
+                        </BulletList>
+                      </CardBody>
+                    </Card>
+                  )}
+                </TwoCol>
+              )}
+
+              {/* ── Certifications ── */}
+              {profile.certifications_found?.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <Award size={13} color="#8a9ab0" />
+                    <CardTitle>Certifications</CardTitle>
+                  </CardHeader>
+                  <CardBody>
+                    <CertList>
+                      {profile.certifications_found.map((cert, i) => (
+                        <CertChip key={i}>{cert}</CertChip>
+                      ))}
+                    </CertList>
+                  </CardBody>
+                </Card>
+              )}
+
+              {/* ── Contact Info ── */}
+              {(profile.applicant_email || profile.applicant_phone) && (
+                <Card>
+                  <CardHeader>
+                    <Phone size={13} color="#8a9ab0" />
+                    <CardTitle>Contact Information</CardTitle>
+                  </CardHeader>
+                  <CardBody>
+                    <ContactGrid>
+                      {profile.applicant_name && (
+                        <ContactItem>
+                          <ContactLabel>Name</ContactLabel>
+                          <ContactValue>{profile.applicant_name}</ContactValue>
+                        </ContactItem>
+                      )}
+                      {profile.applicant_email && (
+                        <ContactItem>
+                          <ContactLabel>Email</ContactLabel>
+                          <ContactValue>{profile.applicant_email}</ContactValue>
+                        </ContactItem>
+                      )}
+                      {profile.applicant_phone && (
+                        <ContactItem>
+                          <ContactLabel>Phone</ContactLabel>
+                          <ContactValue>{profile.applicant_phone}</ContactValue>
+                        </ContactItem>
+                      )}
+                      {profile.contacted_at && (
+                        <ContactItem>
+                          <ContactLabel>Last Contacted</ContactLabel>
+                          <ContactValue>{new Date(profile.contacted_at).toLocaleDateString()}</ContactValue>
+                        </ContactItem>
+                      )}
+                    </ContactGrid>
+                  </CardBody>
+                </Card>
+              )}
+            </>
+          )}
+        </Inner>
+      </Page>
+    </>
+  );
+};
+
+export default CandidateProfile;

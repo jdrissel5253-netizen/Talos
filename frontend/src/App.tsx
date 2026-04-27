@@ -29,6 +29,7 @@ const HVACInsights = lazy(() => import('./components/HVACInsights'));
 const PublicApply = lazy(() => import('./components/PublicApply'));
 const PublicJobDetail = lazy(() => import('./components/PublicJobDetail'));
 const PublicJobList = lazy(() => import('./components/PublicJobList'));
+const CandidateProfile = lazy(() => import('./components/CandidateProfile'));
 
 // Loading fallback for lazy-loaded routes
 const LoadingFallback = styled.div`
@@ -144,6 +145,7 @@ function AppLayout() {
               <Route path="/talent-pool-old" element={<TalentPool />} />
               <Route path="/talent-pool-manager" element={<TalentPoolManager />} />
               <Route path="/hvac-insights" element={<HVACInsights />} />
+              <Route path="/candidates/:pipelineId" element={<CandidateProfile />} />
             </Routes>
           </Suspense>
         </MainContent>

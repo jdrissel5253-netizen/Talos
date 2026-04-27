@@ -1059,6 +1059,55 @@ const candidatePipelineService = {
             [pipelineId]
         );
         return result.rows[0] || null;
+    },
+
+    async getCandidateProfile(pipelineId) {
+        const result = await db.query(`
+            SELECT
+                cp.id as pipeline_id,
+                cp.candidate_id,
+                cp.job_id,
+                cp.tier,
+                cp.tier_score,
+                cp.star_rating,
+                cp.pipeline_status,
+                cp.give_them_a_chance,
+                cp.vehicle_status,
+                cp.ai_summary,
+                cp.contacted_via,
+                cp.contacted_at,
+                c.filename,
+                c.file_path,
+                c.s3_key,
+                c.upload_date,
+                c.applicant_email,
+                c.applicant_phone,
+                c.applicant_name,
+                a.overall_score,
+                a.summary,
+                a.years_of_experience,
+                a.certifications_found,
+                a.hiring_recommendation,
+                a.strengths,
+                a.weaknesses,
+                j.title as job_title,
+                j.position_type,
+                j.city as job_city
+            FROM candidate_pipeline cp
+            JOIN candidates c ON cp.candidate_id = c.id
+            JOIN jobs j ON cp.job_id = j.id
+            LEFT JOIN analyses a ON c.id = a.candidate_id
+            WHERE cp.id = $1
+        `, [pipelineId]);
+
+        if (!result.rows[0]) return null;
+        const row = result.rows[0];
+        return {
+            ...row,
+            certifications_found: fromJSON(row.certifications_found),
+            strengths: fromJSON(row.strengths),
+            weaknesses: fromJSON(row.weaknesses),
+        };
     }
 };
 

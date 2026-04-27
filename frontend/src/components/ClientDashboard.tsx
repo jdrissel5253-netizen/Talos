@@ -86,7 +86,7 @@ const GreetingText = styled.h1`
 const EmailText = styled.p`
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.7rem;
-  color: #555;
+  color: #6e7d8e;
   margin-top: 0.2rem;
   letter-spacing: 0.04em;
 `;
@@ -107,8 +107,8 @@ const NavPill = styled.button`
   gap: 0.4rem;
   padding: 0.5rem 1rem;
   background: transparent;
-  border: 1px solid #1a1a1a;
-  color: #666;
+  border: 1px solid #2a3040;
+  color: #8a9ab0;
   font-family: 'Sora', sans-serif;
   font-size: 0.75rem;
   font-weight: 500;
@@ -188,7 +188,7 @@ const StatLabel = styled.span`
   font-weight: 600;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #555;
+  color: #8a9ab0;
 `;
 
 const StatValue = styled.span<{ accent?: string }>`
@@ -202,7 +202,7 @@ const StatValue = styled.span<{ accent?: string }>`
 
 const StatSub = styled.span`
   font-size: 0.7rem;
-  color: #4a5060;
+  color: #6e7d8e;
   font-weight: 400;
 `;
 
@@ -228,7 +228,7 @@ const Card = styled.div`
 
 const CardHeader = styled.div`
   padding: 1.1rem 1.5rem;
-  border-bottom: 1px solid #141414;
+  border-bottom: 1px solid #1e2330;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -239,7 +239,7 @@ const CardTitle = styled.h2`
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #555;
+  color: #8a9ab0;
 `;
 
 const CardAction = styled.button`
@@ -280,7 +280,7 @@ const FunnelLabel = styled.span`
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: #667;
+  color: #8a9ab0;
 `;
 
 const FunnelTrack = styled.div`
@@ -351,7 +351,7 @@ const TierDistName = styled.span`
 const TierDistRange = styled.span`
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.65rem;
-  color: #555;
+  color: #6e7d8e;
   margin-left: 0.35rem;
 `;
 
@@ -411,7 +411,7 @@ const AttentionBadge = styled.span`
 
 const AttentionCity = styled.span`
   font-size: 0.75rem;
-  color: #555;
+  color: #8a9ab0;
 `;
 
 // ─── jobs grid ────────────────────────────────────────────────────────────────
@@ -474,7 +474,7 @@ const JobMetaItem = styled.span`
   align-items: center;
   gap: 0.3rem;
   font-size: 0.72rem;
-  color: #555;
+  color: #8a9ab0;
 `;
 
 const JobTileFooter = styled.div`
@@ -484,6 +484,45 @@ const JobTileFooter = styled.div`
   padding-top: 0.6rem;
   border-top: 1px solid #232830;
   margin-top: 0.25rem;
+`;
+
+const JobCandidateList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid #232830;
+  margin-top: 0.25rem;
+`;
+
+const JobCandidateRow = styled.div`
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  border-radius: 2px;
+  transition: background 0.12s ease;
+  margin: 0 -0.25rem;
+  padding: 0.1rem 0.25rem;
+
+  &:hover { background: rgba(74,222,128,0.05); }
+`;
+
+const JobCandidateName = styled.span`
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #c8d0dc;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const JobCandidateScore = styled.span`
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: #6e7d8e;
 `;
 
 const CandidateCount = styled.span<{ hasData: boolean }>`
@@ -536,7 +575,7 @@ const CandidateNameText = styled.span`
 
 const CandidateJobText = styled.span`
   font-size: 0.72rem;
-  color: #555;
+  color: #8a9ab0;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -546,7 +585,7 @@ const CandidateScore = styled.span`
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.82rem;
   font-weight: 500;
-  color: #555;
+  color: #a0b0c0;
   text-align: right;
   letter-spacing: -0.01em;
 `;
@@ -556,7 +595,7 @@ const CandidateScore = styled.span`
 const EmptyCell = styled.div`
   padding: 3rem 1.5rem;
   text-align: center;
-  color: #4a5060;
+  color: #6e7d8e;
   font-size: 0.82rem;
   font-weight: 400;
 `;
@@ -585,7 +624,7 @@ const LoadingRow = styled.div`
   text-align: center;
   font-family: 'JetBrains Mono', monospace;
   font-size: 0.72rem;
-  color: #4a5060;
+  color: #6e7d8e;
   letter-spacing: 0.1em;
 `;
 
@@ -609,6 +648,7 @@ interface Candidate {
   pipeline_id: number; filename: string;
   tier: 'green' | 'yellow' | 'red';
   tier_score: number; job_title: string;
+  job_id: number;
 }
 
 const FUNNEL_STAGES = [
@@ -642,7 +682,7 @@ const ClientDashboard: React.FC = () => {
     Promise.all([
       fetch(`${base}/api/jobs`,                                                   { headers }).then(r => r.json()),
       fetch(`${base}/api/pipeline/talent-pool/stats`,                             { headers }).then(r => r.json()),
-      fetch(`${base}/api/pipeline/talent-pool?limit=8&sortBy=score&sortOrder=desc`, { headers }).then(r => r.json()),
+      fetch(`${base}/api/pipeline/talent-pool?limit=100&sortBy=score&sortOrder=desc`, { headers }).then(r => r.json()),
     ]).then(([jobsRes, statsRes, candidatesRes]) => {
       if (jobsRes.status === 'success')        setJobs(jobsRes.data.jobs ?? []);
       if (statsRes.status === 'success')       setStats(statsRes.data);
@@ -657,6 +697,11 @@ const ClientDashboard: React.FC = () => {
   const statusTotal = stats
     ? Object.values(stats.statusBreakdown).reduce((sum, v) => sum + v, 0)
     : 0;
+  const candidatesByJob = topCandidates.reduce<Record<number, Candidate[]>>((acc, c) => {
+    if (!acc[c.job_id]) acc[c.job_id] = [];
+    if (acc[c.job_id].length < 3) acc[c.job_id].push(c);
+    return acc;
+  }, {});
 
   return (
     <>
@@ -792,7 +837,7 @@ const ClientDashboard: React.FC = () => {
                           <AttentionTitle>{job.title}</AttentionTitle>
                           {job.city && <AttentionCity>{job.city}</AttentionCity>}
                           <AttentionBadge>+{job.new_candidate_count} new</AttentionBadge>
-                          <ChevronRight size={13} color="#2a2a2a" />
+                          <ChevronRight size={13} color="#404858" />
                         </AttentionRow>
                       ))}
                     </AttentionBody>
@@ -818,36 +863,50 @@ const ClientDashboard: React.FC = () => {
                     </EmptyCell>
                   ) : (
                     <JobsBody>
-                      {activeJobs.map(job => (
-                        <JobTile key={job.id} onClick={() => navigate('/jobs-management')}>
-                          <JobTileTitle>
-                            {job.title}
-                            {job.new_candidate_count > 0 && (
-                              <NewPill>+{job.new_candidate_count}</NewPill>
+                      {activeJobs.map(job => {
+                        const jobCandidates = candidatesByJob[job.id] ?? [];
+                        return (
+                          <JobTile key={job.id} onClick={() => navigate('/jobs-management')}>
+                            <JobTileTitle>
+                              {job.title}
+                              {job.new_candidate_count > 0 && (
+                                <NewPill>+{job.new_candidate_count}</NewPill>
+                              )}
+                            </JobTileTitle>
+                            <JobTileMeta>
+                              {job.city && (
+                                <JobMetaItem>
+                                  <MapPin size={11} color="#6e7d8e" />{job.city}
+                                </JobMetaItem>
+                              )}
+                              {job.job_type && (
+                                <JobMetaItem>
+                                  <Clock size={11} color="#6e7d8e" />{job.job_type}
+                                </JobMetaItem>
+                              )}
+                            </JobTileMeta>
+                            <JobTileFooter>
+                              <CandidateCount hasData={job.candidate_count > 0}>
+                                {job.candidate_count > 0
+                                  ? `${job.candidate_count} candidate${job.candidate_count !== 1 ? 's' : ''}`
+                                  : 'No candidates yet'}
+                              </CandidateCount>
+                              <ChevronRight size={13} color="#404858" />
+                            </JobTileFooter>
+                            {jobCandidates.length > 0 && (
+                              <JobCandidateList>
+                                {jobCandidates.map(c => (
+                                  <JobCandidateRow key={c.pipeline_id} onClick={e => { e.stopPropagation(); navigate(`/candidates/${c.pipeline_id}`); }}>
+                                    <TierChip tier={c.tier}>{c.tier.toUpperCase()}</TierChip>
+                                    <JobCandidateName>{friendlyName(c.filename)}</JobCandidateName>
+                                    <JobCandidateScore>{c.tier_score}/100</JobCandidateScore>
+                                  </JobCandidateRow>
+                                ))}
+                              </JobCandidateList>
                             )}
-                          </JobTileTitle>
-                          <JobTileMeta>
-                            {job.city && (
-                              <JobMetaItem>
-                                <MapPin size={11} color="#333" />{job.city}
-                              </JobMetaItem>
-                            )}
-                            {job.job_type && (
-                              <JobMetaItem>
-                                <Clock size={11} color="#333" />{job.job_type}
-                              </JobMetaItem>
-                            )}
-                          </JobTileMeta>
-                          <JobTileFooter>
-                            <CandidateCount hasData={job.candidate_count > 0}>
-                              {job.candidate_count > 0
-                                ? `${job.candidate_count} candidate${job.candidate_count !== 1 ? 's' : ''}`
-                                : 'No candidates yet'}
-                            </CandidateCount>
-                            <ChevronRight size={13} color="#2a2a2a" />
-                          </JobTileFooter>
-                        </JobTile>
-                      ))}
+                          </JobTile>
+                        );
+                      })}
                     </JobsBody>
                   )}
                 </Card>
