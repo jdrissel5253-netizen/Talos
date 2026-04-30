@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import styled from 'styled-components';
-
+import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy } from 'lucide-react';
 import { config } from '../config';
@@ -9,7 +8,8 @@ import AddJobForm from './AddJobForm';
 import ContactRejectionModal from './ContactRejectionModal';
 import { extractCandidateName } from '../utils/templateHelpers';
 
-// Types
+// ─── types ────────────────────────────────────────────────────────────────────
+
 interface Job {
     id: number;
     title: string;
@@ -58,589 +58,830 @@ interface CandidatePipeline {
 
 type PipelineTab = 'all' | 'approved' | 'contacted' | 'backup' | 'rejected';
 
-// Styled Components
-const PageContainer = styled.div`
-    min-height: 100vh;
-    background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-    display: flex;
+// ─── design tokens ────────────────────────────────────────────────────────────
+
+const C = {
+    bg:          '#07090d',
+    rail:        '#0b0d12',
+    surface:     '#0f1118',
+    surfaceHov:  '#131620',
+    border:      '#1a1e2a',
+    borderBright:'#252b3a',
+    amber:       '#f59e0b',
+    amberGlow:   '#f59e0b22',
+    amberHov:    '#fbbf24',
+    green:       '#22c55e',
+    greenGlow:   '#22c55e18',
+    yellow:      '#eab308',
+    yellowGlow:  '#eab30818',
+    red:         '#f87171',
+    redGlow:     '#f8717118',
+    blue:        '#60a5fa',
+    text:        '#dde3f0',
+    textMid:     '#8892a8',
+    textDim:     '#353d52',
+    white:       '#ffffff',
+} as const;
+
+const tierColor = (tier: string): string => {
+    if (tier === 'green')  return C.green;
+    if (tier === 'yellow') return C.yellow;
+    return C.red;
+};
+
+const tierGlow = (tier: string): string => {
+    if (tier === 'green')  return C.greenGlow;
+    if (tier === 'yellow') return C.yellowGlow;
+    return C.redGlow;
+};
+
+// ─── animations ───────────────────────────────────────────────────────────────
+
+const fadeSlideUp = keyframes`
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
 `;
 
-const LeftPanel = styled.div<{ isCollapsed: boolean }>`
-    width: ${props => props.isCollapsed ? '60px' : '350px'};
-    background: #1a1a1a;
-    border-right: 2px solid #333333;
-    overflow-y: auto;
-    transition: width 0.3s ease;
+const pulse = keyframes`
+    0%, 100% { opacity: 1; }
+    50%       { opacity: 0.4; }
+`;
+
+// ─── fonts ────────────────────────────────────────────────────────────────────
+
+const GlobalFonts = createGlobalStyle`
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
+`;
+
+// ─── layout ───────────────────────────────────────────────────────────────────
+
+const PageWrapper = styled.div`
+    min-height: 100vh;
+    background: ${C.bg};
+    display: flex;
+    font-family: 'Syne', system-ui, sans-serif;
+    color: ${C.text};
     position: relative;
+`;
+
+const LeftRail = styled.div<{ isCollapsed: boolean }>`
+    width: ${p => p.isCollapsed ? '48px' : '262px'};
+    min-height: 100vh;
+    background: ${C.rail};
+    border-right: 1px solid ${C.border};
+    display: flex;
+    flex-direction: column;
+    transition: width 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 10;
+    flex-shrink: 0;
 
     @media (max-width: 768px) {
         position: fixed;
-        left: ${props => props.isCollapsed ? '-350px' : '0'};
         top: 0;
         bottom: 0;
-        z-index: 1000;
-        width: 300px;
+        left: ${p => p.isCollapsed ? '-262px' : '0'};
+        width: 262px;
     }
 `;
 
-const CollapseButton = styled.button`
+const CollapseBtn = styled.button`
     position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #4ade80;
-    color: white;
-    border: none;
-    padding: 8px 12px;
-    border-radius: 6px;
+    top: 0.85rem;
+    right: 0.75rem;
+    width: 26px;
+    height: 26px;
+    border-radius: 4px;
+    background: transparent;
+    border: 1px solid ${C.border};
+    color: ${C.textDim};
     cursor: pointer;
-    font-size: 0.875rem;
-    z-index: 10;
-
-    &:hover {
-        background: #3bc76a;
-    }
-`;
-
-const PanelHeader = styled.div`
-    padding: 2rem 1.5rem 1rem;
-    border-bottom: 1px solid #333333;
-`;
-
-const PanelTitle = styled.h2`
-    font-size: 1.5rem;
-    color: #4ade80;
-    margin-bottom: 1rem;
-`;
-
-const BackButton = styled.button`
-    background: #333333;
-    color: #e0e0e0;
-    border: none;
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    width: 100%;
-    margin-bottom: 0.75rem;
-    transition: all 0.2s ease;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 0.5rem;
+    font-size: 0.6rem;
+    z-index: 10;
+    transition: all 0.15s;
+    font-family: 'JetBrains Mono', monospace;
 
     &:hover {
-        background: #4ade80;
-        color: white;
-        transform: translateY(-1px);
+        border-color: ${C.amber};
+        color: ${C.amber};
+        background: ${C.amberGlow};
     }
 `;
 
-const AddJobButton = styled.button`
-    background: #4ade80;
-    color: white;
+const RailBrand = styled.div`
+    padding: 1.1rem 1.1rem 0.85rem;
+    border-bottom: 1px solid ${C.border};
+`;
+
+const BrandMark = styled.div`
+    font-family: 'Syne', sans-serif;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: ${C.amber};
+`;
+
+const BrandSub = styled.div`
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    color: ${C.textDim};
+    letter-spacing: 0.08em;
+    margin-top: 3px;
+`;
+
+const NavSection = styled.div`
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid ${C.border};
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+`;
+
+const NavBtn = styled.button`
+    background: transparent;
     border: none;
-    padding: 0.75rem 1rem;
-    border-radius: 6px;
-    font-weight: 600;
+    color: ${C.textMid};
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.38rem 0.6rem;
+    border-radius: 4px;
     cursor: pointer;
-    width: 100%;
-    transition: all 0.2s ease;
+    text-align: left;
+    transition: all 0.15s;
 
     &:hover {
-        background: #3bc76a;
-        transform: translateY(-1px);
+        color: ${C.text};
+        background: ${C.surface};
     }
 `;
 
-const JobsList = styled.div`
-    padding: 1rem;
+const AddJobBtn = styled.button`
+    margin: 0.75rem;
+    background: ${C.amber};
+    color: ${C.bg};
+    border: none;
+    padding: 0.55rem 1rem;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.15s;
+    width: calc(100% - 1.5rem);
+
+    &:hover {
+        background: ${C.amberHov};
+        transform: translateY(-1px);
+        box-shadow: 0 4px 16px ${C.amberGlow};
+    }
 `;
 
-const JobCard = styled.div<{ isActive: boolean }>`
-    background: ${props => props.isActive ? '#000000' : '#0f0f0f'};
-    border: 2px solid ${props => props.isActive ? '#4ade80' : '#333333'};
-    border-radius: 8px;
-    padding: 1rem;
-    padding-bottom: 2.25rem;
-    margin-bottom: 1rem;
+const JobsScroll = styled.div`
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+
+    &::-webkit-scrollbar { width: 3px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: ${C.border}; border-radius: 2px; }
+`;
+
+const JobItem = styled.div<{ isActive: boolean }>`
+    padding: 0.6rem 0.7rem;
+    margin-bottom: 2px;
+    border-radius: 5px;
     cursor: pointer;
-    transition: all 0.2s ease;
+    border-left: 3px solid ${p => p.isActive ? C.amber : 'transparent'};
+    background: ${p => p.isActive ? C.surface : 'transparent'};
+    transition: all 0.15s;
     position: relative;
 
     &:hover {
-        border-color: #4ade80;
-        transform: translateX(4px);
+        background: ${C.surface};
+        border-left-color: ${p => p.isActive ? C.amber : C.borderBright};
     }
 `;
 
-const JobTitle = styled.h3`
-    font-size: 1rem;
-    color: #e0e0e0;
-    margin-bottom: 0.5rem;
-`;
-
-const JobMeta = styled.div`
-    font-size: 0.875rem;
-    color: #999;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-`;
-
-const CardEditButton = styled.button`
-    position: absolute;
-    bottom: 0.6rem;
-    right: 0.6rem;
-    background: #4ade8020;
-    border: 1px solid #4ade8060;
-    color: #4ade80;
-    font-size: 0.7rem;
+const JobItemTitle = styled.div`
+    font-family: 'Syne', sans-serif;
+    font-size: 0.8rem;
     font-weight: 600;
-    padding: 0.2rem 0.55rem;
+    color: ${C.text};
+    margin-bottom: 0.18rem;
+    padding-right: 2.2rem;
+    line-height: 1.3;
+`;
+
+const JobItemMeta = styled.div`
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: ${C.textDim};
+    letter-spacing: 0.04em;
+`;
+
+const JobItemEditBtn = styled.button`
+    position: absolute;
+    top: 0.55rem;
+    right: 0.5rem;
+    background: transparent;
+    border: 1px solid ${C.border};
+    color: ${C.textDim};
+    font-size: 0.58rem;
+    padding: 0.12rem 0.3rem;
+    border-radius: 3px;
+    cursor: pointer;
+    font-family: 'JetBrains Mono', monospace;
+    letter-spacing: 0.04em;
+    transition: all 0.15s;
+
+    &:hover {
+        border-color: ${C.amber};
+        color: ${C.amber};
+        background: ${C.amberGlow};
+    }
+
+    &:disabled { opacity: 0.4; cursor: not-allowed; }
+`;
+
+const RailFooter = styled.div`
+    padding: 0.75rem;
+    border-top: 1px solid ${C.border};
+`;
+
+const TalentPoolBtn = styled.button`
+    width: 100%;
+    background: transparent;
+    border: 1px solid ${C.border};
+    color: ${C.textMid};
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.45rem 0.75rem;
     border-radius: 4px;
     cursor: pointer;
-    font-family: inherit;
-    transition: all 0.15s ease;
+    transition: all 0.15s;
 
     &:hover {
-        background: #4ade8035;
-        border-color: #4ade80;
+        border-color: ${C.amber};
+        color: ${C.amber};
+        background: ${C.amberGlow};
     }
 `;
 
-const MainContent = styled.div`
+// ─── main stage ───────────────────────────────────────────────────────────────
+
+const MainStage = styled.div`
     flex: 1;
-    padding: 2rem;
     overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+
+    &::-webkit-scrollbar { width: 5px; }
+    &::-webkit-scrollbar-track { background: transparent; }
+    &::-webkit-scrollbar-thumb { background: ${C.border}; border-radius: 3px; }
 `;
 
-const ContentHeader = styled.div`
-    margin-bottom: 2rem;
+const StageHeader = styled.div`
+    background: ${C.rail};
+    border-bottom: 1px solid ${C.border};
+    padding: 1.5rem 2rem 1.25rem;
+    position: sticky;
+    top: 0;
+    z-index: 5;
 `;
 
-const ContentTitle = styled.h1`
-    font-size: 2rem;
-    color: #4ade80;
-    margin-bottom: 0.5rem;
+const HeaderEyebrow = styled.div`
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.6rem;
+    color: ${C.amber};
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    margin-bottom: 0.4rem;
+    animation: ${fadeSlideUp} 0.3s ease both;
 `;
 
-const ContentSubtitle = styled.p`
-    color: #e0e0e0;
-    font-size: 1.125rem;
-`;
-
-const JobDetailsCard = styled.div`
-    background: #1a1a1a;
-    border-radius: 12px;
-    padding: 2rem;
-    margin-bottom: 2rem;
-`;
-
-const DetailRow = styled.div`
+const HeaderTop = styled.div`
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
     margin-bottom: 1rem;
-    display: flex;
-    gap: 1rem;
+    animation: ${fadeSlideUp} 0.3s 0.05s ease both;
+`;
 
-    @media (max-width: 768px) {
-        flex-direction: column;
+const JobTitleDisplay = styled.h1`
+    font-family: 'Syne', sans-serif;
+    font-size: 1.85rem;
+    font-weight: 800;
+    color: ${C.text};
+    margin: 0;
+    line-height: 1.1;
+    letter-spacing: -0.01em;
+`;
+
+const TagRow = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    animation: ${fadeSlideUp} 0.3s 0.1s ease both;
+`;
+
+const Tag = styled.span`
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.67rem;
+    color: ${C.textMid};
+    background: ${C.surface};
+    border: 1px solid ${C.border};
+    padding: 0.22rem 0.6rem;
+    border-radius: 3px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    letter-spacing: 0.03em;
+`;
+
+const HeaderActions = styled.div`
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+    flex-shrink: 0;
+    flex-wrap: wrap;
+`;
+
+const GhostBtn = styled.button<{ $danger?: boolean }>`
+    background: transparent;
+    border: 1px solid ${p => p.$danger ? C.red + '55' : C.border};
+    color: ${p => p.$danger ? C.red : C.textMid};
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 600;
+    padding: 0.42rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    transition: all 0.15s;
+
+    &:hover {
+        background: ${p => p.$danger ? C.redGlow : C.surface};
+        border-color: ${p => p.$danger ? C.red : C.amber};
+        color: ${p => p.$danger ? C.red : C.amber};
     }
 `;
 
-const DetailLabel = styled.span`
-    font-weight: 600;
-    color: #4ade80;
-    min-width: 180px;
-`;
-
-const DetailValue = styled.span`
-    color: #e0e0e0;
-`;
-
-const IndeedButton = styled.a`
+const AmberOutlineBtn = styled.button<{ $copied?: boolean }>`
+    background: ${p => p.$copied ? C.green : 'transparent'};
+    border: 1px solid ${p => p.$copied ? C.green : C.amber + '70'};
+    color: ${p => p.$copied ? C.white : C.amber};
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.42rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    background: #2164f3;
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    font-weight: 600;
+    gap: 0.35rem;
+    transition: all 0.15s;
+
+    &:hover {
+        background: ${p => p.$copied ? C.green + 'dd' : C.amberGlow};
+        border-color: ${p => p.$copied ? C.green : C.amber};
+    }
+`;
+
+const IndeedLink = styled.a`
+    background: #1d4ed8;
+    color: ${C.white};
+    font-family: 'Syne', sans-serif;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.42rem 0.8rem;
+    border-radius: 4px;
     text-decoration: none;
-    margin-top: 1rem;
-    transition: all 0.2s ease;
-
-    &:hover {
-        background: #1a4fc9;
-        transform: translateY(-1px);
-    }
-
-    img {
-        height: 20px;
-        filter: brightness(0) invert(1);
-    }
-`;
-
-const CopyLinkButton = styled.button<{ copied?: boolean }>`
     display: inline-flex;
     align-items: center;
-    gap: 0.5rem;
-    background: ${props => props.copied ? '#4ade80' : '#333333'};
-    color: white;
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    font-weight: 600;
+    gap: 0.35rem;
+    border: 1px solid transparent;
+    transition: background 0.15s;
+
+    &:hover { background: #1e40af; }
+`;
+
+// ─── pipeline body ────────────────────────────────────────────────────────────
+
+const PipelineBody = styled.div`
+    padding: 1.5rem 2rem 3rem;
+    flex: 1;
+`;
+
+const TabStrip = styled.div`
+    display: flex;
+    border-bottom: 1px solid ${C.border};
+    margin-bottom: 1.5rem;
+    gap: 0;
+`;
+
+const TabItem = styled.button<{ $isActive: boolean }>`
+    background: transparent;
     border: none;
+    border-bottom: 2px solid ${p => p.$isActive ? C.amber : 'transparent'};
+    color: ${p => p.$isActive ? C.amber : C.textMid};
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: ${p => p.$isActive ? 700 : 500};
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    padding: 0.55rem 1.1rem;
     cursor: pointer;
-    margin-top: 1rem;
-    margin-left: 1rem;
-    transition: all 0.2s ease;
+    margin-bottom: -1px;
+    transition: all 0.15s;
 
-    &:hover {
-        background: ${props => props.copied ? '#3bc76a' : '#4ade80'};
-        transform: translateY(-1px);
-    }
+    &:hover { color: ${p => p.$isActive ? C.amber : C.text}; }
 `;
 
-const JobActionsRow = styled.div`
+const ControlRow = styled.div`
     display: flex;
-    flex-wrap: wrap;
+    gap: 0.6rem;
     align-items: center;
-    gap: 0.5rem;
-`;
-
-const EditButton = styled.button`
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: transparent;
-    color: #60a5fa;
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    font-weight: 600;
-    border: 1px solid #60a5fa60;
-    cursor: pointer;
-    margin-top: 1rem;
-    transition: all 0.2s ease;
-    font-size: inherit;
-    font-family: inherit;
-
-    &:hover {
-        background: #60a5fa15;
-        border-color: #60a5fa;
-        transform: translateY(-1px);
-    }
-`;
-
-const DeleteButton = styled.button`
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: transparent;
-    color: #ef4444;
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    font-weight: 600;
-    border: 1px solid #ef444460;
-    cursor: pointer;
-    margin-top: 1rem;
-    transition: all 0.2s ease;
-    font-size: inherit;
-    font-family: inherit;
-
-    &:hover {
-        background: #ef444415;
-        border-color: #ef4444;
-        transform: translateY(-1px);
-    }
-`;
-
-const PipelineTabs = styled.div`
-    display: flex;
-    gap: 0.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 1.25rem;
     flex-wrap: wrap;
 `;
 
-const Tab = styled.button<{ isActive: boolean }>`
-    background: ${props => props.isActive ? '#4ade80' : '#1a1a1a'};
-    color: ${props => props.isActive ? 'white' : '#e0e0e0'};
-    border: 2px solid ${props => props.isActive ? '#4ade80' : '#333333'};
-    padding: 0.75rem 1.5rem;
-    border-radius: 6px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-        border-color: #4ade80;
-    }
+const ControlLabel = styled.span`
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: ${C.textDim};
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
 `;
 
-const FilterSortBar = styled.div`
-    background: #1a1a1a;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    display: flex;
-    gap: 1rem;
-    flex-wrap: wrap;
-    align-items: center;
-`;
-
-const Select = styled.select`
-    background: #000000;
-    color: #e0e0e0;
-    border: 2px solid #333333;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-size: 0.875rem;
+const FilterSelect = styled.select`
+    background: ${C.surface};
+    border: 1px solid ${C.border};
+    color: ${C.text};
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    padding: 0.32rem 0.65rem;
+    border-radius: 3px;
     cursor: pointer;
+    letter-spacing: 0.03em;
 
     &:focus {
         outline: none;
-        border-color: #4ade80;
+        border-color: ${C.amber};
     }
+
+    option { background: ${C.surface}; }
 `;
 
-const BulkActionsBar = styled.div`
-    background: #1a1a1a;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
+const BulkBar = styled.div`
+    background: ${C.amberGlow};
+    border: 1px solid ${C.amber}44;
+    border-radius: 5px;
+    padding: 0.6rem 1rem;
+    margin-bottom: 1.25rem;
     display: flex;
-    gap: 1rem;
+    gap: 0.6rem;
     align-items: center;
 `;
 
-const BulkActionButton = styled.button`
-    background: #333333;
-    color: white;
-    border: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
+const BulkCount = styled.span`
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    color: ${C.amber};
     font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-
-    &:hover {
-        background: #4ade80;
-    }
-
-    &:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
+    margin-right: 0.25rem;
 `;
 
-const CandidatesGrid = styled.div`
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-`;
-
-const TierSection = styled.div`
-    margin-bottom: 2rem;
-`;
-
-const TierHeader = styled.div<{ tier: string }>`
-    background: ${props => {
-        if (props.tier === 'green') return '#4ade80';
-        if (props.tier === 'yellow') return '#fbbf24';
-        return '#ef4444';
-    }};
-    color: white;
-    padding: 1rem;
-    border-radius: 8px 8px 0 0;
-    font-weight: 700;
-    font-size: 1.125rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-`;
-
-const CandidateCard = styled.div<{ isSelected: boolean }>`
-    background: #1a1a1a;
-    border: 2px solid ${props => props.isSelected ? '#4ade80' : '#333333'};
-    border-radius: 8px;
-    padding: 1.5rem;
-    transition: all 0.2s ease;
-
-    &:hover {
-        border-color: #4ade80;
-    }
-`;
-
-const CandidateHeader = styled.div`
-    display: flex;
-    justify-content: space-between;
-    align-items: start;
-    margin-bottom: 1rem;
-`;
-
-const CandidateInfo = styled.div`
-    flex: 1;
-`;
-
-const CandidateName = styled.h3`
-    font-size: 1.125rem;
-    color: #e0e0e0;
-    margin-bottom: 0.5rem;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-`;
-
-const StarRating = styled.span`
-    color: #fbbf24;
-    font-size: 1rem;
-`;
-
-const Score = styled.span<{ tier: string }>`
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: ${props => {
-        if (props.tier === 'green') return '#4ade80';
-        if (props.tier === 'yellow') return '#fbbf24';
-        return '#ef4444';
-    }};
-`;
-
-const Badge = styled.span`
-    background: #4ade80;
-    color: white;
-    padding: 0.25rem 0.75rem;
-    border-radius: 12px;
+const BulkBtn = styled.button`
+    background: ${C.surface};
+    border: 1px solid ${C.border};
+    color: ${C.text};
+    font-family: 'Syne', sans-serif;
     font-size: 0.75rem;
     font-weight: 600;
-    margin-left: 0.5rem;
+    padding: 0.32rem 0.7rem;
+    border-radius: 3px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    transition: all 0.15s;
+
+    &:hover {
+        border-color: ${C.amber};
+        color: ${C.amber};
+        background: ${C.amberGlow};
+    }
 `;
 
-const ActionButtons = styled.div`
+// ─── tier sections ────────────────────────────────────────────────────────────
+
+const TierGroup = styled.div`
+    margin-bottom: 2.5rem;
+    animation: ${fadeSlideUp} 0.3s ease both;
+`;
+
+const TierLabelRow = styled.div<{ $tier: string }>`
     display: flex;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 0.75rem;
+    padding-bottom: 0.6rem;
+    border-bottom: 1px solid ${p => tierColor(p.$tier)}28;
 `;
 
-const ActionIcon = styled.button<{ color: string }>`
-    background: ${props => props.color};
-    color: white;
-    border: none;
-    width: 44px;
-    height: 44px;
+const TierBar = styled.div<{ $tier: string }>`
+    width: 3px;
+    height: 1.1rem;
+    border-radius: 2px;
+    background: ${p => tierColor(p.$tier)};
+    box-shadow: 0 0 6px ${p => tierColor(p.$tier)}88;
+`;
+
+const TierName = styled.span<{ $tier: string }>`
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: ${p => tierColor(p.$tier)};
+`;
+
+const TierRange = styled.span`
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.62rem;
+    color: ${C.textDim};
+    letter-spacing: 0.04em;
+`;
+
+const TierCount = styled.span`
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.67rem;
+    color: ${C.textMid};
+    margin-left: auto;
+`;
+
+// ─── candidate dossier card ───────────────────────────────────────────────────
+
+const DossierCard = styled.div<{ $isSelected: boolean; $tier?: string }>`
+    background: ${p => p.$isSelected ? C.surface : 'transparent'};
+    border: 1px solid ${p => p.$isSelected ? C.amber + '44' : C.border};
+    border-left: 3px solid ${p => p.$isSelected ? C.amber : (p.$tier ? tierColor(p.$tier) + '30' : C.border)};
+    border-radius: 5px;
+    padding: 0.9rem 1.1rem;
+    margin-bottom: 0.4rem;
+    display: grid;
+    grid-template-columns: 18px 52px 1fr auto;
+    column-gap: 0.9rem;
+    align-items: start;
+    transition: all 0.15s;
+
+    &:hover {
+        background: ${C.surface};
+        border-left-color: ${p => p.$tier ? tierColor(p.$tier) : C.amber};
+        border-color: ${p => p.$tier ? tierColor(p.$tier) + '44' : C.border};
+    }
+`;
+
+const CardCheckbox = styled.input`
+    width: 15px;
+    height: 15px;
+    margin-top: 3px;
+    cursor: pointer;
+    accent-color: ${C.amber};
+    flex-shrink: 0;
+`;
+
+const ScoreCircle = styled.div<{ $tier: string }>`
+    width: 46px;
+    height: 46px;
     border-radius: 50%;
+    background: ${p => tierGlow(p.$tier)};
+    border: 1.5px solid ${p => tierColor(p.$tier)}55;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: ${p => tierColor(p.$tier)};
+    flex-shrink: 0;
+    line-height: 1;
+`;
+
+const CardBody = styled.div`
+    min-width: 0;
+`;
+
+const CardTopRow = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    margin-bottom: 0.28rem;
+`;
+
+const CandidateName = styled.span`
+    font-family: 'Syne', sans-serif;
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: ${C.text};
+`;
+
+const StarRowWrap = styled.span`
+    display: inline-flex;
+    align-items: center;
+    gap: 1px;
+`;
+
+const ChanceBadge = styled.span`
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.58rem;
+    letter-spacing: 0.07em;
+    color: ${C.amber};
+    border: 1px solid ${C.amber}55;
+    padding: 0.1rem 0.38rem;
+    border-radius: 2px;
+    text-transform: uppercase;
+`;
+
+const CardMetaRow = styled.div`
+    display: flex;
+    gap: 1.1rem;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.64rem;
+    color: ${C.textMid};
+    margin-bottom: 0.45rem;
+    flex-wrap: wrap;
+    letter-spacing: 0.03em;
+`;
+
+const CardSummary = styled.p`
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 400;
+    color: ${C.textMid};
+    line-height: 1.6;
+    margin: 0;
+`;
+
+const CardActions = styled.div`
+    display: flex;
+    gap: 0.3rem;
+    align-items: flex-start;
+    flex-shrink: 0;
+`;
+
+const ActionBtn = styled.button<{ $color: string }>`
+    width: 32px;
+    height: 32px;
+    border-radius: 4px;
+    background: ${p => p.$color}18;
+    border: 1px solid ${p => p.$color}44;
+    color: ${p => p.$color};
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 1.125rem;
-    transition: all 0.2s ease;
+    transition: all 0.15s;
 
     &:hover {
-        transform: scale(1.1);
+        background: ${p => p.$color}30;
+        border-color: ${p => p.$color};
+        transform: translateY(-1px);
     }
 `;
 
-const Summary = styled.p`
-    color: #e0e0e0;
-    line-height: 1.6;
-    margin-bottom: 1rem;
-    font-size: 0.9375rem;
-`;
-
-const MetaRow = styled.div`
-    display: flex;
-    gap: 2rem;
-    flex-wrap: wrap;
-    font-size: 0.875rem;
-    color: #999;
-`;
-
-const Checkbox = styled.input`
-    width: 22px;
-    height: 22px;
-    min-width: 44px;
-    min-height: 44px;
-    cursor: pointer;
-    margin-right: 0.5rem;
-`;
-
-const MessageDropdown = styled.div`
+const MsgDropdownWrap = styled.div`
     position: relative;
-    display: inline-block;
 `;
 
-const DropdownContent = styled.div<{ isOpen: boolean }>`
-    display: ${props => props.isOpen ? 'block' : 'none'};
+const MsgMenu = styled.div<{ $isOpen: boolean }>`
+    display: ${p => p.$isOpen ? 'block' : 'none'};
     position: absolute;
-    background: #1a1a1a;
-    min-width: 200px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
-    border-radius: 6px;
-    z-index: 1;
-    left: 0;
-    top: 100%;
-    margin-top: 0.5rem;
-    border: 2px solid #333333;
+    right: 0;
+    top: calc(100% + 4px);
+    background: ${C.surface};
+    border: 1px solid ${C.borderBright};
+    border-radius: 5px;
+    min-width: 140px;
+    z-index: 20;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.6);
+    overflow: hidden;
 `;
 
-const DropdownItem = styled.button`
-    background: none;
+const MsgMenuItem = styled.button`
+    background: transparent;
     border: none;
-    color: #e0e0e0;
-    padding: 0.75rem 1rem;
+    color: ${C.text};
+    font-family: 'Syne', sans-serif;
+    font-size: 0.78rem;
+    font-weight: 500;
+    padding: 0.48rem 0.85rem;
+    width: 100%;
     text-align: left;
     cursor: pointer;
-    width: 100%;
-    transition: all 0.2s ease;
-
-    &:hover {
-        background: #333333;
-    }
-
-    &:first-child {
-        border-radius: 4px 4px 0 0;
-    }
-
-    &:last-child {
-        border-radius: 0 0 4px 4px;
-    }
-`;
-
-const EmptyState = styled.div`
-    text-align: center;
-    padding: 4rem 2rem;
-    color: #999;
-`;
-
-const ErrorBanner = styled.div`
-    background: #2d1b1b;
-    border: 1px solid #ef4444;
-    border-radius: 8px;
-    padding: 0.75rem 1rem;
-    margin: 0.5rem 1rem;
-    color: #fca5a5;
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    font-size: 0.9rem;
+    gap: 0.5rem;
+    transition: background 0.1s;
+
+    &:hover { background: ${C.surfaceHov}; }
 `;
 
-const ErrorDismiss = styled.button`
+// ─── misc ─────────────────────────────────────────────────────────────────────
+
+const EmptyBox = styled.div`
+    text-align: center;
+    padding: 4rem 2rem;
+    color: ${C.textDim};
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    line-height: 2;
+`;
+
+const LoadingText = styled.div`
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    color: ${C.textDim};
+    letter-spacing: 0.1em;
+    text-align: center;
+    padding: 2.5rem;
+    animation: ${pulse} 1.5s ease infinite;
+`;
+
+const ErrorToast = styled.div`
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    background: #110a0a;
+    border: 1px solid ${C.red}55;
+    border-radius: 6px;
+    padding: 0.75rem 1rem;
+    color: #fca5a5;
+    font-family: 'Syne', sans-serif;
+    font-size: 0.82rem;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    max-width: 360px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+`;
+
+const ErrorClose = styled.button`
     background: none;
     border: none;
     color: #fca5a5;
     cursor: pointer;
-    font-size: 1.2rem;
-    padding: 0 0.25rem;
-    &:hover { color: #ef4444; }
+    font-size: 1rem;
+    padding: 0;
+    margin-left: auto;
+    flex-shrink: 0;
+    &:hover { color: ${C.red}; }
 `;
 
-const LoadingSpinner = styled.div`
+const WelcomeState = styled.div`
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+    min-height: 60vh;
     text-align: center;
     padding: 2rem;
-    color: #999;
-    font-size: 0.9rem;
+    gap: 0.75rem;
 `;
 
+const WelcomeTitle = styled.h2`
+    font-family: 'Syne', sans-serif;
+    font-size: 2rem;
+    font-weight: 800;
+    color: ${C.textDim};
+    margin: 0;
+    letter-spacing: -0.01em;
+`;
+
+const WelcomeSub = styled.p`
+    font-family: 'Syne', sans-serif;
+    font-size: 0.85rem;
+    color: ${C.textDim};
+    margin: 0;
+`;
+
+// ─── component ────────────────────────────────────────────────────────────────
 
 const JobsManagement: React.FC = () => {
     const [jobs, setJobs] = useState<Job[]>([]);
@@ -676,12 +917,10 @@ const JobsManagement: React.FC = () => {
         });
     };
 
-    // Load jobs on mount
     useEffect(() => {
         loadJobs();
     }, []);
 
-    // Sync selectedJob when URL param changes (e.g. browser back/forward)
     useEffect(() => {
         if (!jobId || jobs.length === 0) return;
         const id = parseInt(jobId, 10);
@@ -691,7 +930,6 @@ const JobsManagement: React.FC = () => {
         }
     }, [jobId, jobs]);
 
-    // Load candidates when job is selected (debounced with request cancellation)
     useEffect(() => {
         if (!selectedJob) return;
 
@@ -734,7 +972,6 @@ const JobsManagement: React.FC = () => {
                 alert('Failed to delete job. Please try again.');
                 return;
             }
-            // Remove from list and clear selection immediately — don't wait for reload
             setJobs(prev => prev.filter(j => j.id !== job.id));
             setSelectedJob(null);
             navigate('/jobs-management', { replace: true });
@@ -777,12 +1014,8 @@ const JobsManagement: React.FC = () => {
         setLoadingCandidates(true);
         try {
             const params = new URLSearchParams();
-            if (activeTab !== 'all') {
-                params.append('pipeline_status', activeTab);
-            }
-            if (filterTier !== 'all') {
-                params.append('tier', filterTier);
-            }
+            if (activeTab !== 'all') params.append('pipeline_status', activeTab);
+            if (filterTier !== 'all') params.append('tier', filterTier);
             params.append('sort_by', sortBy);
 
             const response = await fetch(`${config.apiUrl}/api/jobs/${jobId}?${params}`, { signal, headers: getAuthHeaders() });
@@ -812,11 +1045,8 @@ const JobsManagement: React.FC = () => {
                 headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
                 body: JSON.stringify({ status: action })
             });
-
             if (response.ok) {
-                if (selectedJob) {
-                    loadCandidates(selectedJob.id);
-                }
+                if (selectedJob) loadCandidates(selectedJob.id);
                 setSelectedCandidates(new Set());
             }
         } catch (error) {
@@ -827,7 +1057,6 @@ const JobsManagement: React.FC = () => {
 
     const handleBulkAction = async (action: string) => {
         if (selectedCandidates.size === 0) return;
-
         try {
             const response = await fetch(`${config.apiUrl}/api/pipeline/bulk-update`, {
                 method: 'POST',
@@ -837,11 +1066,8 @@ const JobsManagement: React.FC = () => {
                     status: action
                 })
             });
-
             if (response.ok) {
-                if (selectedJob) {
-                    loadCandidates(selectedJob.id);
-                }
+                if (selectedJob) loadCandidates(selectedJob.id);
                 setSelectedCandidates(new Set());
             }
         } catch (error) {
@@ -851,21 +1077,14 @@ const JobsManagement: React.FC = () => {
     };
 
     const handleSendMessage = (candidatePipelineId: number, messageType: string) => {
-        // Find the candidate
         const candidate = candidates.find(c => c.id === candidatePipelineId);
         if (!candidate) return;
-
-        // Extract candidate name from filename
         const candidateName = extractCandidateName(candidate.filename || 'Candidate');
-
-        // Set up modal state
         setSelectedCandidateForContact({
             pipelineId: candidatePipelineId,
             name: candidateName,
             position: selectedJob?.title || 'Position'
         });
-
-        // Determine mode and communication type
         if (messageType === 'rejection_email') {
             setContactMode('rejection');
             setContactCommunicationType('email');
@@ -873,8 +1092,6 @@ const JobsManagement: React.FC = () => {
             setContactMode('contact');
             setContactCommunicationType(messageType === 'sms' ? 'sms' : 'email');
         }
-
-        // Close dropdown and open modal
         setMessageDropdownOpen(null);
         setContactModalOpen(true);
     };
@@ -882,10 +1099,7 @@ const JobsManagement: React.FC = () => {
     const handleContactSuccess = () => {
         setContactModalOpen(false);
         setSelectedCandidateForContact(null);
-        // Reload candidates to reflect updated status
-        if (selectedJob) {
-            loadCandidates(selectedJob.id);
-        }
+        if (selectedJob) loadCandidates(selectedJob.id);
     };
 
     const toggleCandidateSelection = (id: number) => {
@@ -901,38 +1115,122 @@ const JobsManagement: React.FC = () => {
     const getStars = (rating: number) => {
         const fullStars = Math.floor(rating);
         const halfStar = rating % 1 >= 0.5;
-
         return (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '2px' }}>
+            <StarRowWrap>
                 {[...Array(5)].map((_, i) => (
                     <Star
                         key={i}
-                        size={16}
-                        fill={i < fullStars ? "#fbbf24" : "none"}
-                        color="#fbbf24"
+                        size={11}
+                        fill={i < fullStars ? '#f59e0b' : 'none'}
+                        color={i < fullStars ? '#f59e0b' : '#353d52'}
                         className={i === fullStars && halfStar ? 'half-star' : ''}
                     />
                 ))}
-            </div>
+            </StarRowWrap>
         );
     };
 
-    // Group candidates by tier (memoized to avoid re-filtering on unrelated renders)
     const candidatesByTier = useMemo(() => ({
-        green: candidates.filter(c => c.tier === 'green'),
+        green:  candidates.filter(c => c.tier === 'green'),
         yellow: candidates.filter(c => c.tier === 'yellow'),
-        red: candidates.filter(c => c.tier === 'red')
+        red:    candidates.filter(c => c.tier === 'red')
     }), [candidates]);
+
+    const renderCandidateCard = (candidate: CandidatePipeline) => (
+        <DossierCard
+            key={candidate.id}
+            $isSelected={selectedCandidates.has(candidate.id)}
+            $tier={candidate.tier}
+        >
+            <CardCheckbox
+                type="checkbox"
+                checked={selectedCandidates.has(candidate.id)}
+                onChange={() => toggleCandidateSelection(candidate.id)}
+            />
+
+            <ScoreCircle $tier={candidate.tier}>
+                {candidate.tier_score}
+            </ScoreCircle>
+
+            <CardBody>
+                <CardTopRow>
+                    <CandidateName>
+                        {candidate.filename?.replace('.pdf', '') || 'Unknown'}
+                    </CandidateName>
+                    {getStars(candidate.star_rating)}
+                    {candidate.give_them_a_chance && (
+                        <ChanceBadge>Give a Chance</ChanceBadge>
+                    )}
+                </CardTopRow>
+                <CardMetaRow>
+                    <span>{candidate.years_of_experience}yr exp</span>
+                    <span>{candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
+                    <span>{candidate.certifications_found?.length || 0} cert(s)</span>
+                </CardMetaRow>
+                {candidate.ai_summary && (
+                    <CardSummary>{candidate.ai_summary}</CardSummary>
+                )}
+            </CardBody>
+
+            <CardActions>
+                <ActionBtn
+                    $color={C.green}
+                    onClick={() => handleCandidateAction(candidate.id, 'approved')}
+                    title="Approve"
+                >
+                    <Check size={13} />
+                </ActionBtn>
+
+                <MsgDropdownWrap>
+                    <ActionBtn
+                        $color={C.blue}
+                        onClick={() => setMessageDropdownOpen(
+                            messageDropdownOpen === candidate.id ? null : candidate.id
+                        )}
+                        title="Send Message"
+                    >
+                        <Mail size={13} />
+                    </ActionBtn>
+                    <MsgMenu $isOpen={messageDropdownOpen === candidate.id}>
+                        <MsgMenuItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
+                            <Smartphone size={12} /> SMS
+                        </MsgMenuItem>
+                        <MsgMenuItem onClick={() => handleSendMessage(candidate.id, 'email')}>
+                            <Mail size={12} /> Email
+                        </MsgMenuItem>
+                        <MsgMenuItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
+                            <X size={12} /> Rejection
+                        </MsgMenuItem>
+                    </MsgMenu>
+                </MsgDropdownWrap>
+
+                <ActionBtn
+                    $color={C.yellow}
+                    onClick={() => handleCandidateAction(candidate.id, 'backup')}
+                    title="Move to Backup"
+                >
+                    <ThumbsUp size={13} />
+                </ActionBtn>
+
+                <ActionBtn
+                    $color={C.red}
+                    onClick={() => handleCandidateAction(candidate.id, 'rejected')}
+                    title="Reject"
+                >
+                    <X size={13} />
+                </ActionBtn>
+            </CardActions>
+        </DossierCard>
+    );
 
     return (
         <>
+            <GlobalFonts />
+
             {showAddJobForm && (
                 <AddJobForm
                     onClose={() => setShowAddJobForm(false)}
-                    onJobCreated={() => {
-                        loadJobs();
-                        setShowAddJobForm(false);
-                    }}
+                    onJobCreated={() => { loadJobs(); setShowAddJobForm(false); }}
                 />
             )}
 
@@ -940,574 +1238,227 @@ const JobsManagement: React.FC = () => {
                 <AddJobForm
                     editJob={editingJob}
                     onClose={() => setEditingJob(null)}
-                    onJobCreated={() => {
-                        loadJobs();
-                        setEditingJob(null);
-                    }}
+                    onJobCreated={() => { loadJobs(); setEditingJob(null); }}
                 />
             )}
 
-            <PageContainer>
+            <PageWrapper>
                 {error && (
-                    <ErrorBanner>
+                    <ErrorToast>
                         <span>{error}</span>
-                        <ErrorDismiss onClick={() => setError(null)}>×</ErrorDismiss>
-                    </ErrorBanner>
+                        <ErrorClose onClick={() => setError(null)}>×</ErrorClose>
+                    </ErrorToast>
                 )}
-                <LeftPanel isCollapsed={isLeftPanelCollapsed}>
-                    <CollapseButton onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}>
+
+                {/* ── left rail ── */}
+                <LeftRail isCollapsed={isLeftPanelCollapsed}>
+                    <CollapseBtn onClick={() => setIsLeftPanelCollapsed(!isLeftPanelCollapsed)}>
                         {isLeftPanelCollapsed ? '▶' : '◀'}
-                    </CollapseButton>
+                    </CollapseBtn>
 
                     {!isLeftPanelCollapsed && (
                         <>
-                            <PanelHeader>
-                                <PanelTitle>My Jobs</PanelTitle>
-                                <BackButton onClick={() => navigate('/dashboard')}>
-                                    ← Dashboard
-                                </BackButton>
-                                <BackButton onClick={() => navigate('/batch-resume-analysis')}>
-                                    ← Back to Resume Evaluator
-                                </BackButton>
-                                <AddJobButton onClick={() => setShowAddJobForm(true)}>
-                                    + Add New Job
-                                </AddJobButton>
-                                <BackButton onClick={() => navigate('/talent-pool-manager')}>
-                                    View Talent Pool →
-                                </BackButton>
-                            </PanelHeader>
+                            <RailBrand>
+                                <BrandMark>Talos Ops</BrandMark>
+                                <BrandSub>JOB MANAGEMENT CONSOLE</BrandSub>
+                            </RailBrand>
 
-                            <JobsList>
+                            <NavSection>
+                                <NavBtn onClick={() => navigate('/dashboard')}>← Dashboard</NavBtn>
+                                <NavBtn onClick={() => navigate('/batch-resume-analysis')}>← Resume Evaluator</NavBtn>
+                            </NavSection>
+
+                            <AddJobBtn onClick={() => setShowAddJobForm(true)}>
+                                + Post New Job
+                            </AddJobBtn>
+
+                            <JobsScroll>
                                 {loadingJobs ? (
-                                    <LoadingSpinner>Loading jobs...</LoadingSpinner>
+                                    <LoadingText>LOADING JOBS...</LoadingText>
                                 ) : jobs.length === 0 ? (
-                                    <EmptyState>
-                                        <p>No jobs yet.</p>
-                                        <p>Click "Add New Job" to get started!</p>
-                                    </EmptyState>
+                                    <EmptyBox>No active positions</EmptyBox>
                                 ) : (
                                     jobs.map(job => (
-                                        <JobCard
+                                        <JobItem
                                             key={job.id}
                                             isActive={selectedJob?.id === job.id}
                                             onClick={() => navigate(`/jobs-management/${job.id}`)}
                                         >
-                                            <JobTitle>{job.title}</JobTitle>
-                                            <JobMeta>
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {job.location}</span>
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Briefcase size={14} /> {job.required_years_experience}+ years</span>
-                                                {job.vehicle_required && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Car size={14} /> Vehicle Required</span>}
-                                            </JobMeta>
-                                            <CardEditButton
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    openEditForm(job);
-                                                }}
+                                            <JobItemTitle>{job.title}</JobItemTitle>
+                                            <JobItemMeta>
+                                                {job.location} · {job.required_years_experience}yr
+                                            </JobItemMeta>
+                                            <JobItemEditBtn
+                                                onClick={e => { e.stopPropagation(); openEditForm(job); }}
                                                 disabled={loadingEditJob === job.id}
                                             >
-                                                {loadingEditJob === job.id ? '...' : 'Edit'}
-                                            </CardEditButton>
-                                        </JobCard>
+                                                {loadingEditJob === job.id ? '···' : 'edit'}
+                                            </JobItemEditBtn>
+                                        </JobItem>
                                     ))
                                 )}
-                            </JobsList>
+                            </JobsScroll>
+
+                            <RailFooter>
+                                <TalentPoolBtn onClick={() => navigate('/talent-pool-manager')}>
+                                    Talent Pool →
+                                </TalentPoolBtn>
+                            </RailFooter>
                         </>
                     )}
-                </LeftPanel>
+                </LeftRail>
 
-                <MainContent>
+                {/* ── main stage ── */}
+                <MainStage>
                     {selectedJob ? (
                         <>
-                            <ContentHeader>
-                                <ContentTitle>{selectedJob.title}</ContentTitle>
-                                <ContentSubtitle>Candidate Pipeline</ContentSubtitle>
-                            </ContentHeader>
+                            <StageHeader>
+                                <HeaderEyebrow>Active Position</HeaderEyebrow>
+                                <HeaderTop>
+                                    <div>
+                                        <JobTitleDisplay>{selectedJob.title}</JobTitleDisplay>
+                                        <TagRow style={{ marginTop: '0.7rem' }}>
+                                            <Tag><MapPin size={10} /> {selectedJob.location}</Tag>
+                                            <Tag><Briefcase size={10} /> {selectedJob.required_years_experience}+ yrs exp</Tag>
+                                            <Tag><Car size={10} /> Vehicle {selectedJob.vehicle_required ? 'Required' : 'Not Required'}</Tag>
+                                        </TagRow>
+                                    </div>
+                                    <HeaderActions>
+                                        <AmberOutlineBtn
+                                            onClick={() => copyApplyLink(selectedJob)}
+                                            $copied={copiedJobId === selectedJob.id}
+                                        >
+                                            {copiedJobId === selectedJob.id
+                                                ? <><Check size={13} /> Copied</>
+                                                : <><Link size={13} /> Copy Apply Link</>
+                                            }
+                                        </AmberOutlineBtn>
+                                        <IndeedLink
+                                            href="https://employers.indeed.com/p/posting/orientation?jobId=697e7bd81fa87b7b4f80d2f4"
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            Post to Indeed
+                                        </IndeedLink>
+                                        <GhostBtn $danger onClick={() => deleteJob(selectedJob)}>
+                                            <X size={13} /> Delete
+                                        </GhostBtn>
+                                    </HeaderActions>
+                                </HeaderTop>
+                            </StageHeader>
 
-                            <JobDetailsCard>
-                                <h3 style={{ color: '#4ade80', marginBottom: '1rem' }}>Job Details</h3>
-                                <DetailRow>
-                                    <DetailLabel>Location:</DetailLabel>
-                                    <DetailValue>{selectedJob.location}</DetailValue>
-                                </DetailRow>
-                                <DetailRow>
-                                    <DetailLabel>Required Experience:</DetailLabel>
-                                    <DetailValue>{selectedJob.required_years_experience}+ years</DetailValue>
-                                </DetailRow>
-                                <DetailRow>
-                                    <DetailLabel>Vehicle Required:</DetailLabel>
-                                    <DetailValue>{selectedJob.vehicle_required ? 'Yes' : 'No'}</DetailValue>
-                                </DetailRow>
-                                {selectedJob.description && (
-                                    <DetailRow>
-                                        <DetailLabel>Description:</DetailLabel>
-                                        <DetailValue>{selectedJob.description}</DetailValue>
-                                    </DetailRow>
+                            <PipelineBody>
+                                <TabStrip>
+                                    {(['all', 'approved', 'contacted', 'backup', 'rejected'] as PipelineTab[]).map(tab => (
+                                        <TabItem
+                                            key={tab}
+                                            $isActive={activeTab === tab}
+                                            onClick={() => setActiveTab(tab)}
+                                        >
+                                            {tab === 'all' ? `All (${candidates.length})` : tab}
+                                        </TabItem>
+                                    ))}
+                                </TabStrip>
+
+                                <ControlRow>
+                                    <ControlLabel>Filter</ControlLabel>
+                                    <FilterSelect value={filterTier} onChange={e => setFilterTier(e.target.value)}>
+                                        <option value="all">All Tiers</option>
+                                        <option value="green">Green</option>
+                                        <option value="yellow">Yellow</option>
+                                        <option value="red">Red</option>
+                                    </FilterSelect>
+                                    <ControlLabel style={{ marginLeft: '0.4rem' }}>Sort</ControlLabel>
+                                    <FilterSelect value={sortBy} onChange={e => setSortBy(e.target.value)}>
+                                        <option value="tier_score">Score</option>
+                                        <option value="years_of_experience">Experience</option>
+                                        <option value="star_rating">Stars</option>
+                                    </FilterSelect>
+                                </ControlRow>
+
+                                {selectedCandidates.size > 0 && (
+                                    <BulkBar>
+                                        <BulkCount>{selectedCandidates.size} selected</BulkCount>
+                                        <BulkBtn onClick={() => handleBulkAction('approved')}>
+                                            <Check size={12} /> Approve All
+                                        </BulkBtn>
+                                        <BulkBtn onClick={() => handleBulkAction('backup')}>
+                                            <ThumbsUp size={12} /> Backup
+                                        </BulkBtn>
+                                        <BulkBtn onClick={() => handleBulkAction('rejected')}>
+                                            <X size={12} /> Reject All
+                                        </BulkBtn>
+                                    </BulkBar>
                                 )}
-                                <JobActionsRow>
-                                    <CopyLinkButton
-                                        onClick={() => copyApplyLink(selectedJob)}
-                                        copied={copiedJobId === selectedJob.id}
-                                    >
-                                        {copiedJobId === selectedJob.id ? (
-                                            <>
-                                                <Check size={18} /> Copied!
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Link size={18} /> Copy Apply Link
-                                            </>
-                                        )}
-                                    </CopyLinkButton>
-                                    <IndeedButton
-                                        href="https://employers.indeed.com/p/posting/orientation?jobId=697e7bd81fa87b7b4f80d2f4"
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                    >
-                                        Post to Indeed
-                                    </IndeedButton>
-                                    <DeleteButton onClick={() => deleteJob(selectedJob)}>
-                                        <X size={16} /> Delete Job
-                                    </DeleteButton>
-                                </JobActionsRow>
-                            </JobDetailsCard>
 
-                            <PipelineTabs>
-                                <Tab isActive={activeTab === 'all'} onClick={() => setActiveTab('all')}>
-                                    All ({candidates.length})
-                                </Tab>
-                                <Tab isActive={activeTab === 'approved'} onClick={() => setActiveTab('approved')}>
-                                    Approved
-                                </Tab>
-                                <Tab isActive={activeTab === 'contacted'} onClick={() => setActiveTab('contacted')}>
-                                    Contacted
-                                </Tab>
-                                <Tab isActive={activeTab === 'backup'} onClick={() => setActiveTab('backup')}>
-                                    Backups
-                                </Tab>
-                                <Tab isActive={activeTab === 'rejected'} onClick={() => setActiveTab('rejected')}>
-                                    Rejected
-                                </Tab>
-                            </PipelineTabs>
-
-                            <FilterSortBar>
-                                <span style={{ color: '#e0e0e0', fontWeight: 600 }}>Filter & Sort:</span>
-                                <Select value={filterTier} onChange={(e) => setFilterTier(e.target.value)}>
-                                    <option value="all">All Tiers</option>
-                                    <option value="green">Green Tier</option>
-                                    <option value="yellow">Yellow Tier</option>
-                                    <option value="red">Red Tier</option>
-                                </Select>
-                                <Select value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-                                    <option value="tier_score">Sort by Score</option>
-                                    <option value="years_of_experience">Sort by Experience</option>
-                                    <option value="star_rating">Sort by Star Rating</option>
-                                </Select>
-                            </FilterSortBar>
-
-                            {selectedCandidates.size > 0 && (
-                                <BulkActionsBar>
-                                    <span style={{ color: '#e0e0e0' }}>
-                                        {selectedCandidates.size} selected
-                                    </span>
-                                    <BulkActionButton onClick={() => handleBulkAction('approved')}>
-                                        <Check size={16} style={{ marginRight: '8px' }} /> Approve All
-                                    </BulkActionButton>
-                                    <BulkActionButton onClick={() => handleBulkAction('backup')}>
-                                        <ThumbsUp size={16} style={{ marginRight: '8px' }} /> Move to Backup
-                                    </BulkActionButton>
-                                    <BulkActionButton onClick={() => handleBulkAction('rejected')}>
-                                        <X size={16} style={{ marginRight: '8px' }} /> Reject All
-                                    </BulkActionButton>
-                                </BulkActionsBar>
-                            )}
-
-                            <CandidatesGrid>
                                 {loadingCandidates ? (
-                                    <LoadingSpinner>Loading candidates...</LoadingSpinner>
+                                    <LoadingText>LOADING CANDIDATES...</LoadingText>
                                 ) : activeTab === 'all' ? (
                                     <>
                                         {candidatesByTier.green.length > 0 && (
-                                            <TierSection>
-                                                <TierHeader tier="green">
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={20} /> GREEN TIER (80-100 points)</span>
-                                                    <span>{candidatesByTier.green.length} candidates</span>
-                                                </TierHeader>
-                                                {candidatesByTier.green.map(candidate => (
-                                                    <CandidateCard
-                                                        key={candidate.id}
-                                                        isSelected={selectedCandidates.has(candidate.id)}
-                                                    >
-                                                        <CandidateHeader>
-                                                            <CandidateInfo>
-                                                                <CandidateName>
-                                                                    <Checkbox
-                                                                        type="checkbox"
-                                                                        checked={selectedCandidates.has(candidate.id)}
-                                                                        onChange={() => toggleCandidateSelection(candidate.id)}
-                                                                    />
-                                                                    {candidate.filename?.replace('.pdf', '') || 'Unknown'}
-                                                                    <StarRating>{getStars(candidate.star_rating)}</StarRating>
-                                                                    {candidate.give_them_a_chance && (
-                                                                        <Badge>Give Them a Chance</Badge>
-                                                                    )}
-                                                                </CandidateName>
-                                                            </CandidateInfo>
-                                                            <Score tier={candidate.tier}>{candidate.tier_score}</Score>
-                                                        </CandidateHeader>
-
-                                                        <Summary>{candidate.ai_summary}</Summary>
-
-                                                        <MetaRow>
-                                                            <span>📅 {candidate.years_of_experience} years exp</span>
-                                                            <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
-                                                            <span>📜 {candidate.certifications_found?.length || 0} certs</span>
-                                                        </MetaRow>
-
-                                                        <ActionButtons style={{ marginTop: '1rem' }}>
-                                                            <ActionIcon
-                                                                color="#4ade80"
-                                                                onClick={() => handleCandidateAction(candidate.id, 'approved')}
-                                                                title="Approve"
-                                                            >
-                                                                ✓
-                                                            </ActionIcon>
-
-                                                            <MessageDropdown>
-                                                                <ActionIcon
-                                                                    color="#3b82f6"
-                                                                    onClick={() => setMessageDropdownOpen(
-                                                                        messageDropdownOpen === candidate.id ? null : candidate.id
-                                                                    )}
-                                                                    title="Send Message"
-                                                                >
-                                                                    ✉
-                                                                </ActionIcon>
-                                                                <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
-                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
-                                                                        📱 SMS
-                                                                    </DropdownItem>
-                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
-                                                                        📧 Email
-                                                                    </DropdownItem>
-                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
-                                                                        ✗ Rejection
-                                                                    </DropdownItem>
-                                                                </DropdownContent>
-                                                            </MessageDropdown>
-
-                                                            <ActionIcon
-                                                                color="#fbbf24"
-                                                                onClick={() => handleCandidateAction(candidate.id, 'backup')}
-                                                                title="Move to Backup"
-                                                            >
-                                                                👍
-                                                            </ActionIcon>
-
-                                                            <ActionIcon
-                                                                color="#ef4444"
-                                                                onClick={() => handleCandidateAction(candidate.id, 'rejected')}
-                                                                title="Reject"
-                                                            >
-                                                                ✗
-                                                            </ActionIcon>
-                                                        </ActionButtons>
-                                                    </CandidateCard>
-                                                ))}
-                                            </TierSection>
+                                            <TierGroup>
+                                                <TierLabelRow $tier="green">
+                                                    <TierBar $tier="green" />
+                                                    <TierName $tier="green">Green Tier</TierName>
+                                                    <TierRange>80–100 pts</TierRange>
+                                                    <TierCount>{candidatesByTier.green.length}</TierCount>
+                                                </TierLabelRow>
+                                                {candidatesByTier.green.map(renderCandidateCard)}
+                                            </TierGroup>
                                         )}
 
                                         {candidatesByTier.yellow.length > 0 && (
-                                            <TierSection>
-                                                <TierHeader tier="yellow">
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><AlertCircle size={20} /> YELLOW TIER (50-79 points)</span>
-                                                    <span>{candidatesByTier.yellow.length} candidates</span>
-                                                </TierHeader>
-                                                {/* Similar candidate card rendering for yellow tier */}
-                                                {candidatesByTier.yellow.map(candidate => (
-                                                    <CandidateCard
-                                                        key={candidate.id}
-                                                        isSelected={selectedCandidates.has(candidate.id)}
-                                                    >
-                                                        {/* Same structure as green tier */}
-                                                        <CandidateHeader>
-                                                            <CandidateInfo>
-                                                                <CandidateName>
-                                                                    <Checkbox
-                                                                        type="checkbox"
-                                                                        checked={selectedCandidates.has(candidate.id)}
-                                                                        onChange={() => toggleCandidateSelection(candidate.id)}
-                                                                    />
-                                                                    {candidate.filename?.replace('.pdf', '') || 'Unknown'}
-                                                                    <StarRating>{getStars(candidate.star_rating)}</StarRating>
-                                                                    {candidate.give_them_a_chance && (
-                                                                        <Badge>Give Them a Chance</Badge>
-                                                                    )}
-                                                                </CandidateName>
-                                                            </CandidateInfo>
-                                                            <Score tier={candidate.tier}>{candidate.tier_score}</Score>
-                                                        </CandidateHeader>
-
-                                                        <Summary>{candidate.ai_summary}</Summary>
-
-                                                        <MetaRow>
-                                                            <span>📅 {candidate.years_of_experience} years exp</span>
-                                                            <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
-                                                            <span>📜 {candidate.certifications_found?.length || 0} certs</span>
-                                                        </MetaRow>
-
-                                                        <ActionButtons style={{ marginTop: '1rem' }}>
-                                                            <ActionIcon
-                                                                color="#4ade80"
-                                                                onClick={() => handleCandidateAction(candidate.id, 'approved')}
-                                                                title="Approve"
-                                                            >
-                                                                ✓
-                                                            </ActionIcon>
-
-                                                            <MessageDropdown>
-                                                                <ActionIcon
-                                                                    color="#3b82f6"
-                                                                    onClick={() => setMessageDropdownOpen(
-                                                                        messageDropdownOpen === candidate.id ? null : candidate.id
-                                                                    )}
-                                                                    title="Send Message"
-                                                                >
-                                                                    ✉
-                                                                </ActionIcon>
-                                                                <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
-                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
-                                                                        📱 SMS
-                                                                    </DropdownItem>
-                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
-                                                                        📧 Email
-                                                                    </DropdownItem>
-                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
-                                                                        ✗ Rejection
-                                                                    </DropdownItem>
-                                                                </DropdownContent>
-                                                            </MessageDropdown>
-
-                                                            <ActionIcon
-                                                                color="#fbbf24"
-                                                                onClick={() => handleCandidateAction(candidate.id, 'backup')}
-                                                                title="Move to Backup"
-                                                            >
-                                                                👍
-                                                            </ActionIcon>
-
-                                                            <ActionIcon
-                                                                color="#ef4444"
-                                                                onClick={() => handleCandidateAction(candidate.id, 'rejected')}
-                                                                title="Reject"
-                                                            >
-                                                                ✗
-                                                            </ActionIcon>
-                                                        </ActionButtons>
-                                                    </CandidateCard>
-                                                ))}
-                                            </TierSection>
+                                            <TierGroup>
+                                                <TierLabelRow $tier="yellow">
+                                                    <TierBar $tier="yellow" />
+                                                    <TierName $tier="yellow">Yellow Tier</TierName>
+                                                    <TierRange>50–79 pts</TierRange>
+                                                    <TierCount>{candidatesByTier.yellow.length}</TierCount>
+                                                </TierLabelRow>
+                                                {candidatesByTier.yellow.map(renderCandidateCard)}
+                                            </TierGroup>
                                         )}
 
                                         {candidatesByTier.red.length > 0 && (
-                                            <TierSection>
-                                                <TierHeader tier="red">
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><XCircle size={20} /> RED TIER (0-49 points)</span>
-                                                    <span>{candidatesByTier.red.length} candidates</span>
-                                                </TierHeader>
-                                                {/* Similar candidate card rendering for red tier */}
-                                                {candidatesByTier.red.map(candidate => (
-                                                    <CandidateCard
-                                                        key={candidate.id}
-                                                        isSelected={selectedCandidates.has(candidate.id)}
-                                                    >
-                                                        {/* Same structure as green tier */}
-                                                        <CandidateHeader>
-                                                            <CandidateInfo>
-                                                                <CandidateName>
-                                                                    <Checkbox
-                                                                        type="checkbox"
-                                                                        checked={selectedCandidates.has(candidate.id)}
-                                                                        onChange={() => toggleCandidateSelection(candidate.id)}
-                                                                    />
-                                                                    {candidate.filename?.replace('.pdf', '') || 'Unknown'}
-                                                                    <StarRating>{getStars(candidate.star_rating)}</StarRating>
-                                                                </CandidateName>
-                                                            </CandidateInfo>
-                                                            <Score tier={candidate.tier}>{candidate.tier_score}</Score>
-                                                        </CandidateHeader>
-
-                                                        <Summary>{candidate.ai_summary}</Summary>
-
-                                                        <MetaRow>
-                                                            <span>📅 {candidate.years_of_experience} years exp</span>
-                                                            <span>🚗 {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
-                                                            <span>📜 {candidate.certifications_found?.length || 0} certs</span>
-                                                        </MetaRow>
-
-                                                        <ActionButtons style={{ marginTop: '1rem' }}>
-                                                            <ActionIcon
-                                                                color="#4ade80"
-                                                                onClick={() => handleCandidateAction(candidate.id, 'approved')}
-                                                                title="Approve"
-                                                            >
-                                                                ✓
-                                                            </ActionIcon>
-
-                                                            <MessageDropdown>
-                                                                <ActionIcon
-                                                                    color="#3b82f6"
-                                                                    onClick={() => setMessageDropdownOpen(
-                                                                        messageDropdownOpen === candidate.id ? null : candidate.id
-                                                                    )}
-                                                                    title="Send Message"
-                                                                >
-                                                                    ✉
-                                                                </ActionIcon>
-                                                                <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
-                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
-                                                                        📱 SMS
-                                                                    </DropdownItem>
-                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
-                                                                        📧 Email
-                                                                    </DropdownItem>
-                                                                    <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
-                                                                        ✗ Rejection
-                                                                    </DropdownItem>
-                                                                </DropdownContent>
-                                                            </MessageDropdown>
-
-                                                            <ActionIcon
-                                                                color="#fbbf24"
-                                                                onClick={() => handleCandidateAction(candidate.id, 'backup')}
-                                                                title="Move to Backup"
-                                                            >
-                                                                👍
-                                                            </ActionIcon>
-
-                                                            <ActionIcon
-                                                                color="#ef4444"
-                                                                onClick={() => handleCandidateAction(candidate.id, 'rejected')}
-                                                                title="Reject"
-                                                            >
-                                                                ✗
-                                                            </ActionIcon>
-                                                        </ActionButtons>
-                                                    </CandidateCard>
-                                                ))}
-                                            </TierSection>
+                                            <TierGroup>
+                                                <TierLabelRow $tier="red">
+                                                    <TierBar $tier="red" />
+                                                    <TierName $tier="red">Red Tier</TierName>
+                                                    <TierRange>0–49 pts</TierRange>
+                                                    <TierCount>{candidatesByTier.red.length}</TierCount>
+                                                </TierLabelRow>
+                                                {candidatesByTier.red.map(renderCandidateCard)}
+                                            </TierGroup>
                                         )}
 
                                         {candidates.length === 0 && (
-                                            <EmptyState>
-                                                <h3>No candidates yet</h3>
-                                                <p>Upload resumes to start building your candidate pipeline!</p>
-                                            </EmptyState>
+                                            <EmptyBox>
+                                                No candidates in pipeline<br />
+                                                Upload resumes to begin evaluation
+                                            </EmptyBox>
                                         )}
                                     </>
                                 ) : (
-                                    // Simplified view for other tabs (approved, contacted, etc.)
                                     <>
-                                        {candidates.map(candidate => (
-                                            <CandidateCard
-                                                key={candidate.id}
-                                                isSelected={selectedCandidates.has(candidate.id)}
-                                            >
-                                                <CandidateHeader>
-                                                    <CandidateInfo>
-                                                        <CandidateName>
-                                                            <Checkbox
-                                                                type="checkbox"
-                                                                checked={selectedCandidates.has(candidate.id)}
-                                                                onChange={() => toggleCandidateSelection(candidate.id)}
-                                                            />
-                                                            {candidate.filename?.replace('.pdf', '') || 'Unknown'}
-                                                            <StarRating>{getStars(candidate.star_rating)}</StarRating>
-                                                            {candidate.give_them_a_chance && (
-                                                                <Badge>Give Them a Chance</Badge>
-                                                            )}
-                                                        </CandidateName>
-                                                    </CandidateInfo>
-                                                    <Score tier={candidate.tier}>{candidate.tier_score}</Score>
-                                                </CandidateHeader>
-
-                                                <Summary>{candidate.ai_summary}</Summary>
-
-                                                <MetaRow>
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Calendar size={14} /> {candidate.years_of_experience} years exp</span>
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Car size={14} /> {candidate.vehicle_status?.replace('_', ' ') || 'N/A'}</span>
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><FileText size={14} /> {candidate.certifications_found?.length || 0} certs</span>
-                                                </MetaRow>
-
-                                                <ActionButtons style={{ marginTop: '1rem' }}>
-                                                    <ActionIcon
-                                                        color="#4ade80"
-                                                        onClick={() => handleCandidateAction(candidate.id, 'approved')}
-                                                        title="Approve"
-                                                    >
-                                                        <Check size={16} />
-                                                    </ActionIcon>
-
-                                                    <MessageDropdown>
-                                                        <ActionIcon
-                                                            color="#3b82f6"
-                                                            onClick={() => setMessageDropdownOpen(
-                                                                messageDropdownOpen === candidate.id ? null : candidate.id
-                                                            )}
-                                                            title="Send Message"
-                                                        >
-                                                            <Mail size={16} />
-                                                        </ActionIcon>
-                                                        <DropdownContent isOpen={messageDropdownOpen === candidate.id}>
-                                                            <DropdownItem onClick={() => handleSendMessage(candidate.id, 'sms')}>
-                                                                <Smartphone size={14} style={{ marginRight: '8px' }} /> SMS
-                                                            </DropdownItem>
-                                                            <DropdownItem onClick={() => handleSendMessage(candidate.id, 'email')}>
-                                                                <Mail size={14} style={{ marginRight: '8px' }} /> Email
-                                                            </DropdownItem>
-                                                            <DropdownItem onClick={() => handleSendMessage(candidate.id, 'rejection_email')}>
-                                                                <X size={14} style={{ marginRight: '8px' }} /> Rejection
-                                                            </DropdownItem>
-                                                        </DropdownContent>
-                                                    </MessageDropdown>
-
-                                                    <ActionIcon
-                                                        color="#fbbf24"
-                                                        onClick={() => handleCandidateAction(candidate.id, 'backup')}
-                                                        title="Move to Backup"
-                                                    >
-                                                        <ThumbsUp size={16} />
-                                                    </ActionIcon>
-
-                                                    <ActionIcon
-                                                        color="#ef4444"
-                                                        onClick={() => handleCandidateAction(candidate.id, 'rejected')}
-                                                        title="Reject"
-                                                    >
-                                                        <X size={16} />
-                                                    </ActionIcon>
-                                                </ActionButtons>
-                                            </CandidateCard>
-                                        ))}
-
+                                        {candidates.map(renderCandidateCard)}
                                         {candidates.length === 0 && (
-                                            <EmptyState>
-                                                <h3>No candidates in this category</h3>
-                                            </EmptyState>
+                                            <EmptyBox>No candidates in this category</EmptyBox>
                                         )}
                                     </>
                                 )}
-                            </CandidatesGrid>
+                            </PipelineBody>
                         </>
                     ) : (
-                        <EmptyState>
-                            <h2>Welcome to Jobs Management</h2>
-                            <p>Create a job to start managing your candidate pipeline!</p>
-                        </EmptyState>
+                        <WelcomeState>
+                            <WelcomeTitle>Job Management Console</WelcomeTitle>
+                            <WelcomeSub>
+                                Select a position from the sidebar or post a new job to begin.
+                            </WelcomeSub>
+                        </WelcomeState>
                     )}
-                </MainContent>
-            </PageContainer>
+                </MainStage>
+            </PageWrapper>
 
-            {/* Contact/Rejection Modal */}
             {selectedCandidateForContact && (
                 <ContactRejectionModal
                     isOpen={contactModalOpen}

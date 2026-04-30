@@ -35,6 +35,7 @@
       "react-app/jest"
     ]
   },
+  "proxy": "https://gotalos.io",
   "browserslist": {
     "production": [
       ">0.2%",
