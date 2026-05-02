@@ -188,7 +188,7 @@ const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
           <TrustIndicators>
             <TrustBadge>
               <CheckCircle size={18} color="#4ade80" />
-              15+ Job Boards
+              Top Job Boards
             </TrustBadge>
             <TrustBadge>
               <CheckCircle size={18} color="#4ade80" />

@@ -339,13 +339,14 @@ const NewsExcerpt = styled.p`
   margin-bottom: 1rem;
 `;
 
-const NewsReadMore = styled.span`
+const NewsReadMore = styled.a`
   font-family: 'Libre Franklin', sans-serif;
   font-size: 0.68rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: #4ade80;
+  text-decoration: none;
   display: flex;
   align-items: center;
   gap: 0.3rem;
@@ -484,40 +485,52 @@ const INSIGHTS = [
 
 const NEWS = [
   {
-    date: 'Jan 15, 2025',
+    date: 'Sep 26, 2025',
     category: 'Workforce',
-    headline: 'HVAC Labor Shortage Reaches Critical Point in Southwest',
-    excerpt: 'Arizona and Nevada report unprecedented demand for qualified HVAC technicians as new construction booms and extreme temperatures drive system replacements.',
+    source: 'Contracting Business',
+    headline: 'Navigating the HVAC Labor Shortage: How Technology and Talent Development Drive Growth',
+    excerpt: 'Over 480,000 skilled trade jobs remain unfilled in the U.S. With demand projected to grow 6% through 2032, contractors are turning to technology and aggressive recruitment to close the gap.',
+    url: 'https://www.contractingbusiness.com/contracting-business-success/article/55308154/navigating-the-hvac-labor-shortage-how-technology-and-talent-development-drive-growth',
   },
   {
-    date: 'Jan 12, 2025',
+    date: 'Apr 18, 2024',
     category: 'Regulation',
-    headline: 'New EPA Regulations Impact HVAC Training Requirements',
-    excerpt: 'Updated certification standards for refrigerant handling are reshaping the skills landscape for HVAC professionals nationwide.',
+    source: 'Contracting Business',
+    headline: 'Keeping Their Cool: How Refrigerant Service Will Impact HVAC',
+    excerpt: 'With the AIM Act driving a phase-down of HFC refrigerants and A2L refrigerants entering the market, technicians must understand new handling and certification requirements.',
+    url: 'https://www.contractingbusiness.com/refrigeration/article/21284959/how-refrigerant-service-will-impact-hvac-service',
   },
   {
-    date: 'Jan 10, 2025',
+    date: 'Feb 7, 2025',
     category: 'Growth',
-    headline: 'Heat Pump Installation Jobs Surge 40% Year-over-Year',
-    excerpt: 'Growing demand for energy-efficient heating solutions creates new opportunities for technicians with specialized heat pump training.',
+    source: 'IEA',
+    headline: 'Is a Turnaround in Sight for Heat Pump Markets?',
+    excerpt: 'After a soft patch in early 2024, heat pump markets showed recovery signs. The IEA projects global installer demand to quadruple by 2030, with qualified installer shortages already an active bottleneck.',
+    url: 'https://www.iea.org/commentaries/is-a-turnaround-in-sight-for-heat-pump-markets',
   },
   {
-    date: 'Jan 8, 2025',
+    date: 'May 2024',
     category: 'Salary',
-    headline: 'Commercial HVAC Market Drives Salary Increases',
-    excerpt: 'Large-scale projects and complex building systems command premium wages for experienced commercial HVAC specialists.',
+    source: 'Bureau of Labor Statistics',
+    headline: 'HVAC Mechanics & Installers: Occupational Outlook & Wage Data',
+    excerpt: 'The BLS reports a median annual wage of $59,810 for HVAC technicians, with the top 10% earning over $91,020. Employment is projected to grow 8% through 2034.',
+    url: 'https://www.bls.gov/ooh/installation-maintenance-and-repair/heating-air-conditioning-and-refrigeration-mechanics-and-installers.htm',
   },
   {
-    date: 'Jan 5, 2025',
+    date: 'Feb 9, 2026',
     category: 'Technology',
-    headline: 'Smart HVAC Technology Creates New Career Paths',
-    excerpt: 'IoT-enabled systems and building automation require technicians with both traditional HVAC skills and digital expertise.',
+    source: 'Contracting Business',
+    headline: 'Smart HVACR Systems and the Evolving Role of the Technician',
+    excerpt: 'As AI diagnostics, IoT sensors, and connected building systems become standard, the most sought-after technicians blend mechanical know-how with digital fluency.',
+    url: 'https://www.contractingbusiness.com/residential-hvac/article/55343258/smart-hvacr-systems-and-the-evolving-role-and-training-of-the-technician',
   },
   {
-    date: 'Jan 3, 2025',
+    date: 'Mar 14, 2024',
     category: 'Training',
-    headline: 'Apprenticeship Programs Expand to Meet Growing Demand',
-    excerpt: 'Trade schools and community colleges launch new HVAC programs to address the skilled worker shortage coast to coast.',
+    source: 'Construction Dive',
+    headline: 'HVAC Pre-Apprenticeship Program Aims to Improve Skilled Worker Pipeline',
+    excerpt: 'A new program gives high school seniors hands-on training, DOL-registered apprenticeship hours, and a path to EPA 608 and OSHA-10 certifications before graduation.',
+    url: 'https://www.constructiondive.com/news/hvac-pre-apprenticeship-program-improve-skilled-workers-pipeline/710355/',
   },
 ];
 
@@ -600,12 +613,14 @@ const HVACInsights: React.FC = () => {
               {NEWS.map((article, i) => (
                 <NewsArticle key={i}>
                   <NewsDateline>
+                    <span style={{ fontFamily: 'Newsreader, serif', fontStyle: 'italic', textTransform: 'none', letterSpacing: 0, fontWeight: 400 }}>{article.source}</span>
+                    <span style={{ opacity: 0.3 }}>·</span>
                     {article.date}
                     <NewsCategoryPill>{article.category}</NewsCategoryPill>
                   </NewsDateline>
                   <NewsHeadline>{article.headline}</NewsHeadline>
                   <NewsExcerpt>{article.excerpt}</NewsExcerpt>
-                  <NewsReadMore>
+                  <NewsReadMore href={article.url} target="_blank" rel="noopener noreferrer">
                     Continue reading <ArrowUpRight size={11} />
                   </NewsReadMore>
                 </NewsArticle>

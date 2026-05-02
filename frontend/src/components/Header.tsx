@@ -192,7 +192,7 @@ const Header: React.FC = () => {
         </NavItem>
 
         <NavLink to="/#pricing">Pricing</NavLink>
-        <NavLink to="/#knowledge-hub">Knowledge Hub</NavLink>
+        <NavLink to="/hvac-insights">Knowledge Hub</NavLink>
         <NavLink to="/jobs">Apply to HVAC Jobs</NavLink>
       </Navigation>
 

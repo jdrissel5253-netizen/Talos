@@ -58,199 +58,262 @@ interface TalentPoolStats {
 
 const Container = styled.div`
   min-height: 100vh;
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
+  background: #0a0a0a;
   padding: 2rem;
 `;
 
 const MainCard = styled.div`
   max-width: 1400px;
   margin: 0 auto;
-  background: #1a1a1a;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(255, 255, 255, 0.1);
-  padding: 3rem;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 10px;
+  padding: 2.5rem;
 `;
 
 const Header = styled.div`
-  text-align: center;
-  margin-bottom: 3rem;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1.25rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  margin-bottom: 2.5rem;
 `;
 
+const HeaderLeft = styled.div``;
+
 const Title = styled.h1`
-  font-size: 2.5rem;
-  color: #4ade80;
-  margin-bottom: 0.5rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.02em;
 `;
 
 const Subtitle = styled.p`
-  color: #e0e0e0;
-  font-size: 1.125rem;
+  color: #555;
+  font-size: 0.9375rem;
+`;
+
+const HeaderActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+  flex-wrap: wrap;
 `;
 
 const StatsGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 3rem;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
 `;
 
-const StatCard = styled.div`
-  background: #000000;
-  padding: 1.5rem;
+const StatCard = styled.div<{ active?: boolean; tier?: 'green' | 'yellow' | 'red' | 'total' }>`
+  background: #0a0a0a;
+  padding: 1.25rem 1.5rem;
   border-radius: 8px;
-  border: 2px solid #333333;
-  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, background 0.15s ease;
+  border: 1px solid ${p => {
+    if (!p.active) return 'rgba(255, 255, 255, 0.07)';
+    if (p.tier === 'green') return 'rgba(74, 222, 128, 0.5)';
+    if (p.tier === 'yellow') return 'rgba(251, 191, 36, 0.5)';
+    if (p.tier === 'red') return 'rgba(239, 68, 68, 0.5)';
+    return 'rgba(255, 255, 255, 0.3)';
+  }};
+  background: ${p => {
+    if (!p.active) return '#0a0a0a';
+    if (p.tier === 'green') return 'rgba(74, 222, 128, 0.06)';
+    if (p.tier === 'yellow') return 'rgba(251, 191, 36, 0.06)';
+    if (p.tier === 'red') return 'rgba(239, 68, 68, 0.06)';
+    return 'rgba(255, 255, 255, 0.04)';
+  }};
+
+  &:hover {
+    border-color: ${p => {
+      if (p.tier === 'green') return 'rgba(74, 222, 128, 0.4)';
+      if (p.tier === 'yellow') return 'rgba(251, 191, 36, 0.4)';
+      if (p.tier === 'red') return 'rgba(239, 68, 68, 0.4)';
+      return 'rgba(255, 255, 255, 0.2)';
+    }};
+  }
 `;
 
 const StatLabel = styled.div`
-  font-size: 0.875rem;
-  color: #e0e0e0;
+  font-size: 0.75rem;
+  color: #555;
   margin-bottom: 0.5rem;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.08em;
+  font-weight: 600;
 `;
 
-const StatValue = styled.div`
-  font-size: 2rem;
-  font-weight: bold;
-  color: #4ade80;
+const StatValue = styled.div<{ tier?: 'green' | 'yellow' | 'red' | 'total' }>`
+  font-size: 1.875rem;
+  font-weight: 700;
+  line-height: 1;
+  color: ${p => {
+    if (p.tier === 'yellow') return '#fbbf24';
+    if (p.tier === 'red') return '#ef4444';
+    return '#4ade80';
+  }};
 `;
 
 const FilterSection = styled.div`
-  background: #000000;
-  padding: 1.5rem;
+  background: #0a0a0a;
+  padding: 1.25rem 1.5rem;
   border-radius: 8px;
   margin-bottom: 2rem;
-  border: 1px solid #333333;
+  border: 1px solid rgba(255, 255, 255, 0.07);
 `;
 
 const FilterGrid = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 1rem;
 `;
 
 const FilterGroup = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: 0.375rem;
 `;
 
 const FilterLabel = styled.label`
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 600;
   color: #4ade80;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
 `;
 
-
 const NavButton = styled.button`
-  background: #333333;
-  color: #e0e0e0;
-  border: none;
-  padding: 8px 16px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #a3a3a3;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  padding: 0.5rem 1rem;
   border-radius: 6px;
   font-weight: 600;
-  font-size: 14px;
+  font-size: 0.8125rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
   display: inline-flex;
   align-items: center;
   gap: 6px;
 
   &:hover {
-    background: #4ade80;
-    color: white;
-    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.09);
+    color: #e0e0e0;
+    border-color: rgba(255, 255, 255, 0.15);
   }
 `;
 
 const GoogleConnectButton = styled.button<{ connected: boolean }>`
-  background: ${props => props.connected ? 'rgba(74, 222, 128, 0.1)' : '#333'};
-  color: ${props => props.connected ? '#4ade80' : '#fff'};
-  border: 1px solid ${props => props.connected ? '#4ade80' : '#444'};
-  padding: 8px 16px;
+  background: ${props => props.connected ? 'rgba(74, 222, 128, 0.08)' : 'rgba(255,255,255,0.05)'};
+  color: ${props => props.connected ? '#4ade80' : '#a3a3a3'};
+  border: 1px solid ${props => props.connected ? 'rgba(74,222,128,0.3)' : 'rgba(255,255,255,0.09)'};
+  padding: 0.5rem 1rem;
   border-radius: 6px;
-  font-size: 14px;
+  font-size: 0.8125rem;
   font-weight: 600;
   display: flex;
   align-items: center;
   gap: 8px;
   cursor: ${props => props.connected ? 'default' : 'pointer'};
-  transition: all 0.2s;
-  margin: 1rem auto 0;
+  transition: all 0.15s;
 
   &:hover {
-    background: ${props => props.connected ? 'rgba(74, 222, 128, 0.1)' : '#444'};
-    border-color: ${props => props.connected ? '#4ade80' : '#666'};
+    background: ${props => props.connected ? 'rgba(74, 222, 128, 0.08)' : 'rgba(255,255,255,0.09)'};
+    border-color: ${props => props.connected ? 'rgba(74,222,128,0.4)' : 'rgba(255,255,255,0.15)'};
   }
 `;
 
 const FilterSelect = styled.select`
-  padding: 0.75rem;
-  border: 2px solid #333333;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
-  background-color: #1a1a1a;
+  background-color: #161616;
   color: #e0e0e0;
   cursor: pointer;
-  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  transition: border-color 0.15s ease;
 
   &:focus {
     outline: none;
-    border-color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.5);
   }
 `;
 
 const FilterInput = styled.input`
-  padding: 0.75rem;
-  border: 2px solid #333333;
+  padding: 0.625rem 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 6px;
-  background-color: #1a1a1a;
+  background-color: #161616;
   color: #e0e0e0;
-  transition: all 0.2s ease;
+  font-size: 0.875rem;
+  transition: border-color 0.15s ease;
 
   &:focus {
     outline: none;
-    border-color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.5);
   }
 `;
 
-// New Card-Based Components (Copied/Adapted from JobsManagement)
 const CandidatesGrid = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 1.5rem;
 `;
 
-const TierSection = styled.div`
-  margin-bottom: 2rem;
-`;
+const TierSection = styled.div``;
 
 const TierHeader = styled.div<{ tier: string }>`
-  background: ${props => {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem 1rem;
+  margin-bottom: 0.75rem;
+  border-left: 3px solid ${props => {
     if (props.tier === 'green') return '#4ade80';
     if (props.tier === 'yellow') return '#fbbf24';
     return '#ef4444';
   }};
-  color: ${props => props.tier === 'yellow' ? '#000' : '#fff'};
-  padding: 1rem;
-  border-radius: 8px 8px 0 0;
-  font-weight: 700;
-  font-size: 1.125rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+  background: ${props => {
+    if (props.tier === 'green') return 'rgba(74,222,128,0.05)';
+    if (props.tier === 'yellow') return 'rgba(251,191,36,0.05)';
+    return 'rgba(239,68,68,0.05)';
+  }};
+  border-radius: 0 6px 6px 0;
+
+  font-weight: 600;
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+
+  color: ${props => {
+    if (props.tier === 'green') return '#4ade80';
+    if (props.tier === 'yellow') return '#fbbf24';
+    return '#ef4444';
+  }};
 `;
 
 const CandidateCard = styled.div`
-  background: #0f0f0f;
-  border: 2px solid #333333;
+  background: #0d0d0d;
+  border: 1px solid rgba(255, 255, 255, 0.07);
   border-radius: 8px;
   padding: 1.5rem;
-  transition: all 0.2s ease;
+  margin-bottom: 0.75rem;
+  transition: border-color 0.15s ease;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
 
   &:hover {
-    border-color: #4ade80;
-    transform: translateY(-2px);
+    border-color: rgba(74, 222, 128, 0.25);
   }
 `;
 
@@ -258,7 +321,7 @@ const CandidateHeader = styled.div`
   display: flex;
   justify-content: space-between;
   align-items: start;
-  margin-bottom: 1rem;
+  margin-bottom: 0.875rem;
 `;
 
 const CandidateInfo = styled.div`
@@ -266,9 +329,10 @@ const CandidateInfo = styled.div`
 `;
 
 const CandidateName = styled.h3`
-  font-size: 1.25rem;
+  font-size: 1.0625rem;
+  font-weight: 600;
   color: #e0e0e0;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.3rem;
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -276,13 +340,12 @@ const CandidateName = styled.h3`
 
 const StarRating = styled.span`
   color: #fbbf24;
-  font-size: 1rem;
-  margin-left: 0.5rem;
+  font-size: 0.875rem;
 `;
 
 const Score = styled.span<{ tier: string }>`
-  font-size: 1.5rem;
-  font-weight: bold;
+  font-size: 1.375rem;
+  font-weight: 700;
   color: ${props => {
     if (props.tier === 'green') return '#4ade80';
     if (props.tier === 'yellow') return '#fbbf24';
@@ -291,154 +354,153 @@ const Score = styled.span<{ tier: string }>`
 `;
 
 const Badge = styled.span`
-  background: #4ade80;
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
-  font-size: 0.75rem;
+  background: rgba(74, 222, 128, 0.12);
+  color: #4ade80;
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  padding: 0.15rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
   font-weight: 600;
-  margin-left: 0.5rem;
+  letter-spacing: 0.04em;
 `;
 
 const Summary = styled.p`
-  color: #999;
-  line-height: 1.6;
+  color: #666;
+  line-height: 1.65;
   margin-bottom: 1rem;
-  font-size: 0.9375rem;
+  font-size: 0.9rem;
 `;
 
 const MetaRow = styled.div`
   display: flex;
-  gap: 2rem;
+  gap: 1.5rem;
   flex-wrap: wrap;
-  font-size: 0.875rem;
-  color: #e0e0e0;
+  font-size: 0.8125rem;
+  color: #666;
   margin-bottom: 1rem;
 `;
 
 const MetaItem = styled.span`
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
 `;
 
 const ActionButtons = styled.div`
   display: flex;
   gap: 0.5rem;
   justify-content: flex-end;
-  border-top: 1px solid #333;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   padding-top: 1rem;
   align-items: center;
 `;
 
 const ActionButton = styled.button`
-  background: #333333;
-  color: #e0e0e0;
-  border: none;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: #a3a3a3;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  padding: 0.4rem 0.875rem;
+  border-radius: 5px;
   font-weight: 600;
+  font-size: 0.8125rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+
+  &:hover {
+    background: rgba(74, 222, 128, 0.1);
+    color: #4ade80;
+    border-color: rgba(74, 222, 128, 0.3);
+  }
+`;
+
+const ActionIcon = styled.button<{ color: string }>`
+  background: transparent;
+  color: ${props => props.color};
+  border: 1px solid ${props => props.color}40;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: ${props => props.color}18;
+    border-color: ${props => props.color}80;
+  }
+`;
+
+const MessageDropdown = styled.div`
+  position: relative;
+  display: inline-block;
+`;
+
+const DropdownContent = styled.div<{ isOpen: boolean }>`
+  display: ${props => props.isOpen ? 'block' : 'none'};
+  position: absolute;
+  background: #1a1a1a;
+  min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+  border-radius: 7px;
+  z-index: 10;
+  right: 0;
+  top: calc(100% + 6px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+`;
+
+const DropdownItem = styled.button`
+  background: none;
+  border: none;
+  color: #a3a3a3;
+  padding: 0.7rem 1rem;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+  font-size: 0.875rem;
+  transition: all 0.15s ease;
   display: flex;
   align-items: center;
   gap: 0.5rem;
 
   &:hover {
-    background: #4ade80;
-    color: #000;
-  }
-`;
-
-const ActionIcon = styled.button<{ color: string }>`
-    background: ${props => props.color};
-    color: white;
-    border: none;
-    width: 36px;
-    height: 36px;
-    border-radius: 50%;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1.125rem;
-    transition: all 0.2s ease;
-
-    &:hover {
-        transform: scale(1.1);
-    }
-`;
-
-const MessageDropdown = styled.div`
-    position: relative;
-    display: inline-block;
-`;
-
-const DropdownContent = styled.div<{ isOpen: boolean }>`
-    display: ${props => props.isOpen ? 'block' : 'none'};
-    position: absolute;
-    background: #1a1a1a;
-    min-width: 200px;
-    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.5);
-    border-radius: 6px;
-    z-index: 10;
-    right: 0;
-    top: 100%;
-    margin-top: 0.5rem;
-    border: 2px solid #333333;
-`;
-
-const DropdownItem = styled.button`
-    background: none;
-    border: none;
+    background: rgba(255, 255, 255, 0.05);
     color: #e0e0e0;
-    padding: 0.75rem 1rem;
-    text-align: left;
-    cursor: pointer;
-    width: 100%;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-
-    &:hover {
-        background: #333333;
-    }
-
-    &:first-child {
-        border-radius: 4px 4px 0 0;
-    }
-
-    &:last-child {
-        border-radius: 0 0 4px 4px;
-    }
+  }
 `;
 
 const LoadingMessage = styled.div`
   text-align: center;
   padding: 3rem;
-  color: #e0e0e0;
-  font-size: 1.125rem;
+  color: #555;
+  font-size: 1rem;
 `;
 
 const ErrorMessage = styled.div`
-  background: #dc2626;
-  color: white;
-  padding: 1rem;
+  background: rgba(220, 38, 38, 0.1);
+  color: #f87171;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  padding: 0.875rem 1rem;
   border-radius: 6px;
   margin-bottom: 1.5rem;
-  text-align: center;
+  font-size: 0.9rem;
 `;
 
 const EmptyState = styled.div`
   text-align: center;
   padding: 4rem 2rem;
-  color: #e0e0e0;
+  color: #555;
 `;
 
 const EmptyIcon = styled.div`
-  font-size: 4rem;
+  font-size: 3rem;
   margin-bottom: 1rem;
-  opacity: 0.5;
+  opacity: 0.4;
 `;
 
 const TalentPoolManager: React.FC = () => {
@@ -700,42 +762,60 @@ const TalentPoolManager: React.FC = () => {
     <Container>
       <MainCard>
         <Header>
-          <Title>Talent Pool Management</Title>
-          <Subtitle>View and manage all candidates in your talent pipeline</Subtitle>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '12px' }}>
+          <HeaderLeft>
+            <Title>Talent Pool</Title>
+            <Subtitle>View and manage all candidates in your talent pipeline</Subtitle>
+          </HeaderLeft>
+          <HeaderActions>
             <NavButton onClick={() => navigate('/dashboard')}>
               ← Dashboard
             </NavButton>
             <NavButton onClick={() => navigate('/jobs-management')}>
-              ← View My Jobs
+              ← My Jobs
             </NavButton>
             <GoogleConnectButton
               connected={isGmailConnected}
               onClick={!isGmailConnected ? handleConnectGmail : undefined}
             >
-              {isGmailConnected ? <CheckCircle size={16} /> : <Mail size={16} />}
-              {isGmailConnected ? 'Gmail Connected' : 'Connect Gmail Account'}
+              {isGmailConnected ? <CheckCircle size={15} /> : <Mail size={15} />}
+              {isGmailConnected ? 'Gmail Connected' : 'Connect Gmail'}
             </GoogleConnectButton>
-          </div>
+          </HeaderActions>
         </Header>
 
         {stats && (
           <StatsGrid>
-            <StatCard>
+            <StatCard
+              tier="total"
+              active={tierFilter === ''}
+              onClick={() => setTierFilter('')}
+            >
               <StatLabel>Total Candidates</StatLabel>
-              <StatValue>{stats.total}</StatValue>
+              <StatValue tier="total">{stats.total}</StatValue>
             </StatCard>
-            <StatCard>
+            <StatCard
+              tier="green"
+              active={tierFilter === 'green'}
+              onClick={() => setTierFilter(tierFilter === 'green' ? '' : 'green')}
+            >
               <StatLabel>Green Tier</StatLabel>
-              <StatValue>{stats.tierDistribution.green || 0}</StatValue>
+              <StatValue tier="green">{stats.tierDistribution.green || 0}</StatValue>
             </StatCard>
-            <StatCard>
+            <StatCard
+              tier="yellow"
+              active={tierFilter === 'yellow'}
+              onClick={() => setTierFilter(tierFilter === 'yellow' ? '' : 'yellow')}
+            >
               <StatLabel>Yellow Tier</StatLabel>
-              <StatValue>{stats.tierDistribution.yellow || 0}</StatValue>
+              <StatValue tier="yellow">{stats.tierDistribution.yellow || 0}</StatValue>
             </StatCard>
-            <StatCard>
+            <StatCard
+              tier="red"
+              active={tierFilter === 'red'}
+              onClick={() => setTierFilter(tierFilter === 'red' ? '' : 'red')}
+            >
               <StatLabel>Red Tier</StatLabel>
-              <StatValue>{stats.tierDistribution.red || 0}</StatValue>
+              <StatValue tier="red">{stats.tierDistribution.red || 0}</StatValue>
             </StatCard>
           </StatsGrid>
         )}

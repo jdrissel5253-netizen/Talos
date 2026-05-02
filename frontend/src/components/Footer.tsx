@@ -160,7 +160,7 @@ const Footer: React.FC = () => {
           <FooterSection>
             <FooterTitle>Resources</FooterTitle>
             <FooterLink to="/">Pricing</FooterLink>
-            <FooterLink to="/">Knowledge Hub</FooterLink>
+            <FooterLink to="/hvac-insights">Knowledge Hub</FooterLink>
             <FooterLink to="/">Support</FooterLink>
             <FooterLink to="/">Contact</FooterLink>
           </FooterSection>

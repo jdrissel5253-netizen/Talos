@@ -1,769 +1,659 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
-import { Check, Zap, Target, Users, Globe, Database, Newspaper } from 'lucide-react';
+import styled, { createGlobalStyle, keyframes } from 'styled-components';
+import { Plus } from 'lucide-react';
 
-// Content sections for the landing page
-const SectionContainer = styled.div`
-  padding: 4rem 2rem;
-  max-width: 1200px;
-  margin: 0 auto;
+const FontLoad = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
 `;
 
-const JobBoardSection = styled.section`
-  background-color: rgba(26, 26, 26, 0.8);
-  backdrop-filter: blur(8px);
-  padding: 6rem 2rem;
-  text-align: center;
-`;
+// ─── Shared ─────────────────────────────────────────────────────────────────────
 
-const ValuePropsSection = styled.section`
-  padding: 6rem 2rem;
-  background-color: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-`;
-
-const FAQSection = styled.section`
-  background-color: rgba(26, 26, 26, 0.8);
-  backdrop-filter: blur(8px);
-  padding: 6rem 2rem;
-`;
-
-const SectionTitle = styled.h2`
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #e0e0e0;
-  margin-bottom: 3rem;
-  text-align: center;
-
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
-`;
-
-const JobBoardDisplay = styled.div`
-  font-size: 3rem;
-  font-weight: 800;
+const SectionLabel = styled.p`
+  font-family: 'Space Mono', 'Courier New', monospace;
+  font-size: 0.6875rem;
+  letter-spacing: 0.22em;
   color: #4ade80;
-  margin-bottom: 3rem;
-
-  @media (max-width: 768px) {
-    font-size: 2.5rem;
-  }
-`;
-
-const JobBoardTickerContainer = styled.div`
-  width: 100%;
-  max-width: 900px;
-  height: 80px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 2px solid #4ade80;
-  border-radius: 8px;
-  overflow: hidden;
-  position: relative;
-  margin: 0 auto 3rem;
-  display: flex;
-  align-items: center;
-`;
-
-const JobBoardTickerTrack = styled.div`
-  display: flex;
-  gap: 4rem;
-  animation: scrollBoards 35s linear infinite;
-  white-space: nowrap;
-  padding: 0 1rem;
-
-  @keyframes scrollBoards {
-    0% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(-50%);
-    }
-  }
-`;
-
-const JobBoardItem = styled.div`
+  text-transform: uppercase;
+  margin-bottom: 1.75rem;
   display: flex;
   align-items: center;
   gap: 1rem;
-  color: #e0e0e0;
-  font-size: 1.25rem;
-  font-weight: 600;
-  white-space: nowrap;
-`;
 
-const JobBoardLogo = styled.div`
-  width: 50px;
-  height: 50px;
-  background: #4ade80;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #000000;
-  font-size: 1.5rem;
-  font-weight: bold;
-`;
-
-const JobBoardDescription = styled.p`
-  font-size: 1.25rem;
-  color: #e0e0e0;
-  max-width: 800px;
-  margin: 0 auto 3rem;
-  line-height: 1.6;
-`;
-
-const DetailedContent = styled.div`
-  max-width: 1200px;
-  margin: 0 auto;
-  text-align: left;
-`;
-
-const PyramidTop = styled.div`
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 2rem;
-  margin-bottom: 2rem;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
+  &::before {
+    content: '';
+    display: block;
+    width: 2rem;
+    height: 1px;
+    background: #4ade80;
+    flex-shrink: 0;
   }
 `;
 
-const PyramidBottom = styled.div`
-  max-width: 800px;
+// ─── Stats Strip ────────────────────────────────────────────────────────────────
+
+const StatsStrip = styled.div`
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid rgba(74, 222, 128, 0.1);
+  border-bottom: 1px solid rgba(74, 222, 128, 0.1);
+  padding: 5.5rem 7vw;
+  position: relative;
+  z-index: 2;
+`;
+
+const StatsGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1px 1fr 1px 1fr;
+  max-width: 1100px;
   margin: 0 auto;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
 `;
 
-const DetailSection = styled.div`
-  background: rgba(0, 0, 0, 0.6);
-  padding: 2.5rem;
-  border-radius: 12px;
-  border-left: 4px solid #4ade80;
+const StatDivider = styled.div`
+  background: rgba(74, 222, 128, 0.12);
+
+  @media (max-width: 768px) {
+    display: none;
+  }
 `;
 
-const DetailTitle = styled.h3`
-  font-size: 1.75rem;
+const StatItem = styled.div`
+  padding: 0 3.5rem;
+  text-align: center;
+
+  &:first-child {
+    padding-left: 0;
+    text-align: left;
+  }
+
+  &:last-child {
+    padding-right: 0;
+    text-align: right;
+  }
+
+  @media (max-width: 1024px) {
+    padding: 0 2rem;
+  }
+
+  @media (max-width: 768px) {
+    padding: 0;
+    text-align: left !important;
+  }
+`;
+
+const StatNum = styled.div`
+  font-family: 'Space Mono', 'Courier New', monospace;
+  font-size: clamp(3.5rem, 7vw, 6.5rem);
   font-weight: 700;
   color: #4ade80;
+  line-height: 1;
+  margin-bottom: 0.75rem;
+`;
+
+const StatTitle = styled.div`
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  margin-bottom: 0.625rem;
+`;
+
+const StatDesc = styled.p`
+  font-size: 0.875rem;
+  color: #555;
+  line-height: 1.55;
+`;
+
+// ─── Value Props ─────────────────────────────────────────────────────────────────
+
+const ValueSection = styled.section`
+  padding: 9rem 7vw;
+  background: rgba(6, 6, 6, 0.62);
+  backdrop-filter: blur(8px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+  z-index: 2;
+`;
+
+const ValueInner = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 7rem;
+  align-items: start;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 300px 1fr;
+    gap: 4rem;
+  }
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+`;
+
+const ValueLeft = styled.div`
+  position: sticky;
+  top: 100px;
+
+  @media (max-width: 768px) {
+    position: static;
+  }
+`;
+
+const ValueHeadline = styled.h2`
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: clamp(2.25rem, 4vw, 3.5rem);
+  font-weight: 400;
+  color: #ffffff;
+  line-height: 1.1;
   margin-bottom: 1.5rem;
 `;
 
-const DetailText = styled.p`
-  font-size: 1.125rem;
-  color: #e0e0e0;
+const ValueSubtext = styled.p`
+  font-size: 0.9375rem;
+  color: #555;
   line-height: 1.8;
+  margin-bottom: 2.5rem;
+`;
+
+const ApproachBox = styled.div`
+  padding: 1.75rem;
+  border: 1px solid rgba(74, 222, 128, 0.18);
+  background: rgba(74, 222, 128, 0.025);
+
+  p {
+    font-size: 0.9rem;
+    color: #a3a3a3;
+    line-height: 1.8;
+    margin: 0;
+  }
+`;
+
+const ApproachTag = styled.div`
+  font-family: 'Space Mono', monospace;
+  font-size: 0.625rem;
+  letter-spacing: 0.18em;
+  color: #4ade80;
+  text-transform: uppercase;
+  margin-bottom: 0.875rem;
+`;
+
+const ValueRight = styled.div``;
+
+const GoalRow = styled.div`
+  display: flex;
+  gap: 2rem;
+  align-items: flex-start;
+  padding: 2rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  transition: transform 0.2s ease;
+
+  &:first-child {
+    padding-top: 0;
+  }
+
+  &:last-child {
+    border-bottom: none;
+  }
+
+  &:hover {
+    transform: translateX(8px);
+  }
+`;
+
+const GoalNum = styled.div`
+  font-family: 'Space Mono', monospace;
+  font-size: 0.6875rem;
+  color: #4ade80;
+  opacity: 0.65;
+  padding-top: 0.25rem;
+  flex-shrink: 0;
+  width: 2rem;
+`;
+
+const GoalText = styled.p`
+  font-size: 1.0625rem;
+  color: #e0e0e0;
+  line-height: 1.65;
+`;
+
+// ─── Features ────────────────────────────────────────────────────────────────────
+
+const FeaturesSection = styled.section`
+  padding: 8rem 7vw;
+  background: rgba(0, 0, 0, 0.82);
+  backdrop-filter: blur(14px);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+  z-index: 2;
+`;
+
+const FeaturesInner = styled.div`
+  max-width: 1200px;
+  margin: 0 auto;
+`;
+
+const FeaturesHeadline = styled.h2`
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: clamp(2.5rem, 5.5vw, 5rem);
+  font-weight: 400;
+  color: #ffffff;
+  line-height: 1.05;
+  margin-bottom: 3.5rem;
+`;
+
+const FeaturesGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: rgba(74, 222, 128, 0.08);
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 1px;
+  }
+`;
+
+const FeatureCard = styled.div`
+  background: rgba(4, 4, 4, 0.97);
+  padding: 3rem 2.5rem;
+  transition: background 0.25s;
+
+  &:hover {
+    background: rgba(74, 222, 128, 0.03);
+  }
+
+  @media (max-width: 900px) {
+    padding: 2.5rem 2rem;
+  }
+`;
+
+const FeatureNum = styled.div`
+  font-family: 'Space Mono', monospace;
+  font-size: 0.625rem;
+  color: #4ade80;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  margin-bottom: 1.75rem;
+`;
+
+const FeatureTitle = styled.h3`
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: 1.625rem;
+  font-weight: 400;
+  color: #ffffff;
   margin-bottom: 1rem;
+  line-height: 1.2;
+`;
+
+const FeatureDesc = styled.p`
+  font-size: 0.9375rem;
+  color: #555;
+  line-height: 1.75;
+  margin-bottom: 1.75rem;
+`;
+
+const FeatureBullets = styled.ul`
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 1.5rem;
+`;
+
+const FeatureBullet = styled.li`
+  display: flex;
+  align-items: flex-start;
+  gap: 0.875rem;
+  margin-bottom: 0.875rem;
+  font-size: 0.875rem;
+  color: #a3a3a3;
+  line-height: 1.55;
 
   &:last-child {
     margin-bottom: 0;
   }
 `;
 
-const FeatureList = styled.ul`
-  list-style: none;
-  padding: 0;
-  margin: 1.5rem 0 0 0;
-`;
-
-const FeatureItem = styled.li`
-  display: flex;
-  align-items: flex-start;
-  gap: 1rem;
-  margin-bottom: 1rem;
-  font-size: 1.125rem;
-  color: #e0e0e0;
-  line-height: 1.6;
-
-  &:before {
-    content: none;
-  }
-`;
-
-const ValuePropsGrid = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 3rem;
-  max-width: 1000px;
-  margin: 0 auto;
-`;
-
-const ValuePropCard = styled.div`
-  background: rgba(26, 26, 26, 0.6);
-  padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
-  text-align: center;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-
-  &:hover {
-    transform: translateY(-4px);
-    box-shadow: 0 8px 30px rgba(255, 255, 255, 0.1);
-  }
-`;
-
-const ValuePropIcon = styled.div`
-  width: 80px;
-  height: 80px;
-  background: linear-gradient(135deg, #4ade80, #4ade80);
+const BulletDot = styled.span`
+  width: 5px;
+  height: 5px;
+  background: #4ade80;
   border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin: 0 auto 1.5rem;
-  font-size: 2rem;
-  color: white;
+  flex-shrink: 0;
+  margin-top: 0.45rem;
 `;
 
-const ValuePropTitle = styled.h3`
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #e0e0e0;
-  margin-bottom: 1rem;
+// ─── FAQ ─────────────────────────────────────────────────────────────────────────
+
+const FAQSection = styled.section`
+  padding: 9rem 7vw;
+  background: rgba(3, 3, 3, 0.72);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  position: relative;
+  z-index: 2;
 `;
 
-const ValuePropDescription = styled.p`
-  color: #e0e0e0;
-  line-height: 1.6;
-`;
-
-const FAQContainer = styled.div`
-  max-width: 800px;
+const FAQInner = styled.div`
+  max-width: 1200px;
   margin: 0 auto;
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 7rem;
+
+  @media (max-width: 900px) {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
 `;
+
+const FAQLeft = styled.div`
+  position: sticky;
+  top: 100px;
+  align-self: start;
+
+  @media (max-width: 900px) {
+    position: static;
+  }
+`;
+
+const FAQTitle = styled.h2`
+  font-family: 'DM Serif Display', Georgia, serif;
+  font-size: clamp(2rem, 3.5vw, 3rem);
+  font-weight: 400;
+  color: #ffffff;
+  line-height: 1.15;
+`;
+
+const FAQRight = styled.div``;
 
 const FAQItem = styled.div`
-  background: rgba(0, 0, 0, 0.6);
-  border-radius: 8px;
-  margin-bottom: 1rem;
-  box-shadow: 0 2px 8px rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+
+  &:first-child {
+    border-top: 1px solid rgba(255, 255, 255, 0.07);
+  }
 `;
 
-const FAQQuestion = styled.button`
+const FAQTrigger = styled.button`
   width: 100%;
-  padding: 1.5rem;
-  text-align: left;
-  background: none;
-  border: none;
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #e0e0e0;
-  cursor: pointer;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  transition: color 0.2s ease;
-
-  &:hover {
-    color: #4ade80;
-  }
-`;
-
-const FAQAnswer = styled.div<{ isOpen: boolean }>`
-  padding: ${props => props.isOpen ? '0 1.5rem 1.5rem' : '0'};
-  max-height: ${props => props.isOpen ? '200px' : '0'};
-  overflow: hidden;
-  transition: all 0.3s ease;
-  color: #e0e0e0;
-  line-height: 1.6;
-`;
-
-const ExpandIcon = styled.span<{ isOpen: boolean }>`
-  transform: ${props => props.isOpen ? 'rotate(45deg)' : 'rotate(0)'};
-  transition: transform 0.2s ease;
-  font-size: 1.25rem;
-  color: #4ade80;
-
-  &::before {
-    content: '+';
-  }
-`;
-
-// New Value Props Styled Components
-const ValueHeroContainer = styled.div`
-  text-align: center;
-  max-width: 900px;
-  margin: 0 auto 4rem;
-`;
-
-const ValueHeroHeadline = styled.h2`
-  font-size: 3rem;
-  font-weight: 800;
-  color: #ffffff;
-  margin-bottom: 1.5rem;
-  line-height: 1.2;
-
-  @media (max-width: 768px) {
-    font-size: 2rem;
-  }
-`;
-
-const ValueHeroSubheadline = styled.p`
-  font-size: 1.5rem;
-  color: #e0e0e0;
-  line-height: 1.6;
-  margin-bottom: 2.5rem;
-  font-weight: 400;
-
-  @media (max-width: 768px) {
-    font-size: 1.25rem;
-  }
-`;
-
-const ValueFrameworkBox = styled.div`
-  background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(42, 42, 42, 0.8) 100%);
-  border: 2px solid #4ade80;
-  border-radius: 12px;
-  padding: 2.5rem;
-  box-shadow: 0 8px 32px rgba(74, 222, 128, 0.15);
-`;
-
-const FrameworkBadge = styled.div`
-  display: inline-block;
-  background: #4ade80;
-  color: #000000;
-  padding: 0.5rem 1.5rem;
-  border-radius: 24px;
-  font-weight: 700;
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 1rem;
-`;
-
-const FrameworkDescription = styled.p`
-  font-size: 1.125rem;
-  color: #ffffff;
-  line-height: 1.8;
-  margin: 0;
-`;
-
-const ValueGoalsContainer = styled.div`
-  max-width: 700px;
-  margin: 0 auto 4rem;
-  background: rgba(26, 26, 26, 0.8);
-  padding: 3rem;
-  border-radius: 16px;
-  border-left: 6px solid #4ade80;
-`;
-
-const ValueGoalsTitle = styled.h3`
-  font-size: 2rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 2rem;
-  text-align: center;
-
-  @media (max-width: 768px) {
-    font-size: 1.5rem;
-  }
-`;
-
-const ValueGoalsList = styled.div`
-  margin-bottom: 2.5rem;
-`;
-
-const ValueGoalItem = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 1.25rem;
-  margin-bottom: 1.5rem;
-  padding: 1rem;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 8px;
-  transition: all 0.2s ease;
-
-  &:hover {
-    transform: translateX(8px);
-    background: #0a0a0a;
-  }
-`;
-
-const GoalCheckmark = styled.div`
-  width: 32px;
-  height: 32px;
-  background: #4ade80;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #000000;
-  font-weight: 800;
-  font-size: 1.25rem;
-  flex-shrink: 0;
-`;
-
-const GoalText = styled.p`
-  font-size: 1.25rem;
-  color: #e0e0e0;
-  margin: 0;
-  font-weight: 500;
-
-  @media (max-width: 768px) {
-    font-size: 1.125rem;
-  }
-`;
-
-const ValueCTA = styled.div`
-  text-align: center;
-  padding-top: 1.5rem;
-  border-top: 2px solid #333333;
-`;
-
-const CTAText = styled.h4`
-  font-size: 2.25rem;
-  font-weight: 800;
-  color: #4ade80;
-  margin-bottom: 0.75rem;
-
-  @media (max-width: 768px) {
-    font-size: 1.75rem;
-  }
-`;
-
-const CTASubtext = styled.p`
-  font-size: 1.125rem;
-  color: #b0b0b0;
-  margin: 0;
-  font-style: italic;
-`;
-
-const ValueStatsContainer = styled.div`
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
   gap: 2rem;
-  max-width: 1100px;
-  margin: 0 auto;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const StatCard = styled.div`
-  background: linear-gradient(135deg, rgba(26, 26, 26, 0.8) 0%, rgba(42, 42, 42, 0.8) 100%);
-  padding: 2.5rem 2rem;
-  border-radius: 12px;
-  text-align: center;
-  border: 2px solid transparent;
-  transition: all 0.3s ease;
+  padding: 1.75rem 0;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: color 0.15s;
+  color: #e0e0e0;
 
   &:hover {
-    border-color: #4ade80;
-    transform: translateY(-8px);
-    box-shadow: 0 12px 40px rgba(74, 222, 128, 0.2);
+    color: #ffffff;
   }
 `;
 
-const StatNumber = styled.div`
-  font-size: 3.5rem;
-  font-weight: 800;
-  color: #4ade80;
-  margin-bottom: 0.5rem;
-  line-height: 1;
-
-  @media (max-width: 768px) {
-    font-size: 2.5rem;
-  }
-`;
-
-const StatLabel = styled.div`
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: #ffffff;
-  margin-bottom: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-`;
-
-const StatDescription = styled.p`
-  font-size: 0.9375rem;
-  color: #b0b0b0;
+const FAQQuestion = styled.span`
+  font-size: 1rem;
+  font-weight: 500;
   line-height: 1.5;
-  margin: 0;
 `;
+
+const FAQIndicator = styled.span<{ open: boolean }>`
+  color: #4ade80;
+  flex-shrink: 0;
+  transition: transform 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+  transform: ${p => (p.open ? 'rotate(45deg)' : 'rotate(0deg)')};
+  display: flex;
+  align-items: center;
+`;
+
+const FAQAnswer = styled.div<{ open: boolean }>`
+  max-height: ${p => (p.open ? '300px' : '0')};
+  overflow: hidden;
+  transition: max-height 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+`;
+
+const FAQAnswerInner = styled.div`
+  padding-bottom: 1.75rem;
+  font-size: 0.9375rem;
+  color: #6b6b6b;
+  line-height: 1.8;
+`;
+
+// ─── Component ───────────────────────────────────────────────────────────────────
 
 const ContentSections: React.FC = () => {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);
 
-  const toggleFAQ = (index: number) => {
-    setOpenFAQ(openFAQ === index ? null : index);
-  };
+  const toggle = (i: number) => setOpenFAQ(openFAQ === i ? null : i);
 
-  const jobBoards = [
-    { name: 'Indeed', icon: 'I' },
-    { name: 'ZipRecruiter', icon: 'Z' },
-    { name: 'LinkedIn', icon: 'in' },
-    { name: 'HVAC Insider', icon: 'H' },
-    { name: 'SimplyHired', icon: 'S' },
-    { name: 'Monster', icon: 'M' },
-    { name: 'CareerBuilder', icon: 'C' },
-    { name: 'Glassdoor', icon: 'G' },
-    { name: 'Craigslist', icon: 'CL' },
-    { name: 'HVAC Agent', icon: 'HA' },
-    { name: 'ServiceTitan', icon: 'ST' },
-    { name: 'HVACR Career Connect', icon: 'HC' },
-    { name: 'TechNet', icon: 'T' },
-    { name: 'Blue Collar Jobs', icon: 'BC' },
-    { name: 'Snagajob', icon: 'SJ' }
-  ];
-
-  const faqData = [
+  const faqs = [
     {
-      question: "How does Talos integrate with existing job boards?",
-      answer: "Talos seamlessly connects with over 100 job boards through our API integrations, automatically posting your job descriptions and managing applications from a single dashboard."
+      q: 'How does Talos integrate with existing job boards?',
+      a: 'Talos connects with top job boards through our API integrations, automatically posting your job descriptions and managing applications from a single dashboard.',
     },
     {
-      question: "What makes Talos different from other hiring platforms?",
-      answer: "Talos is specifically designed for HVAC companies, with AI that understands technical skills, certifications, and industry-specific requirements. Our candidate ranking system is trained on successful HVAC hires."
+      q: 'What makes Talos different from other hiring platforms?',
+      a: 'Talos is specifically designed for HVAC companies, with AI that understands technical skills, certifications, and industry-specific requirements. Our candidate ranking system is trained on successful HVAC hires.',
     },
     {
-      question: "How accurate is the AI candidate ranking system?",
-      answer: "Our AI ranking system uses machine learning trained on thousands of successful HVAC hires, considering technical skills, experience, certifications, and cultural fit indicators with 85%+ accuracy."
+      q: 'How accurate is the AI candidate ranking system?',
+      a: 'Our AI ranking system considers technical skills, experience, certifications, and cultural fit indicators — achieving over 90% alignment with hiring manager preferences on shortlisted candidates.',
     },
     {
-      question: "Can I customize job descriptions for different positions?",
-      answer: "Yes, our Job Description Writer creates tailored descriptions for various HVAC roles including technicians, installers, service managers, and office support, all optimized for your local market."
+      q: 'Can I customize job descriptions for different positions?',
+      a: 'Yes. Our Job Description Generator creates tailored descriptions for various HVAC roles including technicians, installers, service managers, and office support — all optimized for your local market.',
     },
     {
-      question: "What kind of support do you provide during onboarding?",
-      answer: "We provide comprehensive onboarding including account setup, integration assistance, team training, and ongoing support to ensure you're getting the most value from Talos."
-    }
+      q: 'What kind of support do you provide during onboarding?',
+      a: 'We provide comprehensive onboarding including account setup, integration assistance, team training, and ongoing support to ensure you get maximum value from Talos from day one.',
+    },
   ];
 
   return (
     <>
-      <ValuePropsSection>
-        <SectionContainer>
-          <ValueHeroContainer>
-            <ValueHeroHeadline>
-              Smarter Hiring for HVAC Companies
-            </ValueHeroHeadline>
-            <ValueHeroSubheadline>
-              Stop losing great candidates to slow processes and inefficient screening.
-              Talos gives you the tools to hire faster, smarter, and with confidence.
-            </ValueHeroSubheadline>
+      <FontLoad />
 
-            <ValueFrameworkBox>
-              <FrameworkBadge>Our Approach</FrameworkBadge>
-              <FrameworkDescription>
-                We combine AI-powered automation with HVAC industry expertise to eliminate
-                the bottlenecks in your hiring process—from writing job descriptions to ranking
-                candidates to managing your talent pipeline.
-              </FrameworkDescription>
-            </ValueFrameworkBox>
-          </ValueHeroContainer>
+      {/* Stats */}
+      <StatsStrip>
+        <StatsGrid>
+          <StatItem>
+            <StatNum>85%</StatNum>
+            <StatTitle>Faster</StatTitle>
+            <StatDesc>Time from posting to qualified shortlist</StatDesc>
+          </StatItem>
+          <StatDivider />
+          <StatItem>
+            <StatNum>10x</StatNum>
+            <StatTitle>More Reach</StatTitle>
+            <StatDesc>Candidates reached via multi-platform posting</StatDesc>
+          </StatItem>
+          <StatDivider />
+          <StatItem>
+            <StatNum>90%</StatNum>
+            <StatTitle>Accuracy</StatTitle>
+            <StatDesc>AI ranking matches hiring manager preferences</StatDesc>
+          </StatItem>
+        </StatsGrid>
+      </StatsStrip>
 
-          <ValueGoalsContainer>
-            <ValueGoalsTitle>What You Get with Talos</ValueGoalsTitle>
-            <ValueGoalsList>
-              <ValueGoalItem>
-                <GoalCheckmark><Check size={20} strokeWidth={3} /></GoalCheckmark>
-                <GoalText>AI-generated job descriptions that attract qualified technicians</GoalText>
-              </ValueGoalItem>
-              <ValueGoalItem>
-                <GoalCheckmark><Check size={20} strokeWidth={3} /></GoalCheckmark>
-                <GoalText>Instant candidate ranking and scoring to identify top talent</GoalText>
-              </ValueGoalItem>
-              <ValueGoalItem>
-                <GoalCheckmark><Check size={20} strokeWidth={3} /></GoalCheckmark>
-                <GoalText>Automated posting to 15+ job boards with one click</GoalText>
-              </ValueGoalItem>
-              <ValueGoalItem>
-                <GoalCheckmark><Check size={20} strokeWidth={3} /></GoalCheckmark>
-                <GoalText>Private talent pool to track and revisit candidates over time</GoalText>
-              </ValueGoalItem>
-            </ValueGoalsList>
+      {/* Value Props */}
+      <ValueSection>
+        <ValueInner>
+          <ValueLeft>
+            <SectionLabel>01 — What You Get</SectionLabel>
+            <ValueHeadline>Smarter hiring for HVAC companies.</ValueHeadline>
+            <ValueSubtext>
+              Stop losing great candidates to slow processes and inefficient
+              screening. Talos gives you the tools to hire faster, smarter, and
+              with confidence.
+            </ValueSubtext>
+            <ApproachBox>
+              <ApproachTag>Our Approach</ApproachTag>
+              <p>
+                We combine AI-powered automation with HVAC industry expertise
+                to eliminate bottlenecks in your hiring — from writing job
+                descriptions to ranking candidates to managing your talent
+                pipeline.
+              </p>
+            </ApproachBox>
+          </ValueLeft>
 
-            <ValueCTA>
-              <CTAText>Stop settling for average hires</CTAText>
-              <CTASubtext>Find the right technicians, every time</CTASubtext>
-            </ValueCTA>
-          </ValueGoalsContainer>
+          <ValueRight>
+            <GoalRow>
+              <GoalNum>01</GoalNum>
+              <GoalText>
+                AI-generated job descriptions that attract qualified technicians
+              </GoalText>
+            </GoalRow>
+            <GoalRow>
+              <GoalNum>02</GoalNum>
+              <GoalText>
+                Instant candidate ranking and scoring to identify top talent
+              </GoalText>
+            </GoalRow>
+            <GoalRow>
+              <GoalNum>03</GoalNum>
+              <GoalText>
+                Automated posting to top job boards with one click
+              </GoalText>
+            </GoalRow>
+            <GoalRow>
+              <GoalNum>04</GoalNum>
+              <GoalText>
+                Private talent pool to track and revisit candidates over time
+              </GoalText>
+            </GoalRow>
+          </ValueRight>
+        </ValueInner>
+      </ValueSection>
 
-          <ValueStatsContainer>
-            <StatCard>
-              <StatNumber>85%</StatNumber>
-              <StatLabel>Faster</StatLabel>
-              <StatDescription>
-                Time from job posting to qualified candidate shortlist
-              </StatDescription>
-            </StatCard>
-            <StatCard>
-              <StatNumber>10x</StatNumber>
-              <StatLabel>More Reach</StatLabel>
-              <StatDescription>
-                Candidates reached through multi-platform posting
-              </StatDescription>
-            </StatCard>
-            <StatCard>
-              <StatNumber>90%</StatNumber>
-              <StatLabel>Accuracy</StatLabel>
-              <StatDescription>
-                AI ranking matches hiring manager preferences
-              </StatDescription>
-            </StatCard>
-          </ValueStatsContainer>
-        </SectionContainer>
-      </ValuePropsSection>
+      {/* Features */}
+      <FeaturesSection>
+        <FeaturesInner>
+          <SectionLabel>02 — How It Works</SectionLabel>
+          <FeaturesHeadline>Everything you need to hire better.</FeaturesHeadline>
+          <FeaturesGrid>
+            <FeatureCard>
+              <FeatureNum>01 — AI</FeatureNum>
+              <FeatureTitle>AI-Powered Job Description Generator</FeatureTitle>
+              <FeatureDesc>
+                Say goodbye to writer's block. Our generator creates compelling,
+                industry-specific postings tailored to your exact needs.
+              </FeatureDesc>
+              <FeatureBullets>
+                <FeatureBullet>
+                  <BulletDot />
+                  Optimizes automatically for SEO and job board algorithms
+                </FeatureBullet>
+                <FeatureBullet>
+                  <BulletDot />
+                  Includes HVAC-specific certifications and skill requirements
+                </FeatureBullet>
+                <FeatureBullet>
+                  <BulletDot />
+                  Generates multiple variations for A/B testing
+                </FeatureBullet>
+                <FeatureBullet>
+                  <BulletDot />
+                  Customizes tone to attract top-tier talent in your market
+                </FeatureBullet>
+              </FeatureBullets>
+            </FeatureCard>
 
-      <JobBoardSection>
-        <SectionContainer>
-          <JobBoardDisplay>Post on 15+ job boards</JobBoardDisplay>
+            <FeatureCard>
+              <FeatureNum>02 — POST</FeatureNum>
+              <FeatureTitle>One-Click Multi-Platform Posting</FeatureTitle>
+              <FeatureDesc>
+                Forget logging into multiple job boards. Posting your job is
+                three clicks and five minutes with our seamless integrations.
+              </FeatureDesc>
+              <FeatureBullets>
+                <FeatureBullet>
+                  <BulletDot />
+                  Automatic formatting for each board's requirements
+                </FeatureBullet>
+                <FeatureBullet>
+                  <BulletDot />
+                  Optional sponsored posting on premium platforms
+                </FeatureBullet>
+                <FeatureBullet>
+                  <BulletDot />
+                  Simultaneous posting saves hours of manual work
+                </FeatureBullet>
+                <FeatureBullet>
+                  <BulletDot />
+                  Unified dashboard to manage all postings centrally
+                </FeatureBullet>
+              </FeatureBullets>
+            </FeatureCard>
 
-          <JobBoardTickerContainer>
-            <JobBoardTickerTrack>
-              {[...jobBoards, ...jobBoards].map((board, index) => (
-                <JobBoardItem key={index}>
-                  <JobBoardLogo>{board.icon}</JobBoardLogo>
-                  {board.name}
-                </JobBoardItem>
-              ))}
-            </JobBoardTickerTrack>
-          </JobBoardTickerContainer>
+            <FeatureCard>
+              <FeatureNum>03 — TARGET</FeatureNum>
+              <FeatureTitle>Targeted Marketing to Quality Technicians</FeatureTitle>
+              <FeatureDesc>
+                We don't just post your job — we actively market it to experienced
+                HVAC professionals who match your exact requirements.
+              </FeatureDesc>
+              <FeatureBullets>
+                <FeatureBullet>
+                  <BulletDot />
+                  Geo-targeted distribution in your service area
+                </FeatureBullet>
+                <FeatureBullet>
+                  <BulletDot />
+                  Skills-based filtering for EPA certifications and licenses
+                </FeatureBullet>
+                <FeatureBullet>
+                  <BulletDot />
+                  Direct outreach to our pre-screened HVAC professional database
+                </FeatureBullet>
+                <FeatureBullet>
+                  <BulletDot />
+                  Smart timing to post when quality candidates search most
+                </FeatureBullet>
+              </FeatureBullets>
+            </FeatureCard>
+          </FeaturesGrid>
+        </FeaturesInner>
+      </FeaturesSection>
 
-          <JobBoardDescription>
-            Maximize your reach and find qualified HVAC professionals across all major job platforms
-            with a single click. Our extensive network ensures your positions get maximum visibility.
-          </JobBoardDescription>
-
-          <DetailedContent>
-            <PyramidTop>
-              <DetailSection>
-                <DetailTitle>AI-Powered Job Description Generator</DetailTitle>
-                <DetailText>
-                  Say goodbye to writer's block. Our intelligent Job Description Generator creates
-                  compelling, industry-specific job postings tailored to your exact needs. Simply input
-                  the role, requirements, and your company details—Talos handles the rest.
-                </DetailText>
-                <FeatureList>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Automatically optimizes for SEO and job board algorithms to increase visibility
-                  </FeatureItem>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Includes HVAC-specific technical requirements, certifications, and skills
-                  </FeatureItem>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Customizes tone and language to attract top-tier talent in your market
-                  </FeatureItem>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Generates multiple variations so you can A/B test what works best
-                  </FeatureItem>
-                </FeatureList>
-              </DetailSection>
-
-              <DetailSection>
-                <DetailTitle>One-Click Multi-Platform Posting</DetailTitle>
-                <DetailText>
-                  Forget about logging into 15 different job boards. With Talos, posting your job
-                  description is as simple as three clicks and five minutes. Our seamless integration
-                  handles all the technical details, formatting, and submission requirements for each platform.
-                </DetailText>
-                <FeatureList>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Automatic formatting adjustments for each job board's specific requirements
-                  </FeatureItem>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Optional sponsored posting on premium platforms like Indeed for maximum reach
-                  </FeatureItem>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Simultaneous posting across all platforms saves hours of manual work
-                  </FeatureItem>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Unified dashboard to manage all your postings from one central location
-                  </FeatureItem>
-                </FeatureList>
-              </DetailSection>
-            </PyramidTop>
-
-            <PyramidBottom>
-              <DetailSection>
-                <DetailTitle>Targeted Marketing to Quality Technicians</DetailTitle>
-                <DetailText>
-                  We don't just post your job—we actively market it to the right candidates. Talos uses
-                  advanced targeting algorithms to ensure your positions reach experienced HVAC professionals
-                  who match your specific requirements.
-                </DetailText>
-                <FeatureList>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Geo-targeted distribution to candidates in your service area
-                  </FeatureItem>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Skills-based filtering to reach technicians with EPA certifications, HVAC licenses,
-                    and relevant experience levels
-                  </FeatureItem>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Direct outreach to our curated database of pre-screened HVAC professionals
-                  </FeatureItem>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Smart timing to post when quality candidates are most actively searching
-                  </FeatureItem>
-                  <FeatureItem>
-                    <div style={{ minWidth: '24px', height: '24px', background: '#4ade80', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', marginRight: '1rem' }}>
-                      <Check size={14} color="black" strokeWidth={3} />
-                    </div>
-                    Automated follow-ups and engagement to keep top candidates interested in your positions
-                  </FeatureItem>
-                </FeatureList>
-              </DetailSection>
-            </PyramidBottom>
-          </DetailedContent>
-        </SectionContainer>
-      </JobBoardSection>
-
+      {/* FAQ */}
       <FAQSection>
-        <SectionContainer>
-          <SectionTitle>Frequently Asked Questions</SectionTitle>
-          <FAQContainer>
-            {faqData.map((faq, index) => (
-              <FAQItem key={index}>
-                <FAQQuestion onClick={() => toggleFAQ(index)}>
-                  {faq.question}
-                  <ExpandIcon isOpen={openFAQ === index} />
-                </FAQQuestion>
-                <FAQAnswer isOpen={openFAQ === index}>
-                  {faq.answer}
+        <FAQInner>
+          <FAQLeft>
+            <SectionLabel>03 — FAQ</SectionLabel>
+            <FAQTitle>Frequently asked questions.</FAQTitle>
+          </FAQLeft>
+
+          <FAQRight>
+            {faqs.map((faq, i) => (
+              <FAQItem key={i}>
+                <FAQTrigger onClick={() => toggle(i)}>
+                  <FAQQuestion>{faq.q}</FAQQuestion>
+                  <FAQIndicator open={openFAQ === i}>
+                    <Plus size={18} strokeWidth={1.5} />
+                  </FAQIndicator>
+                </FAQTrigger>
+                <FAQAnswer open={openFAQ === i}>
+                  <FAQAnswerInner>{faq.a}</FAQAnswerInner>
                 </FAQAnswer>
               </FAQItem>
             ))}
-          </FAQContainer>
-        </SectionContainer>
+          </FAQRight>
+        </FAQInner>
       </FAQSection>
     </>
   );
