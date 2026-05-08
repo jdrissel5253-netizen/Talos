@@ -513,6 +513,13 @@ const BatchResumeAnalysis: React.FC = () => {
         body: formData,
       });
 
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        const msg = errorData?.message || `Server error (${response.status})`;
+        alert('Error analyzing resumes: ' + msg);
+        return;
+      }
+
       const data = await response.json();
 
       if (data.status === 'success') {
@@ -522,7 +529,11 @@ const BatchResumeAnalysis: React.FC = () => {
       }
     } catch (error) {
       console.error('Error:', error);
-      alert('Failed to analyze resumes. Please try again.');
+      alert(
+        'The request timed out — this usually happens with 4+ resumes. ' +
+        'Your resumes may still have been processed. ' +
+        'Check the Talent Pool in a minute to confirm, then try a smaller batch.'
+      );
     } finally {
       setIsAnalyzing(false);
     }
@@ -683,7 +694,7 @@ const BatchResumeAnalysis: React.FC = () => {
                   ? `${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''} selected`
                   : 'Drop resumes here or click to browse'}
               </UploadText>
-              <UploadHint>Upload up to 10 PDF files (5MB each)</UploadHint>
+              <UploadHint>Upload up to 4 PDF files at a time (5MB each) — larger batches may time out</UploadHint>
               <FileInput
                 id="fileInput"
                 type="file"
@@ -709,6 +720,20 @@ const BatchResumeAnalysis: React.FC = () => {
               )}
             </UploadSection>
 
+            {selectedFiles.length > 4 && !isAnalyzing && (
+              <div style={{
+                margin: '0.75rem 0',
+                padding: '0.75rem 1rem',
+                background: 'rgba(251, 191, 36, 0.12)',
+                border: '1px solid #fbbf24',
+                borderRadius: '6px',
+                color: '#fbbf24',
+                fontSize: '0.875rem'
+              }}>
+                ⚠️ {selectedFiles.length} files selected — batches over 4 resumes may time out. Consider splitting into smaller groups.
+              </div>
+            )}
+
             {selectedFiles.length > 0 && !isAnalyzing && (
               <BrowseButton onClick={handleAnalyze}>
                 Analyze {selectedFiles.length} Resume{selectedFiles.length > 1 ? 's' : ''} with AI
@@ -720,7 +745,7 @@ const BatchResumeAnalysis: React.FC = () => {
                 <LoaderSpinner />
                 <LoaderText>Analyzing resumes with AI...</LoaderText>
                 <ProgressText>
-                  This may take 10-15 seconds per resume ({selectedFiles.length} total)
+                  This may take 15-20 seconds per resume ({selectedFiles.length} total)
                 </ProgressText>
               </AnalyzingLoader>
             )}
@@ -761,7 +786,7 @@ const BatchResumeAnalysis: React.FC = () => {
                               </span>
                             )}
                           </CandidateName>
-                          <CandidateSummary>{candidate.analysis?.summary}</CandidateSummary>
+                          <CandidateSummary>{candidate.analysis?.summary || candidate.analysis?.recommendationSummary}</CandidateSummary>
                         </CandidateInfo>
 
                         <ExpandIcon className={isExpanded ? 'expanded' : ''}>

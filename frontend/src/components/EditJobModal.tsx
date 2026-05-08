@@ -20,6 +20,7 @@ interface Job {
     education_requirements?: string;
     status: string;
     company_name?: string;
+    valid_through?: string;
 }
 
 interface Props {
@@ -211,6 +212,7 @@ const EditJobModal: React.FC<Props> = ({ job, onClose, onSaved }) => {
         required_years_experience: String(job.required_years_experience ?? ''),
         education_requirements: job.education_requirements || 'High School Diploma',
         description: job.description || '',
+        valid_through: job.valid_through ? job.valid_through.split('T')[0] : '',
     });
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
@@ -245,6 +247,7 @@ const EditJobModal: React.FC<Props> = ({ job, onClose, onSaved }) => {
             if (form.pay_range_min) payload.pay_range_min = parseFloat(form.pay_range_min);
             if (form.pay_range_max) payload.pay_range_max = parseFloat(form.pay_range_max);
             if (form.pay_type) payload.pay_type = form.pay_type;
+            payload.valid_through = form.valid_through || null;
 
             const res = await fetch(`${config.apiUrl}/api/jobs/${job.id}`, {
                 method: 'PUT',
@@ -380,6 +383,11 @@ const EditJobModal: React.FC<Props> = ({ job, onClose, onSaved }) => {
                 <FormGroup>
                     <Label htmlFor="edit-description">Job Description</Label>
                     <Textarea id="edit-description" name="description" value={form.description} onChange={handleChange} placeholder="Job description..." />
+                </FormGroup>
+
+                <FormGroup>
+                    <Label htmlFor="edit-valid-through">Listing Expires On (Optional)</Label>
+                    <Input id="edit-valid-through" name="valid_through" type="date" value={form.valid_through} onChange={handleChange} />
                 </FormGroup>
 
                 <ButtonRow>

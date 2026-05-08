@@ -396,6 +396,7 @@ interface EditJobData {
   advancement_timeline?: string;
   company_culture?: string;
   description?: string;
+  valid_through?: string;
 }
 
 interface AddJobFormProps {
@@ -522,6 +523,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
     advancement_timeline: editJob?.advancement_timeline || '',
     company_culture: editJob?.company_culture || '',
     description: editJob?.description || '',
+    valid_through: editJob?.valid_through ? editJob.valid_through.split('T')[0] : '',
   });
 
   const [newCertification, setNewCertification] = useState('');
@@ -1124,6 +1126,22 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
                 value={formData.company_culture}
                 onChange={handleChange}
                 placeholder="Describe your company culture, values, and work environment..."
+              />
+            </FormGroup>
+
+            <FormGroup>
+              <Label>
+                Listing Expires On (Optional)
+                <TooltipIcon>
+                  ?
+                  <Tooltip>Google for Jobs deprioritizes listings without an expiration date. Leave blank to use the default (90 days from today).</Tooltip>
+                </TooltipIcon>
+              </Label>
+              <Input
+                type="date"
+                name="valid_through"
+                value={formData.valid_through}
+                onChange={handleChange}
               />
             </FormGroup>
           </FormSection>

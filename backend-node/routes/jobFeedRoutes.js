@@ -96,6 +96,7 @@ router.get('/feed.xml', async (req, res) => {
     <description><![CDATA[${job.description || job.ai_generated_description || ''}]]></description>
     <salary>${escapeXml(salary)}</salary>
     <jobtype>${escapeXml(jobType)}</jobtype>
+    ${job.valid_through ? `<validthrough>${formatDate(job.valid_through)}</validthrough>` : ''}
   </job>
 `;
         }
@@ -135,7 +136,8 @@ router.get('/public', async (req, res) => {
                 pay_range_max: job.pay_range_max || job.salary_max,
                 pay_type: job.pay_type,
                 required_years_experience: job.required_years_experience,
-                created_at: job.created_at
+                created_at: job.created_at,
+                valid_through: job.valid_through
             }))
         });
     } catch (error) {
@@ -183,7 +185,8 @@ router.get('/public/:id', async (req, res) => {
                 qualifications_certifications: job.qualifications_certifications,
                 education_requirements: job.education_requirements,
                 required_years_experience: job.required_years_experience,
-                created_at: job.created_at
+                created_at: job.created_at,
+                valid_through: job.valid_through
             }
         });
     } catch (error) {

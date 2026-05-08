@@ -404,6 +404,13 @@ const CompanyName = styled.div`
     margin-top: 0.2rem;
 `;
 
+const PostedDate = styled.div`
+    font-size: 0.72rem;
+    color: #555;
+    margin-top: 0.2rem;
+    letter-spacing: 0.02em;
+`;
+
 const TagRow = styled.div`
     display: flex;
     flex-wrap: wrap;
@@ -514,6 +521,19 @@ function formatSalary(job: JobSummary): string {
     const suffix = payType === 'salary' ? '/yr' : '/hr';
     if (min && max) return `$${min.toLocaleString()}–$${max.toLocaleString()}${suffix}`;
     return min ? `$${min.toLocaleString()}+${suffix}` : `Up to $${max.toLocaleString()}${suffix}`;
+}
+
+function formatPostedDate(dateStr: string): string {
+    if (!dateStr) return '';
+    const posted = new Date(dateStr);
+    const now = new Date();
+    const days = Math.floor((now.getTime() - posted.getTime()) / (1000 * 60 * 60 * 24));
+    if (days === 0) return 'Posted today';
+    if (days === 1) return 'Posted yesterday';
+    if (days < 7) return `Posted ${days} days ago`;
+    if (days < 14) return 'Posted 1 week ago';
+    if (days < 30) return `Posted ${Math.floor(days / 7)} weeks ago`;
+    return `Posted ${posted.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
 }
 
 function formatJobType(t: string): string {
@@ -815,6 +835,7 @@ const PublicJobList: React.FC = () => {
                                             <CardTitles>
                                                 <JobTitle>{job.title}</JobTitle>
                                                 <CompanyName>{job.company_name || 'Company'}</CompanyName>
+                                                {job.created_at && <PostedDate>{formatPostedDate(job.created_at)}</PostedDate>}
                                             </CardTitles>
                                             <TagRow>
                                                 <Tag $type="category">{getCategory(job.title)}</Tag>

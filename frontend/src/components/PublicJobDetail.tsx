@@ -23,6 +23,7 @@ interface Job {
     education_requirements: string;
     required_years_experience: number;
     created_at: string;
+    valid_through?: string;
 }
 
 const PageContainer = styled.div`
@@ -351,9 +352,11 @@ function mapEmploymentType(jobType: string): string {
 function generateJobSchema(job: Job): object {
     const datePosted = job.created_at?.split('T')[0];
 
-    // Default expiry: 90 days from post date (Google deprioritizes listings without validThrough)
+    // Use the stored valid_through date; fall back to created_at + 90 days for legacy listings
     let validThrough = '';
-    if (job.created_at) {
+    if (job.valid_through) {
+        validThrough = job.valid_through.split('T')[0];
+    } else if (job.created_at) {
         const expiry = new Date(job.created_at);
         expiry.setDate(expiry.getDate() + 90);
         validThrough = expiry.toISOString().split('T')[0];

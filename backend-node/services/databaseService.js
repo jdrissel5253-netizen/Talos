@@ -428,9 +428,10 @@ const jobService = {
     async findActiveForFeed() {
         const result = await db.query(`
             SELECT id, title, company_name, description, city, zip_code,
-                   job_type, salary_min, salary_max, pay_type, created_at, status
+                   job_type, salary_min, salary_max, pay_type, created_at, status, valid_through
             FROM jobs
             WHERE status = 'active' AND deleted_at IS NULL
+              AND (valid_through IS NULL OR valid_through >= CURRENT_DATE)
             ORDER BY created_at DESC
         `);
         return result.rows;
@@ -439,8 +440,9 @@ const jobService = {
     async findActiveById(id) {
         const result = await db.query(
             `SELECT id, title, company_name, description, city, zip_code,
-                    job_type, salary_min, salary_max, pay_type, created_at, status
-             FROM jobs WHERE id = $1 AND status = 'active' AND deleted_at IS NULL`,
+                    job_type, salary_min, salary_max, pay_type, created_at, status, valid_through
+             FROM jobs WHERE id = $1 AND status = 'active' AND deleted_at IS NULL
+               AND (valid_through IS NULL OR valid_through >= CURRENT_DATE)`,
             [id]
         );
         return result.rows[0];
@@ -464,7 +466,8 @@ const jobService = {
             'qualifications_years', 'qualifications_certifications', 'qualifications_other',
             'education_requirements', 'other_relevant_titles', 'advancement_opportunities',
             'advancement_timeline', 'company_culture', 'ai_generated_description',
-            'flexible_on_title', 'drivers_license_required', 'status', 'updated_at'
+            'flexible_on_title', 'drivers_license_required', 'status', 'updated_at',
+            'valid_through'
         ];
 
         const fields = [];
@@ -521,7 +524,7 @@ const jobService = {
 
     /**
      * Find all active jobs for the public XML feed
-     * Returns jobs that are active and not deleted
+     * Returns jobs that are active, not deleted, and not expired
      */
     async findActiveForFeed() {
         const result = await db.query(`
@@ -529,9 +532,10 @@ const jobService = {
                    location, city, zip_code, job_location_type, job_type, position_type,
                    salary_min, salary_max, pay_range_min, pay_range_max, pay_type,
                    benefits, key_responsibilities, qualifications_certifications,
-                   education_requirements, required_years_experience, created_at
+                   education_requirements, required_years_experience, created_at, valid_through
             FROM jobs
             WHERE status = 'active' AND deleted_at IS NULL
+              AND (valid_through IS NULL OR valid_through >= CURRENT_DATE)
             ORDER BY created_at DESC
         `);
         return result.rows;
@@ -539,7 +543,7 @@ const jobService = {
 
     /**
      * Find a single active job by ID for public display
-     * Only returns the job if it's active and not deleted
+     * Only returns the job if it's active, not deleted, and not expired
      */
     async findActiveById(id) {
         const result = await db.query(`
@@ -547,9 +551,10 @@ const jobService = {
                    location, city, zip_code, job_location_type, job_type, position_type,
                    salary_min, salary_max, pay_range_min, pay_range_max, pay_type,
                    benefits, key_responsibilities, qualifications_certifications,
-                   education_requirements, required_years_experience, created_at
+                   education_requirements, required_years_experience, created_at, valid_through
             FROM jobs
             WHERE id = $1 AND status = 'active' AND deleted_at IS NULL
+              AND (valid_through IS NULL OR valid_through >= CURRENT_DATE)
         `, [id]);
         return result.rows[0];
     }

@@ -196,6 +196,7 @@ const roleMigration = [
 // Driver's license required field
 const driversLicenseMigration = [
     'ALTER TABLE jobs ADD COLUMN IF NOT EXISTS drivers_license_required BOOLEAN DEFAULT FALSE',
+    'ALTER TABLE jobs ADD COLUMN IF NOT EXISTS valid_through DATE',
 ];
 
 // Constraint fixes
@@ -331,6 +332,17 @@ async function runMigrations() {
                     console.error(`  ✗ Error: ${e.message}`);
                 }
             }
+        }
+
+        // Backfill valid_through for existing rows
+        console.log('\nBackfilling valid_through dates...');
+        try {
+            const backfill = await query(
+                "UPDATE jobs SET valid_through = (created_at + INTERVAL '90 days')::DATE WHERE valid_through IS NULL"
+            );
+            console.log(`  ✓ Backfilled ${backfill.rowCount} rows`);
+        } catch (e) {
+            console.error(`  ✗ Error: ${e.message}`);
         }
 
         // Run constraint fixes
