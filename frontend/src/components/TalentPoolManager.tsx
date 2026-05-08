@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
-import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
+import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2, ChevronDown, ChevronRight, LayoutGrid, LayoutList } from 'lucide-react';
 import ResumePreviewModal from './ResumePreviewModal';
 import ResumeFileModal from './ResumeFileModal';
 import ContactRejectionModal from './ContactRejectionModal';
@@ -481,6 +481,123 @@ const AppStatus = styled.span`
   text-align: right;
 `;
 
+const ViewToggle = styled.div`
+  display: flex;
+  border: 1px solid rgba(255, 255, 255, 0.09);
+  border-radius: 6px;
+  overflow: hidden;
+`;
+
+const ViewToggleBtn = styled.button<{ active: boolean }>`
+  background: ${p => p.active ? 'rgba(74, 222, 128, 0.12)' : 'transparent'};
+  color: ${p => p.active ? '#4ade80' : '#555'};
+  border: none;
+  padding: 0.4rem 0.6rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: all 0.15s ease;
+  &:hover { color: ${p => p.active ? '#4ade80' : '#999'}; }
+`;
+
+const CompactRow = styled.div`
+  display: grid;
+  grid-template-columns: 2.75rem 1fr auto auto auto;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  transition: all 0.12s ease;
+  &:hover {
+    background: rgba(255, 255, 255, 0.03);
+    border-color: rgba(74, 222, 128, 0.15);
+  }
+`;
+
+const CompactScore = styled.span<{ tier: string }>`
+  font-size: 1rem;
+  font-weight: 700;
+  text-align: center;
+  color: ${p => p.tier === 'green' ? '#4ade80' : p.tier === 'yellow' ? '#fbbf24' : '#ef4444'};
+`;
+
+const CompactNameBlock = styled.div`
+  min-width: 0;
+`;
+
+const CompactName = styled.div`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #e0e0e0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+`;
+
+const CompactSub = styled.div`
+  font-size: 0.75rem;
+  color: #555;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: flex;
+  align-items: center;
+`;
+
+const CompactStats = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.75rem;
+  color: #555;
+  white-space: nowrap;
+`;
+
+const CompactStatItem = styled.span`
+  display: flex;
+  align-items: center;
+  gap: 3px;
+`;
+
+const CompactStatusBadge = styled.span<{ status: string }>`
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.15rem 0.5rem;
+  border-radius: 4px;
+  text-transform: capitalize;
+  white-space: nowrap;
+  background: ${p => {
+    if (p.status === 'approved') return 'rgba(74,222,128,0.1)';
+    if (p.status === 'contacted') return 'rgba(59,130,246,0.1)';
+    if (p.status === 'rejected') return 'rgba(239,68,68,0.1)';
+    if (p.status === 'backup') return 'rgba(251,191,36,0.1)';
+    return 'rgba(255,255,255,0.05)';
+  }};
+  color: ${p => {
+    if (p.status === 'approved') return '#4ade80';
+    if (p.status === 'contacted') return '#60a5fa';
+    if (p.status === 'rejected') return '#f87171';
+    if (p.status === 'backup') return '#fbbf24';
+    return '#666';
+  }};
+`;
+
+const CompactActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+`;
+
+const CompactApplicationsExpanded = styled.div`
+  grid-column: 1 / -1;
+  padding: 0.35rem 0.75rem 0.35rem 3.5rem;
+  border-top: 1px solid rgba(255,255,255,0.04);
+`;
+
 const ActionIcon = styled.button<{ color: string }>`
   background: transparent;
   color: ${props => props.color};
@@ -590,6 +707,9 @@ const TalentPoolManager: React.FC = () => {
   const [contactMode, setContactMode] = useState<'contact' | 'rejection'>('contact');
   const [contactCommunicationType, setContactCommunicationType] = useState<'email' | 'sms'>('email');
   const [messageDropdownOpen, setMessageDropdownOpen] = useState<number | null>(null);
+
+  // View mode
+  const [viewMode, setViewMode] = useState<'cards' | 'compact'>('cards');
 
   // Applications expand
   const [expandedPipelineId, setExpandedPipelineId] = useState<number | null>(null);
@@ -873,6 +993,81 @@ const TalentPoolManager: React.FC = () => {
     </CandidateCard>
   );
 
+  const renderCompactRow = (candidate: Candidate) => (
+    <React.Fragment key={candidate.pipeline_id}>
+      <CompactRow>
+        <CompactScore tier={candidate.tier}>{candidate.tier_score}</CompactScore>
+
+        <CompactNameBlock>
+          <CompactName>
+            {candidate.filename?.replace('.pdf', '') || 'Unknown'}
+            <span style={{ color: '#fbbf24', fontSize: '0.75rem' }}>{getStars(candidate.star_rating)}</span>
+            {candidate.give_them_a_chance && (
+              <Badge style={{ fontSize: '0.65rem', padding: '0.1rem 0.4rem' }}>HP</Badge>
+            )}
+          </CompactName>
+          <CompactSub>
+            {candidate.position_type} · {candidate.job_location || 'Remote/TBD'}
+            {candidate.jobs_applied > 1 && (
+              <JobsBadge onClick={() => handleToggleApplications(candidate.pipeline_id)} style={{ fontSize: '0.72rem' }}>
+                {expandedPipelineId === candidate.pipeline_id ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+                {candidate.jobs_applied} jobs
+              </JobsBadge>
+            )}
+          </CompactSub>
+        </CompactNameBlock>
+
+        <CompactStats>
+          <CompactStatItem><Calendar size={12} />{candidate.years_of_experience}yr</CompactStatItem>
+          <CompactStatItem><ClipboardList size={12} />{candidate.certifications_found?.length || 0}</CompactStatItem>
+          <CompactStatItem><Car size={12} />{candidate.vehicle_status === 'has_vehicle' ? '✓' : candidate.vehicle_status === 'no_vehicle' ? '✗' : '?'}</CompactStatItem>
+        </CompactStats>
+
+        <CompactStatusBadge status={candidate.pipeline_status}>{candidate.pipeline_status}</CompactStatusBadge>
+
+        <CompactActions>
+          <ActionIcon color="#a3a3a3" title="View Profile" onClick={() => navigate(`/candidates/${candidate.pipeline_id}`)}>
+            <FileText size={14} />
+          </ActionIcon>
+          <ActionIcon color="#a3a3a3" title="Resume" onClick={() => {
+            setResumeFileCandidate({ id: candidate.candidate_id, filename: candidate.filename });
+            setIsResumeFileModalOpen(true);
+          }}>
+            <ClipboardList size={14} />
+          </ActionIcon>
+          <MessageDropdown>
+            <ActionIcon color="#3b82f6" title="Send Message"
+              onClick={() => setMessageDropdownOpen(messageDropdownOpen === candidate.pipeline_id ? null : candidate.pipeline_id)}>
+              <Mail size={14} />
+            </ActionIcon>
+            <DropdownContent isOpen={messageDropdownOpen === candidate.pipeline_id}>
+              <DropdownItem onClick={() => handleSendMessage(candidate.pipeline_id, 'sms')}><Smartphone size={14} style={{ marginRight: '8px' }} /> SMS</DropdownItem>
+              <DropdownItem onClick={() => handleSendMessage(candidate.pipeline_id, 'email')}><Mail size={14} style={{ marginRight: '8px' }} /> Email</DropdownItem>
+              <DropdownItem onClick={() => handleSendMessage(candidate.pipeline_id, 'rejection_email')}><X size={14} style={{ marginRight: '8px' }} /> Rejection</DropdownItem>
+            </DropdownContent>
+          </MessageDropdown>
+          <ActionIcon color="#ef4444" title="Remove" onClick={() => handleRemoveCandidate(candidate.pipeline_id)}>
+            <Trash2 size={14} />
+          </ActionIcon>
+        </CompactActions>
+      </CompactRow>
+
+      {expandedPipelineId === candidate.pipeline_id && (
+        <CompactApplicationsExpanded>
+          {loadingApplications === candidate.pipeline_id ? (
+            <div style={{ color: '#555', fontSize: '0.75rem' }}>Loading…</div>
+          ) : (personApplications[candidate.pipeline_id] || []).map(app => (
+            <ApplicationRow key={app.pipeline_id}>
+              <AppJobTitle style={{ fontSize: '0.8rem' }}>{app.job_title || app.position_type}</AppJobTitle>
+              <AppStatus>{app.pipeline_status}</AppStatus>
+              <AppScore tier={app.tier} style={{ fontSize: '0.8rem' }}>{app.tier_score}</AppScore>
+            </ApplicationRow>
+          ))}
+        </CompactApplicationsExpanded>
+      )}
+    </React.Fragment>
+  );
+
   return (
     <Container>
       <MainCard>
@@ -882,6 +1077,14 @@ const TalentPoolManager: React.FC = () => {
             <Subtitle>View and manage all candidates in your talent pipeline</Subtitle>
           </HeaderLeft>
           <HeaderActions>
+            <ViewToggle>
+              <ViewToggleBtn active={viewMode === 'cards'} onClick={() => setViewMode('cards')} title="Card view">
+                <LayoutGrid size={15} />
+              </ViewToggleBtn>
+              <ViewToggleBtn active={viewMode === 'compact'} onClick={() => setViewMode('compact')} title="Compact view">
+                <LayoutList size={15} />
+              </ViewToggleBtn>
+            </ViewToggle>
             <NavButton onClick={() => navigate('/dashboard')}>
               ← Dashboard
             </NavButton>
@@ -1020,7 +1223,7 @@ const TalentPoolManager: React.FC = () => {
                   </div>
                   <span>{candidatesByTier.green.length} candidates</span>
                 </TierHeader>
-                {candidatesByTier.green.map(renderCandidateCard)}
+                {candidatesByTier.green.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
               </TierSection>
             )}
 
@@ -1032,7 +1235,7 @@ const TalentPoolManager: React.FC = () => {
                   </div>
                   <span>{candidatesByTier.yellow.length} candidates</span>
                 </TierHeader>
-                {candidatesByTier.yellow.map(renderCandidateCard)}
+                {candidatesByTier.yellow.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
               </TierSection>
             )}
 
@@ -1044,7 +1247,7 @@ const TalentPoolManager: React.FC = () => {
                   </div>
                   <span>{candidatesByTier.red.length} candidates</span>
                 </TierHeader>
-                {candidatesByTier.red.map(renderCandidateCard)}
+                {candidatesByTier.red.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
               </TierSection>
             )}
           </CandidatesGrid>
