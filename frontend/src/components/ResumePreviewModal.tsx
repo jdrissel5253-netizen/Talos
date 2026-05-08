@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import styled from 'styled-components';
 import { X, FileText, User, Briefcase, Award, AlertCircle, CheckCircle } from 'lucide-react';
+import ResumeFileModal from './ResumeFileModal';
 
 interface Candidate {
   pipeline_id: number;
@@ -190,6 +191,22 @@ const Tag = styled.span`
   font-weight: 500;
 `;
 
+const ViewResumeBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(74, 222, 128, 0.12);
+  border: 1px solid rgba(74, 222, 128, 0.35);
+  color: #4ade80;
+  padding: 0.45rem 1rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  &:hover { background: rgba(74, 222, 128, 0.22); }
+`;
+
 const RecommendationBox = styled.div`
   background: #ebf8ff;
   border: 1px solid #bee3f8;
@@ -209,6 +226,7 @@ interface ResumePreviewModalProps {
 }
 
 const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({ isOpen, onClose, candidate }) => {
+  const [resumeFileOpen, setResumeFileOpen] = useState(false);
   if (!candidate) return null;
 
   // Mock data for missing fields if needed
@@ -246,10 +264,22 @@ const ResumePreviewModal: React.FC<ResumePreviewModalProps> = ({ isOpen, onClose
               <SubText>{safeFilename}</SubText>
             </div>
           </HeaderTitle>
-          <CloseButton onClick={onClose}>
-            <X size={24} />
-          </CloseButton>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <ViewResumeBtn onClick={() => setResumeFileOpen(true)}>
+              <FileText size={14} /> View Resume
+            </ViewResumeBtn>
+            <CloseButton onClick={onClose}>
+              <X size={24} />
+            </CloseButton>
+          </div>
         </ModalHeader>
+
+        <ResumeFileModal
+          isOpen={resumeFileOpen}
+          onClose={() => setResumeFileOpen(false)}
+          candidateId={candidate.candidate_id}
+          filename={candidate.filename}
+        />
 
         <ModalBody>
           <Section>
