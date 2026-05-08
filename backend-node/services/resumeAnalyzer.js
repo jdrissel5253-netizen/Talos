@@ -1371,7 +1371,8 @@ Use semantic reasoning to decide if a role functions like service work even if w
 
 === CERTIFICATIONS ===
 
-- Look for EPA 608, NATE, state licenses, etc.
+- Certifications count regardless of WHERE they appear — header, summary, inline within a job description, or a dedicated section
+- Do NOT require a dedicated "Certifications" section — any mention anywhere in the resume counts as "Certs Listed"
 - Having certifications listed ALWAYS scores higher than not having them listed
 - For very experienced candidates, missing certifications won't kill their score UNLESS they also have a bad resume
 
@@ -4387,12 +4388,14 @@ STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO NOT SKIP)
    c) If TOTAL years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
    d) ALWAYS use TOTAL years from Step 1, not just the most recent position
 
-STEP 3: FIND ALL CERTIFICATIONS
-   a) Search the ENTIRE resume including: header, summary, certifications section, AND within job descriptions
-   b) Look for: EPA 608, 410A, NATE, state licenses, manufacturer certifications, HVAC Excellence, etc.
-   c) Create a complete list of ALL certifications found
-   d) Mark as "Certifications Listed" if ANY HVAC certifications are found
-   e) Mark as "Certifications NOT Listed" ONLY if zero certifications are mentioned
+STEP 3: FIND ALL CERTIFICATIONS (LOCATION DOES NOT MATTER)
+   a) Scan the ENTIRE resume — header, contact block, summary, skills section, certifications section, AND within individual job descriptions
+   b) A certification counts regardless of WHERE it appears — a cert in the header is equal to one in a dedicated section
+   c) Do NOT require a dedicated "Certifications" section to mark as "Certs Listed"
+   d) Look for: EPA 608, 410A, NATE, state licenses, manufacturer certifications, HVAC Excellence, etc.
+   e) Create a complete list of ALL certifications found anywhere
+   f) Mark as "Certifications Listed" if ANY certifications are found ANYWHERE in the resume
+   g) Mark as "Certifications NOT Listed" ONLY if you have read the ENTIRE resume and found zero certifications
 
 STEP 4: ASSESS RESUME QUALITY (BE OBJECTIVE)
    a) GOOD RESUME = Professional formatting + No major typos + No grammar errors + 2+ substantive bullets per position
@@ -4508,12 +4511,14 @@ STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO NOT SKIP)
    e) ALWAYS use TOTAL years from Step 1, not just the most recent position
    ${requiredYearsExperience === 0 ? 'f) ZERO YEARS REQUIRED: Skip tier classification. Score is driven primarily by resume presentation quality.' : ''}
 
-STEP 3: FIND ALL CERTIFICATIONS
-   a) Search the ENTIRE resume including: header, summary, certifications section, AND within job descriptions
-   b) Look for: EPA 608, NATE, state licenses, manufacturer certifications, HVAC Excellence, etc.
-   c) EPA 608 is the most important cert for this role
-   d) Mark as "Certifications Listed" if ANY HVAC certifications are found
-   e) Mark as "Certifications NOT Listed" ONLY if zero certifications are mentioned
+STEP 3: FIND ALL CERTIFICATIONS (LOCATION DOES NOT MATTER)
+   a) Scan the ENTIRE resume — header, contact block, summary, skills section, certifications section, AND within individual job descriptions
+   b) A certification counts regardless of WHERE it appears — a cert in the header is equal to one in a dedicated section
+   c) Do NOT require a dedicated "Certifications" section to mark as "Certs Listed"
+   d) Look for: EPA 608, NATE, state licenses, manufacturer certifications, HVAC Excellence, etc.
+   e) EPA 608 is the most important cert for this role
+   f) Mark as "Certifications Listed" if ANY certifications are found ANYWHERE in the resume
+   g) Mark as "Certifications NOT Listed" ONLY if you have read the ENTIRE resume and found zero certifications
 
 STEP 4: ASSESS RESUME QUALITY (BE OBJECTIVE)
    a) GOOD RESUME = Professional formatting + No major typos + No grammar errors + 2+ substantive bullets per position
@@ -4628,11 +4633,13 @@ STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO NOT SKIP)
    e) ALWAYS use TOTAL years from Step 1, not just the most recent position
    ${requiredYearsExperience === 0 ? 'f) ZERO YEARS REQUIRED: Skip tier classification. Score is driven primarily by resume presentation quality.' : ''}
 
-STEP 3: FIND ALL CERTIFICATIONS
-   a) Search the ENTIRE resume including header, summary, certifications section, AND within job descriptions
-   b) Look for: EPA 608, NATE, state licenses, manufacturer certifications, HVAC Excellence, OSHA 10/30, etc.
-   c) Mark as "Certifications Listed" if ANY relevant certifications are found
-   d) Mark as "Certifications NOT Listed" ONLY if zero certifications are mentioned
+STEP 3: FIND ALL CERTIFICATIONS (LOCATION DOES NOT MATTER)
+   a) Scan the ENTIRE resume — header, contact block, summary, skills section, certifications section, AND within individual job descriptions
+   b) A certification counts regardless of WHERE it appears — a cert in the header is equal to one in a dedicated section
+   c) Do NOT require a dedicated "Certifications" section to mark as "Certs Listed"
+   d) Look for: EPA 608, NATE, state licenses, manufacturer certifications, HVAC Excellence, OSHA 10/30, etc.
+   e) Mark as "Certifications Listed" if ANY certifications are found ANYWHERE in the resume
+   f) Mark as "Certifications NOT Listed" ONLY if you have read the ENTIRE resume and found zero certifications
 
 STEP 4: ASSESS RESUME QUALITY (BE OBJECTIVE)
    a) GOOD RESUME = Professional formatting + No major typos + No grammar errors + 2+ substantive bullets per position
