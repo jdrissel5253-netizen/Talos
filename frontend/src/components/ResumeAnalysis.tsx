@@ -303,25 +303,25 @@ const List = styled.ul`
 `;
 
 const RecommendationBadge = styled.div<{ type: 'success' | 'warning' | 'info' }>`
-  padding: 1rem;
+  padding: 1.25rem 1.5rem;
   border-radius: 8px;
   margin-top: 1.5rem;
   background: ${props => {
-    if (props.type === 'success') return '#e8f5e9';
-    if (props.type === 'warning') return '#fff3e0';
-    return '#e3f2fd';
+    if (props.type === 'success') return 'rgba(74, 222, 128, 0.08)';
+    if (props.type === 'warning') return 'rgba(239, 68, 68, 0.08)';
+    return 'rgba(251, 191, 36, 0.08)';
   }};
-  border-left: 4px solid ${props => {
-    if (props.type === 'success') return '#4caf50';
-    if (props.type === 'warning') return '#ff9800';
-    return '#2196f3';
+  border: 1px solid ${props => {
+    if (props.type === 'success') return 'rgba(74, 222, 128, 0.3)';
+    if (props.type === 'warning') return 'rgba(239, 68, 68, 0.3)';
+    return 'rgba(251, 191, 36, 0.3)';
   }};
 `;
 
 const RecommendationText = styled.p`
-  color: #e0e0e0;
-  font-weight: 600;
-  font-size: 1.125rem;
+  font-weight: 700;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
 `;
 
 const NewAnalysisButton = styled.button`
@@ -1058,7 +1058,11 @@ const ResumeAnalysis: React.FC = () => {
 
               {analysisResult.hiringRecommendation && (
                 <RecommendationBadge type={getRecommendationType(analysisResult.hiringRecommendation)}>
-                  <RecommendationText>
+                  <RecommendationText style={{
+                    color: getRecommendationType(analysisResult.hiringRecommendation) === 'success' ? '#4ade80'
+                      : getRecommendationType(analysisResult.hiringRecommendation) === 'warning' ? '#f87171'
+                      : '#fbbf24'
+                  }}>
                     Hiring Recommendation: {analysisResult.hiringRecommendation.replace(/_/g, ' ')}
                   </RecommendationText>
                 </RecommendationBadge>
