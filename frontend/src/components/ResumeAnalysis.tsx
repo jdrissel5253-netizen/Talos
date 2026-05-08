@@ -704,7 +704,7 @@ const ResumeAnalysis: React.FC = () => {
             <ViewAllButton onClick={() => navigate('/jobs-management')}>
               View All Jobs →
             </ViewAllButton>
-            <ViewAllButton onClick={() => navigate('/talent-pool')} style={{ marginTop: '0.5rem' }}>
+            <ViewAllButton onClick={() => navigate('/talent-pool-manager')} style={{ marginTop: '0.5rem' }}>
               View Talent Pool →
             </ViewAllButton>
           </>
