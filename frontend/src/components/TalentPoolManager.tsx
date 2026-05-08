@@ -910,13 +910,17 @@ const TalentPoolManager: React.FC = () => {
           </CandidateName>
           <div style={{ color: '#999', fontSize: '0.9rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
             {candidate.position_type} • {candidate.job_location || 'Remote/TBD'}
-            {candidate.jobs_applied > 1 && (
+            {candidate.jobs_applied > 1 ? (
               <JobsBadge onClick={() => handleToggleApplications(candidate.pipeline_id)}>
                 {expandedPipelineId === candidate.pipeline_id
                   ? <ChevronDown size={13} />
                   : <ChevronRight size={13} />}
                 {candidate.jobs_applied} jobs applied
               </JobsBadge>
+            ) : (
+              <span style={{ marginLeft: '0.5rem', color: '#4ade80', fontSize: '0.8rem', fontWeight: 600, opacity: 0.7 }}>
+                · {candidate.job_title}
+              </span>
             )}
           </div>
         </CandidateInfo>
@@ -1008,11 +1012,15 @@ const TalentPoolManager: React.FC = () => {
           </CompactName>
           <CompactSub>
             {candidate.position_type} · {candidate.job_location || 'Remote/TBD'}
-            {candidate.jobs_applied > 1 && (
+            {candidate.jobs_applied > 1 ? (
               <JobsBadge onClick={() => handleToggleApplications(candidate.pipeline_id)} style={{ fontSize: '0.72rem' }}>
                 {expandedPipelineId === candidate.pipeline_id ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
                 {candidate.jobs_applied} jobs
               </JobsBadge>
+            ) : (
+              <span style={{ marginLeft: '0.4rem', color: '#4ade80', fontSize: '0.72rem', fontWeight: 600, opacity: 0.7 }}>
+                · {candidate.job_title}
+              </span>
             )}
           </CompactSub>
         </CompactNameBlock>
