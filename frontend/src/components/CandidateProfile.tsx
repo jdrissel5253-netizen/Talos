@@ -1,10 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import { ArrowLeft, User, Briefcase, Star, Shield, AlertTriangle, Award, Phone, Mail, MapPin, Calendar, Clock, FileText } from 'lucide-react';
+import { ArrowLeft, User, Briefcase, Star, Shield, AlertTriangle, Award, Phone, Mail, MapPin, Calendar, Clock, FileText, Smartphone, XCircle } from 'lucide-react';
 import { getAuthHeaders } from '../utils/auth';
 import { config as appConfig } from '../config';
 import ResumeFileModal from './ResumeFileModal';
+import ContactRejectionModal from './ContactRejectionModal';
 
 const FontImport = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -456,6 +457,7 @@ const CandidateProfile: React.FC = () => {
   const [error, setError] = useState(false);
   const [resumeOpen, setResumeOpen] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
+  const [contactModal, setContactModal] = useState<{ mode: 'contact' | 'rejection'; commType: 'email' | 'sms' } | null>(null);
 
   useEffect(() => {
     const headers = { ...getAuthHeaders(), 'Content-Type': 'application/json' };
@@ -515,6 +517,16 @@ const CandidateProfile: React.FC = () => {
                 <ActionBtn onClick={() => setResumeOpen(true)}>
                   <FileText size={13} /> View Resume
                 </ActionBtn>
+                <ActionBtn onClick={() => setContactModal({ mode: 'contact', commType: 'email' })}>
+                  <Mail size={13} /> Email
+                </ActionBtn>
+                <ActionBtn onClick={() => setContactModal({ mode: 'contact', commType: 'sms' })}>
+                  <Smartphone size={13} /> SMS
+                </ActionBtn>
+                <ActionBtn onClick={() => setContactModal({ mode: 'rejection', commType: 'email' })}
+                  style={{ borderColor: 'rgba(239,68,68,0.3)', color: '#f87171' }}>
+                  <XCircle size={13} /> Reject
+                </ActionBtn>
                 <StatusLabel>Status</StatusLabel>
                 <StatusSelect
                   value={profile.pipeline_status}
@@ -528,6 +540,22 @@ const CandidateProfile: React.FC = () => {
                   <option value="rejected">Rejected</option>
                 </StatusSelect>
               </ActionBar>
+
+              <ContactRejectionModal
+                isOpen={contactModal !== null}
+                onClose={() => setContactModal(null)}
+                candidate={{
+                  pipelineId: profile.pipeline_id,
+                  name: displayName,
+                  position: profile.job_title,
+                }}
+                initialMode={contactModal?.mode ?? 'contact'}
+                initialCommunicationType={contactModal?.commType ?? 'email'}
+                onSuccess={() => {
+                  setContactModal(null);
+                  setProfile(p => p ? { ...p, pipeline_status: 'contacted', contacted_via: contactModal?.commType ?? 'email', contacted_at: new Date().toISOString() } : p);
+                }}
+              />
 
               {/* ── Hero ── */}
               <Hero>
