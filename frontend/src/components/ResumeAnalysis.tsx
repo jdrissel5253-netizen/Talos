@@ -5,6 +5,7 @@ import { Upload, MapPin, Briefcase, FileText } from 'lucide-react';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
+import ResumeFileModal from './ResumeFileModal';
 
 const Container = styled.div`
   min-height: 100vh;
@@ -553,6 +554,7 @@ const ResumeAnalysis: React.FC = () => {
   const [selectedJobForAdd, setSelectedJobForAdd] = useState<number | null>(null);
   const [isAddToJobModalOpen, setIsAddToJobModalOpen] = useState(false);
   const [candidateId, setCandidateId] = useState<number | null>(null);
+  const [resumeFileOpen, setResumeFileOpen] = useState(false);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -625,6 +627,7 @@ const ResumeAnalysis: React.FC = () => {
     setAnalysisResult(null);
     setCandidateId(null);
     setSelectedJobId(null);
+    setResumeFileOpen(false);
   };
 
   // Load jobs on mount
@@ -837,6 +840,22 @@ const ResumeAnalysis: React.FC = () => {
             </>
           ) : (
             <ResultsSection>
+              {candidateId && selectedFile && (
+                <>
+                  <BrowseButton
+                    onClick={() => setResumeFileOpen(true)}
+                    style={{ marginBottom: '1.5rem', background: '#1a1a1a', border: '2px solid #4ade80', color: '#4ade80', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}
+                  >
+                    <FileText size={16} /> View Resume
+                  </BrowseButton>
+                  <ResumeFileModal
+                    isOpen={resumeFileOpen}
+                    onClose={() => setResumeFileOpen(false)}
+                    candidateId={candidateId}
+                    filename={selectedFile.name}
+                  />
+                </>
+              )}
               <ScoreCard>
                 <ScoreLabel>Overall Score</ScoreLabel>
                 <ScoreValue>{analysisResult.overallScore}</ScoreValue>
