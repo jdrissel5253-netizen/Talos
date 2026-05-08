@@ -488,38 +488,45 @@ const PositionDropdown = styled.select`
 
 interface AnalysisResult {
   overallScore: number;
-  scoreOutOf10: number;
+  scoreOutOf10?: number;
   isOverqualified?: boolean;
   overqualificationReason?: string | null;
-  summary: string;
-  technicalSkills: {
-    score: number;
-    found: string[];
-    missing: string[];
-    feedback: string;
+  summary?: string;
+  technicalSkills?: {
+    score?: number;
+    found?: string[];
+    missing?: string[];
+    feedback?: string;
   };
-  certifications: {
-    score: number;
-    found: string[];
-    recommended: string[];
-    feedback: string;
+  certifications?: {
+    score?: number;
+    found?: string[];
+    recommended?: string[];
+    feedback?: string;
   };
-  experience: {
-    score: number;
-    yearsOfExperience: number;
-    relevantExperience: string[];
-    feedback: string;
+  transferableSkills?: {
+    schedulingCoordination?: string;
+    customerInteraction?: string;
+    highVolumeEnvironment?: string;
+    administrativeCompetency?: string;
+    feedback?: string;
   };
-  presentationQuality: {
-    score: number;
-    strengths: string[];
-    improvements: string[];
-    feedback: string;
+  experience?: {
+    score?: number;
+    yearsOfExperience?: number;
+    relevantExperience?: string[];
+    feedback?: string;
   };
-  strengths: string[];
-  weaknesses: string[];
-  recommendations: string[];
-  hiringRecommendation: string;
+  presentationQuality?: {
+    score?: number;
+    strengths?: string[];
+    improvements?: string[];
+    feedback?: string;
+  };
+  strengths?: string[];
+  weaknesses?: string[];
+  recommendations?: string[];
+  hiringRecommendation?: string;
 }
 
 interface Job {
@@ -848,148 +855,214 @@ const ResumeAnalysis: React.FC = () => {
                 </DetailSection>
               )}
 
-              <DetailSection>
-                <DetailTitle>Summary</DetailTitle>
-                <DetailContent>{analysisResult.summary}</DetailContent>
-              </DetailSection>
+              {analysisResult.summary && (
+                <DetailSection>
+                  <DetailTitle>Summary</DetailTitle>
+                  <DetailContent>{analysisResult.summary}</DetailContent>
+                </DetailSection>
+              )}
 
-              <DetailSection>
-                <DetailTitle>
-                  Technical Skills
-                  <ScoreBadge>{analysisResult.technicalSkills.score}/100</ScoreBadge>
-                </DetailTitle>
-                <DetailContent>
-                  <strong>Found:</strong>
-                  <List>
-                    {analysisResult.technicalSkills.found.map((skill, idx) => (
-                      <ListItem key={idx}>{skill}</ListItem>
-                    ))}
-                  </List>
-                  {analysisResult.technicalSkills.missing.length > 0 && (
-                    <>
-                      <strong>Missing:</strong>
-                      <List>
-                        {analysisResult.technicalSkills.missing.map((skill, idx) => (
-                          <ListItem key={idx}>{skill}</ListItem>
-                        ))}
-                      </List>
-                    </>
-                  )}
-                  <p>{analysisResult.technicalSkills.feedback}</p>
-                </DetailContent>
-              </DetailSection>
-
-              <DetailSection>
-                <DetailTitle>
-                  Certifications
-                  <ScoreBadge>{analysisResult.certifications.score}/100</ScoreBadge>
-                </DetailTitle>
-                <DetailContent>
-                  <strong>Found:</strong>
-                  <List>
-                    {analysisResult.certifications.found.length > 0 ? (
-                      analysisResult.certifications.found.map((cert, idx) => (
-                        <ListItem key={idx}>{cert}</ListItem>
-                      ))
-                    ) : (
-                      <ListItem>No certifications found</ListItem>
+              {analysisResult.technicalSkills && (
+                <DetailSection>
+                  <DetailTitle>
+                    Technical Skills
+                    {analysisResult.technicalSkills.score != null && (
+                      <ScoreBadge>{analysisResult.technicalSkills.score}/100</ScoreBadge>
                     )}
-                  </List>
-                  {analysisResult.certifications.recommended.length > 0 && (
-                    <>
-                      <strong>Recommended:</strong>
-                      <List>
-                        {analysisResult.certifications.recommended.map((cert, idx) => (
-                          <ListItem key={idx}>{cert}</ListItem>
-                        ))}
-                      </List>
-                    </>
-                  )}
-                  <p>{analysisResult.certifications.feedback}</p>
-                </DetailContent>
-              </DetailSection>
+                  </DetailTitle>
+                  <DetailContent>
+                    {(analysisResult.technicalSkills.found?.length ?? 0) > 0 && (
+                      <>
+                        <strong>Found:</strong>
+                        <List>
+                          {analysisResult.technicalSkills.found!.map((skill, idx) => (
+                            <ListItem key={idx}>{skill}</ListItem>
+                          ))}
+                        </List>
+                      </>
+                    )}
+                    {(analysisResult.technicalSkills.missing?.length ?? 0) > 0 && (
+                      <>
+                        <strong>Missing:</strong>
+                        <List>
+                          {analysisResult.technicalSkills.missing!.map((skill, idx) => (
+                            <ListItem key={idx}>{skill}</ListItem>
+                          ))}
+                        </List>
+                      </>
+                    )}
+                    {analysisResult.technicalSkills.feedback && (
+                      <p>{analysisResult.technicalSkills.feedback}</p>
+                    )}
+                  </DetailContent>
+                </DetailSection>
+              )}
 
-              <DetailSection>
-                <DetailTitle>
-                  Experience
-                  <ScoreBadge>{analysisResult.experience.score}/100</ScoreBadge>
-                </DetailTitle>
-                <DetailContent>
-                  <p><strong>Years of Experience:</strong> {analysisResult.experience.yearsOfExperience}</p>
-                  <strong>Relevant Experience:</strong>
-                  <List>
-                    {analysisResult.experience.relevantExperience.map((exp, idx) => (
-                      <ListItem key={idx}>{exp}</ListItem>
-                    ))}
-                  </List>
-                  <p>{analysisResult.experience.feedback}</p>
-                </DetailContent>
-              </DetailSection>
+              {analysisResult.certifications && (
+                <DetailSection>
+                  <DetailTitle>
+                    Certifications
+                    {analysisResult.certifications.score != null && (
+                      <ScoreBadge>{analysisResult.certifications.score}/100</ScoreBadge>
+                    )}
+                  </DetailTitle>
+                  <DetailContent>
+                    <strong>Found:</strong>
+                    <List>
+                      {(analysisResult.certifications.found?.length ?? 0) > 0
+                        ? analysisResult.certifications.found!.map((cert, idx) => (
+                            <ListItem key={idx}>{cert}</ListItem>
+                          ))
+                        : <ListItem>No certifications found</ListItem>
+                      }
+                    </List>
+                    {(analysisResult.certifications.recommended?.length ?? 0) > 0 && (
+                      <>
+                        <strong>Recommended:</strong>
+                        <List>
+                          {analysisResult.certifications.recommended!.map((cert, idx) => (
+                            <ListItem key={idx}>{cert}</ListItem>
+                          ))}
+                        </List>
+                      </>
+                    )}
+                    {analysisResult.certifications.feedback && (
+                      <p>{analysisResult.certifications.feedback}</p>
+                    )}
+                  </DetailContent>
+                </DetailSection>
+              )}
 
-              <DetailSection>
-                <DetailTitle>
-                  Presentation Quality
-                  <ScoreBadge>{analysisResult.presentationQuality.score}/100</ScoreBadge>
-                </DetailTitle>
-                <DetailContent>
-                  <strong>Strengths:</strong>
-                  <List>
-                    {analysisResult.presentationQuality.strengths.map((strength, idx) => (
-                      <ListItem key={idx}>{strength}</ListItem>
-                    ))}
-                  </List>
-                  {analysisResult.presentationQuality.improvements.length > 0 && (
-                    <>
-                      <strong>Areas for Improvement:</strong>
-                      <List>
-                        {analysisResult.presentationQuality.improvements.map((improvement, idx) => (
-                          <ListItem key={idx}>{improvement}</ListItem>
-                        ))}
-                      </List>
-                    </>
-                  )}
-                  <p>{analysisResult.presentationQuality.feedback}</p>
-                </DetailContent>
-              </DetailSection>
+              {analysisResult.transferableSkills && (
+                <DetailSection>
+                  <DetailTitle>Transferable Skills</DetailTitle>
+                  <DetailContent>
+                    <List>
+                      {analysisResult.transferableSkills.schedulingCoordination && (
+                        <ListItem><strong>Scheduling & Coordination:</strong> {analysisResult.transferableSkills.schedulingCoordination}</ListItem>
+                      )}
+                      {analysisResult.transferableSkills.customerInteraction && (
+                        <ListItem><strong>Customer Interaction:</strong> {analysisResult.transferableSkills.customerInteraction}</ListItem>
+                      )}
+                      {analysisResult.transferableSkills.highVolumeEnvironment && (
+                        <ListItem><strong>High-Volume Environment:</strong> {analysisResult.transferableSkills.highVolumeEnvironment}</ListItem>
+                      )}
+                      {analysisResult.transferableSkills.administrativeCompetency && (
+                        <ListItem><strong>Administrative Competency:</strong> {analysisResult.transferableSkills.administrativeCompetency}</ListItem>
+                      )}
+                    </List>
+                    {analysisResult.transferableSkills.feedback && (
+                      <p>{analysisResult.transferableSkills.feedback}</p>
+                    )}
+                  </DetailContent>
+                </DetailSection>
+              )}
 
-              <DetailSection>
-                <DetailTitle>Key Strengths</DetailTitle>
-                <DetailContent>
-                  <List>
-                    {analysisResult.strengths.map((strength, idx) => (
-                      <ListItem key={idx}>{strength}</ListItem>
-                    ))}
-                  </List>
-                </DetailContent>
-              </DetailSection>
+              {analysisResult.experience && (
+                <DetailSection>
+                  <DetailTitle>
+                    Experience
+                    {analysisResult.experience.score != null && (
+                      <ScoreBadge>{analysisResult.experience.score}/100</ScoreBadge>
+                    )}
+                  </DetailTitle>
+                  <DetailContent>
+                    {analysisResult.experience.yearsOfExperience != null && (
+                      <p><strong>Years of Experience:</strong> {analysisResult.experience.yearsOfExperience}</p>
+                    )}
+                    {(analysisResult.experience.relevantExperience?.length ?? 0) > 0 && (
+                      <>
+                        <strong>Relevant Experience:</strong>
+                        <List>
+                          {analysisResult.experience.relevantExperience!.map((exp, idx) => (
+                            <ListItem key={idx}>{exp}</ListItem>
+                          ))}
+                        </List>
+                      </>
+                    )}
+                    {analysisResult.experience.feedback && (
+                      <p>{analysisResult.experience.feedback}</p>
+                    )}
+                  </DetailContent>
+                </DetailSection>
+              )}
 
-              <DetailSection>
-                <DetailTitle>Areas for Improvement</DetailTitle>
-                <DetailContent>
-                  <List>
-                    {analysisResult.weaknesses.map((weakness, idx) => (
-                      <ListItem key={idx}>{weakness}</ListItem>
-                    ))}
-                  </List>
-                </DetailContent>
-              </DetailSection>
+              {analysisResult.presentationQuality && (
+                <DetailSection>
+                  <DetailTitle>
+                    Presentation Quality
+                    {analysisResult.presentationQuality.score != null && (
+                      <ScoreBadge>{analysisResult.presentationQuality.score}/100</ScoreBadge>
+                    )}
+                  </DetailTitle>
+                  <DetailContent>
+                    {(analysisResult.presentationQuality.strengths?.length ?? 0) > 0 && (
+                      <>
+                        <strong>Strengths:</strong>
+                        <List>
+                          {analysisResult.presentationQuality.strengths!.map((s, idx) => (
+                            <ListItem key={idx}>{s}</ListItem>
+                          ))}
+                        </List>
+                      </>
+                    )}
+                    {(analysisResult.presentationQuality.improvements?.length ?? 0) > 0 && (
+                      <>
+                        <strong>Areas for Improvement:</strong>
+                        <List>
+                          {analysisResult.presentationQuality.improvements!.map((imp, idx) => (
+                            <ListItem key={idx}>{imp}</ListItem>
+                          ))}
+                        </List>
+                      </>
+                    )}
+                    {analysisResult.presentationQuality.feedback && (
+                      <p>{analysisResult.presentationQuality.feedback}</p>
+                    )}
+                  </DetailContent>
+                </DetailSection>
+              )}
 
-              <DetailSection>
-                <DetailTitle>Recommendations</DetailTitle>
-                <DetailContent>
-                  <List>
-                    {analysisResult.recommendations.map((recommendation, idx) => (
-                      <ListItem key={idx}>{recommendation}</ListItem>
-                    ))}
-                  </List>
-                </DetailContent>
-              </DetailSection>
+              {(analysisResult.strengths?.length ?? 0) > 0 && (
+                <DetailSection>
+                  <DetailTitle>Key Strengths</DetailTitle>
+                  <DetailContent>
+                    <List>
+                      {analysisResult.strengths!.map((s, idx) => <ListItem key={idx}>{s}</ListItem>)}
+                    </List>
+                  </DetailContent>
+                </DetailSection>
+              )}
 
-              <RecommendationBadge type={getRecommendationType(analysisResult.hiringRecommendation)}>
-                <RecommendationText>
-                  Hiring Recommendation: {analysisResult.hiringRecommendation.replace(/_/g, ' ')}
-                </RecommendationText>
-              </RecommendationBadge>
+              {(analysisResult.weaknesses?.length ?? 0) > 0 && (
+                <DetailSection>
+                  <DetailTitle>Areas for Improvement</DetailTitle>
+                  <DetailContent>
+                    <List>
+                      {analysisResult.weaknesses!.map((w, idx) => <ListItem key={idx}>{w}</ListItem>)}
+                    </List>
+                  </DetailContent>
+                </DetailSection>
+              )}
+
+              {(analysisResult.recommendations?.length ?? 0) > 0 && (
+                <DetailSection>
+                  <DetailTitle>Recommendations</DetailTitle>
+                  <DetailContent>
+                    <List>
+                      {analysisResult.recommendations!.map((r, idx) => <ListItem key={idx}>{r}</ListItem>)}
+                    </List>
+                  </DetailContent>
+                </DetailSection>
+              )}
+
+              {analysisResult.hiringRecommendation && (
+                <RecommendationBadge type={getRecommendationType(analysisResult.hiringRecommendation)}>
+                  <RecommendationText>
+                    Hiring Recommendation: {analysisResult.hiringRecommendation.replace(/_/g, ' ')}
+                  </RecommendationText>
+                </RecommendationBadge>
+              )}
 
               {selectedJobId ? (
                 <AddToJobButton
