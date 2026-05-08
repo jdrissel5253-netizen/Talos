@@ -3483,6 +3483,11 @@ async function analyzeResume(filePath, position = 'HVAC Technician', requiredYea
 
       if (ext === '.pdf') {
          resumeText = await extractTextFromPDF(filePath);
+         if (!resumeText || resumeText.trim().length < 50) {
+            const err = new Error('This PDF appears to be a scanned image and contains no extractable text. Please upload a text-based PDF.');
+            err.code = 'EMPTY_RESUME';
+            throw err;
+         }
       } else {
          // For DOC/DOCX, you'd need additional library like mammoth
          // For now, we'll handle PDF only

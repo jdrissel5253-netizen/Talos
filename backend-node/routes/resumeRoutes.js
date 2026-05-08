@@ -227,6 +227,9 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
         });
 
     } catch (error) {
+        if (error.code === 'EMPTY_RESUME') {
+            return res.status(422).json({ status: 'error', message: error.message });
+        }
         logger.error('Resume analysis error', { error: error.message, stack: error.stack });
         res.status(500).json({
             status: 'error',
