@@ -37,6 +37,7 @@ interface Candidate {
   job_title: string;
   position_type: string;
   job_location: string;
+  jobs_applied: number;
 }
 
 interface TalentPoolStats {
@@ -697,7 +698,12 @@ const TalentPoolManager: React.FC = () => {
             <StarRating>{getStars(candidate.star_rating)}</StarRating>
             {candidate.give_them_a_chance && <Badge>High Potential</Badge>}
           </CandidateName>
-          <div style={{ color: '#999', fontSize: '0.9rem' }}>{candidate.position_type} • {candidate.job_location || 'Remote/TBD'}</div>
+          <div style={{ color: '#999', fontSize: '0.9rem' }}>
+            {candidate.position_type} • {candidate.job_location || 'Remote/TBD'}
+            {candidate.jobs_applied > 1 && (
+              <span style={{ marginLeft: '0.5rem', color: '#555', fontSize: '0.8rem' }}>· {candidate.jobs_applied} jobs applied</span>
+            )}
+          </div>
         </CandidateInfo>
         <Score tier={candidate.tier}>{candidate.tier_score}</Score>
       </CandidateHeader>

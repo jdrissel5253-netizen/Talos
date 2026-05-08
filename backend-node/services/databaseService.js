@@ -806,98 +806,109 @@ const candidatePipelineService = {
     },
 
     async getTalentPool(filters = {}) {
-        let query = `
-            SELECT
-                cp.id as pipeline_id,
-                cp.candidate_id,
-                cp.job_id,
-                cp.tier,
-                cp.tier_score,
-                cp.star_rating,
-                cp.pipeline_status,
-                cp.give_them_a_chance,
-                cp.vehicle_status,
-                cp.ai_summary,
-                cp.contacted_via,
-                cp.contacted_at,
-                c.filename,
-                c.file_path,
-                c.status as candidate_status,
-                c.upload_date,
-                a.overall_score,
-                a.score_out_of_10,
-                a.summary,
-                a.years_of_experience,
-                a.certifications_found,
-                a.hiring_recommendation,
-                a.strengths,
-                a.weaknesses,
-                j.title as job_title,
-                j.position_type,
-                j.location as job_location
-            FROM candidate_pipeline cp
-            JOIN candidates c ON cp.candidate_id = c.id
-            JOIN jobs j ON cp.job_id = j.id
-            LEFT JOIN analyses a ON c.id = a.candidate_id
-            WHERE j.deleted_at IS NULL
-        `;
-
         const params = [];
         let paramIndex = 1;
 
-        // Apply filters
+        let whereClause = `WHERE j.deleted_at IS NULL`;
+
         if (filters.tier) {
-            query += ` AND cp.tier = $${paramIndex}`;
+            whereClause += ` AND cp.tier = $${paramIndex}`;
             params.push(filters.tier);
             paramIndex++;
         }
         if (filters.job_id) {
-            query += ` AND cp.job_id = $${paramIndex}`;
+            whereClause += ` AND cp.job_id = $${paramIndex}`;
             params.push(filters.job_id);
             paramIndex++;
         }
         if (filters.position) {
-            query += ` AND j.position_type = $${paramIndex}`;
+            whereClause += ` AND j.position_type = $${paramIndex}`;
             params.push(filters.position);
             paramIndex++;
         }
         if (filters.minScore !== undefined) {
-            query += ` AND cp.tier_score >= $${paramIndex}`;
+            whereClause += ` AND cp.tier_score >= $${paramIndex}`;
             params.push(filters.minScore);
             paramIndex++;
         }
         if (filters.maxScore !== undefined) {
-            query += ` AND cp.tier_score <= $${paramIndex}`;
+            whereClause += ` AND cp.tier_score <= $${paramIndex}`;
             params.push(filters.maxScore);
             paramIndex++;
         }
         if (filters.status) {
-            query += ` AND cp.pipeline_status = $${paramIndex}`;
+            whereClause += ` AND cp.pipeline_status = $${paramIndex}`;
             params.push(filters.status);
             paramIndex++;
         }
 
-        // Sorting
         const validSortFields = {
-            'score': 'cp.tier_score',
-            'date': 'c.upload_date',
-            'name': 'c.filename',
-            'position': 'j.position_type'
+            'score': 'tier_score',
+            'date': 'upload_date',
+            'name': 'filename',
+            'position': 'position_type'
         };
-        const sortField = validSortFields[filters.sortBy] || 'cp.tier_score';
+        const sortField = validSortFields[filters.sortBy] || 'tier_score';
         const sortOrder = filters.sortOrder === 'asc' ? 'ASC' : 'DESC';
-        query += ` ORDER BY ${sortField} ${sortOrder}`;
 
-        // Pagination
         const page = Math.max(1, parseInt(filters.page) || 1);
         const limit = Math.min(100, Math.max(1, parseInt(filters.limit) || 50));
         const offset = (page - 1) * limit;
-        query += ` LIMIT $${paramIndex} OFFSET $${paramIndex + 1}`;
         params.push(limit, offset);
+
+        // DISTINCT ON picks the highest-scoring entry per candidate; job_counts
+        // reflects how many jobs each candidate has applied to in total.
+        const query = `
+            WITH best AS (
+                SELECT DISTINCT ON (cp.candidate_id)
+                    cp.id as pipeline_id,
+                    cp.candidate_id,
+                    cp.job_id,
+                    cp.tier,
+                    cp.tier_score,
+                    cp.star_rating,
+                    cp.pipeline_status,
+                    cp.give_them_a_chance,
+                    cp.vehicle_status,
+                    cp.ai_summary,
+                    cp.contacted_via,
+                    cp.contacted_at,
+                    c.filename,
+                    c.file_path,
+                    c.status as candidate_status,
+                    c.upload_date,
+                    a.overall_score,
+                    a.score_out_of_10,
+                    a.summary,
+                    a.years_of_experience,
+                    a.certifications_found,
+                    a.hiring_recommendation,
+                    a.strengths,
+                    a.weaknesses,
+                    j.title as job_title,
+                    j.position_type,
+                    j.location as job_location
+                FROM candidate_pipeline cp
+                JOIN candidates c ON cp.candidate_id = c.id
+                JOIN jobs j ON cp.job_id = j.id
+                LEFT JOIN analyses a ON c.id = a.candidate_id
+                ${whereClause}
+                ORDER BY cp.candidate_id, cp.tier_score DESC
+            ),
+            job_counts AS (
+                SELECT candidate_id, COUNT(*)::int AS jobs_applied
+                FROM candidate_pipeline
+                GROUP BY candidate_id
+            )
+            SELECT best.*, jc.jobs_applied
+            FROM best
+            JOIN job_counts jc ON best.candidate_id = jc.candidate_id
+            ORDER BY ${sortField} ${sortOrder}
+            LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
+        `;
 
         const result = await db.query(query, params);
 
-        // Parse JSON fields
         return result.rows.map(row => ({
             ...row,
             certifications_found: fromJSON(row.certifications_found),
@@ -908,9 +919,15 @@ const candidatePipelineService = {
 
     async getTalentPoolStats() {
         const result = await db.query(`
-            WITH tier_stats AS (
-                SELECT tier, COUNT(*) as count, AVG(tier_score) as avg_score
+            WITH best_per_candidate AS (
+                SELECT DISTINCT ON (candidate_id)
+                    candidate_id, tier, tier_score, pipeline_status
                 FROM candidate_pipeline
+                ORDER BY candidate_id, tier_score DESC
+            ),
+            tier_stats AS (
+                SELECT tier, COUNT(*) as count, AVG(tier_score) as avg_score
+                FROM best_per_candidate
                 GROUP BY tier
             ),
             position_stats AS (
@@ -921,12 +938,12 @@ const candidatePipelineService = {
             ),
             status_stats AS (
                 SELECT pipeline_status, COUNT(*) as count
-                FROM candidate_pipeline
+                FROM best_per_candidate
                 GROUP BY pipeline_status
             ),
             total_stats AS (
-                SELECT COUNT(DISTINCT candidate_id) as total
-                FROM candidate_pipeline
+                SELECT COUNT(*) as total
+                FROM best_per_candidate
             )
             SELECT
                 (SELECT total FROM total_stats) as total,
