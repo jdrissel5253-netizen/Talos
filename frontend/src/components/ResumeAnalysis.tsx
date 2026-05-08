@@ -526,8 +526,10 @@ interface Job {
   id: number;
   title: string;
   location: string;
+  city?: string;
   required_years_experience: number;
   vehicle_required: boolean;
+  flexible_on_title?: boolean;
 }
 
 const ResumeAnalysis: React.FC = () => {
@@ -535,6 +537,7 @@ const ResumeAnalysis: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedPosition, setSelectedPosition] = useState<string>('hvac-technician');
   const [requiredYearsExperience, setRequiredYearsExperience] = useState<number>(2);
+  const [selectedJobId, setSelectedJobId] = useState<number | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisResult, setAnalysisResult] = useState<AnalysisResult | null>(null);
   const [isDragging, setIsDragging] = useState(false);
@@ -578,8 +581,12 @@ const ResumeAnalysis: React.FC = () => {
 
     const formData = new FormData();
     formData.append('resume', selectedFile);
-    formData.append('position', selectedPosition);
-    formData.append('requiredYearsExperience', requiredYearsExperience.toString());
+    if (selectedJobId) {
+      formData.append('job_id', selectedJobId.toString());
+    } else {
+      formData.append('position', selectedPosition);
+      formData.append('requiredYearsExperience', requiredYearsExperience.toString());
+    }
 
     try {
       const response = await fetch(`${config.apiUrl}/api/resume/upload`, {
@@ -610,6 +617,7 @@ const ResumeAnalysis: React.FC = () => {
     setSelectedFile(null);
     setAnalysisResult(null);
     setCandidateId(null);
+    setSelectedJobId(null);
   };
 
   // Load jobs on mount
@@ -622,7 +630,7 @@ const ResumeAnalysis: React.FC = () => {
       const response = await fetch(`${config.apiUrl}/api/jobs?userId=1`, { headers: getAuthHeaders() });
       const data = await response.json();
       if (data.status === 'success') {
-        setJobs(data.data.jobs.slice(0, 5)); // Show only first 5 jobs in preview
+        setJobs(data.data.jobs);
       }
     } catch (error) {
       console.error('Error loading jobs:', error);
@@ -718,66 +726,64 @@ const ResumeAnalysis: React.FC = () => {
           {!analysisResult ? (
             <>
               <PositionSelector>
-                <PositionLabel htmlFor="position-select">
-                  Select HVAC Position to Evaluate
+                <PositionLabel htmlFor="job-select">
+                  Analyze Against
                 </PositionLabel>
                 <PositionDropdown
-                  id="position-select"
-                  value={selectedPosition}
-                  onChange={(e) => setSelectedPosition(e.target.value)}
+                  id="job-select"
+                  value={selectedJobId ?? ''}
+                  onChange={(e) => setSelectedJobId(e.target.value ? Number(e.target.value) : null)}
                 >
-                  <option value="lead-hvac-technician">Lead HVAC Technician</option>
-                  <option value="hvac-service-technician">HVAC Service Technician</option>
-                  <option value="hvac-dispatcher">HVAC Dispatcher</option>
-                  <option value="administrative-assistant">Administrative Assistant</option>
-                  <option value="customer-service-representative">Customer Service Representative</option>
-                  <option value="hvac-installer">HVAC Installer</option>
-                  <option value="lead-hvac-installer">Lead HVAC Installer</option>
-                  <option value="maintenance-technician">Maintenance Technician</option>
-                  <option value="warehouse-associate">Warehouse Associate</option>
-                  <option value="bookkeeper">Bookkeeper</option>
-                  <option value="hvac-sales-representative">HVAC Sales Representative</option>
-                  <option value="hvac-service-manager">HVAC Service Manager</option>
-                  <option value="apprentice">Apprentice</option>
-                  <option value="hvac-project-manager">HVAC Project Manager</option>
-                  <option value="hvac-sales-engineer">HVAC Sales Engineer</option>
-                  <option value="refrigeration-technician">Refrigeration Technician</option>
-                  <option value="hvac-apprentice">HVAC Apprentice</option>
-                  <option value="commercial-hvac-tech">Commercial HVAC Technician</option>
-                  <option value="residential-hvac-tech">Residential HVAC Technician</option>
+                  <option value="">— General analysis (no specific job) —</option>
+                  {jobs.map(job => (
+                    <option key={job.id} value={job.id}>
+                      {job.title}{job.city ? ` · ${job.city}` : job.location ? ` · ${job.location}` : ''}
+                    </option>
+                  ))}
                 </PositionDropdown>
-              </PositionSelector>
-
-              <PositionSelector>
-                <PositionLabel htmlFor="years-select">
-                  Required Years of Experience
-                </PositionLabel>
-                <PositionDropdown
-                  id="years-select"
-                  value={requiredYearsExperience}
-                  onChange={(e) => setRequiredYearsExperience(Number(e.target.value))}
-                >
-                  <option value="0.5">0.5 years</option>
-                  <option value="1">1 year</option>
-                  <option value="1.5">1.5 years</option>
-                  <option value="2">2 years</option>
-                  <option value="2.5">2.5 years</option>
-                  <option value="3">3 years</option>
-                  <option value="3.5">3.5 years</option>
-                  <option value="4">4 years</option>
-                  <option value="4.5">4.5 years</option>
-                  <option value="5">5 years</option>
-                  <option value="5.5">5.5 years</option>
-                  <option value="6">6 years</option>
-                  <option value="6.5">6.5 years</option>
-                  <option value="7">7 years</option>
-                  <option value="7.5">7.5 years</option>
-                  <option value="8">8 years</option>
-                  <option value="8.5">8.5 years</option>
-                  <option value="9">9 years</option>
-                  <option value="9.5">9.5 years</option>
-                  <option value="10">10 years</option>
-                </PositionDropdown>
+                {selectedJobId && (() => {
+                  const job = jobs.find(j => j.id === selectedJobId);
+                  return job ? (
+                    <div style={{ marginTop: '0.75rem', padding: '0.75rem 1rem', background: 'rgba(74,222,128,0.06)', border: '1px solid rgba(74,222,128,0.2)', borderRadius: '6px', fontSize: '0.85rem', color: '#a3e4b8' }}>
+                      <strong style={{ color: '#4ade80' }}>{job.title}</strong>
+                      {' · '}{job.required_years_experience}+ yrs required
+                      {job.city || job.location ? ` · ${job.city || job.location}` : ''}
+                      <div style={{ marginTop: '0.25rem', fontSize: '0.75rem', color: '#6a9a7a' }}>
+                        Resume will be scored specifically for this role and added to its pipeline
+                      </div>
+                    </div>
+                  ) : null;
+                })()}
+                {!selectedJobId && (
+                  <div style={{ marginTop: '0.75rem', display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+                    <div style={{ flex: 1, minWidth: '200px' }}>
+                      <PositionLabel htmlFor="position-select" style={{ fontSize: '0.85rem' }}>Position</PositionLabel>
+                      <PositionDropdown id="position-select" value={selectedPosition} onChange={(e) => setSelectedPosition(e.target.value)}>
+                        <option value="lead-hvac-technician">Lead HVAC Technician</option>
+                        <option value="hvac-service-technician">HVAC Service Technician</option>
+                        <option value="hvac-dispatcher">HVAC Dispatcher</option>
+                        <option value="administrative-assistant">Administrative Assistant</option>
+                        <option value="customer-service-representative">Customer Service Representative</option>
+                        <option value="hvac-installer">HVAC Installer</option>
+                        <option value="lead-hvac-installer">Lead HVAC Installer</option>
+                        <option value="maintenance-technician">Maintenance Technician</option>
+                        <option value="warehouse-associate">Warehouse Associate</option>
+                        <option value="bookkeeper">Bookkeeper</option>
+                        <option value="hvac-sales-representative">HVAC Sales Representative</option>
+                        <option value="hvac-service-manager">HVAC Service Manager</option>
+                        <option value="apprentice">Apprentice</option>
+                      </PositionDropdown>
+                    </div>
+                    <div style={{ flex: '0 0 160px' }}>
+                      <PositionLabel htmlFor="years-select" style={{ fontSize: '0.85rem' }}>Req. Experience</PositionLabel>
+                      <PositionDropdown id="years-select" value={requiredYearsExperience} onChange={(e) => setRequiredYearsExperience(Number(e.target.value))}>
+                        {[0.5,1,1.5,2,2.5,3,3.5,4,5,6,7,8,10].map(y => (
+                          <option key={y} value={y}>{y} {y === 1 ? 'year' : 'years'}</option>
+                        ))}
+                      </PositionDropdown>
+                    </div>
+                  </div>
+                )}
               </PositionSelector>
 
               <UploadSection
@@ -985,9 +991,18 @@ const ResumeAnalysis: React.FC = () => {
                 </RecommendationText>
               </RecommendationBadge>
 
-              <AddToJobButton onClick={handleAddToJob}>
-                💼 Add to Job Pipeline
-              </AddToJobButton>
+              {selectedJobId ? (
+                <AddToJobButton
+                  style={{ background: '#166534', cursor: 'default' }}
+                  onClick={() => navigate('/talent-pool-manager')}
+                >
+                  ✓ Added to {jobs.find(j => j.id === selectedJobId)?.title || 'job'} pipeline — View Talent Pool →
+                </AddToJobButton>
+              ) : (
+                <AddToJobButton onClick={handleAddToJob}>
+                  💼 Add to Job Pipeline
+                </AddToJobButton>
+              )}
 
               <NewAnalysisButton onClick={handleNewAnalysis}>
                 Analyze Another Resume
