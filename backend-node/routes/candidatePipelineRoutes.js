@@ -86,6 +86,24 @@ router.get('/talent-pool/stats', async (req, res) => {
 });
 
 /**
+ * GET /api/pipeline/person-applications/:pipelineId
+ * All jobs a person applied to, looked up by any one of their pipeline IDs
+ */
+router.get('/person-applications/:pipelineId', async (req, res) => {
+    try {
+        const pipelineId = sanitize.positiveInt(req.params.pipelineId);
+        if (!pipelineId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+        }
+        const applications = await candidatePipelineService.getPersonApplications(pipelineId);
+        res.json({ status: 'success', data: applications });
+    } catch (error) {
+        logger.error('Error fetching person applications', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to fetch applications' });
+    }
+});
+
+/**
  * PUT /api/pipeline/:id/status
  * Update pipeline status for a candidate
  */

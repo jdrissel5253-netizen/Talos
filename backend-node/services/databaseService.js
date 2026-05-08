@@ -986,6 +986,31 @@ const candidatePipelineService = {
         };
     },
 
+    async getPersonApplications(pipelineId) {
+        const result = await db.query(`
+            SELECT
+                cp.id AS pipeline_id,
+                j.title AS job_title,
+                j.position_type,
+                cp.tier,
+                cp.tier_score,
+                cp.pipeline_status,
+                c.upload_date AS applied_at
+            FROM candidate_pipeline cp
+            JOIN candidates c ON cp.candidate_id = c.id
+            JOIN jobs j ON cp.job_id = j.id
+            WHERE j.deleted_at IS NULL
+              AND COALESCE(c.applicant_email, c.filename) = (
+                  SELECT COALESCE(c2.applicant_email, c2.filename)
+                  FROM candidate_pipeline cp2
+                  JOIN candidates c2 ON cp2.candidate_id = c2.id
+                  WHERE cp2.id = $1
+              )
+            ORDER BY cp.tier_score DESC
+        `, [pipelineId]);
+        return result.rows;
+    },
+
     async updateContactStatus(candidatePipelineId, isContacted, contactedVia = null) {
         let query, params;
 

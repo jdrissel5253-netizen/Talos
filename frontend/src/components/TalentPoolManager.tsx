@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
-import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2 } from 'lucide-react';
+import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2, ChevronDown, ChevronRight } from 'lucide-react';
 import ResumePreviewModal from './ResumePreviewModal';
 import ResumeFileModal from './ResumeFileModal';
 import ContactRejectionModal from './ContactRejectionModal';
@@ -38,6 +38,16 @@ interface Candidate {
   position_type: string;
   job_location: string;
   jobs_applied: number;
+}
+
+interface ApplicationEntry {
+  pipeline_id: number;
+  job_title: string;
+  position_type: string;
+  tier: 'green' | 'yellow' | 'red';
+  tier_score: number;
+  pipeline_status: string;
+  applied_at: string;
 }
 
 interface TalentPoolStats {
@@ -417,6 +427,60 @@ const ActionButton = styled.button`
   }
 `;
 
+const JobsBadge = styled.button`
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  margin-left: 0.5rem;
+  color: #4ade80;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  opacity: 0.8;
+  &:hover { opacity: 1; }
+`;
+
+const ApplicationsExpanded = styled.div`
+  margin-top: 0.75rem;
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding-top: 0.75rem;
+`;
+
+const ApplicationRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.5rem;
+  border-radius: 5px;
+  &:hover { background: rgba(255,255,255,0.03); }
+`;
+
+const AppJobTitle = styled.span`
+  font-size: 0.875rem;
+  color: #ccc;
+  flex: 1;
+`;
+
+const AppScore = styled.span<{ tier: 'green' | 'yellow' | 'red' }>`
+  font-size: 0.875rem;
+  font-weight: 700;
+  min-width: 2.5rem;
+  text-align: right;
+  color: ${p => p.tier === 'green' ? '#4ade80' : p.tier === 'yellow' ? '#fbbf24' : '#ef4444'};
+`;
+
+const AppStatus = styled.span`
+  font-size: 0.75rem;
+  color: #555;
+  margin-left: 0.75rem;
+  text-transform: capitalize;
+  min-width: 4rem;
+  text-align: right;
+`;
+
 const ActionIcon = styled.button<{ color: string }>`
   background: transparent;
   color: ${props => props.color};
@@ -527,6 +591,11 @@ const TalentPoolManager: React.FC = () => {
   const [contactCommunicationType, setContactCommunicationType] = useState<'email' | 'sms'>('email');
   const [messageDropdownOpen, setMessageDropdownOpen] = useState<number | null>(null);
 
+  // Applications expand
+  const [expandedPipelineId, setExpandedPipelineId] = useState<number | null>(null);
+  const [personApplications, setPersonApplications] = useState<{ [pipelineId: number]: ApplicationEntry[] }>({});
+  const [loadingApplications, setLoadingApplications] = useState<number | null>(null);
+
   // Gmail Connection
   const [isGmailConnected, setIsGmailConnected] = useState(false);
 
@@ -608,6 +677,27 @@ const TalentPoolManager: React.FC = () => {
       }
     } catch (err) {
       console.error('Error fetching stats:', err);
+    }
+  };
+
+  const handleToggleApplications = async (pipelineId: number) => {
+    if (expandedPipelineId === pipelineId) {
+      setExpandedPipelineId(null);
+      return;
+    }
+    setExpandedPipelineId(pipelineId);
+    if (personApplications[pipelineId]) return;
+    setLoadingApplications(pipelineId);
+    try {
+      const res = await fetch(`${config.apiUrl}/api/pipeline/person-applications/${pipelineId}`, {
+        headers: getAuthHeaders()
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setPersonApplications(prev => ({ ...prev, [pipelineId]: data.data }));
+      }
+    } finally {
+      setLoadingApplications(null);
     }
   };
 
@@ -698,10 +788,15 @@ const TalentPoolManager: React.FC = () => {
             <StarRating>{getStars(candidate.star_rating)}</StarRating>
             {candidate.give_them_a_chance && <Badge>High Potential</Badge>}
           </CandidateName>
-          <div style={{ color: '#999', fontSize: '0.9rem' }}>
+          <div style={{ color: '#999', fontSize: '0.9rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
             {candidate.position_type} • {candidate.job_location || 'Remote/TBD'}
             {candidate.jobs_applied > 1 && (
-              <span style={{ marginLeft: '0.5rem', color: '#555', fontSize: '0.8rem' }}>· {candidate.jobs_applied} jobs applied</span>
+              <JobsBadge onClick={() => handleToggleApplications(candidate.pipeline_id)}>
+                {expandedPipelineId === candidate.pipeline_id
+                  ? <ChevronDown size={13} />
+                  : <ChevronRight size={13} />}
+                {candidate.jobs_applied} jobs applied
+              </JobsBadge>
             )}
           </div>
         </CandidateInfo>
@@ -709,6 +804,20 @@ const TalentPoolManager: React.FC = () => {
       </CandidateHeader>
 
       <Summary>{candidate.ai_summary}</Summary>
+
+      {expandedPipelineId === candidate.pipeline_id && (
+        <ApplicationsExpanded>
+          {loadingApplications === candidate.pipeline_id ? (
+            <div style={{ color: '#555', fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}>Loading…</div>
+          ) : (personApplications[candidate.pipeline_id] || []).map(app => (
+            <ApplicationRow key={app.pipeline_id}>
+              <AppJobTitle>{app.job_title || app.position_type}</AppJobTitle>
+              <AppStatus>{app.pipeline_status}</AppStatus>
+              <AppScore tier={app.tier}>{app.tier_score}</AppScore>
+            </ApplicationRow>
+          ))}
+        </ApplicationsExpanded>
+      )}
 
       <MetaRow>
         <MetaItem><Calendar size={16} /> {candidate.years_of_experience} years experience</MetaItem>
