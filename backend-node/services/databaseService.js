@@ -856,11 +856,11 @@ const candidatePipelineService = {
         const offset = (page - 1) * limit;
         params.push(limit, offset);
 
-        // DISTINCT ON picks the highest-scoring entry per candidate; job_counts
-        // reflects how many jobs each candidate has applied to in total.
+        // Deduplicate by person: use applicant_email when available (public applies),
+        // fall back to filename (batch uploads). Keeps the highest-scoring entry per person.
         const query = `
             WITH best AS (
-                SELECT DISTINCT ON (cp.candidate_id)
+                SELECT DISTINCT ON (COALESCE(c.applicant_email, c.filename))
                     cp.id as pipeline_id,
                     cp.candidate_id,
                     cp.job_id,
@@ -875,6 +875,7 @@ const candidatePipelineService = {
                     cp.contacted_at,
                     c.filename,
                     c.file_path,
+                    c.applicant_email,
                     c.status as candidate_status,
                     c.upload_date,
                     a.overall_score,
@@ -887,22 +888,25 @@ const candidatePipelineService = {
                     a.weaknesses,
                     j.title as job_title,
                     j.position_type,
-                    j.location as job_location
+                    j.location as job_location,
+                    COALESCE(c.applicant_email, c.filename) AS person_key
                 FROM candidate_pipeline cp
                 JOIN candidates c ON cp.candidate_id = c.id
                 JOIN jobs j ON cp.job_id = j.id
                 LEFT JOIN analyses a ON c.id = a.candidate_id
                 ${whereClause}
-                ORDER BY cp.candidate_id, cp.tier_score DESC
+                ORDER BY COALESCE(c.applicant_email, c.filename), cp.tier_score DESC
             ),
             job_counts AS (
-                SELECT candidate_id, COUNT(*)::int AS jobs_applied
-                FROM candidate_pipeline
-                GROUP BY candidate_id
+                SELECT COALESCE(c.applicant_email, c.filename) AS person_key,
+                       COUNT(*)::int AS jobs_applied
+                FROM candidate_pipeline cp
+                JOIN candidates c ON cp.candidate_id = c.id
+                GROUP BY COALESCE(c.applicant_email, c.filename)
             )
             SELECT best.*, jc.jobs_applied
             FROM best
-            JOIN job_counts jc ON best.candidate_id = jc.candidate_id
+            JOIN job_counts jc ON best.person_key = jc.person_key
             ORDER BY ${sortField} ${sortOrder}
             LIMIT $${paramIndex} OFFSET $${paramIndex + 1}
         `;
@@ -920,10 +924,11 @@ const candidatePipelineService = {
     async getTalentPoolStats() {
         const result = await db.query(`
             WITH best_per_candidate AS (
-                SELECT DISTINCT ON (candidate_id)
-                    candidate_id, tier, tier_score, pipeline_status
-                FROM candidate_pipeline
-                ORDER BY candidate_id, tier_score DESC
+                SELECT DISTINCT ON (COALESCE(c.applicant_email, c.filename))
+                    cp.candidate_id, cp.tier, cp.tier_score, cp.pipeline_status
+                FROM candidate_pipeline cp
+                JOIN candidates c ON cp.candidate_id = c.id
+                ORDER BY COALESCE(c.applicant_email, c.filename), cp.tier_score DESC
             ),
             tier_stats AS (
                 SELECT tier, COUNT(*) as count, AVG(tier_score) as avg_score
