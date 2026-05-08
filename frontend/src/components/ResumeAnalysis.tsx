@@ -695,25 +695,25 @@ const ResumeAnalysis: React.FC = () => {
               Hide ◀
             </ToggleButton>
             <SidebarTitle>My Jobs</SidebarTitle>
-            {jobs.length === 0 ? (
-              <p style={{ color: '#999', fontSize: '0.875rem', textAlign: 'center' }}>
-                No jobs yet
-              </p>
-            ) : (
-              jobs.map(job => (
-                <JobItem key={job.id} isActive={false}>
-                  <JobItemTitle>{job.title}</JobItemTitle>
-                  <JobItemMeta><MapPin size={12} style={{ display: 'inline', marginRight: '4px' }} /> {job.location}</JobItemMeta>
-                  <JobItemMeta><Briefcase size={12} style={{ display: 'inline', marginRight: '4px' }} /> {job.required_years_experience}+ years</JobItemMeta>
-                </JobItem>
-              ))
-            )}
             <ViewAllButton onClick={() => navigate('/jobs-management')}>
               View All Jobs →
             </ViewAllButton>
             <ViewAllButton onClick={() => navigate('/talent-pool-manager')} style={{ marginTop: '0.5rem' }}>
               View Talent Pool →
             </ViewAllButton>
+            {jobs.length === 0 ? (
+              <p style={{ color: '#999', fontSize: '0.875rem', textAlign: 'center', marginTop: '1rem' }}>
+                No jobs yet
+              </p>
+            ) : (
+              jobs.map(job => (
+                <JobItem key={job.id} isActive={false} style={{ marginTop: job === jobs[0] ? '1rem' : undefined }}>
+                  <JobItemTitle>{job.title}</JobItemTitle>
+                  <JobItemMeta><MapPin size={12} style={{ display: 'inline', marginRight: '4px' }} /> {job.location}</JobItemMeta>
+                  <JobItemMeta><Briefcase size={12} style={{ display: 'inline', marginRight: '4px' }} /> {job.required_years_experience}+ years</JobItemMeta>
+                </JobItem>
+              ))
+            )}
           </>
         )}
         {isSidebarCollapsed && (
