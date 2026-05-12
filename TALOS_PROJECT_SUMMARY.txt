@@ -1,0 +1,423 @@
+================================================================================
+  TALOS WEBSITE — FULL PROJECT SUMMARY
+  Generated: 2026-04-30
+================================================================================
+
+WHAT IS TALOS?
+--------------
+Talos is an AI-powered HVAC hiring platform. Employers post HVAC jobs, candidates
+apply and upload resumes, and the system uses Claude (Anthropic AI) to score/rank
+candidates, generate job descriptions, and assist with pipeline communication.
+
+Domain: gotalos.io
+GitHub: https://github.com/jdrissel5253-netizen/Talos.git
+AWS Account: talos-deployer IAM user, us-east-1 region
+
+
+================================================================================
+  ARCHITECTURE OVERVIEW
+================================================================================
+
+FRONTEND
+--------
+  Location:     frontend/
+  Framework:    React + TypeScript (Create React App)
+  Styling:      styled-components
+  Routing:      React Router v6
+  Key deps:     lucide-react (icons), axios (HTTP)
+  Build output: frontend/build/
+  Hosting:      AWS S3 bucket (talos-hvac-frontend-387904338435)
+                + CloudFront CDN (distribution E3IMJUISUQ2J81)
+
+BACKEND
+-------
+  Location:   backend-node/
+  Framework:  Node.js + Express
+  Database:   PostgreSQL (AWS RDS in production, local pg in dev)
+  Auth:       JWT (jsonwebtoken), bcrypt for passwords
+  File store: AWS S3 (resumes uploaded by candidates)
+  AI:         Anthropic Claude API (resume analysis, job description generation)
+  Email:      AWS SES (via nodemailer) for candidate outreach
+  OAuth:      Google OAuth2 for Gmail integration
+  Hosting:    AWS Elastic Beanstalk (environment: Talos-backend-prod,
+              app name: talos-backend-v2)
+
+DATABASE (PostgreSQL)
+---------------------
+  Key tables:
+    jobs            — job postings (title, description, requirements, pay, etc.)
+    candidates      — applicants (resume S3 key, score, tier, status, email)
+    pipeline        — candidate pipeline status per job
+    communication_log — outbound emails/messages to candidates
+    audit_log       — immutable audit trail for status changes, job edits/deletes
+    users           — employer accounts (email, hashed password)
+    gmail_tokens    — stored OAuth tokens for Gmail integration
+    migrations      — schema migration tracking
+
+  Schema notes:
+    - salary_max >= salary_min enforced by CHECK constraint (NUMERIC(10,2))
+    - pay_range_max >= pay_range_min enforced by CHECK constraint
+    - applicant_email column on candidates (24-hour duplicate application block)
+    - Pipeline status changes enforced by a state machine (PIPELINE_TRANSITIONS)
+
+
+================================================================================
+  HOW TO DEPLOY
+================================================================================
+
+FRONTEND DEPLOY
+---------------
+1.  cd frontend
+2.  npm run build
+3.  aws s3 sync frontend/build/ s3://talos-hvac-frontend-387904338435 --delete
+4.  aws cloudfront create-invalidation \
+      --distribution-id E3IMJUISUQ2J81 \
+      --paths "/*"
+
+BACKEND DEPLOY
+--------------
+IMPORTANT: git archive only packages committed files. Commit all changes first.
+
+1.  git archive HEAD:backend-node --format=zip -o backend-node/talos-backend.zip
+    (NEVER use PowerShell Compress-Archive — it embeds Windows backslashes
+     and breaks Linux Elastic Beanstalk extraction)
+
+2.  aws s3 cp backend-node/talos-backend.zip \
+      s3://elasticbeanstalk-us-east-1-387904338435/talos-backend.zip
+
+3.  Deploy via AWS EB console or CLI to environment: Talos-backend-prod
+
+VERIFY AWS IDENTITY
+-------------------
+    aws sts get-caller-identity
+    (should show talos-deployer)
+
+NOTE: There is NO CI/CD pipeline. All deploys are manual.
+
+
+================================================================================
+  BACKEND FILE STRUCTURE (backend-node/)
+================================================================================
+
+  server.js               — Express app entry point, middleware setup, env validation
+  Procfile                — EB startup command (node server.js)
+  package.json            — dependencies + test/lint scripts
+
+  routes/
+    authRoutes.js         — /api/auth/* (register, login, JWT)
+    applyRoutes.js        — /api/apply (public candidate application + resume upload)
+    jobRoutes.js          — /api/jobs/* (CRUD for job postings)
+    candidatePipelineRoutes.js — /api/pipeline/* (status updates, messaging)
+    resumeRoutes.js       — /api/resume/* (S3 download, batch analysis)
+    googleAuthRoutes.js   — /api/auth/google/* (OAuth2 flow)
+    demoRoutes.js         — /api/demo (demo request capture)
+
+  services/
+    databaseService.js    — all DB query logic, sanitize helper, state machine
+    resumeAnalyzer.js     — Claude API calls for resume scoring + JD generation
+    scoringService.js     — calculateTier, calculateStarRating, adjustScoreForVehicle
+    auditService.js       — auditLog.log() — writes to audit_log table
+    logger.js             — structured logging (JSON in prod, human-readable in dev)
+
+  database/
+    database-pg.js        — PostgreSQL connection pool (pg)
+    init-db-pg.js         — DB initialization script
+    run-all-migrations.js — runs pending migrations in order
+
+  scripts/
+    (various one-off migration and utility scripts)
+
+  tests/
+    scoringService.test.js — 36 Jest tests
+    sanitize.test.js       — 37 Jest tests
+
+
+================================================================================
+  FRONTEND FILE STRUCTURE (frontend/src/)
+================================================================================
+
+  config.ts               — API base URL config (empty in dev → uses proxy)
+  App.tsx                 — routing setup
+
+  components/
+    Home.tsx              — landing page
+    Login.tsx             — employer login
+    ClientDashboard.tsx   — main employer dashboard (stats, quick links)
+    JobsManagement.tsx    — job list + full candidate pipeline (ops console design)
+    AddJobForm.tsx        — modal to create a new job
+    EditJobModal.tsx      — modal to edit an existing job
+    CandidateRanking.tsx  — leaderboard view of ranked candidates
+    CandidateProfile.tsx  — individual candidate detail page
+    CandidateMessages.tsx — outbound messaging / contact log
+    CandidateListScreen.tsx — list view of candidates for a job
+    ContactRejectionModal.tsx — compose contact/rejection email modal
+    TalentPool.tsx        — saved talent pool management
+    TalentPoolHome.tsx    — talent pool landing
+    TalentPoolManager.tsx — add/remove candidates from pool
+    BatchResumeAnalysis.tsx — bulk upload + AI analysis UI
+    ResumeAnalysis.tsx    — single resume analysis view
+    ResumeFileModal.tsx   — in-app resume PDF viewer
+    ResumePreviewModal.tsx — quick resume preview overlay
+    JobDescriptionWriter.tsx — AI-powered JD generator
+    HVACInsights.tsx      — HVAC industry data/insights page
+    WhyTalos.tsx          — marketing page
+    WhyTalosDifferent.tsx — feature comparison page
+    PublicApply.tsx       — public-facing candidate application form
+    PublicJobDetail.tsx   — public job posting detail
+    PublicJobList.tsx     — public job board
+    GoogleAuthHandler.tsx — handles OAuth redirect callback
+    DemoModal.tsx         — demo request form
+    Header.tsx / Footer.tsx — nav and footer
+    HeroSection.tsx / ContentSections.tsx / AirflowAnimation.tsx — landing UI
+    SuggestedJobMatches.tsx — candidate job match suggestions
+    JobSelectionScreen.tsx — job selection UI
+    ExpandedCandidateProfile.tsx — expanded profile overlay
+    ScrollToTop.tsx       — router scroll reset utility
+
+
+================================================================================
+  KEY API ENDPOINTS
+================================================================================
+
+  POST /api/auth/register          — create employer account
+  POST /api/auth/login             — get JWT token
+  GET  /api/auth/google/url        — get Google OAuth URL (redirects)
+  GET  /api/auth/google/callback   — OAuth callback, persist token
+
+  POST /api/apply                  — submit application + resume (multipart)
+  GET  /api/jobs                   — list jobs (auth required)
+  POST /api/jobs                   — create job
+  PUT  /api/jobs/:id               — update job
+  DELETE /api/jobs/:id             — delete job
+  POST /api/jobs/generate-description — AI-generate job description
+
+  GET  /api/pipeline/:jobId        — get candidates for a job
+  PUT  /api/pipeline/:id/status    — update candidate pipeline status
+  PUT  /api/pipeline/bulk-status   — bulk status update
+  POST /api/pipeline/contact       — send email to candidate
+
+  GET  /api/resume/:candidateId    — download resume from S3
+  POST /api/resume/batch-analyze   — bulk AI analysis trigger
+
+  GET  /api/health                 — health check (pings DB, returns 200/503)
+  GET  /api/candidate/:id          — get candidate profile
+
+  POST /api/demo                   — capture demo request
+
+
+================================================================================
+  PIPELINE STATUS STATE MACHINE
+================================================================================
+
+  Valid statuses: new → reviewed → approved → contacted → backup → rejected
+
+  Allowed transitions (PIPELINE_TRANSITIONS in databaseService.js):
+    new       → reviewed, approved, backup, rejected
+    reviewed  → approved, backup, rejected
+    approved  → contacted, backup, rejected
+    contacted → backup, rejected
+    backup    → approved, contacted, rejected
+    rejected  → backup
+
+  Enforced server-side on both single and bulk status updates.
+
+
+================================================================================
+  SECURITY WORK COMPLETED (all 10 audit sections)
+================================================================================
+
+SECTION 5 — Input Validation
+  - sanitize helper: trimString, email, phone, enumValue, positiveInt, nonNegativeNumber
+  - All routes validate and sanitize inputs before DB queries
+  - Auth: email format check, password min 8 chars
+  - Apply: email/phone format, max lengths, per-field errors
+  - Jobs: title required, all strings trimmed + max lengths, numeric validation
+  - Pipeline: enum validation on status/tier/communicationType
+  - Anthropic API: 3-attempt exponential backoff (1s/2s/4s)
+  - Frontend: on-blur validation, inline errors, response.ok checks everywhere
+
+SECTION 6 — Data Integrity
+  - Pipeline state machine enforced server-side (no invalid transitions)
+  - Salary/pay fields: NUMERIC(10,2) with CHECK constraints in DB
+  - Pay range min <= max validated in job routes
+  - Duplicate application block: 24-hour window per email+job
+  - audit_log table: immutable record of status changes, job edits/deletes
+  - scoringService.js: extracted shared scoring logic (no duplication)
+  - processResumeInBackground: DB ops wrapped in PostgreSQL transaction
+  - Email: log-before-send pattern (pending → sent/failed)
+
+SECTION 7 — Logging & Observability
+  - logger.js: levels (debug/info/warn/error), LOG_LEVEL env var,
+    structured JSON in prod, human-readable in dev, redact() helper
+  - Request ID middleware: X-Request-Id header on every response,
+    request_end log with method/url/status/duration
+  - Process-level: uncaughtException (exit 1), unhandledRejection handlers
+  - /api/health: pings DB, 200 vs 503
+  - PII removed from all logs (candidateId/jobId only, no name/email/phone)
+  - All console.log migrated to logger (CLI scripts intentionally kept on console)
+
+SECTION 8 — Security Hardening
+  - Startup env validation: JWT_SECRET, ANTHROPIC_API_KEY always required;
+    DB_HOST, DB_PASSWORD required in production — crash-early on missing
+  - JWT secret hardcoded fallback removed
+  - Helmet: CSP, HSTS 1yr + preload, frameguard deny, strict referrer policy
+  - HTTPS enforcement via x-forwarded-proto in production (AWS ALB compatible)
+  - DB SSL: rejectUnauthorized=true by default
+  - CORS: HTTP S3 origin removed from production allowlist
+  - Root / endpoint no longer leaks environment name
+
+SECTION 9 — Documentation
+  - README.md rewritten (accurate stack, API table, state machine diagram,
+    deploy steps, design decisions)
+  - backend-node/.env.example: all ~20 env vars documented with descriptions
+  - .eslintrc.json: eslint:recommended + no-unused-vars, eqeqeq, no-var,
+    prefer-const
+
+SECTION 10 — Accessibility (ARIA)
+  - PublicApply.tsx: htmlFor/id pairs, aria-invalid, aria-describedby,
+    aria-hidden decoratives, aria-label on buttons, role="alert/status"
+  - ContactRejectionModal.tsx: role="dialog", aria-modal, aria-labelledby,
+    focus lands inside modal, aria-pressed on toggle buttons
+  - AddJobForm.tsx: role="dialog", aria-modal, aria-labelledby, proper focus
+
+SECTION 11 — Testing (Jest)
+  - Jest 29, testEnvironment node, coverage from services + routes
+  - tests/scoringService.test.js: 36 tests
+    (calculateTier boundaries, calculateStarRating, adjustScoreForVehicle)
+  - tests/sanitize.test.js: 37 tests
+    (all 6 sanitize helpers — null/edge/truncation/unicode/format cases)
+  - All 73 tests pass in ~0.5s
+
+
+================================================================================
+  FEATURE WORK COMPLETED
+================================================================================
+
+INFRASTRUCTURE
+  - Migrated resume storage from local disk to AWS S3
+    (upload on apply, download on demand via signed/direct fetch)
+  - Fixed S3 stream pipe (transformToByteArray → stream pipe)
+  - Google OAuth: token persisted in DB, simplified flow,
+    /api/auth/google/url now redirects instead of returning JSON
+
+AI FEATURES
+  - Resume scoring: Claude analyzes resume vs. job requirements,
+    returns score (0-100), tier (green/yellow/red), star rating (1-5)
+  - Job description writer: AI generates structured JD from job details
+  - Bulk resume analysis endpoint
+  - Scoring uses actual job data (position type, years, location)
+    — was previously hardcoded
+
+CANDIDATE PIPELINE
+  - Full pipeline UI in JobsManagement: tabs (all/approved/contacted/backup/rejected)
+  - ContactRejectionModal: compose emails, scheduling links, communication type
+  - CandidateProfile page: resume preview, status control, talent pool link
+  - Talent pool: save candidates, remove button, resume quick preview
+
+FRONTEND REDESIGNS (all pages)
+  - Dashboard: premium SaaS, sticky nav, JetBrains Mono stats
+  - Jobs Management: ops console aesthetic (amber/dark)
+  - Candidate Ranking: leaderboard hero, tier rows, formula protected
+  - Candidate Messages: warm editorial aesthetic
+  - Talent Pool: mission control aesthetic
+  - HVAC Insights: dark newspaper broadsheet aesthetic
+  - Job Description Writer: product showcase with live preview
+  - Why Talos: editorial luxury aesthetic
+  - Why Talos Different: precision table layout
+  - Client Dashboard: lighter backgrounds, improved contrast
+
+BUG FIXES
+  - Job description: markdown stripping, Requirements section, cert injection
+  - Candidate profile: removed non-existent columns (s3_key, applicant_name,
+    applicant_phone) from query
+  - Resume preview: fetch as blob to bypass X-Frame-Options
+  - sendFile: 404 instead of hanging when file not found
+  - Resume scoring: use job's actual position type/years/location
+
+
+================================================================================
+  ENVIRONMENT VARIABLES (backend-node/.env)
+================================================================================
+
+  PORT                        — Express listen port (default 8080)
+  NODE_ENV                    — 'production' or 'development'
+  JWT_SECRET                  — REQUIRED: signs auth tokens
+  ANTHROPIC_API_KEY           — REQUIRED: Claude API
+  DB_HOST                     — REQUIRED in prod: RDS endpoint
+  DB_PORT                     — default 5432
+  DB_NAME                     — database name
+  DB_USER                     — DB username
+  DB_PASSWORD                 — REQUIRED in prod
+  DB_SSL_REJECT_UNAUTHORIZED  — 'false' to disable SSL cert validation (RDS)
+  AWS_ACCESS_KEY_ID           — S3 access
+  AWS_SECRET_ACCESS_KEY       — S3 secret
+  AWS_REGION                  — e.g. us-east-1
+  AWS_S3_BUCKET               — resume storage bucket name
+  GOOGLE_CLIENT_ID            — OAuth2 client ID
+  GOOGLE_CLIENT_SECRET        — OAuth2 client secret
+  GOOGLE_REDIRECT_URI         — OAuth2 callback URL
+  LOG_LEVEL                   — debug/info/warn/error (default: info)
+  EMAIL_FROM                  — SES sender address
+  FRONTEND_URL                — for CORS allowlist
+
+  See backend-node/.env.example for full documented list.
+
+
+================================================================================
+  LOCAL DEVELOPMENT SETUP
+================================================================================
+
+BACKEND
+  cd backend-node
+  npm install
+  cp .env.example .env       # fill in values
+  node database/init-db-pg.js
+  node server.js             # runs on PORT (default 8080)
+
+FRONTEND
+  cd frontend
+  npm install
+  npm start                  # dev server on :3000
+                             # proxies API calls to gotalos.io (prod backend)
+                             # change proxy in package.json for local backend
+
+TESTS
+  cd backend-node
+  npm test                   # runs Jest (73 tests)
+  npm run test:watch         # watch mode
+
+LINT
+  cd backend-node
+  npm run lint               # ESLint check
+
+
+================================================================================
+  WHAT'S ON GITHUB
+================================================================================
+
+  Repo: https://github.com/jdrissel5253-netizen/Talos.git
+  Branch: main (fully up to date as of 2026-04-30)
+
+  Latest commits (most recent first):
+    Redesign Jobs Management page — ops console aesthetic
+    Redesign HVAC Insights page — dark newspaper broadsheet aesthetic
+    Redesign Talent Pool page — mission control aesthetic
+    Align Candidate Messages colors with site palette
+    Redesign Candidate Messages page — warm editorial aesthetic
+    Fix candidate profile query — remove non-existent columns
+    Flesh out candidate profile — resume preview, status control, talent pool link
+    Add candidate profile page — backend endpoint + frontend component
+    Brighten dashboard — lighter backgrounds, increased border and text contrast
+    Redesign dashboard — premium SaaS aesthetic, sticky nav bar, JetBrains Mono stats
+    Redesign Candidate Ranking page — leaderboard hero, protect formula, tier rows
+    Redesign Job Description Writer page — product showcase with live preview
+    Redesign Why Talos Different page — precision table layout, editorial hero
+    Redesign Why Talos page — editorial luxury aesthetic
+    Fix /api/auth/google/url to redirect instead of returning JSON
+    Persist Gmail token in DB, simplify OAuth flow
+    Fix downloadResumeToTemp: use stream pipe instead of transformToByteArray
+    Fix: pass s3Key to processResumeInBackground instead of req.file.path
+    Migrate resume storage from local disk to S3
+    ... (and all prior security audit commits)
+
+================================================================================
