@@ -1,0 +1,228 @@
+================================================================================
+  LAPTOP CLAUDE TALOS PLAYBOOK
+  For setting up and developing Talos (gotalos.io) on a new device
+================================================================================
+
+
+================================================================================
+  STEP 1 — CLONE THE REPO
+================================================================================
+
+  git clone https://github.com/jdrissel5253-netizen/Talos.git
+  cd Talos
+
+
+================================================================================
+  STEP 2 — INSTALL DEPENDENCIES
+================================================================================
+
+  Backend:
+    cd backend-node
+    npm install
+
+  Frontend:
+    cd ../frontend
+    npm install
+
+
+================================================================================
+  STEP 3 — SET UP THE BACKEND .env FILE
+================================================================================
+
+  Create backend-node/.env (never commit this file — it's gitignored).
+  Reference backend-node/.env.example for the full list. Key values:
+
+  NODE_ENV=development
+
+  JWT_SECRET=<long random string, min 32 chars>
+    → Generate one: node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
+    → Use the SAME value as production or JWTs won't be compatible
+
+  ANTHROPIC_API_KEY=<your Anthropic API key>
+    → Get from: https://console.anthropic.com
+
+  USE_POSTGRES=false
+    → In dev, the app uses a local SQLite file. No DB setup needed unless
+      you set this to true and configure the PG vars below.
+
+  DB_HOST=localhost
+  DB_PORT=5432
+  DB_NAME=talos
+  DB_USER=postgres
+  DB_PASSWORD=<your local postgres password>
+    → Only needed if USE_POSTGRES=true
+
+  GOOGLE_CLIENT_ID=<from Google Cloud Console>
+  GOOGLE_CLIENT_SECRET=<from Google Cloud Console>
+  GOOGLE_REDIRECT_URI=http://localhost:3000/auth/google/callback
+    → Only needed if testing Gmail OAuth integration
+
+  LOG_LEVEL=debug
+    → Use 'debug' locally for full request logging
+
+
+================================================================================
+  STEP 4 — SET UP AWS CLI (for deploying)
+================================================================================
+
+  Install AWS CLI if not already installed:
+    https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+
+  Configure with talos-deployer credentials:
+    aws configure
+    → AWS Access Key ID:     <talos-deployer key>
+    → AWS Secret Access Key: <talos-deployer secret>
+    → Default region:        us-east-1
+    → Default output format: json
+
+  Verify:
+    aws sts get-caller-identity
+    → Should show talos-deployer
+
+
+================================================================================
+  STEP 5 — RUN LOCALLY
+================================================================================
+
+  Backend (from backend-node/):
+    npm start
+    → Runs on http://localhost:8080
+
+  Frontend (from frontend/):
+    npm start
+    → Runs on http://localhost:3000
+    → Proxies API calls to localhost:8080 (configured in package.json)
+
+
+================================================================================
+  DEPLOYING — FRONTEND
+================================================================================
+
+  1. Build:
+       cd frontend
+       npm run build
+
+  2. Sync to S3:
+       aws s3 sync build/ s3://talos-hvac-frontend-387904338435 --delete
+
+  3. Invalidate CloudFront cache:
+       aws cloudfront create-invalidation --distribution-id E3IMJUISUQ2J81 --paths "/*"
+
+
+================================================================================
+  DEPLOYING — BACKEND
+================================================================================
+
+  IMPORTANT: git archive only packages committed files. Commit ALL changes first.
+
+  1. Package the backend:
+       git archive HEAD:backend-node --format=zip -o backend-node/talos-backend.zip
+
+       *** NEVER use PowerShell Compress-Archive — it embeds Windows backslashes
+           and breaks extraction on Linux (Elastic Beanstalk). Always use git archive. ***
+
+  2. Upload to S3:
+       aws s3 cp backend-node/talos-backend.zip s3://elasticbeanstalk-us-east-1-387904338435/talos-backend.zip
+
+  3. Deploy to Elastic Beanstalk:
+       → EB Environment: Talos-backend-prod
+       → EB App name:    talos-backend-v2
+       → Deploy via AWS EB console or CLI
+
+  There is NO CI/CD pipeline — all deploys are manual.
+
+
+================================================================================
+  KEY AWS RESOURCES
+================================================================================
+
+  Frontend S3 bucket:   talos-hvac-frontend-387904338435
+  CloudFront dist ID:   E3IMJUISUQ2J81
+  EB S3 bucket:         elasticbeanstalk-us-east-1-387904338435
+  EB environment:       Talos-backend-prod
+  EB app name:          talos-backend-v2
+  Region:               us-east-1
+  IAM user:             talos-deployer
+  Domain:               gotalos.io
+  GitHub:               https://github.com/jdrissel5253-netizen/Talos.git
+
+
+================================================================================
+  PROJECT STRUCTURE OVERVIEW
+================================================================================
+
+  backend-node/
+    server.js                     — Express entry point
+    routes/
+      authRoutes.js               — /api/auth/* (login, register, JWT)
+      applyRoutes.js              — /api/apply (public application + resume upload)
+      jobRoutes.js                — /api/jobs/* (job CRUD)
+      candidatePipelineRoutes.js  — /api/pipeline/* (status updates, messaging)
+      resumeRoutes.js             — /api/resume/* (S3 download, batch analysis)
+      googleAuthRoutes.js         — /api/auth/google/* (OAuth2)
+      demoRoutes.js               — /api/demo
+    services/
+      databaseService.js          — all DB logic, sanitize helper, state machine
+      resumeAnalyzer.js           — Claude API (resume scoring, JD generation)
+      scoringService.js           — calculateTier, calculateStarRating, adjustScoreForVehicle
+      auditService.js             — writes to audit_log table
+      logger.js                   — structured logging
+    database/
+      database-pg.js              — PostgreSQL connection pool
+      init-db-pg.js               — DB init script
+      run-all-migrations.js       — runs pending migrations in order
+    tests/
+      scoringService.test.js      — 36 Jest tests
+      sanitize.test.js            — 37 Jest tests
+
+  frontend/src/
+    config.ts                     — API base URL config
+    App.tsx                       — routing
+    components/
+      Home.tsx                    — landing page
+      Login.tsx                   — employer login
+      ClientDashboard.tsx         — main employer dashboard
+      JobsManagement.tsx          — job list + candidate pipeline
+      AddJobForm.tsx              — create job modal
+      EditJobModal.tsx            — edit job modal
+      CandidateRanking.tsx        — ranked candidate leaderboard
+      TalentPool.tsx              — deduped talent pool view
+      CandidateProfile.tsx        — individual candidate profile page
+      ResumeAnalyzer.tsx          — standalone resume upload + AI scoring tool
+      PublicApply.tsx             — public-facing candidate application form
+      ContactRejectionModal.tsx   — email/SMS/reject modal
+
+
+================================================================================
+  TELLING CLAUDE CODE ABOUT THE PROJECT
+================================================================================
+
+  When starting a session on the new laptop, you can give Claude Code full
+  context by saying:
+
+    "We're working on the Talos HVAC hiring platform (gotalos.io).
+     Backend is Node.js/Express in backend-node/, frontend is React/TypeScript
+     in frontend/. Check TALOS_PROJECT_SUMMARY.txt for full architecture details."
+
+  The CLAUDE.md and memory system will also load automatically if they exist.
+
+
+================================================================================
+  QUICK REFERENCE — USEFUL COMMANDS
+================================================================================
+
+  Run backend tests:
+    cd backend-node && npm test
+
+  Lint backend:
+    cd backend-node && npm run lint
+
+  Check AWS identity:
+    aws sts get-caller-identity
+
+  Check git status before deploying:
+    git status
+    git log --oneline -5
+
+  Generate a JWT secret:
+    node -e "console.log(require('crypto').randomBytes(48).toString('hex'))"
