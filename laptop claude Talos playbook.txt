@@ -5,6 +5,44 @@
 
 
 ================================================================================
+  STEP 0 — INSTALL PREREQUISITES (if not already installed)
+================================================================================
+
+  Node.js (includes npm):
+    https://nodejs.org → download the LTS version and install
+
+  Git:
+    https://git-scm.com/downloads → download and install
+
+  AWS CLI:
+    https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html
+
+  Claude Code (optional, for AI-assisted development):
+    npm install -g @anthropic/claude-code
+
+
+================================================================================
+  CREDENTIALS YOU NEED BEFORE STARTING
+================================================================================
+
+  You'll need these — they are NOT in the repo. Find them in your password
+  manager or existing .env file on your main machine:
+
+  1. JWT_SECRET
+       → Check your current machine's backend-node/.env
+
+  2. ANTHROPIC_API_KEY
+       → Log in at https://console.anthropic.com → API Keys
+
+  3. talos-deployer AWS Access Key ID + Secret Access Key
+       → AWS Console → IAM → Users → talos-deployer → Security credentials
+       → Or check ~/.aws/credentials on your main machine
+
+  4. GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET (only needed for Gmail OAuth)
+       → https://console.cloud.google.com → APIs & Services → Credentials
+
+
+================================================================================
   STEP 1 — CLONE THE REPO
 ================================================================================
 
