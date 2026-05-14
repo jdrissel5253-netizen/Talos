@@ -811,6 +811,12 @@ const candidatePipelineService = {
 
         let whereClause = `WHERE j.deleted_at IS NULL`;
 
+        if (filters.userId) {
+            whereClause += ` AND j.user_id = $${paramIndex}`;
+            params.push(filters.userId);
+            paramIndex++;
+        }
+
         if (filters.tier) {
             whereClause += ` AND cp.tier = $${paramIndex}`;
             params.push(filters.tier);
@@ -921,13 +927,19 @@ const candidatePipelineService = {
         }));
     },
 
-    async getTalentPoolStats() {
+    async getTalentPoolStats(userId = null) {
+        const params = [];
+        const userFilter = userId ? `AND j.user_id = $1` : '';
+        if (userId) params.push(userId);
+
         const result = await db.query(`
             WITH best_per_candidate AS (
                 SELECT DISTINCT ON (COALESCE(c.applicant_email, c.filename))
                     cp.candidate_id, cp.tier, cp.tier_score, cp.pipeline_status
                 FROM candidate_pipeline cp
                 JOIN candidates c ON cp.candidate_id = c.id
+                JOIN jobs j ON cp.job_id = j.id
+                WHERE j.deleted_at IS NULL ${userFilter}
                 ORDER BY COALESCE(c.applicant_email, c.filename), cp.tier_score DESC
             ),
             tier_stats AS (
@@ -938,7 +950,9 @@ const candidatePipelineService = {
             position_stats AS (
                 SELECT j.position_type, COUNT(DISTINCT cp.candidate_id) as count
                 FROM candidate_pipeline cp
+                JOIN candidates c ON cp.candidate_id = c.id
                 JOIN jobs j ON cp.job_id = j.id
+                WHERE j.deleted_at IS NULL ${userFilter}
                 GROUP BY j.position_type
             ),
             status_stats AS (
@@ -955,7 +969,7 @@ const candidatePipelineService = {
                 (SELECT json_agg(json_build_object('tier', tier, 'count', count, 'avg_score', avg_score)) FROM tier_stats) as tier_data,
                 (SELECT json_agg(json_build_object('position_type', position_type, 'count', count)) FROM position_stats) as position_data,
                 (SELECT json_agg(json_build_object('pipeline_status', pipeline_status, 'count', count)) FROM status_stats) as status_data
-        `);
+        `, params);
 
         const row = result.rows[0];
         const tierData = row.tier_data || [];
@@ -1111,6 +1125,26 @@ const candidatePipelineService = {
             [pipelineId]
         );
         return result.rows[0] || null;
+    },
+
+    async getPipelineJobUserId(pipelineId) {
+        const result = await db.query(
+            `SELECT j.user_id FROM candidate_pipeline cp
+             JOIN jobs j ON cp.job_id = j.id
+             WHERE cp.id = $1`,
+            [pipelineId]
+        );
+        return result.rows[0]?.user_id ?? null;
+    },
+
+    async verifyPipelineOwnership(pipelineIds, userId) {
+        const result = await db.query(
+            `SELECT cp.id FROM candidate_pipeline cp
+             JOIN jobs j ON cp.job_id = j.id
+             WHERE cp.id = ANY($1) AND j.user_id != $2`,
+            [pipelineIds, userId]
+        );
+        return result.rows.length === 0;
     },
 
     async getCandidateProfile(pipelineId) {

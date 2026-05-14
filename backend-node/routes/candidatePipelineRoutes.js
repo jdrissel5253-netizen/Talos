@@ -10,6 +10,16 @@ const anthropic = new Anthropic({
     apiKey: process.env.ANTHROPIC_API_KEY
 });
 
+async function assertPipelineOwner(pipelineId, user) {
+    if (user.role === 'admin') return;
+    const ownerUserId = await candidatePipelineService.getPipelineJobUserId(pipelineId);
+    if (ownerUserId === null || ownerUserId !== user.userId) {
+        const err = new Error('Access denied');
+        err.statusCode = 403;
+        throw err;
+    }
+}
+
 /**
  * GET /api/pipeline/talent-pool
  * Get all candidates in the talent pool with filtering and sorting
@@ -34,7 +44,10 @@ router.get('/talent-pool', async (req, res) => {
         const parsedMinScore = minScore ? sanitize.nonNegativeNumber(minScore) : undefined;
         const parsedMaxScore = maxScore ? sanitize.nonNegativeNumber(maxScore) : undefined;
 
+        const userId = req.user.role === 'admin' ? undefined : req.user.userId;
+
         const talentPool = await candidatePipelineService.getTalentPool({
+            userId,
             tier: tier ? sanitize.enumValue(tier, validTiers) : undefined,
             position: position ? sanitize.trimString(position, 100) : undefined,
             minScore: parsedMinScore !== null ? Math.min(parsedMinScore || 0, 100) : undefined,
@@ -70,7 +83,8 @@ router.get('/talent-pool', async (req, res) => {
  */
 router.get('/talent-pool/stats', async (req, res) => {
     try {
-        const stats = await candidatePipelineService.getTalentPoolStats();
+        const userId = req.user.role === 'admin' ? null : req.user.userId;
+        const stats = await candidatePipelineService.getTalentPoolStats(userId);
 
         res.json({
             status: 'success',
@@ -119,6 +133,8 @@ router.put('/:id/status', async (req, res) => {
             return res.status(400).json({ status: 'error', message: 'Valid status is required (new, approved, contacted, backup, rejected)' });
         }
 
+        await assertPipelineOwner(pipelineId, req.user);
+
         const updated = await candidatePipelineService.updateStatus(pipelineId, status);
 
         res.json({
@@ -148,6 +164,13 @@ router.post('/bulk-update', async (req, res) => {
                 status: 'error',
                 message: 'candidatePipelineIds must be a non-empty array'
             });
+        }
+
+        if (req.user.role !== 'admin') {
+            const owned = await candidatePipelineService.verifyPipelineOwnership(candidatePipelineIds, req.user.userId);
+            if (!owned) {
+                return res.status(403).json({ status: 'error', message: 'Access denied' });
+            }
         }
 
         const updated = await candidatePipelineService.bulkUpdateStatus(candidatePipelineIds, status);
@@ -213,6 +236,8 @@ router.post('/:id/message', async (req, res) => {
                 message: 'A valid recipient email is required'
             });
         }
+
+        await assertPipelineOwner(pipelineId, req.user);
 
         // Step 1: Log communication with 'pending' status BEFORE sending
         const commLog = await candidatePipelineService.logCommunication(
@@ -280,6 +305,8 @@ router.post('/:id/reject', async (req, res) => {
         if (!pipelineId) {
             return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
         }
+
+        await assertPipelineOwner(pipelineId, req.user);
 
         // Update pipeline_status to 'rejected'
         await candidatePipelineService.updateStatus(pipelineId, 'rejected');
@@ -408,6 +435,8 @@ router.put('/:id/contact-status', async (req, res) => {
         }
         const { isContacted, contactedVia } = req.body;
 
+        await assertPipelineOwner(pipelineId, req.user);
+
         const updated = await candidatePipelineService.updateContactStatus(
             pipelineId,
             isContacted,
@@ -462,6 +491,9 @@ router.delete('/:id', async (req, res) => {
         if (!pipelineId) {
             return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
         }
+
+        await assertPipelineOwner(pipelineId, req.user);
+
         const removed = await candidatePipelineService.removeFromPipeline(pipelineId);
         if (!removed) {
             return res.status(404).json({ status: 'error', message: 'Candidate not found in pipeline' });
