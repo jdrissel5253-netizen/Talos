@@ -13,6 +13,7 @@ const LoginContainer = styled.div`
   background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
   position: relative;
   overflow: hidden;
+  padding: 1rem;
 
   &::before {
     content: '';
@@ -35,6 +36,12 @@ const LoginCard = styled.div`
   max-width: 400px;
   z-index: 2;
   position: relative;
+  box-sizing: border-box;
+
+  @media (max-width: 480px) {
+    padding: 1.75rem 1.25rem;
+    border-radius: 8px;
+  }
 `;
 
 const LogoSection = styled.div`

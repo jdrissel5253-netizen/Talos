@@ -76,11 +76,11 @@ const LeftPanel = styled.div<{ isCollapsed: boolean }>`
 
     @media (max-width: 768px) {
         position: fixed;
-        left: ${props => props.isCollapsed ? '-320px' : '0'};
+        left: ${props => props.isCollapsed ? '-100vw' : '0'};
         top: 0;
         bottom: 0;
         z-index: 1000;
-        width: 300px;
+        width: min(300px, 85vw);
     }
 `;
 
