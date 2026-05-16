@@ -54,12 +54,25 @@ const USE_POSTGRES = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV
             if (tables.length < 6) {
                 logger.warn('Some tables are missing. Run: node database/migrations/run-all-migrations.js');
             }
-            // Auto-create system_settings table if missing
+            // Auto-create tables that may not exist yet
             await db.query(`
                 CREATE TABLE IF NOT EXISTS system_settings (
                     key VARCHAR(255) PRIMARY KEY,
                     value TEXT,
                     updated_at TIMESTAMPTZ DEFAULT NOW()
+                )
+            `);
+            await db.query(`
+                CREATE TABLE IF NOT EXISTS demo_requests (
+                    id SERIAL PRIMARY KEY,
+                    first_name VARCHAR(100),
+                    last_name VARCHAR(100),
+                    email VARCHAR(255) NOT NULL,
+                    company VARCHAR(255),
+                    phone VARCHAR(50),
+                    company_size VARCHAR(50),
+                    current_challenges TEXT,
+                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
                 )
             `);
         } else {
@@ -280,17 +293,47 @@ app.get('/sitemap.xml', feedLimiter, async (req, res) => {
     }
 });
 
-app.post('/api/demo-request', (req, res) => {
-    logger.info('Demo request received', { timestamp: new Date().toISOString() });
+app.post('/api/demo-request', async (req, res) => {
+    try {
+        const { firstName, lastName, email, company, phone, companySize, currentChallenges } = req.body;
 
-    // Simulate processing delay
-    setTimeout(() => {
-        res.json({
-            message: 'Demo request submitted successfully',
-            status: 'success',
-            id: Math.random().toString(36).substr(2, 9)
-        });
-    }, 500);
+        if (!email) {
+            return res.status(400).json({ status: 'error', message: 'Email is required' });
+        }
+
+        // Persist to DB
+        const result = await db.query(
+            `INSERT INTO demo_requests (first_name, last_name, email, company, phone, company_size, current_challenges)
+             VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id`,
+            [firstName || null, lastName || null, email, company || null, phone || null, companySize || null, currentChallenges || null]
+        );
+
+        logger.info('Demo request saved', { id: result.rows[0].id });
+
+        // Notify owner (fire-and-forget)
+        const notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL;
+        if (notifyEmail) {
+            const gmailService = require('./services/gmailService');
+            gmailService.sendEmail({
+                to: notifyEmail,
+                subject: `Demo request: ${firstName || ''} ${lastName || ''} — ${company || email}`.trim(),
+                html: `<p>Someone requested a Talos demo.</p>
+<ul>
+  <li><strong>Name:</strong> ${firstName || ''} ${lastName || ''}</li>
+  <li><strong>Email:</strong> ${email}</li>
+  <li><strong>Company:</strong> ${company || '(not provided)'}</li>
+  <li><strong>Phone:</strong> ${phone || '(not provided)'}</li>
+  <li><strong>Company size:</strong> ${companySize || '(not provided)'}</li>
+  <li><strong>Challenges:</strong> ${currentChallenges || '(not provided)'}</li>
+</ul>`
+            }).catch(err => logger.warn('Demo request notification email failed', { error: err.message }));
+        }
+
+        res.json({ status: 'success', message: 'Demo request submitted successfully', id: result.rows[0].id });
+    } catch (error) {
+        logger.error('Demo request error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to submit demo request' });
+    }
 });
 
 // Error handling middleware
