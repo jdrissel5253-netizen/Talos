@@ -198,7 +198,10 @@ const Header: React.FC = () => {
 
       <ButtonGroup>
         {isLoggedIn() ? (
-          <LoginButton onClick={() => { clearToken(); navigate('/login'); }}>Logout</LoginButton>
+          <>
+            <LoginButton onClick={() => navigate('/account')}>Account</LoginButton>
+            <LoginButton onClick={() => { clearToken(); navigate('/login'); }}>Logout</LoginButton>
+          </>
         ) : (
           <LoginButton as={Link} to="/login">Login</LoginButton>
         )}

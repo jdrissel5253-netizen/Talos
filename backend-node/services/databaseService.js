@@ -169,6 +169,21 @@ const userService = {
             'UPDATE users SET password_hash = $1, password_reset_token = NULL, password_reset_expires = NULL WHERE id = $2',
             [newPasswordHash, userId]
         );
+    },
+
+    async updateProfile(userId, { companyName }) {
+        const result = await db.query(
+            'UPDATE users SET company_name = $1 WHERE id = $2 RETURNING id, email, company_name, role',
+            [companyName, userId]
+        );
+        return result.rows[0];
+    },
+
+    async updatePassword(userId, newPasswordHash) {
+        await db.query(
+            'UPDATE users SET password_hash = $1 WHERE id = $2',
+            [newPasswordHash, userId]
+        );
     }
 };
 

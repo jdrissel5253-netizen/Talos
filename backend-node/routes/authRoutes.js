@@ -208,6 +208,55 @@ const requireAdmin = (req, res, next) => {
 };
 
 /**
+ * GET /api/auth/me
+ */
+router.get('/me', authenticateToken, async (req, res) => {
+    try {
+        const user = await userService.findById(req.user.userId);
+        if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
+        res.json({ status: 'success', data: { id: user.id, email: user.email, companyName: user.company_name, role: user.role } });
+    } catch (error) {
+        logger.error('Get profile error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to load profile' });
+    }
+});
+
+/**
+ * PUT /api/auth/profile
+ */
+router.put('/profile', authenticateToken, async (req, res) => {
+    try {
+        const companyName = sanitize.trimString(req.body.companyName, 255);
+        const user = await userService.updateProfile(req.user.userId, { companyName });
+        res.json({ status: 'success', data: { companyName: user.company_name } });
+    } catch (error) {
+        logger.error('Update profile error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to update profile' });
+    }
+});
+
+/**
+ * PUT /api/auth/change-password
+ */
+router.put('/change-password', authenticateToken, async (req, res) => {
+    try {
+        const { currentPassword, newPassword } = req.body;
+        if (!newPassword || newPassword.length < 8) {
+            return res.status(400).json({ status: 'error', message: 'New password must be at least 8 characters' });
+        }
+        const user = await userService.findById(req.user.userId);
+        const valid = await bcrypt.compare(currentPassword || '', user.password_hash);
+        if (!valid) return res.status(400).json({ status: 'error', message: 'Current password is incorrect' });
+        const hash = await bcrypt.hash(newPassword, 10);
+        await userService.updatePassword(req.user.userId, hash);
+        res.json({ status: 'success', message: 'Password updated' });
+    } catch (error) {
+        logger.error('Change password error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to change password' });
+    }
+});
+
+/**
  * POST /api/auth/forgot-password
  */
 router.post('/forgot-password', async (req, res) => {
