@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { isLoggedIn, clearToken } from '../utils/auth';
+import { isLoggedIn, clearToken, isAdmin } from '../utils/auth';
 import { Menu, X } from 'lucide-react';
 
 const HeaderContainer = styled.header`
@@ -272,6 +272,7 @@ const Header: React.FC = () => {
         <ButtonGroup>
           {isLoggedIn() ? (
             <>
+              {isAdmin() && <LoginButton onClick={() => navigate('/admin')}>Admin</LoginButton>}
               <LoginButton onClick={() => navigate('/account')}>Account</LoginButton>
               <LoginButton onClick={() => { clearToken(); navigate('/login'); }}>Logout</LoginButton>
             </>
@@ -308,6 +309,7 @@ const Header: React.FC = () => {
         <MobileButtonRow>
           {isLoggedIn() ? (
             <>
+              {isAdmin() && <LoginButton onClick={() => { navigate('/admin'); closeMobile(); }}>Admin</LoginButton>}
               <LoginButton onClick={() => { navigate('/account'); closeMobile(); }}>Account</LoginButton>
               <LoginButton onClick={() => { clearToken(); navigate('/login'); closeMobile(); }}>Logout</LoginButton>
             </>
