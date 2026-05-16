@@ -171,10 +171,10 @@ const Footer: React.FC = () => {
             © 2024 Talos. All rights reserved. Built for HVAC professionals.
           </Copyright>
           <div>
-            <FooterLink to="/" style={{ marginRight: '2rem' }}>
+            <FooterLink to="/privacy" style={{ marginRight: '2rem' }}>
               Privacy Policy
             </FooterLink>
-            <FooterLink to="/">Terms of Service</FooterLink>
+            <FooterLink to="/terms">Terms of Service</FooterLink>
           </div>
         </FooterBottom>
       </FooterContent>
