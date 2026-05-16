@@ -14,6 +14,16 @@ export const getAuthHeaders = (): Record<string, string> => {
     return token ? { 'Authorization': `Bearer ${token}` } : {};
 };
 
+/** Call after any fetch — if 401, clears token and redirects to login */
+export const handleUnauthorized = (response: Response): boolean => {
+    if (response.status === 401) {
+        clearToken();
+        window.location.href = '/';
+        return true;
+    }
+    return false;
+};
+
 /** Decodes the JWT payload without verifying the signature (UI-only use) */
 const getTokenPayload = (): Record<string, unknown> | null => {
     const token = getToken();
