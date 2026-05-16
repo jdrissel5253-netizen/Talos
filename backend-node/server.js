@@ -29,6 +29,7 @@ if (missing.length > 0) {
 }
 
 const app = express();
+app.set('trust proxy', 1); // ALB sits in front — trust one proxy hop for accurate client IPs
 const PORT = 8080; // Hardcoded to fix AWS EB stuck env var mismatch
 
 // Create uploads directory if it doesn't exist
