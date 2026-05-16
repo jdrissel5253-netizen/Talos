@@ -961,7 +961,7 @@ const ClientDashboard: React.FC = () => {
                       <StepIcon state="locked">3</StepIcon>
                       <StepText>
                         <StepTitle state="locked">Share your link &amp; review applicants</StepTitle>
-                        <StepDesc>Send the link to candidates — Talos scores and ranks every resume automatically.</StepDesc>
+                        <StepDesc>Create a job first — your shareable application link will appear at the top of the job detail panel.</StepDesc>
                       </StepText>
                     </StepRow>
                   </StepList>
