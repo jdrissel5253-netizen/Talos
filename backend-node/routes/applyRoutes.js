@@ -255,25 +255,27 @@ async function processResumeInBackground(candidate, s3KeyOrPath, name, email, ph
                     logger.info('Added candidate to job pipeline', { candidateId: candidate.id, jobId });
                     addedToSpecificJob = true;
 
-                    // Notify job owner (fire-and-forget, outside transaction)
-                    const tierEmoji = tier === 'green' ? '🟢' : tier === 'yellow' ? '🟡' : '🔴';
-                    userService.findById(job.user_id).then(owner => {
-                        if (!owner?.email) return;
-                        const frontendUrl = process.env.FRONTEND_URL || 'https://gotalos.io';
-                        return gmailService.sendEmail({
-                            to: owner.email,
-                            subject: `New applicant for ${jobTitle || 'your job'} — ${tierEmoji} ${score}/100`,
-                            html: `<p>A new candidate just applied for <strong>${jobTitle || 'your open position'}</strong>.</p>
+                    // Notify job owner immediately for green-tier candidates only
+                    // All tiers appear in the daily digest regardless
+                    if (tier === 'green') {
+                        userService.findById(job.user_id).then(owner => {
+                            if (!owner?.email) return;
+                            const frontendUrl = process.env.FRONTEND_URL || 'https://gotalos.io';
+                            return gmailService.sendEmail({
+                                to: owner.email,
+                                subject: `Strong applicant for ${jobTitle || 'your job'} — 🟢 ${score}/100`,
+                                html: `<p>A top-scoring candidate just applied for <strong>${jobTitle || 'your open position'}</strong>.</p>
 <ul>
   <li><strong>Name:</strong> ${name || '(not provided)'}</li>
   <li><strong>Email:</strong> ${email}</li>
   <li><strong>Phone:</strong> ${phone || '(not provided)'}</li>
-  <li><strong>AI Score:</strong> ${score}/100 — ${tier.charAt(0).toUpperCase() + tier.slice(1)} tier</li>
+  <li><strong>AI Score:</strong> ${score}/100 — Green tier</li>
   <li><strong>Recommendation:</strong> ${analysisResult?.hiringRecommendation || 'Pending'}</li>
 </ul>
 <p><a href="${frontendUrl}/jobs-management">View in your pipeline →</a></p>`
-                        });
-                    }).catch(err => logger.warn('Owner notification email failed', { error: err.message }));
+                            });
+                        }).catch(err => logger.warn('Owner notification email failed', { error: err.message }));
+                    }
                 }
             }
 

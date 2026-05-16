@@ -15,6 +15,7 @@ const bodyParser = require('body-parser');
 const compression = require('compression');
 const fs = require('fs');
 const path = require('path');
+const cron = require('node-cron');
 const logger = require('./services/logger');
 
 // Require critical environment variables at startup
@@ -355,6 +356,13 @@ app.use('*', (req, res) => {
         status: 'error'
     });
 });
+
+// Daily digest — runs at 6 PM Eastern (22:00 UTC) every day
+const { sendDailyDigests } = require('./services/digestService');
+cron.schedule('0 22 * * *', () => {
+    sendDailyDigests();
+}, { timezone: 'UTC' });
+logger.info('Daily digest cron scheduled', { time: '22:00 UTC (6 PM ET)' });
 
 // Process-level error handlers
 process.on('uncaughtException', (err) => {
