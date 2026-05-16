@@ -197,12 +197,13 @@ app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
 const resumeRoutes = require('./routes/resumeRoutes');
-const { router: authRoutes, authenticateToken } = require('./routes/authRoutes');
+const { router: authRoutes, authenticateToken, requireAdmin } = require('./routes/authRoutes');
 const googleAuthRoutes = require('./routes/googleAuthRoutes');
 const jobRoutes = require('./routes/jobRoutes');
 const jobFeedRoutes = require('./routes/jobFeedRoutes');
 const candidatePipelineRoutes = require('./routes/candidatePipelineRoutes');
 const applyRoutes = require('./routes/applyRoutes');
+const adminRoutes = require('./routes/adminRoutes');
 
 // Root route
 app.get('/', (req, res) => {
@@ -225,6 +226,7 @@ app.use('/api/pipeline', authenticateToken, candidatePipelineRoutes);
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/auth/google', authLimiter, googleAuthRoutes);
 app.use('/api/apply', publicApplyLimiter, applyRoutes);
+app.use('/api/admin', authenticateToken, requireAdmin, adminRoutes);
 app.get('/api/health', async (req, res) => {
     let dbStatus = 'unknown';
     try {

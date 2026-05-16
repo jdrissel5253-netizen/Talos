@@ -35,6 +35,7 @@ const ResetPassword = lazy(() => import('./components/ResetPassword'));
 const AccountSettings = lazy(() => import('./components/AccountSettings'));
 const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/TermsOfService'));
+const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 
 // Loading fallback for lazy-loaded routes
 const LoadingFallback = styled.div`
@@ -156,6 +157,7 @@ function AppLayout() {
               <Route path="/account" element={<AccountSettings />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
+              <Route path="/admin" element={<AdminDashboard />} />
             </Routes>
           </Suspense>
         </MainContent>
