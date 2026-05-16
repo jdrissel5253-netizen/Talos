@@ -3,6 +3,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { userService, sanitize } = require('../services/databaseService');
 const logger = require('../services/logger');
+const gmailService = require('../services/gmailService');
 
 const router = express.Router();
 
@@ -50,6 +51,24 @@ router.post('/register', async (req, res) => {
 
         // Create user
         const user = await userService.create(email, passwordHash, companyName, role);
+
+        // Notify owner of new signup (fire-and-forget — never block registration)
+        if (role !== 'admin') {
+            const notifyEmail = process.env.NOTIFY_EMAIL || process.env.ADMIN_EMAIL;
+            if (notifyEmail) {
+                gmailService.sendEmail({
+                    to: notifyEmail,
+                    subject: `New Talos signup: ${companyName || email}`,
+                    html: `<p>A new company just signed up for Talos.</p>
+<ul>
+  <li><strong>Company:</strong> ${companyName || '(not provided)'}</li>
+  <li><strong>Email:</strong> ${email}</li>
+  <li><strong>User ID:</strong> ${user.id}</li>
+  <li><strong>Time:</strong> ${new Date().toUTCString()}</li>
+</ul>`
+                }).catch(err => logger.warn('Signup notification email failed', { error: err.message }));
+            }
+        }
 
         // Generate JWT token
         const token = jwt.sign(
