@@ -955,7 +955,7 @@ const ClientDashboard: React.FC = () => {
                         <StepTitle state="active">Create your first job posting</StepTitle>
                         <StepDesc>Set up a position — Talos generates a public application link automatically.</StepDesc>
                       </StepText>
-                      <StepBtn onClick={() => navigate('/jobs-management')}>Create Job →</StepBtn>
+                      <StepBtn onClick={() => navigate('/jobs-management?new=true')}>Create Job →</StepBtn>
                     </StepRow>
                     <StepRow state="locked">
                       <StepIcon state="locked">3</StepIcon>

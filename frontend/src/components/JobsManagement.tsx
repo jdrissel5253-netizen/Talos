@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy } from 'lucide-react';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
@@ -700,6 +700,11 @@ const JobsManagement: React.FC = () => {
 
     const navigate = useNavigate();
     const { jobId } = useParams<{ jobId: string }>();
+    const [searchParams] = useSearchParams();
+
+    useEffect(() => {
+        if (searchParams.get('new') === 'true') setShowAddJobForm(true);
+    }, []);
 
     const copyApplyLink = (job: Job) => {
         const baseUrl = window.location.origin;
