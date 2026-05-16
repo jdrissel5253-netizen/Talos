@@ -592,6 +592,97 @@ const CandidateScore = styled.span`
 
 // ─── empty / loading ──────────────────────────────────────────────────────────
 
+// ─── get started checklist ────────────────────────────────────────────────────
+
+const GetStartedCard = styled.div`
+  border: 1px solid #2a3a2a;
+  background: linear-gradient(135deg, #111a14 0%, #111318 100%);
+  margin-bottom: 2rem;
+  padding: 2rem 2.5rem;
+
+  @media (max-width: 600px) { padding: 1.5rem; }
+`;
+
+const GetStartedHeading = styled.h2`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.35rem;
+`;
+
+const GetStartedSub = styled.p`
+  font-size: 0.78rem;
+  color: #6e7d8e;
+  margin-bottom: 1.75rem;
+`;
+
+const StepList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+`;
+
+const StepRow = styled.div<{ state: 'done' | 'active' | 'locked' }>`
+  display: grid;
+  grid-template-columns: 36px 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 0;
+  border-bottom: 1px solid #1e2330;
+  opacity: ${p => p.state === 'locked' ? 0.4 : 1};
+
+  &:last-child { border-bottom: none; }
+`;
+
+const StepIcon = styled.div<{ state: 'done' | 'active' | 'locked' }>`
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.7rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  background: ${p => p.state === 'done' ? 'rgba(74,222,128,0.12)' : p.state === 'active' ? 'rgba(74,222,128,0.08)' : '#1a1f2a'};
+  border: 1px solid ${p => p.state === 'done' ? '#4ade80' : p.state === 'active' ? 'rgba(74,222,128,0.4)' : '#232830'};
+  color: ${p => p.state === 'done' ? '#4ade80' : p.state === 'active' ? '#4ade80' : '#6e7d8e'};
+`;
+
+const StepText = styled.div``;
+
+const StepTitle = styled.div<{ state: 'done' | 'active' | 'locked' }>`
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: ${p => p.state === 'done' ? '#6e7d8e' : '#e0e0e0'};
+  text-decoration: ${p => p.state === 'done' ? 'line-through' : 'none'};
+  letter-spacing: -0.01em;
+`;
+
+const StepDesc = styled.div`
+  font-size: 0.72rem;
+  color: #6e7d8e;
+  margin-top: 0.15rem;
+`;
+
+const StepBtn = styled.button`
+  background: #4ade80;
+  border: none;
+  color: #000;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  white-space: nowrap;
+  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
+  transition: background 0.15s ease;
+
+  &:hover { background: #6ee89a; }
+`;
+
 const EmptyCell = styled.div`
   padding: 3rem 1.5rem;
   text-align: center;
@@ -843,6 +934,38 @@ const ClientDashboard: React.FC = () => {
                     </AttentionBody>
                   </Card>
                 </SectionWrap>
+              )}
+
+              {/* ── Get Started (new users only) ── */}
+              {!loading && activeJobs.length === 0 && (
+                <GetStartedCard>
+                  <GetStartedHeading>Welcome to Talos — let's get you set up</GetStartedHeading>
+                  <GetStartedSub>Three steps to start receiving and ranking HVAC applicants.</GetStartedSub>
+                  <StepList>
+                    <StepRow state="done">
+                      <StepIcon state="done">✓</StepIcon>
+                      <StepText>
+                        <StepTitle state="done">Create your account</StepTitle>
+                        <StepDesc>You're in. Your company profile is ready.</StepDesc>
+                      </StepText>
+                    </StepRow>
+                    <StepRow state="active">
+                      <StepIcon state="active">2</StepIcon>
+                      <StepText>
+                        <StepTitle state="active">Create your first job posting</StepTitle>
+                        <StepDesc>Set up a position — Talos generates a public application link automatically.</StepDesc>
+                      </StepText>
+                      <StepBtn onClick={() => navigate('/jobs-management')}>Create Job →</StepBtn>
+                    </StepRow>
+                    <StepRow state="locked">
+                      <StepIcon state="locked">3</StepIcon>
+                      <StepText>
+                        <StepTitle state="locked">Share your link &amp; review applicants</StepTitle>
+                        <StepDesc>Send the link to candidates — Talos scores and ranks every resume automatically.</StepDesc>
+                      </StepText>
+                    </StepRow>
+                  </StepList>
+                </GetStartedCard>
               )}
 
               {/* ── Jobs ── */}
