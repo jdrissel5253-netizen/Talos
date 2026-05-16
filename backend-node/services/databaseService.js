@@ -147,6 +147,28 @@ const userService = {
             [role, userId]
         );
         return result.rows[0];
+    },
+
+    async setResetToken(userId, tokenHash, expiresAt) {
+        await db.query(
+            'UPDATE users SET password_reset_token = $1, password_reset_expires = $2 WHERE id = $3',
+            [tokenHash, expiresAt, userId]
+        );
+    },
+
+    async findByResetToken(tokenHash) {
+        const result = await db.query(
+            'SELECT * FROM users WHERE password_reset_token = $1 AND password_reset_expires > NOW()',
+            [tokenHash]
+        );
+        return result.rows[0];
+    },
+
+    async consumeResetToken(userId, newPasswordHash) {
+        await db.query(
+            'UPDATE users SET password_hash = $1, password_reset_token = NULL, password_reset_expires = NULL WHERE id = $2',
+            [newPasswordHash, userId]
+        );
     }
 };
 

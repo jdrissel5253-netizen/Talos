@@ -30,6 +30,8 @@ const PublicApply = lazy(() => import('./components/PublicApply'));
 const PublicJobDetail = lazy(() => import('./components/PublicJobDetail'));
 const PublicJobList = lazy(() => import('./components/PublicJobList'));
 const CandidateProfile = lazy(() => import('./components/CandidateProfile'));
+const ForgotPassword = lazy(() => import('./components/ForgotPassword'));
+const ResetPassword = lazy(() => import('./components/ResetPassword'));
 
 // Loading fallback for lazy-loaded routes
 const LoadingFallback = styled.div`
@@ -146,6 +148,8 @@ function AppLayout() {
               <Route path="/talent-pool-manager" element={<TalentPoolManager />} />
               <Route path="/hvac-insights" element={<HVACInsights />} />
               <Route path="/candidates/:pipelineId" element={<CandidateProfile />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
             </Routes>
           </Suspense>
         </MainContent>

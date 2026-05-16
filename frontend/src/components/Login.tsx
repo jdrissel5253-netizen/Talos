@@ -283,10 +283,7 @@ const Login: React.FC = () => {
   };
 
   const handleForgotPassword = () => {
-    const email = prompt('Enter your email address to reset your password:');
-    if (email && email.trim()) {
-      alert(`Password reset instructions have been sent to ${email}`);
-    }
+    navigate('/forgot-password');
   };
 
   return (

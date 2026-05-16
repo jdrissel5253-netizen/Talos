@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { userService, sanitize } = require('../services/databaseService');
 const logger = require('../services/logger');
 const gmailService = require('../services/gmailService');
@@ -205,6 +206,74 @@ const requireAdmin = (req, res, next) => {
     }
     next();
 };
+
+/**
+ * POST /api/auth/forgot-password
+ */
+router.post('/forgot-password', async (req, res) => {
+    // Always return success to avoid revealing whether an email exists
+    const genericOk = () => res.json({ status: 'success', message: 'If that email exists, a reset link has been sent.' });
+
+    try {
+        const email = sanitize.email(req.body.email);
+        if (!email) return genericOk();
+
+        const user = await userService.findByEmail(email);
+        if (!user) return genericOk();
+
+        const rawToken = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+
+        await userService.setResetToken(user.id, tokenHash, expiresAt);
+
+        const frontendUrl = process.env.FRONTEND_URL || 'https://gotalos.io';
+        const resetLink = `${frontendUrl}/reset-password?token=${rawToken}`;
+
+        gmailService.sendEmail({
+            to: email,
+            subject: 'Reset your Talos password',
+            html: `<p>You requested a password reset for your Talos account.</p>
+<p><a href="${resetLink}">Click here to reset your password</a></p>
+<p>This link expires in 1 hour. If you didn't request this, you can ignore this email.</p>`
+        }).catch(err => logger.warn('Password reset email failed', { error: err.message }));
+
+        logger.info('Password reset requested', { userId: user.id });
+        genericOk();
+    } catch (error) {
+        logger.error('Forgot password error', { error: error.message });
+        genericOk(); // never reveal errors
+    }
+});
+
+/**
+ * POST /api/auth/reset-password
+ */
+router.post('/reset-password', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+
+        if (!token || !password || password.length < 8) {
+            return res.status(400).json({ status: 'error', message: 'Token and a password of at least 8 characters are required.' });
+        }
+
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        const user = await userService.findByResetToken(tokenHash);
+
+        if (!user) {
+            return res.status(400).json({ status: 'error', message: 'This reset link is invalid or has expired.' });
+        }
+
+        const newHash = await bcrypt.hash(password, 10);
+        await userService.consumeResetToken(user.id, newHash);
+
+        logger.info('Password reset completed', { userId: user.id });
+        res.json({ status: 'success', message: 'Password updated. You can now log in.' });
+    } catch (error) {
+        logger.error('Reset password error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to reset password.' });
+    }
+});
 
 module.exports = {
     router,
