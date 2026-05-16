@@ -2,12 +2,13 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
-const { candidateService, analysisService, candidatePipelineService, jobService, sanitize } = require('../services/databaseService');
+const { candidateService, analysisService, candidatePipelineService, jobService, userService, sanitize } = require('../services/databaseService');
 const { analyzeResume } = require('../services/resumeAnalyzer');
 const { calculateTier, calculateStarRating } = require('../services/scoringService');
 const { uploadResume, downloadResumeToTemp, isS3Key } = require('../config/s3');
 const db = require('../config/database');
 const logger = require('../services/logger');
+const gmailService = require('../services/gmailService');
 
 const router = express.Router();
 
@@ -108,6 +109,19 @@ router.post('/', (req, res, next) => {
                 candidateId: candidate?.id
             }
         });
+
+        // Confirmation email to candidate (fire-and-forget)
+        if (email) {
+            gmailService.sendEmail({
+                to: email,
+                subject: `Application received${jobTitle ? ` — ${jobTitle}` : ''}`,
+                html: `<p>Hi ${name || 'there'},</p>
+<p>We received your application${jobTitle ? ` for <strong>${jobTitle}</strong>` : ''} and our team will review it shortly.</p>
+<p>We'll be in touch if your experience is a match. Thanks for applying!</p>
+<br>
+<p>— The Hiring Team</p>`
+            }).catch(err => logger.warn('Candidate confirmation email failed', { error: err.message }));
+        }
 
         // Process resume analysis in the background (after response is sent)
         processResumeInBackground(candidate, s3Key, name, email, phone, jobId, jobTitle);
@@ -240,6 +254,26 @@ async function processResumeInBackground(candidate, s3KeyOrPath, name, email, ph
                     await candidatePipelineService.addToJob(candidate.id, parseInt(jobId), pipelineData);
                     logger.info('Added candidate to job pipeline', { candidateId: candidate.id, jobId });
                     addedToSpecificJob = true;
+
+                    // Notify job owner (fire-and-forget, outside transaction)
+                    const tierEmoji = tier === 'green' ? '🟢' : tier === 'yellow' ? '🟡' : '🔴';
+                    userService.findById(job.user_id).then(owner => {
+                        if (!owner?.email) return;
+                        const frontendUrl = process.env.FRONTEND_URL || 'https://gotalos.io';
+                        return gmailService.sendEmail({
+                            to: owner.email,
+                            subject: `New applicant for ${jobTitle || 'your job'} — ${tierEmoji} ${score}/100`,
+                            html: `<p>A new candidate just applied for <strong>${jobTitle || 'your open position'}</strong>.</p>
+<ul>
+  <li><strong>Name:</strong> ${name || '(not provided)'}</li>
+  <li><strong>Email:</strong> ${email}</li>
+  <li><strong>Phone:</strong> ${phone || '(not provided)'}</li>
+  <li><strong>AI Score:</strong> ${score}/100 — ${tier.charAt(0).toUpperCase() + tier.slice(1)} tier</li>
+  <li><strong>Recommendation:</strong> ${analysisResult?.hiringRecommendation || 'Pending'}</li>
+</ul>
+<p><a href="${frontendUrl}/jobs-management">View in your pipeline →</a></p>`
+                        });
+                    }).catch(err => logger.warn('Owner notification email failed', { error: err.message }));
                 }
             }
 
