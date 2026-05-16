@@ -11,10 +11,10 @@ router.get('/overview', async (req, res) => {
     try {
         const result = await db.query(`
             SELECT
-                (SELECT COUNT(*) FROM users WHERE role IS DISTINCT FROM 'admin') AS total_companies,
+                (SELECT COUNT(*) FROM users) AS total_companies,
                 (SELECT COUNT(*) FROM jobs WHERE deleted_at IS NULL) AS total_jobs,
                 (SELECT COUNT(*) FROM candidates) AS total_candidates,
-                (SELECT COUNT(*) FROM users WHERE role IS DISTINCT FROM 'admin' AND created_at > NOW() - INTERVAL '7 days') AS new_signups_7d,
+                (SELECT COUNT(*) FROM users WHERE created_at > NOW() - INTERVAL '7 days') AS new_signups_7d,
                 (SELECT COUNT(*) FROM candidates WHERE upload_date > NOW() - INTERVAL '7 days') AS new_candidates_7d
         `);
         res.json({ status: 'success', data: result.rows[0] });
@@ -35,6 +35,7 @@ router.get('/users', async (req, res) => {
                 u.id,
                 u.email,
                 u.company_name,
+                u.role,
                 u.created_at,
                 COUNT(DISTINCT j.id) FILTER (WHERE j.deleted_at IS NULL) AS job_count,
                 COUNT(DISTINCT cp.candidate_id) AS candidate_count,
@@ -42,8 +43,7 @@ router.get('/users', async (req, res) => {
             FROM users u
             LEFT JOIN jobs j ON j.user_id = u.id
             LEFT JOIN candidate_pipeline cp ON cp.job_id = j.id
-            WHERE u.role IS DISTINCT FROM 'admin'
-            GROUP BY u.id, u.email, u.company_name, u.created_at
+            GROUP BY u.id, u.email, u.company_name, u.role, u.created_at
             ORDER BY u.created_at DESC
         `);
         res.json({ status: 'success', data: result.rows });

@@ -261,6 +261,7 @@ interface UserRow {
   id: number;
   email: string;
   company_name: string | null;
+  role: string | null;
   created_at: string;
   job_count: string;
   candidate_count: string;
@@ -381,8 +382,11 @@ const AdminDashboard: React.FC = () => {
                       <Cell style={{ display: 'block', color: '#ffffff', fontWeight: 600 }}>
                         {user.company_name || <span style={{ color: '#4e5d6e', fontStyle: 'italic' }}>No company name</span>}
                       </Cell>
-                      <Cell style={{ display: 'block', fontSize: '0.7rem', color: '#6e7d8e', marginTop: 2 }}>
+                      <Cell style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.7rem', color: '#6e7d8e', marginTop: 2 }}>
                         {user.email}
+                        {user.role === 'admin' && (
+                          <span style={{ fontSize: '0.55rem', fontFamily: 'JetBrains Mono, monospace', fontWeight: 600, letterSpacing: '0.08em', padding: '0.1rem 0.4rem', color: '#a78bfa', background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)' }}>ADMIN</span>
+                        )}
                       </Cell>
                     </div>
                     <HideMobile>
