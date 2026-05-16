@@ -435,24 +435,158 @@ const YEARS_OF_EXPERIENCE_OPTIONS = [
   { value: '10', label: '10+ years' }
 ];
 
-const RESPONSIBILITY_OPTIONS = [
-  'Install, maintain, and repair HVAC systems',
-  'Diagnose and troubleshoot equipment malfunctions',
-  'Perform preventive maintenance on heating and cooling systems',
-  'Respond to emergency service calls and after-hours repairs',
-  'Ensure compliance with safety codes and regulations',
-  'Read and interpret technical manuals and blueprints',
-  'Handle refrigerant recovery, recharge, and leak detection',
-  'Communicate with customers and provide service estimates',
-  'Maintain accurate service records and documentation',
-  'Train and mentor junior technicians and apprentices',
-  'Manage parts inventory and coordinate supply orders',
-  'Perform load calculations and system design',
-  'Install and commission new HVAC equipment',
-  'Dispatch and schedule service calls efficiently',
-  'Process invoices, work orders, and customer accounts',
-  'Other (type your own)',
+const RESPONSIBILITIES_BY_TITLE: Record<string, string[]> = {
+  'HVAC Service Technician': [
+    'Diagnose and repair malfunctioning HVAC systems at residential and commercial sites',
+    'Respond to emergency service calls and troubleshoot issues on-site',
+    'Perform scheduled maintenance including tune-ups, filter changes, and coil cleaning',
+    'Handle refrigerant recovery, recharge, and leak detection per EPA regulations',
+    'Replace defective components including motors, compressors, and capacitors',
+    'Document service reports accurately and communicate findings to customers',
+    'Ensure all work meets local codes and company safety standards',
+  ],
+  'Preventative Maintenance Technician': [
+    'Perform routine inspections and seasonal tune-ups on HVAC equipment',
+    'Clean and replace air filters, coils, drain lines, and belts',
+    'Lubricate moving parts and inspect electrical connections for wear',
+    'Test system performance and identify potential issues before failure',
+    'Maintain detailed maintenance logs and service records for each account',
+    'Communicate maintenance findings and recommendations to customers clearly',
+    'Coordinate with dispatch to manage and optimize PM routes',
+  ],
+  'HVAC Technician': [
+    'Install, maintain, and repair residential and commercial HVAC systems',
+    'Diagnose electrical, mechanical, and refrigerant issues accurately',
+    'Perform seasonal tune-ups and preventive maintenance visits',
+    'Read and interpret wiring diagrams, schematics, and equipment manuals',
+    'Handle refrigerant in compliance with EPA 608 certification requirements',
+    'Complete service documentation and job reports accurately after each call',
+    'Maintain a clean, organized service vehicle and personal tool inventory',
+  ],
+  'Lead HVAC Technician': [
+    'Lead a team of technicians on complex installation and service projects',
+    'Diagnose and resolve advanced HVAC system failures that junior techs escalate',
+    'Mentor and provide hands-on training to junior technicians and apprentices',
+    'Perform quality control inspections on work completed by the team',
+    'Coordinate with project managers and customers on job timelines and progress',
+    'Handle escalated customer service issues professionally in the field',
+    'Ensure all team work meets code requirements and company quality standards',
+  ],
+  'HVAC Dispatcher': [
+    'Schedule and dispatch technicians to service calls efficiently throughout the day',
+    'Prioritize emergency calls and adjust schedules in real time as needed',
+    'Communicate job details, updates, and route changes to field technicians',
+    'Coordinate parts availability to ensure technicians arrive prepared for each job',
+    'Maintain accurate records of service calls, technician status, and job outcomes',
+    'Serve as the primary contact for customer scheduling inquiries and updates',
+    'Monitor technician locations and optimize routing to reduce drive time',
+  ],
+  'Administrative Assistant': [
+    'Answer incoming calls and direct customer inquiries to the appropriate team member',
+    'Process and track invoices, work orders, and purchase orders in the system',
+    'Maintain accurate customer records and update the CRM regularly',
+    'Assist with scheduling appointments and coordinating technician calendars',
+    'Order and track office, shop, and operational supplies',
+    'Prepare reports, correspondence, and presentations for management',
+    'Support field technicians with administrative needs and paperwork processing',
+  ],
+  'Customer Service Representative': [
+    'Handle inbound customer calls for service requests, questions, and scheduling',
+    'Resolve customer complaints professionally and escalate issues when necessary',
+    'Follow up with customers after service visits to ensure satisfaction',
+    'Process payments and assist customers with billing questions and disputes',
+    'Maintain accurate customer accounts and detailed service history records',
+    'Present and sell maintenance agreements and service plans to customers',
+    'Coordinate with dispatch to provide customers with accurate scheduling updates',
+  ],
+  'HVAC Installer': [
+    'Install new HVAC systems including furnaces, air conditioners, and heat pumps',
+    'Install, seal, and insulate ductwork and ventilation systems to spec',
+    'Connect refrigerant lines, electrical wiring, and controls per manufacturer specs',
+    'Commission newly installed systems and verify proper airflow and operation',
+    'Read and follow blueprints, load calculations, and installation drawings',
+    'Coordinate with other trades on new construction and renovation projects',
+    'Ensure all installations meet local codes, manufacturer specs, and company standards',
+  ],
+  'Lead HVAC Installer': [
+    'Oversee and coordinate multi-technician installation projects from start to finish',
+    'Review blueprints and develop detailed installation plans before job start',
+    'Install complex commercial and residential HVAC systems with precision',
+    'Perform final commissioning and quality inspections on all completed installations',
+    'Train, supervise, and mentor installers and helpers on job sites',
+    'Communicate progress and issues to general contractors and project stakeholders',
+    'Ensure all work meets code requirements, manufacturer specs, and company standards',
+  ],
+  'Maintenance Technician': [
+    'Perform routine inspections and preventive maintenance on facility HVAC equipment',
+    'Identify and address minor equipment issues before they become major failures',
+    'Maintain detailed maintenance logs, work orders, and equipment records',
+    'Respond promptly to facility maintenance and comfort complaints',
+    'Coordinate with vendors and contractors for specialized repairs as needed',
+    'Ensure all mechanical systems comply with safety and building code regulations',
+    'Support the facilities team with general building maintenance tasks as assigned',
+  ],
+  'Warehouse Associate': [
+    'Receive, inspect, and accurately stock incoming HVAC parts and equipment',
+    'Pick, stage, and prepare parts orders for field technicians each day',
+    'Maintain accurate inventory records using warehouse management software',
+    'Load and unload delivery trucks and keep the warehouse organized',
+    'Coordinate with purchasing to flag and reorder low-stock items proactively',
+    'Maintain warehouse cleanliness and enforce safety standards at all times',
+    'Process and verify shipping and receiving documentation accurately',
+  ],
+  'Bookkeeper': [
+    'Process accounts payable and receivable transactions accurately and on time',
+    'Reconcile bank statements, credit card accounts, and financial records monthly',
+    'Process payroll and maintain accurate timekeeping and labor records',
+    'Prepare monthly and quarterly financial reports for management review',
+    'Manage vendor relationships and process supplier invoices efficiently',
+    'Track job costs and assist management with project profitability analysis',
+    'Coordinate with the CPA firm for tax preparation and year-end close',
+  ],
+  'HVAC Sales Representative': [
+    'Generate and follow up on leads for residential and commercial HVAC services',
+    'Conduct in-home or on-site system assessments and consultations',
+    'Prepare and present detailed sales proposals, quotes, and financing options',
+    'Educate customers on equipment choices, efficiency upgrades, and maintenance plans',
+    'Meet or exceed monthly and quarterly revenue and close-rate targets',
+    'Build and maintain long-term relationships with customers and referral partners',
+    'Coordinate with installation teams to ensure smooth handoffs and project starts',
+  ],
+  'HVAC Service Manager': [
+    'Oversee daily service department operations including dispatch and technician scheduling',
+    'Manage, develop, and performance-review a team of service technicians',
+    'Monitor KPIs including revenue per call, completion rates, and customer satisfaction',
+    'Resolve escalated customer complaints and ensure a satisfactory outcome',
+    'Coordinate with the parts and warehouse teams to maintain adequate inventory levels',
+    'Develop and implement service processes to improve efficiency and quality',
+    'Collaborate with ownership on departmental budgets, hiring, and growth strategy',
+  ],
+  'Apprentice': [
+    'Assist experienced technicians with HVAC installations, maintenance, and repairs',
+    'Learn to identify, use, and care for HVAC tools, equipment, and materials',
+    'Help with loading, unloading, and organizing equipment and parts on job sites',
+    'Observe and strictly follow safety procedures and company policies at all times',
+    'Complete required apprenticeship coursework, exams, and on-the-job training hours',
+    'Keep service vehicles, work areas, and job sites clean and organized',
+    'Build foundational knowledge of HVAC systems, refrigeration, and electrical codes',
+  ],
+};
+
+const DEFAULT_RESPONSIBILITIES = [
+  'Perform core job duties as assigned by management',
+  'Maintain safety and quality standards on all work',
+  'Communicate effectively with team members and customers',
+  'Complete required documentation and reporting accurately',
+  'Support overall team goals and company objectives',
+  'Participate in training and professional development',
+  'Adhere to all company policies and procedures',
 ];
+
+const getResponsibilityOptions = (title: string): string[] => {
+  const presets = RESPONSIBILITIES_BY_TITLE[title] ?? DEFAULT_RESPONSIBILITIES;
+  return [...presets, 'Other (type your own)'];
+};
 
 const BENEFITS_OPTIONS = [
   'Health insurance',
@@ -556,6 +690,10 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
       setFormData(prev => ({ ...prev, [name]: checked }));
     } else {
       setFormData(prev => ({ ...prev, [name]: value }));
+      if (name === 'title') {
+        setFormData(prev => ({ ...prev, title: value, key_responsibilities: ['', '', ''] }));
+        setRespIsOther([false, false, false]);
+      }
     }
   };
 
@@ -953,7 +1091,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
                   onChange={(e) => handleResponsibilitySelect(index, e.target.value)}
                 >
                   <option value="">-- Select a responsibility --</option>
-                  {RESPONSIBILITY_OPTIONS.map(opt => (
+                  {getResponsibilityOptions(formData.title).map(opt => (
                     <option key={opt} value={opt}>{opt}</option>
                   ))}
                 </Select>
