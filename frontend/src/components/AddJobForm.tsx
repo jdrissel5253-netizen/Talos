@@ -435,6 +435,25 @@ const YEARS_OF_EXPERIENCE_OPTIONS = [
   { value: '10', label: '10+ years' }
 ];
 
+const RESPONSIBILITY_OPTIONS = [
+  'Install, maintain, and repair HVAC systems',
+  'Diagnose and troubleshoot equipment malfunctions',
+  'Perform preventive maintenance on heating and cooling systems',
+  'Respond to emergency service calls and after-hours repairs',
+  'Ensure compliance with safety codes and regulations',
+  'Read and interpret technical manuals and blueprints',
+  'Handle refrigerant recovery, recharge, and leak detection',
+  'Communicate with customers and provide service estimates',
+  'Maintain accurate service records and documentation',
+  'Train and mentor junior technicians and apprentices',
+  'Manage parts inventory and coordinate supply orders',
+  'Perform load calculations and system design',
+  'Install and commission new HVAC equipment',
+  'Dispatch and schedule service calls efficiently',
+  'Process invoices, work orders, and customer accounts',
+  'Other (type your own)',
+];
+
 const BENEFITS_OPTIONS = [
   'Health insurance',
   'Paid time off',
@@ -483,6 +502,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
   const modalRef = useRef<HTMLDivElement>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
+  const [respIsOther, setRespIsOther] = useState<boolean[]>([false, false, false]);
   const [error, setError] = useState('');
 
   // Escape key to close & focus trap
@@ -551,6 +571,16 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
   const handleResponsibilityChange = (index: number, value: string) => {
     const newResponsibilities = [...formData.key_responsibilities];
     newResponsibilities[index] = value;
+    setFormData(prev => ({ ...prev, key_responsibilities: newResponsibilities }));
+  };
+
+  const handleResponsibilitySelect = (index: number, value: string) => {
+    const isOther = value === 'Other (type your own)';
+    const newIsOther = [...respIsOther];
+    newIsOther[index] = isOther;
+    setRespIsOther(newIsOther);
+    const newResponsibilities = [...formData.key_responsibilities];
+    newResponsibilities[index] = isOther ? '' : value;
     setFormData(prev => ({ ...prev, key_responsibilities: newResponsibilities }));
   };
 
@@ -627,7 +657,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
     }
 
     if (!isEditMode && (!formData.key_responsibilities[0] || !formData.key_responsibilities[1] || !formData.key_responsibilities[2])) {
-      setError('Please enter all 3 key job responsibilities');
+      setError('Please select all 3 key job responsibilities');
       return;
     }
 
@@ -918,13 +948,25 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
             {formData.key_responsibilities.map((resp, index) => (
               <FormGroup key={index}>
                 <Label>Responsibility {index + 1}</Label>
-                <Input
-                  type="text"
-                  value={resp}
-                  onChange={(e) => handleResponsibilityChange(index, e.target.value)}
-                  placeholder={`e.g., Perform HVAC system maintenance and repairs`}
-                  required
-                />
+                <Select
+                  value={respIsOther[index] ? 'Other (type your own)' : (resp || '')}
+                  onChange={(e) => handleResponsibilitySelect(index, e.target.value)}
+                >
+                  <option value="">-- Select a responsibility --</option>
+                  {RESPONSIBILITY_OPTIONS.map(opt => (
+                    <option key={opt} value={opt}>{opt}</option>
+                  ))}
+                </Select>
+                {respIsOther[index] && (
+                  <Input
+                    type="text"
+                    value={resp}
+                    onChange={(e) => handleResponsibilityChange(index, e.target.value)}
+                    placeholder="Describe the responsibility..."
+                    style={{ marginTop: '0.5rem' }}
+                    autoFocus
+                  />
+                )}
               </FormGroup>
             ))}
           </FormSection>
