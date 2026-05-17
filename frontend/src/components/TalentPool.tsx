@@ -3,708 +3,781 @@ import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import { Target, BarChart3, MapPin, Wrench, ScrollText, CircleDollarSign, Home, Calendar, Lock, RefreshCw, FileText, TrendingUp, Bell, ChevronRight } from 'lucide-react';
 import DemoModal from './DemoModal';
 
-// ─── design tokens (matches JobsManagement) ────────────────────────────────────
-
-const C = {
-    bg:           '#07090d',
-    surface:      '#0f1118',
-    surfaceHov:   '#131620',
-    border:       '#1a1e2a',
-    borderBright: '#252b3a',
-    amber:        '#f59e0b',
-    amberGlow:    '#f59e0b22',
-    amberHov:     '#fbbf24',
-    text:         '#dde3f0',
-    textMid:      '#8892a8',
-    textDim:      '#353d52',
-    white:        '#ffffff',
-} as const;
+const FontImport = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
+`;
 
 // ─── animations ───────────────────────────────────────────────────────────────
 
-const fadeSlideUp = keyframes`
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to   { opacity: 1; }
+`;
+
+const float = keyframes`
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-6px); }
+`;
+
+const slideIn = keyframes`
+  from { opacity: 0; transform: translateX(-8px); }
+  to   { opacity: 1; transform: translateX(0); }
 `;
 
 const pulse = keyframes`
-    0%, 100% { opacity: 1; }
-    50%       { opacity: 0.35; }
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.35; }
 `;
 
-const expandWidth = keyframes`
-    from { width: 0; }
-    to   { width: 100%; }
-`;
-
-const countUp = keyframes`
-    from { opacity: 0; transform: translateY(6px); }
-    to   { opacity: 1; transform: translateY(0); }
-`;
-
-// ─── fonts ────────────────────────────────────────────────────────────────────
-
-const GlobalFonts = createGlobalStyle`
-    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
-`;
-
-// ─── page shell ───────────────────────────────────────────────────────────────
+// ─── page ─────────────────────────────────────────────────────────────────────
 
 const Page = styled.div`
-    min-height: 100vh;
-    background: ${C.bg};
-    font-family: 'Syne', system-ui, sans-serif;
-    color: ${C.text};
-    overflow-x: hidden;
+  min-height: 100vh;
+  background: #111318;
+  font-family: 'DM Sans', sans-serif;
+  color: #e8eaf0;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 10% 20%, rgba(74,222,128,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(74,222,128,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
 `;
 
-// ─── header bar ───────────────────────────────────────────────────────────────
+const Wrapper = styled.div`
+  position: relative;
+  z-index: 1;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
 
-const HeaderBar = styled.div`
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0 2.5rem;
-    height: 48px;
-    border-bottom: 1px solid ${C.border};
-    background: ${C.bg};
-    position: sticky;
-    top: 0;
-    z-index: 20;
+  @media (max-width: 768px) {
+    padding: 0 1.25rem;
+  }
 `;
 
-const HeaderLeft = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
+// ─── top rule ─────────────────────────────────────────────────────────────────
+
+const TopRule = styled.div`
+  border-top: 2px solid #232830;
+  padding-top: 3rem;
+  margin-top: 3.5rem;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 2rem;
+  animation: ${fadeIn} 0.6s ease both;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 `;
 
-const BrandMark = styled.div`
-    font-family: 'Syne', sans-serif;
-    font-size: 0.68rem;
-    font-weight: 800;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: ${C.amber};
+const TopLabel = styled.span`
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #4ade80;
 `;
 
-const HeaderSep = styled.div`
-    width: 1px;
-    height: 14px;
-    background: ${C.border};
-`;
-
-const HeaderTitle = styled.div`
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.62rem;
-    color: ${C.textDim};
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-`;
-
-const StatusPill = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
-    color: ${C.amber};
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    padding: 0.22rem 0.6rem;
-    border: 1px solid ${C.amberGlow};
-    border-radius: 3px;
-    background: ${C.amberGlow};
-`;
-
-const StatusDot = styled.span`
-    width: 5px;
-    height: 5px;
-    border-radius: 50%;
-    background: ${C.amber};
-    animation: ${pulse} 2s ease-in-out infinite;
+const TopMeta = styled.span`
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6e7d8e;
 `;
 
 // ─── hero ─────────────────────────────────────────────────────────────────────
 
-const Hero = styled.div`
-    padding: 4rem 2.5rem 3.5rem;
-    border-bottom: 1px solid ${C.border};
-    max-width: 1280px;
-    margin: 0 auto;
-    position: relative;
-    animation: ${fadeSlideUp} 0.4s ease both;
+const HeroSection = styled.div`
+  padding: 4rem 0 3rem;
+  text-align: center;
+  animation: ${fadeUp} 0.7s ease 0.1s both;
 `;
 
-const HeroEyebrow = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 2.25rem;
-`;
-
-const EyebrowTag = styled.div`
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    font-weight: 600;
-    letter-spacing: 0.16em;
-    text-transform: uppercase;
-    color: ${C.amber};
-`;
-
-const EyebrowLine = styled.div`
-    flex: 1;
-    max-width: 80px;
-    height: 1px;
-    background: ${C.border};
-`;
-
-const EyebrowMeta = styled.div`
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
-    color: ${C.textDim};
-    letter-spacing: 0.08em;
+const HeroKicker = styled.p`
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: #4ade80;
+  margin-bottom: 1.25rem;
+  letter-spacing: 0.01em;
 `;
 
 const HeroTitle = styled.h1`
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(3.25rem, 8vw, 6.5rem);
-    line-height: 0.95;
-    letter-spacing: -0.02em;
-    text-transform: uppercase;
-    color: ${C.white};
-    margin-bottom: 0;
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 400;
+  line-height: 1.08;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.75rem;
+
+  em {
+    font-style: italic;
+    color: #4ade80;
+  }
 `;
 
-const HeroTitleAccent = styled.span`
-    color: ${C.amber};
-    display: block;
+const HeroSub = styled.p`
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: #8a9ab0;
+  max-width: 560px;
+  margin: 0 auto 3rem;
+  line-height: 1.7;
 `;
 
-const HeroAccentLine = styled.div`
-    height: 2px;
-    background: ${C.amber};
-    margin: 2rem 0 2.25rem;
-    animation: ${expandWidth} 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both;
-    width: 0;
-    max-width: 120px;
+const MidRule = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 4.5rem;
+
+  &::before, &::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: #232830;
+  }
 `;
 
-const HeroBottom = styled.div`
-    display: flex;
-    align-items: flex-end;
-    justify-content: space-between;
-    gap: 2rem;
-
-    @media (max-width: 640px) { flex-direction: column; align-items: flex-start; }
+const MidRuleOrb = styled.div`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #4ade80;
+  flex-shrink: 0;
 `;
 
-const HeroDesc = styled.p`
-    font-family: 'Syne', sans-serif;
-    font-size: 0.95rem;
-    font-weight: 400;
-    color: ${C.textMid};
-    line-height: 1.7;
-    max-width: 480px;
+// ─── preview section ──────────────────────────────────────────────────────────
+
+const PreviewWrap = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  margin-bottom: 6rem;
+  align-items: center;
+  animation: ${fadeUp} 0.7s ease 0.25s both;
+
+  @media (max-width: 800px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-const HeroDocId = styled.div`
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.55rem;
-    color: ${C.textDim};
-    letter-spacing: 0.1em;
-    text-align: right;
-    white-space: nowrap;
-    line-height: 1.8;
+const PreviewLeft = styled.div``;
+
+const PreviewTag = styled.div`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #4ade80;
+  border: 1px solid rgba(74,222,128,0.25);
+  padding: 0.3rem 0.75rem;
+  margin-bottom: 1.5rem;
 `;
 
-// ─── stats strip ──────────────────────────────────────────────────────────────
+const PreviewHeading = styled.h2`
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.4rem;
+  font-weight: 400;
+  line-height: 1.2;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin-bottom: 1rem;
 
-const StatsStrip = styled.div`
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    border-bottom: 1px solid ${C.border};
-
-    @media (max-width: 640px) { grid-template-columns: repeat(2, 1fr); }
+  em { font-style: italic; color: #4ade80; }
 `;
 
-const StatCell = styled.div`
-    padding: 1.75rem 2rem;
-    border-right: 1px solid ${C.border};
-    animation: ${fadeSlideUp} 0.4s ease var(--delay, 0.1s) both;
-
-    &:last-child { border-right: none; }
-
-    @media (max-width: 640px) {
-        &:nth-child(2) { border-right: none; }
-        border-bottom: 1px solid ${C.border};
-    }
+const PreviewBody = styled.p`
+  font-size: 0.95rem;
+  font-weight: 300;
+  color: #8a9ab0;
+  line-height: 1.75;
+  margin-bottom: 1.5rem;
 `;
+
+const StatRow = styled.div`
+  display: flex;
+  gap: 2.5rem;
+  margin-top: 1.5rem;
+`;
+
+const Stat = styled.div``;
 
 const StatNum = styled.div`
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 2.5rem;
-    line-height: 1;
-    color: ${C.white};
-    letter-spacing: -0.02em;
-    margin-bottom: 0.35rem;
-    animation: ${countUp} 0.4s ease both;
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.2rem;
+  color: #ffffff;
+  line-height: 1;
+  margin-bottom: 0.2rem;
 
-    span { color: ${C.amber}; }
+  span { color: #4ade80; }
 `;
 
-const StatLabel = styled.div`
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
-    font-weight: 500;
-    letter-spacing: 0.14em;
-    text-transform: uppercase;
-    color: ${C.textDim};
+const StatDesc = styled.div`
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #6e7d8e;
 `;
 
-// ─── section header ───────────────────────────────────────────────────────────
+// ─── pool card (floating preview) ────────────────────────────────────────────
 
-const SectionWrap = styled.div`
-    border-bottom: 1px solid ${C.border};
+const PoolCard = styled.div`
+  background: #1a1f2a;
+  border: 1px solid #232830;
+  box-shadow:
+    0 2px 0 #1a1f2a,
+    0 12px 40px rgba(0,0,0,0.4),
+    0 2px 8px rgba(0,0,0,0.2);
+  padding: 1.75rem 1.75rem 1.5rem;
+  position: relative;
+  animation: ${float} 6s ease-in-out infinite;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #4ade80, #6ee89a, #4ade80);
+  }
 `;
 
-const SectionInner = styled.div`
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 0 2.5rem;
+const PoolCardHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.25rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #232830;
+`;
+
+const PoolCardLabel = styled.div`
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6e7d8e;
+`;
+
+const PoolCardBadge = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.62rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #4ade80;
+  background: rgba(74,222,128,0.08);
+  border: 1px solid rgba(74,222,128,0.2);
+  padding: 0.2rem 0.6rem;
+`;
+
+const LiveDot = styled.span`
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #4ade80;
+  animation: ${pulse} 2s ease-in-out infinite;
+`;
+
+const CandidateList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+`;
+
+const CandidateEntry = styled.div<{ delay: number; visible: boolean }>`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  background: #111318;
+  border: 1px solid #232830;
+  opacity: ${p => p.visible ? 1 : 0};
+  animation: ${p => p.visible ? slideIn : 'none'} 0.4s ease ${p => p.delay}s both;
+  transition: background 0.15s ease;
+
+  &:hover { background: #0f1118; }
+`;
+
+const CandidateEntryLeft = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+`;
+
+const CandidateName = styled.div`
+  font-size: 0.82rem;
+  font-weight: 500;
+  color: #c8d0dc;
+`;
+
+const CandidateRole = styled.div`
+  font-size: 0.7rem;
+  color: #6e7d8e;
+  font-weight: 300;
+`;
+
+const TierBadge = styled.div<{ color: string; bg: string }>`
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: ${p => p.color};
+  background: ${p => p.bg};
+  border: 1px solid ${p => p.color}33;
+  padding: 0.2rem 0.55rem;
+  flex-shrink: 0;
+`;
+
+const PoolCardFooter = styled.div`
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid #232830;
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 0.9rem;
+  color: #8a9ab0;
+`;
+
+// ─── section (filters + features) ────────────────────────────────────────────
+
+const SectionBlock = styled.div`
+  margin-bottom: 6rem;
 `;
 
 const SectionHeader = styled.div`
-    display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    padding: 1rem 0 0.9rem;
-    border-bottom: 1px solid ${C.border};
-`;
-
-const SectionIdx = styled.span`
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
-    font-weight: 600;
-    letter-spacing: 0.14em;
-    color: ${C.amber};
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+  animation: ${fadeUp} 0.7s ease 0.35s both;
 `;
 
 const SectionTitle = styled.h2`
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.82rem;
-    text-transform: uppercase;
-    letter-spacing: 0.1em;
-    color: ${C.text};
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 `;
 
 const SectionRule = styled.div`
-    flex: 1;
-    height: 1px;
-    background: ${C.border};
+  flex: 1;
+  height: 1px;
+  background: #232830;
 `;
 
 const SectionCount = styled.span`
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
-    color: ${C.textDim};
-    letter-spacing: 0.08em;
-    white-space: nowrap;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6e7d8e;
+  white-space: nowrap;
 `;
 
-// ─── filter table ─────────────────────────────────────────────────────────────
+const ItemGrid = styled.div<{ cols?: number }>`
+  display: grid;
+  grid-template-columns: repeat(${p => p.cols ?? 2}, 1fr);
+  gap: 1px;
+  background: #232830;
+  border: 1px solid #232830;
 
-const FilterTable = styled.div``;
-
-const FilterRow = styled.div`
-    display: grid;
-    grid-template-columns: 48px 40px 1fr 1fr;
-    align-items: center;
-    border-bottom: 1px solid ${C.border};
-    transition: background 0.12s ease;
-    cursor: default;
-
-    &:last-child { border-bottom: none; }
-
-    &:hover {
-        background: ${C.amberGlow};
-
-        & > *:first-child { color: ${C.amber}; }
-    }
-
-    @media (max-width: 640px) {
-        grid-template-columns: 40px 32px 1fr;
-    }
+  @media (max-width: 700px) {
+    grid-template-columns: 1fr;
+  }
 `;
 
-const FilterIdx = styled.div`
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.58rem;
-    font-weight: 600;
-    color: ${C.textDim};
-    padding: 1.1rem 0 1.1rem 0;
-    letter-spacing: 0.08em;
-    transition: color 0.12s ease;
-    text-align: center;
+const ItemCard = styled.div<{ delay: number }>`
+  background: #111318;
+  padding: 2.5rem;
+  position: relative;
+  transition: background 0.2s ease;
+  animation: ${fadeUp} 0.6s ease ${p => p.delay}s both;
+
+  &:hover {
+    background: #1a1f2a;
+  }
 `;
 
-const FilterIconWrap = styled.div`
-    display: flex;
-    align-items: center;
-    color: ${C.textDim};
-    transition: color 0.12s ease;
+const ItemNum = styled.div`
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 3.5rem;
+  color: rgba(74,222,128,0.12);
+  line-height: 1;
+  position: absolute;
+  top: 1.5rem;
+  right: 2rem;
+  pointer-events: none;
 `;
 
-const FilterName = styled.div`
-    font-family: 'Syne', sans-serif;
-    font-weight: 600;
-    font-size: 0.82rem;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: ${C.text};
-    padding: 1.1rem 1.25rem;
+const ItemIcon = styled.div`
+  width: 42px;
+  height: 42px;
+  border: 1.5px solid rgba(74,222,128,0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  color: #4ade80;
 `;
 
-const FilterDesc = styled.div`
-    font-family: 'Syne', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 400;
-    color: ${C.textMid};
-    padding: 1.1rem 1.5rem 1.1rem 0;
-    line-height: 1.5;
-
-    @media (max-width: 640px) { display: none; }
+const ItemName = styled.h3`
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.35rem;
+  font-weight: 400;
+  color: #ffffff;
+  letter-spacing: -0.01em;
+  margin-bottom: 0.75rem;
 `;
 
-// ─── features grid ────────────────────────────────────────────────────────────
-
-const FeaturesGrid = styled.div`
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    background: ${C.border};
-
-    @media (max-width: 900px) { grid-template-columns: repeat(2, 1fr); }
-    @media (max-width: 560px) { grid-template-columns: 1fr; }
+const ItemDesc = styled.p`
+  font-size: 0.875rem;
+  font-weight: 300;
+  color: #8a9ab0;
+  line-height: 1.75;
 `;
 
-const FeatureCell = styled.div`
-    background: ${C.bg};
-    padding: 2rem 2rem 2rem;
-    position: relative;
-    overflow: hidden;
-    transition: background 0.15s ease;
+// ─── pull quote ───────────────────────────────────────────────────────────────
 
-    &:hover {
-        background: ${C.surface};
-    }
+const PullQuote = styled.blockquote`
+  text-align: center;
+  padding: 4rem 2rem;
+  margin-bottom: 5rem;
+  position: relative;
+  animation: ${fadeUp} 0.7s ease 0.5s both;
 
-    &:hover > div:first-child { color: ${C.amberGlow}; }
-    &:hover > div:nth-child(2) { border-color: ${C.amber}; color: ${C.amber}; }
-`;
-
-const FeatureBigIdx = styled.div`
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: 4.5rem;
-    line-height: 1;
-    color: rgba(255,255,255,0.03);
+  &::before {
+    content: '"';
+    font-family: 'DM Serif Display', serif;
+    font-size: 10rem;
+    color: rgba(74,222,128,0.07);
     position: absolute;
-    top: 0.75rem;
-    right: 1rem;
-    letter-spacing: -0.03em;
-    transition: color 0.15s ease;
+    top: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    line-height: 1;
     pointer-events: none;
-    user-select: none;
+  }
 `;
 
-const FeatureIconBox = styled.div`
-    width: 32px;
-    height: 32px;
-    border: 1px solid ${C.border};
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: ${C.textMid};
-    margin-bottom: 1.1rem;
-    transition: all 0.15s ease;
-    border-radius: 3px;
+const PullQuoteText = styled.p`
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  color: #ffffff;
+  line-height: 1.4;
+  max-width: 720px;
+  margin: 0 auto 1.5rem;
+  position: relative;
+  z-index: 1;
 `;
 
-const FeatureName = styled.h3`
-    font-family: 'Syne', sans-serif;
-    font-weight: 700;
-    font-size: 0.85rem;
-    text-transform: uppercase;
-    letter-spacing: 0.07em;
-    color: ${C.white};
-    margin-bottom: 0.65rem;
-    line-height: 1.3;
-`;
-
-const FeatureDesc = styled.p`
-    font-family: 'Syne', sans-serif;
-    font-size: 0.78rem;
-    font-weight: 400;
-    color: ${C.textMid};
-    line-height: 1.7;
+const PullQuoteAttr = styled.cite`
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #4ade80;
 `;
 
 // ─── CTA ──────────────────────────────────────────────────────────────────────
 
-const CTAWrap = styled.div`
-    max-width: 1280px;
-    margin: 0 auto;
-    padding: 4rem 2.5rem;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 2rem;
+const CTASection = styled.div`
+  border-top: 2px solid #232830;
+  padding: 4rem 0 5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  animation: ${fadeUp} 0.7s ease 0.55s both;
 
-    @media (max-width: 640px) {
-        flex-direction: column;
-        align-items: flex-start;
-    }
+  @media (max-width: 700px) {
+    flex-direction: column;
+    text-align: center;
+  }
 `;
 
 const CTALeft = styled.div``;
 
-const CTAEyebrow = styled.div`
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.6rem;
-    font-weight: 600;
-    letter-spacing: 0.18em;
-    text-transform: uppercase;
-    color: ${C.amber};
-    margin-bottom: 0.75rem;
+const CTALabel = styled.p`
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #4ade80;
+  margin-bottom: 0.5rem;
 `;
 
 const CTATitle = styled.h2`
-    font-family: 'Syne', sans-serif;
-    font-weight: 800;
-    font-size: clamp(1.75rem, 3.5vw, 2.75rem);
-    text-transform: uppercase;
-    letter-spacing: -0.01em;
-    color: ${C.white};
-    line-height: 1.05;
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 `;
 
 const CTAButton = styled.button`
-    display: inline-flex;
-    align-items: center;
-    gap: 0.6rem;
-    background: ${C.amber};
-    color: ${C.bg};
-    border: none;
-    padding: 0.75rem 1.5rem;
-    font-family: 'Syne', sans-serif;
-    font-size: 0.82rem;
-    font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    cursor: pointer;
-    border-radius: 4px;
-    transition: all 0.15s ease;
-    white-space: nowrap;
-    flex-shrink: 0;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: #4ade80;
+  color: #000;
+  border: none;
+  padding: 1.1rem 2.25rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: background 0.2s ease;
 
-    &:hover {
-        background: ${C.amberHov};
-        transform: translateY(-1px);
-        box-shadow: 0 4px 20px ${C.amberGlow};
-        gap: 0.9rem;
+  &:hover {
+    background: #6ee89a;
+
+    svg {
+      transform: translateX(4px);
     }
+  }
+
+  svg {
+    transition: transform 0.2s ease;
+  }
 `;
 
-// ─── count-up hook ────────────────────────────────────────────────────────────
-
-function useCountUp(target: number, duration = 900, delay = 0) {
-    const [count, setCount] = useState(0);
-    const ref = useRef<HTMLDivElement>(null);
-    const started = useRef(false);
-
-    useEffect(() => {
-        const el = ref.current;
-        if (!el) return;
-        const observer = new IntersectionObserver(([entry]) => {
-            if (entry.isIntersecting && !started.current) {
-                started.current = true;
-                setTimeout(() => {
-                    const start = performance.now();
-                    const tick = (now: number) => {
-                        const progress = Math.min((now - start) / duration, 1);
-                        const ease = 1 - Math.pow(1 - progress, 3);
-                        setCount(Math.floor(ease * target));
-                        if (progress < 1) requestAnimationFrame(tick);
-                        else setCount(target);
-                    };
-                    requestAnimationFrame(tick);
-                }, delay);
-            }
-        }, { threshold: 0.3 });
-        observer.observe(el);
-        return () => observer.disconnect();
-    }, [target, duration, delay]);
-
-    return { count, ref };
-}
+const ArrowRight = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
 
 // ─── data ─────────────────────────────────────────────────────────────────────
 
+const MOCK_POOL = [
+  { name: 'D. Mitchell',  role: 'HVAC Service Technician', tier: 'Green',  color: '#4ade80', bg: 'rgba(74,222,128,0.08)'  },
+  { name: 'R. Castillo',  role: 'HVAC Installer',          tier: 'Green',  color: '#4ade80', bg: 'rgba(74,222,128,0.08)'  },
+  { name: 'T. Okonkwo',   role: 'HVAC Apprentice',         tier: 'Yellow', color: '#fbbf24', bg: 'rgba(251,191,36,0.08)'  },
+  { name: 'J. Hartmann',  role: 'HVAC Service Technician', tier: 'Red',    color: '#f87171', bg: 'rgba(248,113,113,0.08)' },
+];
+
 const FILTERS = [
-    { icon: <Target size={14} />,           name: 'Ranked by Fit',         desc: 'Your strongest candidates surface first — no digging required' },
-    { icon: <Wrench size={14} />,            name: 'Role Type',             desc: 'Filter by the specific HVAC role you\'re actively hiring for' },
-    { icon: <MapPin size={14} />,            name: 'Location',              desc: 'Find candidates within a practical commute of your job site' },
-    { icon: <BarChart3 size={14} />,         name: 'Experience Level',      desc: 'Browse by years in the trade and seniority' },
-    { icon: <ScrollText size={14} />,        name: 'Certifications',        desc: 'Filter for the credentials your roles require' },
-    { icon: <CircleDollarSign size={14} />,  name: 'Pay Expectations',      desc: 'Find candidates whose expectations fit your budget' },
-    { icon: <Home size={14} />,              name: 'HVAC Specialty',        desc: 'Residential, commercial, refrigeration, and more' },
-    { icon: <Calendar size={14} />,          name: 'Availability',          desc: 'See who\'s ready to start now vs. open to the right opportunity' },
+  { icon: <Target size={18} />,           name: 'Ranked by Fit',       desc: 'Your strongest candidates surface first — no digging required.' },
+  { icon: <Wrench size={18} />,            name: 'Role Type',           desc: 'Filter by the specific HVAC role you\'re actively hiring for.' },
+  { icon: <MapPin size={18} />,            name: 'Location',            desc: 'Find candidates within a practical commute of your job site.' },
+  { icon: <BarChart3 size={18} />,         name: 'Experience Level',    desc: 'Browse by years in the trade and seniority.' },
+  { icon: <ScrollText size={18} />,        name: 'Certifications',      desc: 'Filter for the credentials your roles require.' },
+  { icon: <CircleDollarSign size={18} />,  name: 'Pay Expectations',    desc: 'Find candidates whose expectations fit your budget.' },
+  { icon: <Home size={18} />,              name: 'HVAC Specialty',      desc: 'Residential, commercial, refrigeration, and more.' },
+  { icon: <Calendar size={18} />,          name: 'Availability',        desc: 'See who\'s ready to start now vs. open to the right opportunity.' },
 ];
 
 const FEATURES = [
-    { icon: <Lock size={14} />,       name: 'Private & Yours',          desc: 'Your candidate pool is completely separate from other companies\' data. Nobody else sees who\'s in your pipeline.' },
-    { icon: <RefreshCw size={14} />,  name: 'Always Current',           desc: 'New applicants flow in and stay organized automatically. Your pool grows every time someone applies.' },
-    { icon: <FileText size={14} />,   name: 'Notes & History',          desc: 'Track conversations, add notes, and keep your team aligned on every candidate.' },
-    { icon: <TrendingUp size={14} />, name: 'Fast Shortlisting',        desc: 'Filter down to your best candidates in seconds — without reading through every resume.' },
-    { icon: <Bell size={14} />,       name: 'Instant Alerts',           desc: 'Get notified when a strong candidate enters your pipeline so you can move before someone else does.' },
-    { icon: <BarChart3 size={14} />,  name: 'Pipeline Visibility',      desc: 'See the full picture of who\'s applied, who\'s been contacted, and who\'s still worth a call.' },
+  { icon: <Lock size={18} />,       name: 'Private & Yours',     desc: 'Your candidate pool is completely separate from other companies\' data. Nobody else sees who\'s in your pipeline.' },
+  { icon: <RefreshCw size={18} />,  name: 'Always Current',      desc: 'New applicants flow in and stay organized automatically. Your pool grows every time someone applies.' },
+  { icon: <FileText size={18} />,   name: 'Notes & History',     desc: 'Track conversations, add notes, and keep your team aligned on every candidate.' },
+  { icon: <TrendingUp size={18} />, name: 'Fast Shortlisting',   desc: 'Filter down to your best candidates in seconds — without reading through every resume.' },
+  { icon: <Bell size={18} />,       name: 'Instant Alerts',      desc: 'Get notified when a strong candidate enters your pipeline so you can move before someone else does.' },
+  { icon: <BarChart3 size={18} />,  name: 'Pipeline Visibility', desc: 'See the full picture of who\'s applied, who\'s been contacted, and who\'s still worth a call.' },
 ];
 
-// ─── animated stat cell ───────────────────────────────────────────────────────
+// ─── animated pool card ───────────────────────────────────────────────────────
 
-const AnimatedStatCell: React.FC<{ target: number; suffix?: string; label: string; delay: number }> = ({ target, suffix = '', label, delay }) => {
-    const { count, ref } = useCountUp(target, 900, delay);
-    return (
-        <StatCell ref={ref} style={{ '--delay': `${delay / 1000 + 0.05}s` } as React.CSSProperties}>
-            <StatNum>{count}<span>{suffix}</span></StatNum>
-            <StatLabel>{label}</StatLabel>
-        </StatCell>
-    );
+const AnimatedPoolCard: React.FC = () => {
+  const [visible, setVisible] = useState(0);
+  const ref = useRef<HTMLDivElement>(null);
+  const started = useRef(false);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !started.current) {
+        started.current = true;
+        MOCK_POOL.forEach((_, i) => {
+          setTimeout(() => setVisible(v => v + 1), i * 500 + 300);
+        });
+      }
+    }, { threshold: 0.3 });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <PoolCard ref={ref}>
+      <PoolCardHeader>
+        <PoolCardLabel>Talos &bull; Talent Pool</PoolCardLabel>
+        <PoolCardBadge><LiveDot />Live</PoolCardBadge>
+      </PoolCardHeader>
+      <CandidateList>
+        {MOCK_POOL.map((c, i) => (
+          <CandidateEntry key={i} delay={i * 0.1} visible={i < visible}>
+            <CandidateEntryLeft>
+              <CandidateName>{c.name}</CandidateName>
+              <CandidateRole>{c.role}</CandidateRole>
+            </CandidateEntryLeft>
+            <TierBadge color={c.color} bg={c.bg}>{c.tier}</TierBadge>
+          </CandidateEntry>
+        ))}
+      </CandidateList>
+      <PoolCardFooter>4 candidates · ranked on arrival</PoolCardFooter>
+    </PoolCard>
+  );
 };
 
 // ─── component ────────────────────────────────────────────────────────────────
 
 const TalentPool: React.FC = () => {
-    const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
+  const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
-    return (
-        <>
-            <GlobalFonts />
-            <Page>
+  return (
+    <>
+      <FontImport />
+      <Page>
+        <Wrapper>
 
-                {/* ── Header bar ── */}
-                <HeaderBar>
-                    <HeaderLeft>
-                        <BrandMark>Talos</BrandMark>
-                        <HeaderSep />
-                        <HeaderTitle>talent-pool / v1</HeaderTitle>
-                    </HeaderLeft>
-                    <StatusPill>
-                        <StatusDot />
-                        System Active
-                    </StatusPill>
-                </HeaderBar>
+          {/* ── Top rule ── */}
+          <TopRule>
+            <TopLabel>Talos &mdash; Talent Pool</TopLabel>
+            <TopMeta>Private &bull; Ranked &bull; Always Available</TopMeta>
+          </TopRule>
 
-                {/* ── Hero ── */}
-                <Hero>
-                    <HeroEyebrow>
-                        <EyebrowTag>TP-001</EyebrowTag>
-                        <EyebrowLine />
-                        <EyebrowMeta>Talos / Talent Intelligence</EyebrowMeta>
-                    </HeroEyebrow>
+          {/* ── Hero ── */}
+          <HeroSection>
+            <HeroKicker>Your candidates, organized</HeroKicker>
+            <HeroTitle>
+              Every applicant, <em>ranked</em><br />and ready.
+            </HeroTitle>
+            <HeroSub>
+              Your private database of HVAC candidates — always current, always searchable, always yours.
+            </HeroSub>
+            <MidRule>
+              <MidRuleOrb />
+            </MidRule>
+          </HeroSection>
 
-                    <HeroTitle>
-                        Talent
-                        <HeroTitleAccent>Pool</HeroTitleAccent>
-                    </HeroTitle>
+          {/* ── Preview ── */}
+          <PreviewWrap>
+            <PreviewLeft>
+              <PreviewTag>Live Preview</PreviewTag>
+              <PreviewHeading>
+                Your pipeline,<br /><em>at a glance</em>
+              </PreviewHeading>
+              <PreviewBody>
+                Open your talent pool and your best candidates are already at the top — ranked, filtered, and ready for your call. No stacks of resumes. No guesswork.
+              </PreviewBody>
+              <StatRow>
+                <Stat>
+                  <StatNum>8<span>+</span></StatNum>
+                  <StatDesc>filter options</StatDesc>
+                </Stat>
+                <Stat>
+                  <StatNum>24<span>h</span></StatNum>
+                  <StatDesc>always available</StatDesc>
+                </Stat>
+              </StatRow>
+            </PreviewLeft>
 
-                    <HeroAccentLine />
+            <AnimatedPoolCard />
+          </PreviewWrap>
 
-                    <HeroBottom>
-                        <HeroDesc>
-                            Your private database of ranked HVAC candidates — always current, always searchable, always yours.
-                        </HeroDesc>
-                        <HeroDocId>
-                            DOC-TP-001 / CLASSIFICATION: CLIENT-ONLY<br />
-                            FILTERS: 08 / FEATURES: 06
-                        </HeroDocId>
-                    </HeroBottom>
-                </Hero>
+          {/* ── Filters ── */}
+          <SectionBlock>
+            <SectionHeader>
+              <SectionTitle>Eight ways to filter</SectionTitle>
+              <SectionRule />
+              <SectionCount>Find who you need</SectionCount>
+            </SectionHeader>
+            <ItemGrid cols={2}>
+              {FILTERS.map((f, i) => (
+                <ItemCard key={i} delay={0.4 + i * 0.05}>
+                  <ItemNum>{String(i + 1).padStart(2, '0')}</ItemNum>
+                  <ItemIcon>{f.icon}</ItemIcon>
+                  <ItemName>{f.name}</ItemName>
+                  <ItemDesc>{f.desc}</ItemDesc>
+                </ItemCard>
+              ))}
+            </ItemGrid>
+          </SectionBlock>
 
-                {/* ── Stats ── */}
-                <StatsStrip>
-                    <AnimatedStatCell target={8}   suffix=" +"  label="Filter Options"      delay={0}   />
-                    <AnimatedStatCell target={6}               label="Core Features"       delay={80}  />
-                    <AnimatedStatCell target={100} suffix="%"  label="Private & Encrypted" delay={160} />
-                    <AnimatedStatCell target={24}  suffix="h"  label="Always Available"    delay={240} />
-                </StatsStrip>
+          {/* ── Pull quote ── */}
+          <PullQuote>
+            <PullQuoteText>
+              No more stacks of resumes. Open your pipeline and your best candidates are already waiting.
+            </PullQuoteText>
+            <PullQuoteAttr>Talos Talent Pool</PullQuoteAttr>
+          </PullQuote>
 
-                {/* ── Filters ── */}
-                <SectionWrap>
-                    <SectionInner>
-                        <SectionHeader>
-                            <SectionIdx>01</SectionIdx>
-                            <SectionTitle>Intelligent Organization</SectionTitle>
-                            <SectionRule />
-                            <SectionCount>8 filter dimensions</SectionCount>
-                        </SectionHeader>
-                        <FilterTable>
-                            {FILTERS.map((f, i) => (
-                                <FilterRow key={i}>
-                                    <FilterIdx>{String(i + 1).padStart(2, '0')}</FilterIdx>
-                                    <FilterIconWrap>{f.icon}</FilterIconWrap>
-                                    <FilterName>{f.name}</FilterName>
-                                    <FilterDesc>{f.desc}</FilterDesc>
-                                </FilterRow>
-                            ))}
-                        </FilterTable>
-                    </SectionInner>
-                </SectionWrap>
+          {/* ── Features ── */}
+          <SectionBlock>
+            <SectionHeader>
+              <SectionTitle>Built to work for you</SectionTitle>
+              <SectionRule />
+              <SectionCount>Six core features</SectionCount>
+            </SectionHeader>
+            <ItemGrid cols={2}>
+              {FEATURES.map((f, i) => (
+                <ItemCard key={i} delay={0.4 + i * 0.05}>
+                  <ItemNum>{String(i + 1).padStart(2, '0')}</ItemNum>
+                  <ItemIcon>{f.icon}</ItemIcon>
+                  <ItemName>{f.name}</ItemName>
+                  <ItemDesc>{f.desc}</ItemDesc>
+                </ItemCard>
+              ))}
+            </ItemGrid>
+          </SectionBlock>
 
-                {/* ── Features ── */}
-                <SectionWrap>
-                    <SectionInner>
-                        <SectionHeader>
-                            <SectionIdx>02</SectionIdx>
-                            <SectionTitle>Platform Capabilities</SectionTitle>
-                            <SectionRule />
-                            <SectionCount>6 core features</SectionCount>
-                        </SectionHeader>
-                    </SectionInner>
-                    <FeaturesGrid>
-                        {FEATURES.map((f, i) => (
-                            <FeatureCell key={i}>
-                                <FeatureBigIdx>{String(i + 1).padStart(2, '0')}</FeatureBigIdx>
-                                <FeatureIconBox>{f.icon}</FeatureIconBox>
-                                <FeatureName>{f.name}</FeatureName>
-                                <FeatureDesc>{f.desc}</FeatureDesc>
-                            </FeatureCell>
-                        ))}
-                    </FeaturesGrid>
-                </SectionWrap>
+          {/* ── CTA ── */}
+          <CTASection>
+            <CTALeft>
+              <CTALabel>Ready to build your pool?</CTALabel>
+              <CTATitle>See the Talent Pool in action</CTATitle>
+            </CTALeft>
+            <CTAButton onClick={() => setIsDemoModalOpen(true)}>
+              Get a Demo <ArrowRight />
+            </CTAButton>
+          </CTASection>
 
-                {/* ── CTA ── */}
-                <div style={{ borderTop: `1px solid ${C.border}` }}>
-                    <CTAWrap>
-                        <CTALeft>
-                            <CTAEyebrow>Ready to deploy</CTAEyebrow>
-                            <CTATitle>See the Talent<br />Pool in Action</CTATitle>
-                        </CTALeft>
-                        <CTAButton onClick={() => setIsDemoModalOpen(true)}>
-                            Request Access <ChevronRight size={14} />
-                        </CTAButton>
-                    </CTAWrap>
-                </div>
+        </Wrapper>
+      </Page>
 
-            </Page>
-
-            <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
-        </>
-    );
+      <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
+    </>
+  );
 };
 
 export default TalentPool;
