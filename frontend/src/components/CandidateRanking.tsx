@@ -738,10 +738,10 @@ const ClosingCTA = styled.button`
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const MOCK_CANDIDATES = [
-  { rank: 1,  name: 'D. Mitchell',   meta: 'HVAC Service Tech · Miami, FL',    score: 91, tier: 'Green',  tColor: '#4ade80', tBg: 'rgba(74,222,128,0.06)' },
-  { rank: 2,  name: 'R. Castillo',   meta: 'HVAC Installer · Hialeah, FL',     score: 78, tier: 'Yellow', tColor: '#fbbf24', tBg: 'rgba(251,191,36,0.06)'  },
-  { rank: 3,  name: 'T. Okonkwo',    meta: 'HVAC Apprentice · Doral, FL',      score: 64, tier: 'Yellow', tColor: '#fbbf24', tBg: 'rgba(251,191,36,0.06)'  },
-  { rank: 4,  name: 'J. Hartmann',   meta: 'HVAC Service Tech · Kendall, FL',  score: 38, tier: 'Red',    tColor: '#ef4444', tBg: 'rgba(239,68,68,0.06)'   },
+  { rank: 1, name: 'D. Mitchell',  meta: 'HVAC Service Technician', tier: 'Green',  tColor: '#4ade80', tBg: 'rgba(74,222,128,0.06)' },
+  { rank: 2, name: 'R. Castillo',  meta: 'HVAC Installer',          tier: 'Green',  tColor: '#4ade80', tBg: 'rgba(74,222,128,0.06)' },
+  { rank: 3, name: 'T. Okonkwo',   meta: 'HVAC Apprentice',         tier: 'Yellow', tColor: '#fbbf24', tBg: 'rgba(251,191,36,0.06)' },
+  { rank: 4, name: 'J. Hartmann',  meta: 'HVAC Service Technician', tier: 'Red',    tColor: '#ef4444', tBg: 'rgba(239,68,68,0.06)'  },
 ];
 
 const SIGNALS = [
@@ -825,7 +825,7 @@ const CandidateRanking: React.FC = () => {
         {/* ── Hero ── */}
         <HeroSection>
           <HeroLeft>
-            <HeroEyebrow>AI Candidate Ranking</HeroEyebrow>
+            <HeroEyebrow>Candidate Ranking</HeroEyebrow>
             <HeroHeadline>
               Every applicant<br />
               ranked before you<br />
@@ -833,9 +833,9 @@ const CandidateRanking: React.FC = () => {
               <em>resume.</em>
             </HeroHeadline>
             <HeroBody>
-              Talos scores every candidate from 0–100 and places them into
-              one of three tiers. You open your pipeline to a ranked list —
-              not a pile. The best people rise to the top automatically.
+              You open your pipeline to a ranked list — not a pile.
+              The strongest candidates are already at the top,
+              waiting for your call.
             </HeroBody>
             <HeroCTA onClick={() => setIsDemoModalOpen(true)}>
               See It in Action
@@ -847,7 +847,6 @@ const CandidateRanking: React.FC = () => {
             <LeaderboardHeader>
               <LeaderboardHeadCell>#</LeaderboardHeadCell>
               <LeaderboardHeadCell>Candidate</LeaderboardHeadCell>
-              <LeaderboardHeadCell>Score</LeaderboardHeadCell>
               <LeaderboardHeadCell>Tier</LeaderboardHeadCell>
             </LeaderboardHeader>
 
@@ -858,7 +857,6 @@ const CandidateRanking: React.FC = () => {
                   <CandidateName>{c.name}</CandidateName>
                   <CandidateMeta>{c.meta}</CandidateMeta>
                 </CandidateInfo>
-                <CandidateScore color={c.tColor}>{c.score}</CandidateScore>
                 <TierBadge color={c.tColor} bg={c.tBg}>{c.tier}</TierBadge>
               </CandidateRow>
             ))}
@@ -869,13 +867,12 @@ const CandidateRanking: React.FC = () => {
                 <CandidateInfo>
                   <CandidateName style={{ color: '#222' }}>Analyzing...</CandidateName>
                 </CandidateInfo>
-                <CandidateScore color="#222">—</CandidateScore>
                 <TierBadge color="#222" bg="transparent">—</TierBadge>
               </CandidateRow>
             )}
 
             <LeaderboardFooter>
-              <FooterNote>4 applicants · HVAC Service Tech · Miami</FooterNote>
+              <FooterNote>4 applicants · HVAC Service Technician</FooterNote>
               <LiveIndicator>Live ranking</LiveIndicator>
             </LeaderboardFooter>
           </Leaderboard>
