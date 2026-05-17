@@ -243,8 +243,20 @@ const ALL_DESCRIPTION_HEADERS = new Set([
     'Advancement Opportunities', 'Benefits',
 ]);
 
+function preprocessDescription(text: string): string {
+    let t = text;
+    // Insert newline before each known section header
+    ALL_DESCRIPTION_HEADERS.forEach(header => {
+        t = t.replace(new RegExp(`(?<![\\n])${header}`, 'g'), `\n${header}`);
+    });
+    // Insert newline before each bullet point (• not at start of line)
+    t = t.replace(/ • /g, '\n• ');
+    return t;
+}
+
 function renderDescriptionV2(text: string) {
     if (!text) return null;
+    text = preprocessDescription(text);
 
     type Child = { type: 'para' | 'bullet'; text: string };
     type SectionBlock = { kind: 'section'; heading: string; children: Child[] };
