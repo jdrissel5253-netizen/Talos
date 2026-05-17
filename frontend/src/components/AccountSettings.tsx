@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { useNavigate } from 'react-router-dom';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
 
@@ -17,11 +18,32 @@ const Inner = styled.div`
   margin: 0 auto;
 `;
 
+const TopRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+`;
+
+const BackBtn = styled.button`
+  background: transparent;
+  border: 1px solid #2a3040;
+  color: #6e7d8e;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.45rem 1rem;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.15s ease;
+
+  &:hover { border-color: #4ade80; color: #4ade80; }
+`;
+
 const PageTitle = styled.h1`
   font-size: 1.25rem;
   font-weight: 700;
   color: #fff;
-  margin-bottom: 2rem;
+  margin-bottom: 0;
   letter-spacing: -0.02em;
 `;
 
@@ -96,6 +118,7 @@ const Msg = styled.div<{ error?: boolean }>`
 `;
 
 const AccountSettings: React.FC = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [companyName, setCompanyName] = useState('');
   const [profileMsg, setProfileMsg] = useState<{ text: string; error: boolean } | null>(null);
@@ -175,7 +198,10 @@ const AccountSettings: React.FC = () => {
   return (
     <Page>
       <Inner>
-        <PageTitle>Account Settings</PageTitle>
+        <TopRow>
+          <PageTitle>Account Settings</PageTitle>
+          <BackBtn onClick={() => navigate('/dashboard')}>← Dashboard</BackBtn>
+        </TopRow>
 
         <Section>
           <SectionTitle>Profile</SectionTitle>
