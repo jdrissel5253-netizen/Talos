@@ -427,9 +427,9 @@ const steps = [
 
 const callouts = [
   {
-    num: '3',
-    title: 'Clicks to post',
-    desc: 'From job details to live listing in minutes, not an afternoon.',
+    num: '1',
+    title: 'Place to manage it all',
+    desc: 'Post, track, and review candidates — without logging into anything else.',
   },
   {
     num: '0',
@@ -467,9 +467,9 @@ const JobBoardIntegration: React.FC = () => {
 
           <HeroBottom>
             <HeroDesc>
-              Posting a job through Talos takes minutes, not an afternoon.
-              Fill out your details once and your listing goes live — no
-              platform-hopping, no reformatting, no juggling logins.
+              Post a job through Talos and your listing goes live without
+              logging into anything else. Fill out your details once, in one
+              place — no platform-hopping, no reformatting, no juggling logins.
             </HeroDesc>
             <HeroMeta>
               <MetaLine>Built for HVAC hiring</MetaLine>
@@ -489,7 +489,7 @@ const JobBoardIntegration: React.FC = () => {
               The method
             </StatementLabel>
             <StatementQuote>
-              "Three clicks. Five minutes.{' '}
+              "Fill it out once.{' '}
               <span>Your job is live.</span>"
             </StatementQuote>
           </StatementInner>
