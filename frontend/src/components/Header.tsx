@@ -264,7 +264,7 @@ const Header: React.FC = () => {
             </DropdownContent>
           </NavItem>
 
-          <NavLink to="/#pricing">Pricing</NavLink>
+          <NavLink to="/pricing">Pricing</NavLink>
           <NavLink to="/hvac-insights">Knowledge Hub</NavLink>
           <NavLink to="/jobs">Apply to HVAC Jobs</NavLink>
         </Navigation>
@@ -302,7 +302,7 @@ const Header: React.FC = () => {
         <MobileSub to="/talent-pool" onClick={closeMobile}>Personalized Talent Pool</MobileSub>
         <MobileSub to="/hvac-insights" onClick={closeMobile}>HVAC Hiring Insights</MobileSub>
 
-        <MobileNavLink to="/#pricing" onClick={closeMobile}>Pricing</MobileNavLink>
+        <MobileNavLink to="/pricing" onClick={closeMobile}>Pricing</MobileNavLink>
         <MobileNavLink to="/hvac-insights" onClick={closeMobile}>Knowledge Hub</MobileNavLink>
         <MobileNavLink to="/jobs" onClick={closeMobile}>Apply to HVAC Jobs</MobileNavLink>
 

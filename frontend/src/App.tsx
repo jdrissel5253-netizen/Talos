@@ -36,6 +36,7 @@ const AccountSettings = lazy(() => import('./components/AccountSettings'));
 const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/TermsOfService'));
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
+const Pricing = lazy(() => import('./components/Pricing'));
 
 // Loading fallback for lazy-loaded routes
 const LoadingFallback = styled.div`
@@ -158,6 +159,7 @@ function AppLayout() {
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/pricing" element={<Pricing />} />
             </Routes>
           </Suspense>
         </MainContent>
