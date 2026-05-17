@@ -38,6 +38,7 @@ interface Candidate {
   position_type: string;
   job_location: string;
   jobs_applied: number;
+  internal_notes: string | null;
 }
 
 interface ApplicationEntry {
@@ -271,6 +272,116 @@ const FilterInput = styled.input`
     outline: none;
     border-color: rgba(74, 222, 128, 0.5);
   }
+`;
+
+const FilterCheckboxLabel = styled.label`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+  color: #e0e0e0;
+  cursor: pointer;
+  padding-top: 1.75rem;
+`;
+
+const NotesSection = styled.div`
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 0.75rem 0 0;
+  margin-top: 0.75rem;
+`;
+
+const NotesTextarea = styled.textarea`
+  width: 100%;
+  min-height: 72px;
+  background: #0a0a0a;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 4px;
+  color: #c8c8c8;
+  font-family: inherit;
+  font-size: 0.8rem;
+  line-height: 1.5;
+  padding: 0.6rem 0.75rem;
+  resize: vertical;
+  box-sizing: border-box;
+
+  &:focus {
+    outline: none;
+    border-color: rgba(74,222,128,0.4);
+  }
+`;
+
+const NotesRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.4rem;
+`;
+
+const NotesLabel = styled.span`
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #555;
+`;
+
+const NotesSaveBtn = styled.button`
+  background: transparent;
+  border: 1px solid rgba(74,222,128,0.3);
+  color: #4ade80;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.2rem 0.65rem;
+  cursor: pointer;
+  letter-spacing: 0.04em;
+  transition: background 0.15s;
+
+  &:hover { background: rgba(74,222,128,0.08); }
+  &:disabled { opacity: 0.4; cursor: default; }
+`;
+
+const NotesToggleBtn = styled.button`
+  background: transparent;
+  border: none;
+  color: #555;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  transition: color 0.15s;
+
+  &:hover { color: #4ade80; }
+`;
+
+const RefreshRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+`;
+
+const RefreshBtn = styled.button`
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #666;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  padding: 0.3rem 0.75rem;
+  cursor: pointer;
+  transition: all 0.15s;
+
+  &:hover { border-color: #4ade80; color: #4ade80; }
+`;
+
+const LastRefreshedLabel = styled.span`
+  font-size: 0.68rem;
+  color: #444;
 `;
 
 const CandidatesGrid = styled.div`
@@ -727,12 +838,32 @@ const TalentPoolManager: React.FC = () => {
   const [maxScore, setMaxScore] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('score');
   const [sortOrder, setSortOrder] = useState<string>('desc');
+  const [cityFilter, setCityFilter] = useState<string>('');
+  const [minExperienceFilter, setMinExperienceFilter] = useState<string>('');
+  const [hasCertsFilter, setHasCertsFilter] = useState<boolean>(false);
+
+  // Notes
+  const [notesOpen, setNotesOpen] = useState<Set<number>>(new Set());
+  const [notesDraft, setNotesDraft] = useState<{ [pipelineId: number]: string }>({});
+  const [savingNotes, setSavingNotes] = useState<number | null>(null);
+
+  // Auto-refresh
+  const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
   useEffect(() => {
     fetchTalentPool();
     fetchStats();
     checkGmailConnection();
-  }, [tierFilter, positionFilter, statusFilter, minScore, maxScore, sortBy, sortOrder]);
+  }, [tierFilter, positionFilter, statusFilter, minScore, maxScore, sortBy, sortOrder, cityFilter, minExperienceFilter, hasCertsFilter]);
+
+  // Auto-refresh every 60 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchTalentPool();
+      setLastRefreshed(new Date());
+    }, 60000);
+    return () => clearInterval(interval);
+  }, [tierFilter, positionFilter, statusFilter, minScore, maxScore, sortBy, sortOrder, cityFilter, minExperienceFilter, hasCertsFilter]);
 
   useEffect(() => {
     if (searchParams.get('gmail_connected')) {
@@ -769,6 +900,9 @@ const TalentPoolManager: React.FC = () => {
       if (maxScore) params.append('maxScore', maxScore);
       if (sortBy) params.append('sortBy', sortBy);
       if (sortOrder) params.append('sortOrder', sortOrder);
+      if (cityFilter) params.append('city', cityFilter);
+      if (minExperienceFilter) params.append('minExperience', minExperienceFilter);
+      if (hasCertsFilter) params.append('hasCertifications', 'true');
 
       const response = await fetch(`${config.apiUrl}/api/pipeline/talent-pool?${params.toString()}`, { headers: getAuthHeaders() });
       if (handleUnauthorized(response)) return;
@@ -799,6 +933,37 @@ const TalentPoolManager: React.FC = () => {
       }
     } catch (err) {
       console.error('Error fetching stats:', err);
+    }
+  };
+
+  const toggleNotes = (pipelineId: number, currentNotes: string | null) => {
+    setNotesOpen(prev => {
+      const next = new Set(prev);
+      if (next.has(pipelineId)) {
+        next.delete(pipelineId);
+      } else {
+        next.add(pipelineId);
+        if (!(pipelineId in notesDraft)) {
+          setNotesDraft(d => ({ ...d, [pipelineId]: currentNotes || '' }));
+        }
+      }
+      return next;
+    });
+  };
+
+  const saveNotes = async (pipelineId: number) => {
+    setSavingNotes(pipelineId);
+    try {
+      await fetch(`${config.apiUrl}/api/pipeline/${pipelineId}/notes`, {
+        method: 'PUT',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ notes: notesDraft[pipelineId] ?? '' }),
+      });
+      setCandidates(prev => prev.map(c =>
+        c.pipeline_id === pipelineId ? { ...c, internal_notes: notesDraft[pipelineId] || null } : c
+      ));
+    } finally {
+      setSavingNotes(null);
     }
   };
 
@@ -996,6 +1161,36 @@ const TalentPoolManager: React.FC = () => {
           <Trash2 size={16} />
         </ActionIcon>
       </ActionButtons>
+
+      <NotesSection>
+        <NotesRow>
+          <NotesLabel>
+            {candidate.internal_notes && !notesOpen.has(candidate.pipeline_id)
+              ? '📝 ' + candidate.internal_notes.slice(0, 60) + (candidate.internal_notes.length > 60 ? '…' : '')
+              : 'Notes'}
+          </NotesLabel>
+          <NotesToggleBtn onClick={() => toggleNotes(candidate.pipeline_id, candidate.internal_notes)}>
+            {notesOpen.has(candidate.pipeline_id) ? '▲ hide' : '▼ ' + (candidate.internal_notes ? 'edit' : 'add note')}
+          </NotesToggleBtn>
+        </NotesRow>
+        {notesOpen.has(candidate.pipeline_id) && (
+          <>
+            <NotesTextarea
+              value={notesDraft[candidate.pipeline_id] ?? candidate.internal_notes ?? ''}
+              onChange={(e) => setNotesDraft(d => ({ ...d, [candidate.pipeline_id]: e.target.value }))}
+              placeholder="Add a private note about this candidate…"
+            />
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: '0.4rem' }}>
+              <NotesSaveBtn
+                onClick={() => saveNotes(candidate.pipeline_id)}
+                disabled={savingNotes === candidate.pipeline_id}
+              >
+                {savingNotes === candidate.pipeline_id ? 'Saving…' : 'Save Note'}
+              </NotesSaveBtn>
+            </div>
+          </>
+        )}
+      </NotesSection>
     </CandidateCard>
   );
 
@@ -1213,8 +1408,51 @@ const TalentPoolManager: React.FC = () => {
                 onChange={(e) => setMaxScore(e.target.value)}
               />
             </FilterGroup>
+
+            <FilterGroup>
+              <FilterLabel>Location</FilterLabel>
+              <FilterInput
+                type="text"
+                placeholder="City or area"
+                value={cityFilter}
+                onChange={(e) => setCityFilter(e.target.value)}
+              />
+            </FilterGroup>
+
+            <FilterGroup>
+              <FilterLabel>Min Experience</FilterLabel>
+              <FilterSelect value={minExperienceFilter} onChange={(e) => setMinExperienceFilter(e.target.value)}>
+                <option value="">Any</option>
+                <option value="1">1+ years</option>
+                <option value="2">2+ years</option>
+                <option value="3">3+ years</option>
+                <option value="5">5+ years</option>
+                <option value="7">7+ years</option>
+                <option value="10">10+ years</option>
+              </FilterSelect>
+            </FilterGroup>
+
+            <FilterGroup>
+              <FilterCheckboxLabel>
+                <input
+                  type="checkbox"
+                  checked={hasCertsFilter}
+                  onChange={(e) => setHasCertsFilter(e.target.checked)}
+                />
+                Has Certifications
+              </FilterCheckboxLabel>
+            </FilterGroup>
           </FilterGrid>
         </FilterSection>
+
+        <RefreshRow>
+          <RefreshBtn onClick={() => { fetchTalentPool(); setLastRefreshed(new Date()); }}>
+            ↻ Refresh
+          </RefreshBtn>
+          <LastRefreshedLabel>
+            Updated {lastRefreshed.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · auto-refreshes every 60s
+          </LastRefreshedLabel>
+        </RefreshRow>
 
         {error && <ErrorMessage>{error}</ErrorMessage>}
 

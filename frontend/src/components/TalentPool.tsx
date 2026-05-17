@@ -596,14 +596,12 @@ const MOCK_POOL = [
 ];
 
 const FILTERS = [
-  { icon: <Target size={18} />,           name: 'Ranked by Fit',       desc: 'Your strongest candidates surface first — no digging required.' },
-  { icon: <Wrench size={18} />,            name: 'Role Type',           desc: 'Filter by the specific HVAC role you\'re actively hiring for.' },
-  { icon: <MapPin size={18} />,            name: 'Location',            desc: 'Find candidates within a practical commute of your job site.' },
-  { icon: <BarChart3 size={18} />,         name: 'Experience Level',    desc: 'Browse by years in the trade and seniority.' },
-  { icon: <ScrollText size={18} />,        name: 'Certifications',      desc: 'Filter for the credentials your roles require.' },
-  { icon: <CircleDollarSign size={18} />,  name: 'Pay Expectations',    desc: 'Find candidates whose expectations fit your budget.' },
-  { icon: <Home size={18} />,              name: 'HVAC Specialty',      desc: 'Residential, commercial, refrigeration, and more.' },
-  { icon: <Calendar size={18} />,          name: 'Availability',        desc: 'See who\'s ready to start now vs. open to the right opportunity.' },
+  { icon: <Target size={18} />,    name: 'Ranked by Fit',    desc: 'Your strongest candidates surface first — no digging required.' },
+  { icon: <Wrench size={18} />,    name: 'Role Type',        desc: 'Filter by the specific HVAC role you\'re actively hiring for.' },
+  { icon: <MapPin size={18} />,    name: 'Location',         desc: 'Find candidates within a practical commute of your job site.' },
+  { icon: <BarChart3 size={18} />, name: 'Experience Level', desc: 'Browse by minimum years in the trade.' },
+  { icon: <ScrollText size={18} />,name: 'Certifications',   desc: 'Filter for candidates who hold relevant industry credentials.' },
+  { icon: <Home size={18} />,      name: 'HVAC Specialty',   desc: 'Residential, commercial, refrigeration, and more.' },
 ];
 
 const FEATURES = [
@@ -702,7 +700,7 @@ const TalentPool: React.FC = () => {
               </PreviewBody>
               <StatRow>
                 <Stat>
-                  <StatNum>8<span>+</span></StatNum>
+                  <StatNum>6<span>+</span></StatNum>
                   <StatDesc>filter options</StatDesc>
                 </Stat>
                 <Stat>
@@ -718,7 +716,7 @@ const TalentPool: React.FC = () => {
           {/* ── Filters ── */}
           <SectionBlock>
             <SectionHeader>
-              <SectionTitle>Eight ways to filter</SectionTitle>
+              <SectionTitle>Six ways to filter</SectionTitle>
               <SectionRule />
               <SectionCount>Find who you need</SectionCount>
             </SectionHeader>

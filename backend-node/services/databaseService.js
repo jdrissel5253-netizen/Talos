@@ -884,6 +884,19 @@ const candidatePipelineService = {
             params.push(filters.status);
             paramIndex++;
         }
+        if (filters.minExperience !== undefined) {
+            whereClause += ` AND a.years_of_experience >= $${paramIndex}`;
+            params.push(filters.minExperience);
+            paramIndex++;
+        }
+        if (filters.hasCertifications) {
+            whereClause += ` AND a.certifications_found IS NOT NULL AND a.certifications_found != '[]' AND a.certifications_found != 'null'`;
+        }
+        if (filters.city) {
+            whereClause += ` AND (j.city ILIKE $${paramIndex} OR j.location ILIKE $${paramIndex})`;
+            params.push(`%${filters.city}%`);
+            paramIndex++;
+        }
 
         const validSortFields = {
             'score': 'tier_score',
@@ -916,6 +929,7 @@ const candidatePipelineService = {
                     cp.ai_summary,
                     cp.contacted_via,
                     cp.contacted_at,
+                    cp.internal_notes,
                     c.filename,
                     c.file_path,
                     c.applicant_email,

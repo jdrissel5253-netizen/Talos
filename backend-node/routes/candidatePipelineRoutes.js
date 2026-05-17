@@ -35,7 +35,10 @@ router.get('/talent-pool', async (req, res) => {
             sortBy,         // Sort field: score, date, name
             sortOrder,      // Sort order: asc, desc
             page,           // Page number (default 1)
-            limit           // Results per page (default 50, max 100)
+            limit,          // Results per page (default 50, max 100)
+            minExperience,  // Minimum years of experience
+            hasCertifications, // Only candidates with certifications
+            city            // Filter by job city/location
         } = req.query;
 
         const validTiers = ['green', 'yellow', 'red'];
@@ -56,7 +59,10 @@ router.get('/talent-pool', async (req, res) => {
             sortBy: sortBy || 'score',
             sortOrder: sortOrder || 'desc',
             page: page ? parseInt(page) : 1,
-            limit: limit ? parseInt(limit) : 50
+            limit: limit ? parseInt(limit) : 50,
+            minExperience: minExperience ? sanitize.nonNegativeNumber(minExperience) : undefined,
+            hasCertifications: hasCertifications === 'true',
+            city: city ? sanitize.trimString(city, 100) : undefined,
         });
 
         res.json({
@@ -114,6 +120,29 @@ router.get('/person-applications/:pipelineId', async (req, res) => {
     } catch (error) {
         logger.error('Error fetching person applications', { error: error.message });
         res.status(500).json({ status: 'error', message: 'Failed to fetch applications' });
+    }
+});
+
+/**
+ * PUT /api/pipeline/:id/notes
+ * Save internal notes for a candidate
+ */
+router.put('/:id/notes', async (req, res) => {
+    try {
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+
+        const notes = sanitize.trimString(req.body.notes ?? '', 2000);
+
+        await db.query(
+            `UPDATE candidate_pipeline SET internal_notes = $1 WHERE id = $2`,
+            [notes || null, pipelineId]
+        );
+
+        res.json({ status: 'success' });
+    } catch (error) {
+        logger.error('Error saving candidate notes', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to save notes' });
     }
 });
 
