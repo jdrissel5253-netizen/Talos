@@ -69,6 +69,48 @@ router.post('/register', async (req, res) => {
 </ul>`
                 }).catch(err => logger.warn('Signup notification email failed', { error: err.message }));
             }
+
+            // Welcome email to the new user (fire-and-forget)
+            gmailService.sendEmail({
+                to: email,
+                subject: 'Welcome to Talos — here\'s how to get started',
+                html: `
+<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+  <div style="background:#111318;padding:28px 32px;margin-bottom:24px">
+    <span style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:-0.5px">Talos</span>
+    <span style="color:#4ade80;font-size:20px;font-weight:700">.</span>
+  </div>
+
+  <div style="padding:0 32px 32px">
+    <h1 style="font-size:22px;font-weight:700;margin:0 0 8px">Welcome${companyName ? ', ' + companyName : ''}!</h1>
+    <p style="color:#555;margin:0 0 24px">Your Talos account is ready. Here's how to get up and running in a few minutes:</p>
+
+    <div style="border-left:3px solid #4ade80;padding-left:16px;margin-bottom:16px">
+      <p style="margin:0 0 4px;font-weight:600">1. Post your first job</p>
+      <p style="margin:0;color:#555;font-size:14px">Go to Jobs in your dashboard and fill out the job details. Talos will score every applicant automatically.</p>
+    </div>
+
+    <div style="border-left:3px solid #4ade80;padding-left:16px;margin-bottom:16px">
+      <p style="margin:0 0 4px;font-weight:600">2. Share your application link</p>
+      <p style="margin:0;color:#555;font-size:14px">Each job gets a unique link you can post on Indeed, Facebook, or text directly to candidates.</p>
+    </div>
+
+    <div style="border-left:3px solid #4ade80;padding-left:16px;margin-bottom:32px">
+      <p style="margin:0 0 4px;font-weight:600">3. Review your pipeline</p>
+      <p style="margin:0;color:#555;font-size:14px">Applicants are ranked Green / Yellow / Red automatically. You'll get an email alert for every strong candidate.</p>
+    </div>
+
+    <a href="https://www.gotalos.io/dashboard"
+       style="display:inline-block;background:#4ade80;color:#111318;font-weight:700;font-size:14px;padding:12px 28px;text-decoration:none;letter-spacing:0.02em">
+      Go to Dashboard →
+    </a>
+
+    <p style="margin:32px 0 0;font-size:13px;color:#888">
+      Questions? Reply to this email or reach us at <a href="mailto:jake@gotalos.io" style="color:#4ade80">jake@gotalos.io</a>.
+    </p>
+  </div>
+</div>`
+            }).catch(err => logger.warn('Welcome email failed', { error: err.message }));
         }
 
         // Generate JWT token
