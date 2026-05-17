@@ -699,7 +699,7 @@ const CandidateMessages: React.FC = () => {
           {/* ── Top rule ── */}
           <TopRule>
             <TopLabel>Talos &mdash; Candidate Messaging</TopLabel>
-            <TopMeta>AI-Drafted &bull; Personalized &bull; Instant</TopMeta>
+            <TopMeta>Auto-Generated &bull; Personalized &bull; Instant</TopMeta>
           </TopRule>
 
           {/* ── Hero ── */}
@@ -709,7 +709,7 @@ const CandidateMessages: React.FC = () => {
               Messages that <em>move</em><br />candidates forward
             </HeroTitle>
             <HeroSub>
-              AI-drafted outreach for every stage of the hiring process — personalized to each candidate, refined for your industry.
+              Auto-generated outreach for every stage of the hiring process — personalized to each candidate, refined for your industry.
             </HeroSub>
             <MidRule>
               <MidRuleOrb />
