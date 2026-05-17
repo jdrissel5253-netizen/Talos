@@ -599,7 +599,7 @@ const AI_ITEMS = [
   {
     num: '03',
     title: 'Multi-Factor Candidate Scoring',
-    desc: 'Every resume is evaluated across six dimensions: years of experience, resume quality, certifications, work gaps, job stability, and proximity to the job site. The result is a single honest score.',
+    desc: 'Every resume is evaluated across multiple dimensions — not just experience, but the full picture of who someone is as a hire. The result is a single honest score.',
   },
   {
     num: '04',
