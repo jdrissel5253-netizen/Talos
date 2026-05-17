@@ -659,10 +659,7 @@ const WhyTalosDifferent: React.FC = () => {
               Our philosophy<br />on recruiting
             </PhilosophyLabel>
             <PhilosophyQuote>
-              "The method is simple: use AI trained specifically for HVAC.
-              Write job descriptions that attract the right kind of techs.
-              Rate candidates against <span>benchmarks built on the best workers
-              in each role.</span> Talos is the first true AI recruiting expert in HVAC."
+              "Not all tools were built for this industry — and it shows. Talos is the first true AI recruiting expert in HVAC."
             </PhilosophyQuote>
           </PhilosophyInner>
         </PhilosophyStrip>
