@@ -555,23 +555,23 @@ function useCountUp(target: number, duration = 900, delay = 0) {
 // ─── data ─────────────────────────────────────────────────────────────────────
 
 const FILTERS = [
-    { icon: <Target size={14} />,           name: 'Smart Tier Segmentation',  desc: 'Candidates auto-organized by performance score for instant prioritization' },
-    { icon: <BarChart3 size={14} />,         name: 'Dynamic Score Analysis',    desc: 'Advanced filtering surfaces the most qualified candidates first' },
-    { icon: <MapPin size={14} />,            name: 'Geographic Intelligence',   desc: 'Location matching optimized for commute feasibility and local experience' },
-    { icon: <Wrench size={14} />,            name: 'Experience Profiling',      desc: 'AI classification of candidate seniority and skill progression' },
-    { icon: <ScrollText size={14} />,        name: 'Credential Verification',   desc: 'Automated detection of industry certifications and licenses' },
-    { icon: <CircleDollarSign size={14} />,  name: 'Compensation Alignment',    desc: 'Strategic matching of candidate expectations with your budget' },
-    { icon: <Home size={14} />,              name: 'Specialization Mapping',    desc: 'Intelligent categorization of HVAC expertise across market segments' },
-    { icon: <Calendar size={14} />,          name: 'Availability Tracking',     desc: 'Real-time monitoring of start date flexibility and availability' },
+    { icon: <Target size={14} />,           name: 'Ranked by Fit',         desc: 'Your strongest candidates surface first — no digging required' },
+    { icon: <Wrench size={14} />,            name: 'Role Type',             desc: 'Filter by the specific HVAC role you\'re actively hiring for' },
+    { icon: <MapPin size={14} />,            name: 'Location',              desc: 'Find candidates within a practical commute of your job site' },
+    { icon: <BarChart3 size={14} />,         name: 'Experience Level',      desc: 'Browse by years in the trade and seniority' },
+    { icon: <ScrollText size={14} />,        name: 'Certifications',        desc: 'Filter for the credentials your roles require' },
+    { icon: <CircleDollarSign size={14} />,  name: 'Pay Expectations',      desc: 'Find candidates whose expectations fit your budget' },
+    { icon: <Home size={14} />,              name: 'HVAC Specialty',        desc: 'Residential, commercial, refrigeration, and more' },
+    { icon: <Calendar size={14} />,          name: 'Availability',          desc: 'See who\'s ready to start now vs. open to the right opportunity' },
 ];
 
 const FEATURES = [
-    { icon: <Lock size={14} />,       name: 'Enterprise-Grade Security',       desc: 'Bank-level encryption and access controls keep your candidate pipeline completely confidential and protected from competitors.' },
-    { icon: <RefreshCw size={14} />,   name: 'Living Database Intelligence',   desc: 'Continuous data integration enriches candidate profiles with updated qualifications, market movements, and availability signals.' },
-    { icon: <FileText size={14} />,    name: 'Collaborative Workflow Tools',   desc: 'Annotation systems enable your team to share insights, track engagement history, and maintain institutional knowledge on each candidate.' },
-    { icon: <TrendingUp size={14} />,  name: 'Predictive Analytics Engine',    desc: 'Machine learning analyzes hiring outcomes to continuously refine candidate quality predictions and optimize selection criteria.' },
-    { icon: <Bell size={14} />,        name: 'Proactive Opportunity Alerts',   desc: 'Intelligent monitoring identifies optimal timing for candidate outreach and signals when your pipeline requires strategic refreshment.' },
-    { icon: <BarChart3 size={14} />,   name: 'Strategic Intelligence Reports', desc: 'Analytics dashboards provide actionable insights into talent market trends, competitive positioning, and pipeline health.' },
+    { icon: <Lock size={14} />,       name: 'Private & Yours',          desc: 'Your candidate pool is completely separate from other companies\' data. Nobody else sees who\'s in your pipeline.' },
+    { icon: <RefreshCw size={14} />,  name: 'Always Current',           desc: 'New applicants flow in and stay organized automatically. Your pool grows every time someone applies.' },
+    { icon: <FileText size={14} />,   name: 'Notes & History',          desc: 'Track conversations, add notes, and keep your team aligned on every candidate.' },
+    { icon: <TrendingUp size={14} />, name: 'Fast Shortlisting',        desc: 'Filter down to your best candidates in seconds — without reading through every resume.' },
+    { icon: <Bell size={14} />,       name: 'Instant Alerts',           desc: 'Get notified when a strong candidate enters your pipeline so you can move before someone else does.' },
+    { icon: <BarChart3 size={14} />,  name: 'Pipeline Visibility',      desc: 'See the full picture of who\'s applied, who\'s been contacted, and who\'s still worth a call.' },
 ];
 
 // ─── animated stat cell ───────────────────────────────────────────────────────
@@ -626,19 +626,19 @@ const TalentPool: React.FC = () => {
 
                     <HeroBottom>
                         <HeroDesc>
-                            Your private database of AI-ranked HVAC candidates — always current, always searchable, always yours.
+                            Your private database of ranked HVAC candidates — always current, always searchable, always yours.
                         </HeroDesc>
                         <HeroDocId>
                             DOC-TP-001 / CLASSIFICATION: CLIENT-ONLY<br />
-                            FILTER DIMENSIONS: 08 / CAPABILITIES: 06
+                            FILTERS: 08 / FEATURES: 06
                         </HeroDocId>
                     </HeroBottom>
                 </Hero>
 
                 {/* ── Stats ── */}
                 <StatsStrip>
-                    <AnimatedStatCell target={8}   suffix=" +"  label="Filter Dimensions"  delay={0}   />
-                    <AnimatedStatCell target={6}               label="Core Capabilities"   delay={80}  />
+                    <AnimatedStatCell target={8}   suffix=" +"  label="Filter Options"      delay={0}   />
+                    <AnimatedStatCell target={6}               label="Core Features"       delay={80}  />
                     <AnimatedStatCell target={100} suffix="%"  label="Private & Encrypted" delay={160} />
                     <AnimatedStatCell target={24}  suffix="h"  label="Always Available"    delay={240} />
                 </StatsStrip>
