@@ -556,7 +556,7 @@ const COMPARISON_ROWS = [
   {
     category: 'Resume Screening',
     generic: 'Manual review, hours per posting',
-    talos: 'AI-scored 0–100 in seconds, every applicant',
+    talos: 'Every applicant scored 0–100 against criteria built for your trade',
   },
   {
     category: 'Candidate Ranking',
