@@ -1237,8 +1237,20 @@ const JobsManagement: React.FC = () => {
                     {selectedJob ? (
                         <>
                             <ContentHeader>
-                                <ContentTitle>{selectedJob.title}</ContentTitle>
-                                <ContentSubtitle>Candidate Pipeline</ContentSubtitle>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                    <div>
+                                        <ContentTitle>{selectedJob.title}</ContentTitle>
+                                        <ContentSubtitle>Candidate Pipeline</ContentSubtitle>
+                                    </div>
+                                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                        <ViewToggleBtn active={viewMode === 'cards'} onClick={() => setViewMode('cards')} title="Card view">
+                                            <LayoutGrid size={16} />
+                                        </ViewToggleBtn>
+                                        <ViewToggleBtn active={viewMode === 'compact'} onClick={() => setViewMode('compact')} title="Compact view">
+                                            <LayoutList size={16} />
+                                        </ViewToggleBtn>
+                                    </div>
+                                </div>
                             </ContentHeader>
 
                             <JobDetailsCard>
@@ -1354,14 +1366,6 @@ const JobsManagement: React.FC = () => {
                                     <option value="years_of_experience">Sort by Experience</option>
                                     <option value="star_rating">Sort by Star Rating</option>
                                 </Select>
-                                <div style={{ display: 'flex', gap: '0.35rem', marginLeft: 'auto' }}>
-                                    <ViewToggleBtn active={viewMode === 'cards'} onClick={() => setViewMode('cards')} title="Card view">
-                                        <LayoutGrid size={15} />
-                                    </ViewToggleBtn>
-                                    <ViewToggleBtn active={viewMode === 'compact'} onClick={() => setViewMode('compact')} title="Compact view">
-                                        <LayoutList size={15} />
-                                    </ViewToggleBtn>
-                                </div>
                             </FilterSortBar>
 
                             {selectedCandidates.size > 0 && (
