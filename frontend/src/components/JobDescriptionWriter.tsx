@@ -841,9 +841,14 @@ const JobDescriptionWriter: React.FC = () => {
               </RolesTitle>
               <RolesCount>15+</RolesCount>
             </RolesHeader>
-            <RolesSubtext>
-              From <span>Installer</span> and <span>Lead Technician</span> to <span>Service Manager</span> and <span>Dispatcher</span> — every core HVAC role has its own dedicated formula.
-            </RolesSubtext>
+            <RolesTagWrap>
+              <RoleTag featured>HVAC Installer</RoleTag>
+              <RoleTag featured>Lead Technician</RoleTag>
+              <RoleTag featured>Service Manager</RoleTag>
+              <RoleTag featured>Dispatcher</RoleTag>
+              <RoleTag featured>HVAC Service Tech</RoleTag>
+              <RoleTag>+ more</RoleTag>
+            </RolesTagWrap>
           </RolesInner>
         </RolesSection>
 
