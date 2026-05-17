@@ -828,11 +828,6 @@ const JobDescriptionWriter: React.FC = () => {
               </RolesTitle>
               <RolesCount>20+</RolesCount>
             </RolesHeader>
-            <RolesTagWrap>
-              {ROLES.map((r, i) => (
-                <RoleTag key={i} featured={r.featured}>{r.label}</RoleTag>
-              ))}
-            </RolesTagWrap>
           </RolesInner>
         </RolesSection>
 
