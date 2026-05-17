@@ -594,7 +594,7 @@ const AI_ITEMS = [
   {
     num: '02',
     title: 'Equivalent Title Recognition',
-    desc: 'A "Service Coordinator" with scheduling duties gets evaluated the same as a "Dispatcher." Talos reads the bullets on a resume, not just the job title — so good candidates don\'t get filtered out on a technicality.',
+    desc: 'Job titles vary by company — what matters is what someone actually did. Talos reads the work, not just the title, so strong candidates don\'t get missed on a technicality.',
   },
   {
     num: '03',
