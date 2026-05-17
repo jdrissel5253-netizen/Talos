@@ -702,7 +702,7 @@ const WhyTalosDifferent: React.FC = () => {
               different.
             </AITitle>
             <AISubtext>
-              Most "AI recruiting" tools run the same large language model
+              Most hiring tools run the same large language model
               with a generic prompt. Talos built scoring frameworks from the
               ground up for each HVAC role — which changes everything about
               the quality of results you get.
