@@ -902,69 +902,6 @@ const CandidateRanking: React.FC = () => {
           </PhilosophyInner>
         </PhilosophySection>
 
-        {/* ── Tiers ── */}
-        <TiersSection>
-          <TiersHeader>
-            <TiersEyebrow>The three tiers</TiersEyebrow>
-            <TiersTitle>
-              Every applicant lands in<br />
-              <em>one of three places.</em>
-            </TiersTitle>
-          </TiersHeader>
-
-          <TiersStack>
-            <TierRow borderColor="#4ade80">
-              <TierLeft>
-                <TierLabel color="#4ade80">Green Tier</TierLabel>
-              </TierLeft>
-              <TierMiddle>
-                <TierDesc>
-                  Your strongest candidates for this role. Start here.
-                </TierDesc>
-              </TierMiddle>
-              <TierRight>
-                <TierAction>Interview immediately</TierAction>
-                <TierSubaction>
-                  Don't let these sit in your inbox.
-                </TierSubaction>
-              </TierRight>
-            </TierRow>
-
-            <TierRow borderColor="#fbbf24">
-              <TierLeft>
-                <TierLabel color="#fbbf24">Yellow Tier</TierLabel>
-              </TierLeft>
-              <TierMiddle>
-                <TierDesc>
-                  Solid candidates worth a closer look. May need a conversation to assess fit.
-                </TierDesc>
-              </TierMiddle>
-              <TierRight>
-                <TierAction>Review after Green</TierAction>
-                <TierSubaction>
-                  Some will surprise you in an interview.
-                </TierSubaction>
-              </TierRight>
-            </TierRow>
-
-            <TierRow borderColor="#ef4444">
-              <TierLeft>
-                <TierLabel color="#ef4444">Red Tier</TierLabel>
-              </TierLeft>
-              <TierMiddle>
-                <TierDesc>
-                  Not the right fit for this role right now. Save your time for Green and Yellow.
-                </TierDesc>
-              </TierMiddle>
-              <TierRight>
-                <TierAction>Hold for now</TierAction>
-                <TierSubaction>
-                  Revisit if options are exhausted, or consider for a different role.
-                </TierSubaction>
-              </TierRight>
-            </TierRow>
-          </TiersStack>
-        </TiersSection>
 
 
         {/* ── Benefits ── */}
