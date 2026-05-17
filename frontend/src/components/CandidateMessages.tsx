@@ -724,7 +724,7 @@ const CandidateMessages: React.FC = () => {
                 Watch it<br /><em>write itself</em>
               </PreviewHeading>
               <PreviewBody>
-                Talos analyses the candidate's background, the role requirements, and the stage of your pipeline — then drafts a message that sounds like it came from you, not a robot.
+                Talos analyses the candidate's background, the role requirements, and the stage of your pipeline — then drafts a message that sounds like it came from you.
               </PreviewBody>
               <StatRow>
                 <Stat>
