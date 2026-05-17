@@ -643,7 +643,7 @@ const WhyTalosDifferent: React.FC = () => {
             </HeroDesc>
             <HeroMeta>
               <MetaLine>Built exclusively for HVAC</MetaLine>
-              <MetaLine>11 role-specific AI models</MetaLine>
+              <MetaLine>11 role-specific scoring frameworks</MetaLine>
               <MetaLine>No staffing agency fees</MetaLine>
               <HeroCTA onClick={() => setIsDemoModalOpen(true)}>
                 See the Difference
