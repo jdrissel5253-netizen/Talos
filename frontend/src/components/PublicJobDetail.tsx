@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import styled from 'styled-components';
 import { useParams, Link } from 'react-router-dom';
 import { config } from '../config';
+import { renderJobDescription } from '../utils/renderJobDescription';
 
 interface Job {
     id: number;
@@ -672,7 +673,7 @@ const PublicJobDetail: React.FC = () => {
 
                     {job.description && (
                         <Section>
-                            <Description>{renderDescriptionV2(job.description)}</Description>
+                            <Description>{renderJobDescription(job.description)}</Description>
                         </Section>
                     )}
 

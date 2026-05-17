@@ -9,6 +9,7 @@ import AddJobForm from './AddJobForm';
 import ContactRejectionModal from './ContactRejectionModal';
 import ResumeFileModal from './ResumeFileModal';
 import { extractCandidateName } from '../utils/templateHelpers';
+import { renderJobDescription } from '../utils/renderJobDescription';
 
 // Types
 interface Job {
@@ -1215,10 +1216,9 @@ const JobsManagement: React.FC = () => {
                                     <DetailValue>{selectedJob.vehicle_required ? 'Yes' : 'No'}</DetailValue>
                                 </DetailRow>
                                 {selectedJob.description && (
-                                    <DetailRow>
-                                        <DetailLabel>Description:</DetailLabel>
-                                        <DetailValue>{selectedJob.description}</DetailValue>
-                                    </DetailRow>
+                                    <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #1e1e1e' }}>
+                                        {renderJobDescription(selectedJob.description)}
+                                    </div>
                                 )}
                                 <JobActionsRow>
                                     <CopyLinkButton
