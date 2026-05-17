@@ -1,302 +1,544 @@
 import React, { useState } from 'react';
-import styled from 'styled-components';
-import { Zap, Target, RefreshCw } from 'lucide-react';
+import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import DemoModal from './DemoModal';
 
-const PageContainer = styled.div`
-  min-height: 100vh;
-  background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
-  position: relative;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><defs><pattern id="grid" width="10" height="10" patternUnits="userSpaceOnUse"><path d="M 10 0 L 0 0 0 10" fill="none" stroke="%23ffffff" stroke-width="0.5" opacity="0.1"/></pattern></defs><rect width="100" height="100" fill="url(%23grid)"/></svg>');
-    z-index: 1;
-    pointer-events: none;
-  }
+const FontImport = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Sora:wght@300;400;500;600&display=swap');
 `;
 
-const ContentWrapper = styled.div`
+// ─── Animations ───────────────────────────────────────────────────────────────
+
+const fadeUp = keyframes`
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+`;
+
+const fadeIn = keyframes`
+  from { opacity: 0; }
+  to   { opacity: 1; }
+`;
+
+const lineGrow = keyframes`
+  from { width: 0; }
+  to   { width: 100%; }
+`;
+
+// ─── Page Shell ───────────────────────────────────────────────────────────────
+
+const Page = styled.div`
+  background: #080808;
+  color: #e8e8e8;
+  font-family: 'Sora', sans-serif;
+  overflow-x: hidden;
+`;
+
+// ─── Hero ─────────────────────────────────────────────────────────────────────
+
+const HeroWrap = styled.section`
   position: relative;
-  z-index: 2;
-  max-width: 1200px;
+  max-width: 1320px;
   margin: 0 auto;
-  padding: 4rem 2rem;
-`;
-
-const HeroSection = styled.section`
-  text-align: center;
-  margin-bottom: 4rem;
-`;
-
-const MainTitle = styled.h1`
-  font-size: 3.5rem;
-  font-weight: 700;
-  background: linear-gradient(to right, #ffffff, #4ade80);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  margin-bottom: 1.5rem;
-  line-height: 1.2;
-
-  @media (max-width: 768px) {
-    font-size: 2.5rem;
-  }
-`;
-
-const MainSubtitle = styled.p`
-  font-size: 1.25rem;
-  color: #e0e0e0;
-  max-width: 800px;
-  margin: 0 auto 2rem;
-  line-height: 1.6;
-`;
-
-const ContentSection = styled.section`
-  background: #1a1a1a;
-  border-radius: 12px;
-  padding: 3rem;
-  margin-bottom: 3rem;
-  box-shadow: 0 4px 20px rgba(255, 255, 255, 0.1);
-`;
-// ... (omitted styles) ...
-
-const CTAButton = styled.button`
-  background-color: #4ade80;
-  border: none;
-  color: #000000;
-  padding: 1rem 2.5rem;
-  font-size: 1.125rem;
-  font-weight: 700;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
-  position: relative;
+  padding: 7rem 3rem 6rem;
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+  border-bottom: 1px solid #1a1a1a;
   overflow: hidden;
 
+  @media (max-width: 768px) {
+    padding: 5rem 2rem 4rem;
+  }
+`;
+
+const BackgroundWord = styled.div`
+  position: absolute;
+  right: -2rem;
+  top: 50%;
+  transform: translateY(-50%);
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(8rem, 16vw, 18rem);
+  font-weight: 900;
+  font-style: italic;
+  color: transparent;
+  -webkit-text-stroke: 1px #1c1c1c;
+  user-select: none;
+  pointer-events: none;
+  line-height: 1;
+  white-space: nowrap;
+  animation: ${fadeIn} 1.2s ease both;
+
+  @media (max-width: 768px) { display: none; }
+`;
+
+const HeroTop = styled.div`
+  display: flex;
+  align-items: flex-start;
+  gap: 2rem;
+  animation: ${fadeUp} 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+`;
+
+const SideLabel = styled.div`
+  writing-mode: vertical-rl;
+  text-orientation: mixed;
+  transform: rotate(180deg);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  color: #4ade80;
+  padding-top: 0.5rem;
+  flex-shrink: 0;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+
+  @media (max-width: 768px) { display: none; }
+`;
+
+const HeroContent = styled.div`
+  flex: 1;
+`;
+
+const HeroHeadline = styled.h1`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(3rem, 6vw, 6.5rem);
+  font-weight: 900;
+  line-height: 1.02;
+  letter-spacing: -0.025em;
+  color: #ffffff;
+  margin-bottom: 0;
+
+  em {
+    font-style: italic;
+    color: #4ade80;
+  }
+`;
+
+const HeroBottom = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4rem;
+  align-items: end;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+`;
+
+const HeroDesc = styled.p`
+  font-size: 1.05rem;
+  line-height: 1.75;
+  color: #888;
+  font-weight: 300;
+  max-width: 480px;
+  animation: ${fadeUp} 0.9s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+`;
+
+const HeroMeta = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  animation: ${fadeUp} 0.9s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
+`;
+
+const MetaLine = styled.div`
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #555;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+
   &::before {
     content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.4),
-      transparent
-    );
-    transition: 0.5s;
+    display: block;
+    width: 20px;
+    height: 1px;
+    background: #4ade80;
+    flex-shrink: 0;
   }
+`;
+
+const HeroCTA = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  background: #4ade80;
+  color: #000;
+  border: none;
+  padding: 0.85rem 2rem;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
 
   &:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
-    background-color: #5ce08e;
-
-    &::before {
-      left: 100%;
-    }
-  }
-
-  &:active {
-    transform: translateY(0);
+    background: #6ee89a;
+    transform: translateY(-1px);
   }
 `;
 
-// Removed duplicate styles
+// ─── Statement strip ──────────────────────────────────────────────────────────
 
-const ProcessBox = styled.div`
-  background: linear-gradient(135deg, #4ade80 0%, #4ade80 100%);
-  color: white;
-  padding: 2rem;
-  border-radius: 12px;
-  margin: 2rem auto;
-  max-width: 600px;
-  text-align: center;
+const StatementStrip = styled.section`
+  border-bottom: 1px solid #1a1a1a;
+  padding: 5rem 3rem;
+  max-width: 1320px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) { padding: 4rem 2rem; }
 `;
 
-const ProcessText = styled.p`
-  font-size: 1.5rem;
-  font-weight: 700;
-  line-height: 1.4;
-  margin: 0;
-`;
-
-const JobBoardGrid = styled.div`
+const StatementInner = styled.div`
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin: 3rem 0;
-`;
+  grid-template-columns: 200px 1fr;
+  gap: 4rem;
+  align-items: start;
 
-const JobBoardCard = styled.div`
-  background: #000000;
-  padding: 1.5rem;
-  border-radius: 12px;
-  border: 2px solid #333333;
-  text-align: center;
-  transition: all 0.3s ease;
-
-  &:hover {
-    border-color: #4ade80;
-    transform: translateY(-2px);
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
 `;
 
-const JobBoardLogo = styled.img`
-  width: 120px;
-  height: 60px;
-  object-fit: contain;
-  margin: 0 auto 1rem;
-  display: block;
-  background: white;
-  padding: 0.5rem;
-  border-radius: 8px;
-`;
-
-const JobBoardName = styled.h3`
-  font-size: 1.125rem;
-  font-weight: 700;
-  color: #4ade80;
-  margin-bottom: 0.5rem;
-`;
-
-const JobBoardStatus = styled.span`
-  font-size: 0.875rem;
-  padding: 0.25rem 0.75rem;
-  border-radius: 20px;
+const StatementLabel = styled.div`
+  font-size: 0.65rem;
   font-weight: 600;
-`;
-
-const ActiveStatus = styled(JobBoardStatus)`
-  background: #d4edda;
-  color: #155724;
-`;
-
-const ComingSoonStatus = styled(JobBoardStatus)`
-  background: #fff3cd;
-  color: #856404;
-`;
-
-const FeatureList = styled.div`
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-  margin: 3rem 0;
-`;
-
-const FeatureCard = styled.div`
-  background: #000000;
-  padding: 2rem;
-  border-radius: 12px;
-  border-left: 4px solid #4ade80;
-`;
-
-const FeatureIcon = styled.div`
-  font-size: 2.5rem;
-  margin-bottom: 1rem;
-`;
-
-const FeatureTitle = styled.h3`
-  font-size: 1.25rem;
-  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
   color: #4ade80;
-  margin-bottom: 1rem;
-`;
-
-const FeatureDescription = styled.p`
-  color: #e0e0e0;
+  padding-top: 0.4rem;
   line-height: 1.6;
 `;
 
-const CTASection = styled.section`
-  text-align: center;
-  margin-top: 4rem;
+const StatementQuote = styled.blockquote`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(1.6rem, 3vw, 2.4rem);
+  font-weight: 700;
+  line-height: 1.25;
+  color: #ffffff;
+  margin: 0;
+
+  span {
+    color: #4ade80;
+  }
 `;
 
+// ─── Steps ────────────────────────────────────────────────────────────────────
+
+const StepsSection = styled.section`
+  border-bottom: 1px solid #1a1a1a;
+  padding: 6rem 3rem;
+  max-width: 1320px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) { padding: 4rem 2rem; }
+`;
+
+const SectionEyebrow = styled.div`
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #4ade80;
+  margin-bottom: 3rem;
+`;
+
+const StepsList = styled.div`
+  display: flex;
+  flex-direction: column;
+`;
+
+const StepRow = styled.div`
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 3rem;
+  padding: 2.5rem 0;
+  border-bottom: 1px solid #141414;
+  align-items: start;
+  animation: ${fadeUp} 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+
+  &:last-child { border-bottom: none; }
+
+  @media (max-width: 600px) {
+    grid-template-columns: 48px 1fr;
+    gap: 1.5rem;
+  }
+`;
+
+const StepNumber = styled.div`
+  font-family: 'Playfair Display', serif;
+  font-size: 3rem;
+  font-weight: 900;
+  font-style: italic;
+  color: #1e1e1e;
+  line-height: 1;
+  user-select: none;
+`;
+
+const StepBody = styled.div``;
+
+const StepTitle = styled.h3`
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #ffffff;
+  margin: 0 0 0.6rem;
+  letter-spacing: -0.01em;
+`;
+
+const StepDesc = styled.p`
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: #666;
+  font-weight: 300;
+  margin: 0;
+  max-width: 540px;
+`;
+
+// ─── Callout ──────────────────────────────────────────────────────────────────
+
+const CalloutSection = styled.section`
+  border-bottom: 1px solid #1a1a1a;
+  padding: 6rem 3rem;
+  max-width: 1320px;
+  margin: 0 auto;
+
+  @media (max-width: 768px) { padding: 4rem 2rem; }
+`;
+
+const CalloutGrid = styled.div`
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 1px;
+  background: #1a1a1a;
+
+  @media (max-width: 768px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const CalloutItem = styled.div`
+  background: #080808;
+  padding: 2.5rem;
+
+  &:hover { background: #0d0d0d; }
+`;
+
+const CalloutItemNum = styled.div`
+  font-family: 'Playfair Display', serif;
+  font-size: 2.5rem;
+  font-weight: 900;
+  color: #4ade80;
+  line-height: 1;
+  margin-bottom: 1rem;
+`;
+
+const CalloutItemTitle = styled.div`
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+`;
+
+const CalloutItemDesc = styled.div`
+  font-size: 0.83rem;
+  line-height: 1.65;
+  color: #555;
+  font-weight: 300;
+`;
+
+// ─── CTA ──────────────────────────────────────────────────────────────────────
+
+const CTASection = styled.section`
+  padding: 7rem 3rem;
+  max-width: 1320px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2rem;
+
+  @media (max-width: 768px) { padding: 5rem 2rem; }
+`;
+
+const CTAHeadline = styled.h2`
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 4vw, 3.5rem);
+  font-weight: 900;
+  line-height: 1.1;
+  color: #ffffff;
+  max-width: 600px;
+
+  em {
+    font-style: italic;
+    color: #4ade80;
+  }
+`;
+
+const CTAButton = styled.button`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: #4ade80;
+  color: #000;
+  border: none;
+  padding: 0.9rem 2.25rem;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+
+  &:hover {
+    background: #6ee89a;
+    transform: translateY(-1px);
+  }
+`;
+
+// ─── Component ────────────────────────────────────────────────────────────────
+
+const steps = [
+  {
+    title: 'Fill out your job details once',
+    desc: 'Title, pay, schedule, certifications required — enter it inside Talos and it\'s ready to go. No reformatting for different platforms.',
+  },
+  {
+    title: 'Your listing goes live',
+    desc: 'Talos pushes your job to where HVAC candidates are actually looking. No logins to juggle, no copy-pasting across sites.',
+  },
+  {
+    title: 'Candidates flow straight into your pipeline',
+    desc: 'Every applicant is scored and ranked automatically the moment they apply. By the time you open your dashboard, the work is already done.',
+  },
+];
+
+const callouts = [
+  {
+    num: '3',
+    title: 'Clicks to post',
+    desc: 'From job details to live listing in minutes, not an afternoon.',
+  },
+  {
+    num: '0',
+    title: 'Platforms to log into',
+    desc: 'One place to post, manage, and review — start to finish.',
+  },
+  {
+    num: '100%',
+    title: 'Candidates ranked on arrival',
+    desc: 'Every applicant is scored before you ever open your pipeline.',
+  },
+];
 
 const JobBoardIntegration: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
-  const handleDemoClick = () => {
-    setIsDemoModalOpen(true);
-  };
-
-  const handleCloseModal = () => {
-    setIsDemoModalOpen(false);
-  };
-
   return (
     <>
-      <PageContainer>
-        <ContentWrapper>
-          <HeroSection>
-            <MainTitle>Job Board Integration</MainTitle>
-            <MainSubtitle>
-              Post your job once. Let Talos handle the rest.
-            </MainSubtitle>
-          </HeroSection>
+      <FontImport />
+      <Page>
 
-          <ContentSection>
-            <p style={{ fontSize: '1.125rem', color: '#e0e0e0', lineHeight: '1.8', textAlign: 'center', marginBottom: '2rem' }}>
-              Posting a job through Talos takes minutes, not an afternoon. Fill out your job details once and your listing goes live — no copying and pasting across platforms, no reformatting, no juggling logins.
-            </p>
+        {/* ── Hero ── */}
+        <HeroWrap>
+          <BackgroundWord>Post.</BackgroundWord>
 
-            <ProcessBox>
-              <ProcessText>
-                Three clicks. Five minutes. Your job is live.
-              </ProcessText>
-            </ProcessBox>
-          </ContentSection>
+          <HeroTop>
+            <SideLabel>Job board integration</SideLabel>
+            <HeroContent>
+              <HeroHeadline>
+                Post once.<br />
+                Hire <em>faster.</em>
+              </HeroHeadline>
+            </HeroContent>
+          </HeroTop>
 
-          <ContentSection>
-            <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#4ade80', marginBottom: '2rem', textAlign: 'center' }}>
-              How it works
-            </h2>
+          <HeroBottom>
+            <HeroDesc>
+              Posting a job through Talos takes minutes, not an afternoon.
+              Fill out your details once and your listing goes live — no
+              platform-hopping, no reformatting, no juggling logins.
+            </HeroDesc>
+            <HeroMeta>
+              <MetaLine>Built for HVAC hiring</MetaLine>
+              <MetaLine>No platform accounts needed</MetaLine>
+              <MetaLine>Candidates ranked automatically</MetaLine>
+              <HeroCTA onClick={() => setIsDemoModalOpen(true)}>
+                See how it works →
+              </HeroCTA>
+            </HeroMeta>
+          </HeroBottom>
+        </HeroWrap>
 
-            <FeatureList>
-              <FeatureCard>
-                <FeatureIcon><Zap size={40} color="#4ade80" /></FeatureIcon>
-                <FeatureTitle>Post in minutes</FeatureTitle>
-                <FeatureDescription>
-                  Fill out your job details once inside Talos and your listing goes live. No platform-hopping, no reformatting.
-                </FeatureDescription>
-              </FeatureCard>
+        {/* ── Statement ── */}
+        <StatementStrip>
+          <StatementInner>
+            <StatementLabel>
+              The method
+            </StatementLabel>
+            <StatementQuote>
+              "Three clicks. Five minutes.{' '}
+              <span>Your job is live.</span>"
+            </StatementQuote>
+          </StatementInner>
+        </StatementStrip>
 
-              <FeatureCard>
-                <FeatureIcon><Target size={40} color="#4ade80" /></FeatureIcon>
-                <FeatureTitle>Built for HVAC hiring</FeatureTitle>
-                <FeatureDescription>
-                  Your posting is structured around the details that matter to HVAC candidates — certifications, pay type, schedule, and more.
-                </FeatureDescription>
-              </FeatureCard>
+        {/* ── Steps ── */}
+        <StepsSection>
+          <SectionEyebrow>How it works</SectionEyebrow>
+          <StepsList>
+            {steps.map((step, i) => (
+              <StepRow key={i} style={{ animationDelay: `${i * 0.1}s` }}>
+                <StepNumber>0{i + 1}</StepNumber>
+                <StepBody>
+                  <StepTitle>{step.title}</StepTitle>
+                  <StepDesc>{step.desc}</StepDesc>
+                </StepBody>
+              </StepRow>
+            ))}
+          </StepsList>
+        </StepsSection>
 
-              <FeatureCard>
-                <FeatureIcon><RefreshCw size={40} color="#4ade80" /></FeatureIcon>
-                <FeatureTitle>Candidates flow straight in</FeatureTitle>
-                <FeatureDescription>
-                  Every applicant who comes through gets scored and ranked automatically — so by the time you open your pipeline, the work is already done.
-                </FeatureDescription>
-              </FeatureCard>
-            </FeatureList>
-          </ContentSection>
+        {/* ── Callouts ── */}
+        <CalloutSection>
+          <SectionEyebrow>By the numbers</SectionEyebrow>
+          <CalloutGrid>
+            {callouts.map((item, i) => (
+              <CalloutItem key={i}>
+                <CalloutItemNum>{item.num}</CalloutItemNum>
+                <CalloutItemTitle>{item.title}</CalloutItemTitle>
+                <CalloutItemDesc>{item.desc}</CalloutItemDesc>
+              </CalloutItem>
+            ))}
+          </CalloutGrid>
+        </CalloutSection>
 
-          <CTASection>
-            <CTAButton onClick={handleDemoClick}>
-              See How It Works
-            </CTAButton>
-          </CTASection>
-        </ContentWrapper>
-      </PageContainer>
+        {/* ── CTA ── */}
+        <CTASection>
+          <CTAHeadline>
+            Ready to stop spending your afternoon<br />
+            <em>posting jobs?</em>
+          </CTAHeadline>
+          <CTAButton onClick={() => setIsDemoModalOpen(true)}>
+            Get a demo →
+          </CTAButton>
+        </CTASection>
 
-      <DemoModal isOpen={isDemoModalOpen} onClose={handleCloseModal} />
+      </Page>
+
+      <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
     </>
   );
 };
