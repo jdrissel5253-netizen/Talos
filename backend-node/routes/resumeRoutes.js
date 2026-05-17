@@ -12,15 +12,13 @@ const router = express.Router();
 
 // Helper function to add candidate to General Talent Pool
 // Matches the working pattern from applyRoutes.js
-async function addCandidateToTalentPool(candidateId, analysis, evaluatedPosition) {
-    const ADMIN_USER_ID = 1;
-
+async function addCandidateToTalentPool(candidateId, analysis, evaluatedPosition, userId) {
     try {
         // Use findByTitle (direct SQL query) instead of findByUserId + JS filter
-        let generalJob = await jobService.findByTitle(ADMIN_USER_ID, 'General Talent Pool');
+        let generalJob = await jobService.findByTitle(userId, 'General Talent Pool');
 
         if (!generalJob) {
-            generalJob = await jobService.create(ADMIN_USER_ID, {
+            generalJob = await jobService.create(userId, {
                 title: 'General Talent Pool',
                 description: 'Default talent pool for all candidates including batch uploads',
                 location: 'All Locations',
@@ -211,7 +209,7 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
             logger.info('Added candidate to specific job pipeline', { candidateId: candidate.id, jobId, position });
         } else {
             // Fall back to General Talent Pool
-            await addCandidateToTalentPool(candidate.id, analysis, position);
+            await addCandidateToTalentPool(candidate.id, analysis, position, userId);
         }
 
         res.json({
@@ -291,7 +289,7 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
                 await candidateService.updateStatus(candidate.id, 'completed');
 
                 // Automatically add to General Talent Pool
-                await addCandidateToTalentPool(candidate.id, analysis, position);
+                await addCandidateToTalentPool(candidate.id, analysis, position, userId);
 
                 results.push({
                     id: candidate.id,
