@@ -427,9 +427,9 @@ const steps = [
 
 const callouts = [
   {
-    num: '1',
-    title: 'Place to manage it all',
-    desc: 'Post, track, and review candidates — without logging into anything else.',
+    num: 'A few',
+    title: 'Clicks to post',
+    desc: 'Fill out your job details once and your listing goes live — no platform-hopping.',
   },
   {
     num: '0',
@@ -489,7 +489,7 @@ const JobBoardIntegration: React.FC = () => {
               The method
             </StatementLabel>
             <StatementQuote>
-              "Fill it out once.{' '}
+              "A few clicks.{' '}
               <span>Your job is live.</span>"
             </StatementQuote>
           </StatementInner>
