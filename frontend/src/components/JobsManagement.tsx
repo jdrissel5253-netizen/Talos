@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink } from 'lucide-react';
+import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink, LayoutGrid, LayoutList } from 'lucide-react';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
 import AddJobForm from './AddJobForm';
@@ -401,6 +401,57 @@ const Select = styled.select`
     }
 `;
 
+const ViewToggleBtn = styled.button<{ active: boolean }>`
+    background: ${p => p.active ? 'rgba(74,222,128,0.12)' : 'transparent'};
+    border: 1px solid ${p => p.active ? 'rgba(74,222,128,0.3)' : 'rgba(255,255,255,0.08)'};
+    color: ${p => p.active ? '#4ade80' : '#555'};
+    padding: 0.4rem 0.5rem;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.15s ease;
+    &:hover { border-color: rgba(74,222,128,0.3); color: #4ade80; }
+`;
+
+const CompactCandidateRow = styled.div`
+    display: grid;
+    grid-template-columns: 44px 1fr auto auto auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.6rem 0.75rem;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    transition: background 0.12s ease;
+    &:last-child { border-bottom: none; }
+    &:hover { background: rgba(255,255,255,0.02); }
+`;
+
+const CompactScore = styled.div<{ tier: string }>`
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 1rem;
+    color: ${p => p.tier === 'green' ? '#4ade80' : p.tier === 'yellow' ? '#fbbf24' : '#ef4444'};
+    text-align: center;
+`;
+
+const CompactName = styled.div`
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #e0e0e0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+`;
+
+const CompactMeta = styled.div`
+    font-size: 0.72rem;
+    color: #555;
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    margin-top: 0.15rem;
+`;
+
 const BulkActionsBar = styled.div`
     background: rgba(74, 222, 128, 0.04);
     border: 1px solid rgba(74, 222, 128, 0.15);
@@ -726,6 +777,7 @@ const JobsManagement: React.FC = () => {
     const [loadingJobs, setLoadingJobs] = useState(false);
     const [loadingCandidates, setLoadingCandidates] = useState(false);
     const [resumeModal, setResumeModal] = useState<{ candidateId: number; filename: string } | null>(null);
+    const [viewMode, setViewMode] = useState<'cards' | 'compact'>('cards');
 
     const navigate = useNavigate();
     const { jobId } = useParams<{ jobId: string }>();
@@ -990,6 +1042,29 @@ const JobsManagement: React.FC = () => {
         yellow: candidates.filter(c => c.tier === 'yellow'),
         red: candidates.filter(c => c.tier === 'red')
     }), [candidates]);
+
+    const renderCompactCandidate = (candidate: CandidatePipeline) => (
+        <CompactCandidateRow key={candidate.id}>
+            <CompactScore tier={candidate.tier}>{candidate.tier_score}</CompactScore>
+            <div style={{ overflow: 'hidden' }}>
+                <CompactName>{candidate.filename?.replace('.pdf', '') || 'Unknown'}</CompactName>
+                <CompactMeta>
+                    <span><Calendar size={11} /> {candidate.years_of_experience}yr</span>
+                    <span><FileText size={11} /> {candidate.certifications_found?.length || 0} certs</span>
+                    <span style={{ color: '#333' }}>{candidate.pipeline_status}</span>
+                </CompactMeta>
+            </div>
+            <ActionIcon color="#a3a3a3" onClick={() => navigate(`/candidates/${candidate.id}`)} title="Profile">
+                <User size={13} />
+            </ActionIcon>
+            <ActionIcon color="#4ade80" onClick={() => handleCandidateAction(candidate.id, 'approved')} title="Approve">
+                <Check size={13} />
+            </ActionIcon>
+            <ActionIcon color="#ef4444" onClick={() => handleCandidateAction(candidate.id, 'rejected')} title="Reject">
+                <X size={13} />
+            </ActionIcon>
+        </CompactCandidateRow>
+    );
 
     const renderCandidateCard = (candidate: CandidatePipeline) => (
         <CandidateCard key={candidate.id} isSelected={selectedCandidates.has(candidate.id)}>
@@ -1279,6 +1354,14 @@ const JobsManagement: React.FC = () => {
                                     <option value="years_of_experience">Sort by Experience</option>
                                     <option value="star_rating">Sort by Star Rating</option>
                                 </Select>
+                                <div style={{ display: 'flex', gap: '0.35rem', marginLeft: 'auto' }}>
+                                    <ViewToggleBtn active={viewMode === 'cards'} onClick={() => setViewMode('cards')} title="Card view">
+                                        <LayoutGrid size={15} />
+                                    </ViewToggleBtn>
+                                    <ViewToggleBtn active={viewMode === 'compact'} onClick={() => setViewMode('compact')} title="Compact view">
+                                        <LayoutList size={15} />
+                                    </ViewToggleBtn>
+                                </div>
                             </FilterSortBar>
 
                             {selectedCandidates.size > 0 && (
@@ -1309,7 +1392,7 @@ const JobsManagement: React.FC = () => {
                                                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={14} /> Green Tier (80-100)</span>
                                                     <span>{candidatesByTier.green.length} candidates</span>
                                                 </TierHeader>
-                                                {candidatesByTier.green.map(renderCandidateCard)}
+                                                {candidatesByTier.green.map(viewMode === 'compact' ? renderCompactCandidate : renderCandidateCard)}
                                             </TierSection>
                                         )}
                                         {candidatesByTier.yellow.length > 0 && (
@@ -1318,7 +1401,7 @@ const JobsManagement: React.FC = () => {
                                                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><AlertCircle size={14} /> Yellow Tier (50-79)</span>
                                                     <span>{candidatesByTier.yellow.length} candidates</span>
                                                 </TierHeader>
-                                                {candidatesByTier.yellow.map(renderCandidateCard)}
+                                                {candidatesByTier.yellow.map(viewMode === 'compact' ? renderCompactCandidate : renderCandidateCard)}
                                             </TierSection>
                                         )}
                                         {candidatesByTier.red.length > 0 && (
@@ -1327,7 +1410,7 @@ const JobsManagement: React.FC = () => {
                                                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><XCircle size={14} /> Red Tier (0-49)</span>
                                                     <span>{candidatesByTier.red.length} candidates</span>
                                                 </TierHeader>
-                                                {candidatesByTier.red.map(renderCandidateCard)}
+                                                {candidatesByTier.red.map(viewMode === 'compact' ? renderCompactCandidate : renderCandidateCard)}
                                             </TierSection>
                                         )}
                                         {candidates.length === 0 && (
@@ -1339,7 +1422,7 @@ const JobsManagement: React.FC = () => {
                                     </>
                                 ) : (
                                     <>
-                                        {candidates.map(renderCandidateCard)}
+                                        {candidates.map(viewMode === 'compact' ? renderCompactCandidate : renderCandidateCard)}
                                         {candidates.length === 0 && (
                                             <EmptyState>
                                                 <h3>No candidates in this category</h3>
