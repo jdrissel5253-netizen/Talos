@@ -626,9 +626,8 @@ const WhyTalosDifferent: React.FC = () => {
             <SideLabel>Why Talos is different</SideLabel>
             <HeroContent>
               <HeroHeadline>
-                The first AI<br />
-                recruiter that<br />
-                actually <em>knows</em><br />
+                Finally, a hiring tool<br />
+                that actually <em>knows</em><br />
                 your trade.
               </HeroHeadline>
             </HeroContent>
