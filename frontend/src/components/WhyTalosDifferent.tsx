@@ -589,7 +589,7 @@ const AI_ITEMS = [
   {
     num: '01',
     title: 'Eleven Role-Specific Scoring Frameworks',
-    desc: 'From HVAC Installer to Dispatcher to Bookkeeper — each role has its own AI scoring model built on the skills, certifications, and experience patterns that actually predict success in that position.',
+    desc: 'From HVAC Installer to Dispatcher to Bookkeeper — each role has its own scoring formula built on the skills, certifications, and experience patterns that actually predict success in that position.',
   },
   {
     num: '02',
