@@ -697,8 +697,8 @@ const WhyTalosDifferent: React.FC = () => {
         <AISection>
           <AIHeader>
             <AITitle>
-              What makes the<br />
-              AI <em>actually</em><br />
+              What makes<br />
+              Talos <em>actually</em><br />
               different.
             </AITitle>
             <AISubtext>
