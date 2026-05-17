@@ -1257,7 +1257,7 @@ const JobsManagement: React.FC = () => {
                                 <h3 style={{ color: '#4ade80', marginBottom: '0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Application Link</h3>
                                 <div style={{ marginBottom: '1.5rem' }}>
                                     <a
-                                        href={`${window.location.origin}/apply?job=${selectedJob.id}&title=${encodeURIComponent(selectedJob.title)}`}
+                                        href={`${window.location.origin}/jobs/${selectedJob.id}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
                                         style={{
