@@ -1255,39 +1255,29 @@ const JobsManagement: React.FC = () => {
 
                             <JobDetailsCard>
                                 <h3 style={{ color: '#4ade80', marginBottom: '0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Application Link</h3>
-                                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginBottom: '1.5rem' }}>
-                                    <input
-                                        readOnly
-                                        value={`${window.location.origin}/apply?job=${selectedJob.id}&title=${encodeURIComponent(selectedJob.title)}`}
+                                <div style={{ marginBottom: '1.5rem' }}>
+                                    <a
+                                        href={`${window.location.origin}/apply?job=${selectedJob.id}&title=${encodeURIComponent(selectedJob.title)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
                                         style={{
-                                            flex: 1,
-                                            background: '#0d1117',
-                                            border: '1px solid #4ade80',
+                                            display: 'inline-flex',
+                                            alignItems: 'center',
+                                            gap: '0.4rem',
                                             color: '#4ade80',
-                                            padding: '0.55rem 0.85rem',
-                                            fontSize: '0.75rem',
-                                            fontFamily: 'monospace',
-                                            outline: 'none',
-                                            cursor: 'text',
-                                        }}
-                                        onFocus={e => e.target.select()}
-                                    />
-                                    <button
-                                        onClick={() => copyApplyLink(selectedJob)}
-                                        style={{
-                                            background: copiedJobId === selectedJob.id ? '#4ade80' : 'transparent',
-                                            border: '1px solid #4ade80',
-                                            color: copiedJobId === selectedJob.id ? '#000' : '#4ade80',
-                                            padding: '0.55rem 1rem',
-                                            cursor: 'pointer',
-                                            fontSize: '0.75rem',
+                                            fontSize: '0.78rem',
                                             fontWeight: 600,
-                                            whiteSpace: 'nowrap',
-                                            transition: 'all 0.15s',
+                                            textDecoration: 'none',
+                                            borderBottom: '1px solid rgba(74,222,128,0.3)',
+                                            paddingBottom: '0.1rem',
+                                            transition: 'border-color 0.15s',
                                         }}
+                                        onMouseEnter={e => (e.currentTarget.style.borderColor = '#4ade80')}
+                                        onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(74,222,128,0.3)')}
                                     >
-                                        {copiedJobId === selectedJob.id ? '✓ Copied!' : 'Copy'}
-                                    </button>
+                                        <ExternalLink size={13} />
+                                        View published job posting
+                                    </a>
                                 </div>
                                 <h3 style={{ color: '#4ade80', marginBottom: '1rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Job Details</h3>
                                 <DetailRow>
