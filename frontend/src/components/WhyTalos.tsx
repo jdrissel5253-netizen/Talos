@@ -613,7 +613,7 @@ const WhyTalos: React.FC = () => {
             {[
               { num: '3', unit: 'clicks', label: 'from posting a job to a scheduled interview', green: 'Start to finish' },
               { num: '$0', unit: '', label: 'in staffing agency fees — ever', green: 'No agencies' },
-              { num: '11', unit: 'roles', label: 'with dedicated AI scoring frameworks', green: 'HVAC-specific' },
+              { num: '11', unit: 'roles', label: 'with dedicated scoring built for HVAC hiring', green: 'HVAC-specific' },
             ].map((stat, i) => (
               <HeroStatRow key={i} active={activeStatIdx === i}>
                 <div>
