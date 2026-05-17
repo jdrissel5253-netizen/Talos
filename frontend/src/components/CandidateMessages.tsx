@@ -626,52 +626,28 @@ const MESSAGE_TYPES = [
   {
     icon: <Calendar size={18} />,
     name: 'Interview Invitations',
-    desc: 'Personalized invitations that balance professionalism with warmth, automatically surfacing the candidate qualifications most relevant to the role.',
-    bullets: [
-      'Personalized opening based on candidate background',
-      'Strategic timing suggestions for higher acceptance',
-      'Optimized call-to-action for quick confirmations',
-      'Tone that reflects your company culture',
-    ],
+    desc: 'Warm, professional invitations that get responses.',
     num: '01',
     delay: 0.45,
   },
   {
     icon: <Phone size={18} />,
     name: 'Phone Screen Requests',
-    desc: "Concise, engaging outreach that respects candidates' time while generating genuine curiosity about the opportunity.",
-    bullets: [
-      'Brief format optimized for busy professionals',
-      'Highlight key opportunity factors per candidate',
-      'Flexible scheduling language to maximize response',
-      'Clear expectations for call duration and format',
-    ],
+    desc: 'Concise outreach that respects candidates\' time.',
     num: '02',
     delay: 0.5,
   },
   {
     icon: <CheckSquare size={18} />,
     name: 'Follow-Up Communications',
-    desc: 'Thoughtfully timed messages that reference specific conversation points, demonstrating genuine interest and keeping top candidates engaged.',
-    bullets: [
-      'Personalized callbacks to interview discussions',
-      'Timeline updates that manage expectations',
-      'Enthusiasm signals to prevent candidate drop-off',
-      'Stage-appropriate tone and detail level',
-    ],
+    desc: 'Keep top candidates engaged through the process.',
     num: '03',
     delay: 0.55,
   },
   {
     icon: <X size={18} />,
     name: 'Professional Rejections',
-    desc: 'Tactful messages that preserve your employer brand and leave the door open for future opportunities — protecting your reputation in the talent market.',
-    bullets: [
-      'Respectful language that maintains candidate dignity',
-      'Appreciation for time invested in the process',
-      'Future opportunity language for qualified candidates',
-      'Tone calibrated to stage and candidate quality',
-    ],
+    desc: 'Tactful messages that protect your employer brand.',
     num: '04',
     delay: 0.6,
   },
@@ -766,11 +742,6 @@ const CandidateMessages: React.FC = () => {
                   <TypeIcon>{t.icon}</TypeIcon>
                   <TypeName>{t.name}</TypeName>
                   <TypeDesc>{t.desc}</TypeDesc>
-                  <TypeList>
-                    {t.bullets.map((b, i) => (
-                      <TypeListItem key={i}>{b}</TypeListItem>
-                    ))}
-                  </TypeList>
                 </TypeCard>
               ))}
             </TypesGrid>
