@@ -898,9 +898,6 @@ const CandidateRanking: React.FC = () => {
                 actually separates reliable long-term hires from expensive mistakes in
                 trades hiring.
               </PhilosophyText>
-              <PhilosophyNote>
-                The exact methodology is proprietary — but the results speak for themselves in your demo.
-              </PhilosophyNote>
             </PhilosophyRight>
           </PhilosophyInner>
         </PhilosophySection>
