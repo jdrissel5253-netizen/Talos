@@ -966,46 +966,6 @@ const CandidateRanking: React.FC = () => {
           </TiersStack>
         </TiersSection>
 
-        {/* ── Signals ── */}
-        <SignalsSection>
-          <SignalsInner>
-            <SignalsLeft>
-              <SignalsEyebrow>What it evaluates</SignalsEyebrow>
-              <SignalsTitle>
-                Multiple<br />
-                signals.<br />
-                One <em>clear</em><br />
-                answer.
-              </SignalsTitle>
-              <SignalsSubtext>
-                Talos evaluates each candidate across several dimensions — weighted
-                differently per role and adjusted based on what you've told us matters
-                most for this position. The specifics stay under the hood.
-              </SignalsSubtext>
-            </SignalsLeft>
-
-            <SignalsList>
-              {SIGNALS.map((s, i) => (
-                <SignalItem key={i}>
-                  <SignalInfo>
-                    <SignalName>{s.name}</SignalName>
-                    <SignalDesc>{s.desc}</SignalDesc>
-                  </SignalInfo>
-                  <div>
-                    <SignalBar>
-                      <SignalBarFill
-                        className="signal-bar-fill"
-                        fill={s.fill}
-                        color={s.color}
-                      />
-                    </SignalBar>
-                    <SignalWeight>{s.weight}</SignalWeight>
-                  </div>
-                </SignalItem>
-              ))}
-            </SignalsList>
-          </SignalsInner>
-        </SignalsSection>
 
         {/* ── Benefits ── */}
         <BenefitsSection>
