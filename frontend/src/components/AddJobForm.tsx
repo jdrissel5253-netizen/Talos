@@ -822,7 +822,8 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
         drivers_license_required: formData.drivers_license_required,
         education_requirements: formData.education_requirements === 'no_degree'
           ? 'High School Diploma'
-          : formData.education_requirements
+          : formData.education_requirements,
+        valid_through: formData.valid_through || null,
       };
 
       const url = isEditMode
