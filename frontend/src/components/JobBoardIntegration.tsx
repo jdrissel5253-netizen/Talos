@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled from 'styled-components';
-import { Zap, Target, CircleDollarSign, BarChart3, RefreshCw, TrendingUp } from 'lucide-react';
+import { Zap, Target, RefreshCw } from 'lucide-react';
 import DemoModal from './DemoModal';
 
 const PageContainer = styled.div`
@@ -221,20 +221,6 @@ const CTASection = styled.section`
   margin-top: 4rem;
 `;
 
-// I will switch to multi_replace in the next turn if this single replace was too broad or incorrect.
-// Actually, looking at the previous tool call, I was trying to encompass the top part.
-// But the CTA is way down. I should have used multi_replace.
-// I'll correct this in the tool execution.
-// Wait, I can't change the tool call now. I'll just let it fail or if I can edit... I can't.
-// Actually, I can just use replace_file_content if I just target the top part first, then another call for the bottom.
-// But I already formed the request.
-// The request above TARGETS lines 5-45 (PageContainer to MainTitle).
-// BUT the ReplacementContent INCLUDES the CTAButton which is way down at line 172.
-// This is WRONG because the TargetContent doesn't include the middle.
-// I will likely get an error or a bad replace.
-// I will cancel this tool call by NOT outputting it here? No, I must output what I generated.
-// Actually, I can just produce a valid tool call here.
-// I will use `multi_replace_file_content`.
 
 const JobBoardIntegration: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
@@ -254,126 +240,49 @@ const JobBoardIntegration: React.FC = () => {
           <HeroSection>
             <MainTitle>Job Board Integration</MainTitle>
             <MainSubtitle>
-              Post to 5+ job boards instantly, scaling to 15 platforms
+              Post your job once. Let Talos handle the rest.
             </MainSubtitle>
           </HeroSection>
 
           <ContentSection>
-            <p style={{ fontSize: '1.125rem', color: '#333', lineHeight: '1.8', textAlign: 'center', marginBottom: '2rem' }}>
-              With Talos, you can post a job description to 5+ job boards instantly—and we're scaling to 15. You'll have quick access to Indeed, ZipRecruiter, HVAC Insider, and more. For Indeed, you'll even have the option to sponsor postings for a small fee.
+            <p style={{ fontSize: '1.125rem', color: '#e0e0e0', lineHeight: '1.8', textAlign: 'center', marginBottom: '2rem' }}>
+              Posting a job through Talos takes minutes, not an afternoon. Fill out your job details once and your listing goes live — no copying and pasting across platforms, no reformatting, no juggling logins.
             </p>
 
             <ProcessBox>
               <ProcessText>
-                Our method: three clicks, five minutes, and your job is live.
+                Three clicks. Five minutes. Your job is live.
               </ProcessText>
             </ProcessBox>
-
-            <JobBoardGrid>
-              <JobBoardCard>
-                <JobBoardLogo src="https://upload.wikimedia.org/wikipedia/commons/f/fc/Indeed_logo.svg" alt="Indeed Logo" />
-                <JobBoardName>Indeed</JobBoardName>
-                <ActiveStatus>Active</ActiveStatus>
-                <p style={{ marginTop: '0.5rem', fontSize: '0.875rem', color: '#666' }}>
-                  Optional sponsoring available
-                </p>
-              </JobBoardCard>
-
-              <JobBoardCard>
-                <JobBoardLogo src="https://upload.wikimedia.org/wikipedia/commons/6/64/ZipRecruiter_logo.svg" alt="ZipRecruiter Logo" />
-                <JobBoardName>ZipRecruiter</JobBoardName>
-                <ActiveStatus>Active</ActiveStatus>
-              </JobBoardCard>
-
-              <JobBoardCard>
-                <JobBoardLogo src="https://via.placeholder.com/120x60/4ade80/000000?text=HVAC+Insider" alt="HVAC Insider Logo" />
-                <JobBoardName>HVAC Insider</JobBoardName>
-                <ActiveStatus>Active</ActiveStatus>
-              </JobBoardCard>
-
-              <JobBoardCard>
-                <JobBoardLogo src="https://upload.wikimedia.org/wikipedia/commons/c/ca/LinkedIn_logo_initials.png" alt="LinkedIn Logo" />
-                <JobBoardName>LinkedIn Jobs</JobBoardName>
-                <ActiveStatus>Active</ActiveStatus>
-              </JobBoardCard>
-
-              <JobBoardCard>
-                <JobBoardLogo src="https://via.placeholder.com/120x60/4ade80/000000?text=SimplyHired" alt="SimplyHired Logo" />
-                <JobBoardName>SimplyHired</JobBoardName>
-                <ActiveStatus>Active</ActiveStatus>
-              </JobBoardCard>
-
-              <JobBoardCard>
-                <JobBoardLogo src="https://upload.wikimedia.org/wikipedia/commons/4/42/Monster_logo.svg" alt="Monster Logo" />
-                <JobBoardName>Monster</JobBoardName>
-                <ComingSoonStatus>Coming Soon</ComingSoonStatus>
-              </JobBoardCard>
-
-              <JobBoardCard>
-                <JobBoardLogo src="https://via.placeholder.com/120x60/4ade80/000000?text=CareerBuilder" alt="CareerBuilder Logo" />
-                <JobBoardName>CareerBuilder</JobBoardName>
-                <ComingSoonStatus>Coming Soon</ComingSoonStatus>
-              </JobBoardCard>
-
-              <JobBoardCard>
-                <JobBoardLogo src="https://upload.wikimedia.org/wikipedia/commons/5/50/Glassdoor_logo.svg" alt="Glassdoor Logo" />
-                <JobBoardName>Glassdoor</JobBoardName>
-                <ComingSoonStatus>Coming Soon</ComingSoonStatus>
-              </JobBoardCard>
-            </JobBoardGrid>
           </ContentSection>
 
           <ContentSection>
             <h2 style={{ fontSize: '2rem', fontWeight: '700', color: '#4ade80', marginBottom: '2rem', textAlign: 'center' }}>
-              Key Features
+              How it works
             </h2>
 
             <FeatureList>
               <FeatureCard>
                 <FeatureIcon><Zap size={40} color="#4ade80" /></FeatureIcon>
-                <FeatureTitle>Instant Multi-Posting</FeatureTitle>
+                <FeatureTitle>Post in minutes</FeatureTitle>
                 <FeatureDescription>
-                  Post to multiple job boards simultaneously with just three clicks. No need to visit each platform individually.
+                  Fill out your job details once inside Talos and your listing goes live. No platform-hopping, no reformatting.
                 </FeatureDescription>
               </FeatureCard>
 
               <FeatureCard>
                 <FeatureIcon><Target size={40} color="#4ade80" /></FeatureIcon>
-                <FeatureTitle>HVAC-Optimized Distribution</FeatureTitle>
+                <FeatureTitle>Built for HVAC hiring</FeatureTitle>
                 <FeatureDescription>
-                  Your jobs are automatically posted to the most effective platforms for HVAC hiring, maximizing your reach.
-                </FeatureDescription>
-              </FeatureCard>
-
-              <FeatureCard>
-                <FeatureIcon><CircleDollarSign size={40} color="#4ade80" /></FeatureIcon>
-                <FeatureTitle>Sponsored Post Options</FeatureTitle>
-                <FeatureDescription>
-                  Boost your job visibility on Indeed and other premium platforms with optional sponsored postings.
-                </FeatureDescription>
-              </FeatureCard>
-
-              <FeatureCard>
-                <FeatureIcon><BarChart3 size={40} color="#4ade80" /></FeatureIcon>
-                <FeatureTitle>Performance Tracking</FeatureTitle>
-                <FeatureDescription>
-                  Track which job boards are delivering the best candidates for your specific roles and locations.
+                  Your posting is structured around the details that matter to HVAC candidates — certifications, pay type, schedule, and more.
                 </FeatureDescription>
               </FeatureCard>
 
               <FeatureCard>
                 <FeatureIcon><RefreshCw size={40} color="#4ade80" /></FeatureIcon>
-                <FeatureTitle>Automatic Renewal</FeatureTitle>
+                <FeatureTitle>Candidates flow straight in</FeatureTitle>
                 <FeatureDescription>
-                  Keep your postings fresh with automatic renewal options across all integrated platforms.
-                </FeatureDescription>
-              </FeatureCard>
-
-              <FeatureCard>
-                <FeatureIcon><TrendingUp size={40} color="#4ade80" /></FeatureIcon>
-                <FeatureTitle>Scaling to 15 Platforms</FeatureTitle>
-                <FeatureDescription>
-                  We're continuously adding new job board integrations to maximize your hiring reach and effectiveness.
+                  Every applicant who comes through gets scored and ranked automatically — so by the time you open your pipeline, the work is already done.
                 </FeatureDescription>
               </FeatureCard>
             </FeatureList>
@@ -381,7 +290,7 @@ const JobBoardIntegration: React.FC = () => {
 
           <CTASection>
             <CTAButton onClick={handleDemoClick}>
-              See Multi-Board Posting in Action
+              See How It Works
             </CTAButton>
           </CTASection>
         </ContentWrapper>
