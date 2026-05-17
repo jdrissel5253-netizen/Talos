@@ -581,7 +581,7 @@ const COMPARISON_ROWS = [
   {
     category: 'Cost',
     generic: '$10–20K+ per agency hire',
-    talos: 'Flat platform fee. No placement fees. Ever.',
+    talos: 'No placement fees. Ever.',
   },
 ];
 
