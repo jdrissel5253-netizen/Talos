@@ -702,10 +702,10 @@ const WhyTalosDifferent: React.FC = () => {
               different.
             </AITitle>
             <AISubtext>
-              Most hiring tools run the same large language model
-              with a generic prompt. Talos built scoring frameworks from the
-              ground up for each HVAC role — which changes everything about
-              the quality of results you get.
+              Generic tools apply the same checklist to every industry.
+              Talos uses a scoring formula built from the ground up for HVAC —
+              factoring in role-specific certifications, experience type, and
+              the skills that actually matter on the job.
             </AISubtext>
           </AIHeader>
 
