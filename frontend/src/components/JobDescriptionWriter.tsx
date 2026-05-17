@@ -697,23 +697,23 @@ const ROLES = [
 const PROCESS_STEPS = [
   {
     num: '01',
-    title: 'Enter Your Job Details',
-    desc: 'Provide the role, location, pay range, certifications required, and experience level. Talos takes it from there.',
+    title: 'Enter your job details',
+    desc: 'Tell Talos what you\'re hiring for. That\'s all it needs.',
   },
   {
     num: '02',
-    title: 'AI Generates the Description',
-    desc: 'The AI writes a complete job description using language tuned to attract the right candidates for that specific HVAC role — not generic boilerplate.',
+    title: 'Get a complete job description',
+    desc: 'A polished, HVAC-specific posting is ready — written for the kind of candidate you actually want to hire.',
   },
   {
     num: '03',
-    title: 'Review and Adjust Tone',
-    desc: 'Put your own spin on it. Adjust tone, add company culture details, or use it exactly as written.',
+    title: 'Make it yours',
+    desc: 'Use it as written, or put your own spin on it. Add company culture, tweak the tone, or copy it straight to your job board.',
   },
   {
     num: '04',
-    title: 'Post and Start Receiving Applications',
-    desc: 'Publish directly or copy to your preferred job board. The description is structured for both search visibility and candidate resonance.',
+    title: 'Post and start receiving applications',
+    desc: 'Publish and let the candidates come to you.',
   },
 ];
 
@@ -858,11 +858,10 @@ const JobDescriptionWriter: React.FC = () => {
             <ProcessEyebrow>How it works</ProcessEyebrow>
             <ProcessTitle>
               From details<br />
-              to <em>done</em><br />
-              in 60 seconds.
+              to <em>done.</em>
             </ProcessTitle>
             <ProcessSubtext>
-              No blank pages, no copy-paste from old postings.
+              No blank pages. No copying from old postings.
               Enter what you need, and Talos handles the rest.
             </ProcessSubtext>
           </ProcessLeft>
