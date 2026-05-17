@@ -916,19 +916,16 @@ const CandidateRanking: React.FC = () => {
             <TierRow borderColor="#4ade80">
               <TierLeft>
                 <TierLabel color="#4ade80">Green Tier</TierLabel>
-                <TierRange>80–100</TierRange>
               </TierLeft>
               <TierMiddle>
                 <TierDesc>
-                  Strong match across the dimensions that matter most for this role.
-                  These candidates have the experience, credentials, and profile
-                  that indicate a reliable, long-term hire. Interview these first.
+                  Your strongest candidates for this role. Start here.
                 </TierDesc>
               </TierMiddle>
               <TierRight>
                 <TierAction>Interview immediately</TierAction>
                 <TierSubaction>
-                  Highest probability of a successful hire. Don't let these sit in your inbox.
+                  Don't let these sit in your inbox.
                 </TierSubaction>
               </TierRight>
             </TierRow>
@@ -936,19 +933,16 @@ const CandidateRanking: React.FC = () => {
             <TierRow borderColor="#fbbf24">
               <TierLeft>
                 <TierLabel color="#fbbf24">Yellow Tier</TierLabel>
-                <TierRange>50–79</TierRange>
               </TierLeft>
               <TierMiddle>
                 <TierDesc>
-                  Solid candidates with real potential. They may have trade-offs worth
-                  discussing — slightly less experience, further distance, or a mixed work
-                  history. Worth a conversation when your Green tier is exhausted.
+                  Solid candidates worth a closer look. May need a conversation to assess fit.
                 </TierDesc>
               </TierMiddle>
               <TierRight>
                 <TierAction>Review after Green</TierAction>
                 <TierSubaction>
-                  Good backup candidates. Some will surprise you in an interview.
+                  Some will surprise you in an interview.
                 </TierSubaction>
               </TierRight>
             </TierRow>
@@ -956,19 +950,16 @@ const CandidateRanking: React.FC = () => {
             <TierRow borderColor="#ef4444">
               <TierLeft>
                 <TierLabel color="#ef4444">Red Tier</TierLabel>
-                <TierRange>0–49</TierRange>
               </TierLeft>
               <TierMiddle>
                 <TierDesc>
-                  Significant gaps against the requirements for this role. Not necessarily
-                  a bad person — just not the right fit right now. Save your time for
-                  candidates who are genuinely ready.
+                  Not the right fit for this role right now. Save your time for Green and Yellow.
                 </TierDesc>
               </TierMiddle>
               <TierRight>
                 <TierAction>Hold for now</TierAction>
                 <TierSubaction>
-                  Consider only when options are exhausted, or revisit for different roles.
+                  Revisit if options are exhausted, or consider for a different role.
                 </TierSubaction>
               </TierRight>
             </TierRow>
