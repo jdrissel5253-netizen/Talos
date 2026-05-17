@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
             ? await jobService.findAll()
             : await jobService.findByUserId(userId);
 
-        res.set('Cache-Control', 'private, max-age=300');
+        res.set('Cache-Control', 'no-store');
         res.json({
             status: 'success',
             data: { jobs }

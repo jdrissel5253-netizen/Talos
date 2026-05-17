@@ -768,6 +768,12 @@ const ClientDashboard: React.FC = () => {
   const [loading, setLoading]         = useState(true);
 
   useEffect(() => {
+    // Clear stale state immediately so a previous user's data never shows
+    setJobs([]);
+    setStats(null);
+    setTopCandidates([]);
+    setLoading(true);
+
     const headers = { ...getAuthHeaders(), 'Content-Type': 'application/json' };
     const base = appConfig.apiUrl;
     Promise.all([
