@@ -2,11 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy } from 'lucide-react';
+import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink } from 'lucide-react';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
 import AddJobForm from './AddJobForm';
 import ContactRejectionModal from './ContactRejectionModal';
+import ResumeFileModal from './ResumeFileModal';
 import { extractCandidateName } from '../utils/templateHelpers';
 
 // Types
@@ -587,6 +588,32 @@ const MetaItem = styled.span`
     gap: 4px;
 `;
 
+const ViewActions = styled.div`
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+`;
+
+const ViewBtn = styled.button`
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    background: transparent;
+    border: 1px solid #2a2a2a;
+    color: #6e7d8e;
+    font-size: 0.72rem;
+    font-weight: 500;
+    padding: 0.3rem 0.7rem;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    letter-spacing: 0.02em;
+
+    &:hover {
+        border-color: #4ade80;
+        color: #4ade80;
+    }
+`;
+
 const Checkbox = styled.input`
     width: 16px;
     height: 16px;
@@ -697,6 +724,7 @@ const JobsManagement: React.FC = () => {
     const [error, setError] = useState<string | null>(null);
     const [loadingJobs, setLoadingJobs] = useState(false);
     const [loadingCandidates, setLoadingCandidates] = useState(false);
+    const [resumeModal, setResumeModal] = useState<{ candidateId: number; filename: string } | null>(null);
 
     const navigate = useNavigate();
     const { jobId } = useParams<{ jobId: string }>();
@@ -988,6 +1016,15 @@ const JobsManagement: React.FC = () => {
                 <MetaItem><FileText size={13} /> {candidate.certifications_found?.length || 0} certs</MetaItem>
             </MetaRow>
 
+            <ViewActions>
+                <ViewBtn onClick={() => setResumeModal({ candidateId: candidate.candidate_id, filename: candidate.filename })}>
+                    <FileText size={12} /> Resume
+                </ViewBtn>
+                <ViewBtn onClick={() => navigate(`/candidates/${candidate.id}`)}>
+                    <User size={12} /> Profile
+                </ViewBtn>
+            </ViewActions>
+
             <ActionButtons>
                 <ActionIcon color="#4ade80" onClick={() => handleCandidateAction(candidate.id, 'approved')} title="Approve">
                     <Check size={14} />
@@ -1024,6 +1061,13 @@ const JobsManagement: React.FC = () => {
 
     return (
         <>
+            <ResumeFileModal
+                isOpen={resumeModal !== null}
+                onClose={() => setResumeModal(null)}
+                candidateId={resumeModal?.candidateId ?? null}
+                filename={resumeModal?.filename ?? ''}
+            />
+
             {showAddJobForm && (
                 <AddJobForm
                     onClose={() => setShowAddJobForm(false)}
