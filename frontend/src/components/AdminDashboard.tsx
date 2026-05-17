@@ -286,6 +286,7 @@ const AdminDashboard: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [expandedUser, setExpandedUser] = useState<number | null>(null);
   const [userJobs, setUserJobs] = useState<Record<number, JobRow[]>>({});
+  const [togglingRole, setTogglingRole] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isAdmin()) {
@@ -314,6 +315,26 @@ const AdminDashboard: React.FC = () => {
     const data = await res.json();
     if (data.status === 'success') {
       setUserJobs(prev => ({ ...prev, [userId]: data.data }));
+    }
+  };
+
+  const toggleRole = async (userId: number, currentRole: string | null, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const newRole = currentRole === 'admin' ? 'user' : 'admin';
+    if (!window.confirm(`Change this account to "${newRole}"?`)) return;
+    setTogglingRole(userId);
+    try {
+      const headers = { ...getAuthHeaders(), 'Content-Type': 'application/json' };
+      const res = await fetch(`${appConfig.apiUrl}/api/admin/users/${userId}/role`, {
+        method: 'PUT',
+        headers,
+        body: JSON.stringify({ role: newRole }),
+      });
+      if ((await res.json()).status === 'success') {
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, role: newRole } : u));
+      }
+    } finally {
+      setTogglingRole(null);
     }
   };
 
@@ -406,17 +427,27 @@ const AdminDashboard: React.FC = () => {
 
                   {expandedUser === user.id && (
                     <ExpandedPanel>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.75rem' }}>
                         <span style={{ fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.1em', textTransform: 'uppercase', color: '#4e5d6e' }}>
                           Jobs
                         </span>
-                        <a
-                          href={`/jobs-management`}
-                          style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.65rem', color: '#4e5d6e', textDecoration: 'none' }}
-                          onClick={e => e.stopPropagation()}
+                        <button
+                          onClick={(e) => toggleRole(user.id, user.role, e)}
+                          disabled={togglingRole === user.id}
+                          style={{
+                            background: 'transparent',
+                            border: `1px solid ${user.role === 'admin' ? 'rgba(167,139,250,0.3)' : 'rgba(255,255,255,0.08)'}`,
+                            color: user.role === 'admin' ? '#a78bfa' : '#4e5d6e',
+                            fontSize: '0.62rem',
+                            fontWeight: 600,
+                            letterSpacing: '0.08em',
+                            padding: '0.2rem 0.6rem',
+                            cursor: 'pointer',
+                            opacity: togglingRole === user.id ? 0.5 : 1,
+                          }}
                         >
-                          <ExternalLink size={11} />
-                        </a>
+                          {togglingRole === user.id ? '…' : user.role === 'admin' ? 'Make User' : 'Make Admin'}
+                        </button>
                       </div>
                       {userJobs[user.id] === undefined ? (
                         <EmptyNote>Loading...</EmptyNote>

@@ -84,4 +84,26 @@ router.get('/users/:id/jobs', async (req, res) => {
     }
 });
 
+/**
+ * PUT /api/admin/users/:id/role
+ * Toggle a user's role between 'user' and 'admin'
+ */
+router.put('/users/:id/role', async (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+    if (!userId || userId < 1) {
+        return res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+    }
+    const { role } = req.body;
+    if (role !== 'user' && role !== 'admin') {
+        return res.status(400).json({ status: 'error', message: 'Role must be user or admin' });
+    }
+    try {
+        await db.query(`UPDATE users SET role = $1 WHERE id = $2`, [role, userId]);
+        res.json({ status: 'success' });
+    } catch (error) {
+        logger.error('Admin role update error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to update role' });
+    }
+});
+
 module.exports = router;
