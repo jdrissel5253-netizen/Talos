@@ -327,6 +327,19 @@ const RolesCount = styled.span`
   flex-shrink: 0;
 `;
 
+const RolesSubtext = styled.p`
+  font-size: 0.95rem;
+  color: #555;
+  font-weight: 300;
+  line-height: 1.6;
+  margin-top: -1.5rem;
+
+  span {
+    color: #888;
+    font-style: italic;
+  }
+`;
+
 const RolesTagWrap = styled.div`
   display: flex;
   flex-wrap: wrap;
@@ -824,10 +837,13 @@ const JobDescriptionWriter: React.FC = () => {
           <RolesInner>
             <RolesHeader>
               <RolesTitle>
-                <em>20+</em> HVAC roles<br />covered out of the box.
+                <em>15+</em> HVAC roles<br />covered out of the box.
               </RolesTitle>
-              <RolesCount>20+</RolesCount>
+              <RolesCount>15+</RolesCount>
             </RolesHeader>
+            <RolesSubtext>
+              From <span>Installer</span> and <span>Lead Technician</span> to <span>Service Manager</span> and <span>Dispatcher</span> — every core HVAC role has its own dedicated formula.
+            </RolesSubtext>
           </RolesInner>
         </RolesSection>
 
