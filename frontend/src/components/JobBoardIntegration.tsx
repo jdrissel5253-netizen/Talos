@@ -3,13 +3,13 @@ import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import DemoModal from './DemoModal';
 
 const FontImport = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Sora:wght@300;400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
 `;
 
-// ─── Animations ───────────────────────────────────────────────────────────────
+// ─── animations ───────────────────────────────────────────────────────────────
 
 const fadeUp = keyframes`
-  from { opacity: 0; transform: translateY(28px); }
+  from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 `;
 
@@ -18,95 +18,97 @@ const fadeIn = keyframes`
   to   { opacity: 1; }
 `;
 
-const lineGrow = keyframes`
-  from { width: 0; }
-  to   { width: 100%; }
-`;
-
-// ─── Page Shell ───────────────────────────────────────────────────────────────
+// ─── page ─────────────────────────────────────────────────────────────────────
 
 const Page = styled.div`
-  background: #080808;
-  color: #e8e8e8;
-  font-family: 'Sora', sans-serif;
-  overflow-x: hidden;
-`;
-
-// ─── Hero ─────────────────────────────────────────────────────────────────────
-
-const HeroWrap = styled.section`
+  min-height: 100vh;
+  background: #111318;
+  font-family: 'DM Sans', sans-serif;
+  color: #e8eaf0;
   position: relative;
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 7rem 3rem 6rem;
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-  border-bottom: 1px solid #1a1a1a;
   overflow: hidden;
 
-  @media (max-width: 768px) {
-    padding: 5rem 2rem 4rem;
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 10% 20%, rgba(74,222,128,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(74,222,128,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
   }
 `;
 
-const BackgroundWord = styled.div`
-  position: absolute;
-  right: -2rem;
-  top: 50%;
-  transform: translateY(-50%);
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(8rem, 16vw, 18rem);
-  font-weight: 900;
-  font-style: italic;
-  color: transparent;
-  -webkit-text-stroke: 1px #1c1c1c;
-  user-select: none;
-  pointer-events: none;
-  line-height: 1;
-  white-space: nowrap;
-  animation: ${fadeIn} 1.2s ease both;
+const Wrapper = styled.div`
+  position: relative;
+  z-index: 1;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
 
-  @media (max-width: 768px) { display: none; }
+  @media (max-width: 768px) { padding: 0 1.25rem; }
 `;
 
-const HeroTop = styled.div`
+// ─── top rule ─────────────────────────────────────────────────────────────────
+
+const TopRule = styled.div`
+  border-top: 2px solid #232830;
+  padding-top: 3rem;
+  margin-top: 3.5rem;
   display: flex;
-  align-items: flex-start;
+  align-items: baseline;
+  justify-content: space-between;
   gap: 2rem;
-  animation: ${fadeUp} 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: ${fadeIn} 0.6s ease both;
+
+  @media (max-width: 600px) {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
 `;
 
-const SideLabel = styled.div`
-  writing-mode: vertical-rl;
-  text-orientation: mixed;
-  transform: rotate(180deg);
-  font-size: 0.65rem;
+const TopLabel = styled.span`
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
   font-weight: 600;
-  letter-spacing: 0.22em;
+  letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #4ade80;
-  padding-top: 0.5rem;
-  flex-shrink: 0;
-  align-self: stretch;
-  display: flex;
-  align-items: center;
-
-  @media (max-width: 768px) { display: none; }
 `;
 
-const HeroContent = styled.div`
-  flex: 1;
+const TopMeta = styled.span`
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6e7d8e;
 `;
 
-const HeroHeadline = styled.h1`
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(3rem, 6vw, 6.5rem);
-  font-weight: 900;
-  line-height: 1.02;
-  letter-spacing: -0.025em;
+// ─── hero ─────────────────────────────────────────────────────────────────────
+
+const HeroSection = styled.div`
+  padding: 4rem 0 3rem;
+  text-align: center;
+  animation: ${fadeUp} 0.7s ease 0.1s both;
+`;
+
+const HeroKicker = styled.p`
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 1.05rem;
+  color: #4ade80;
+  margin-bottom: 1.25rem;
+`;
+
+const HeroTitle = styled.h1`
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(3rem, 7vw, 5.5rem);
+  font-weight: 400;
+  line-height: 1.08;
   color: #ffffff;
-  margin-bottom: 0;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.75rem;
 
   em {
     font-style: italic;
@@ -114,98 +116,56 @@ const HeroHeadline = styled.h1`
   }
 `;
 
-const HeroBottom = styled.div`
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4rem;
-  align-items: end;
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    gap: 2rem;
-  }
-`;
-
-const HeroDesc = styled.p`
-  font-size: 1.05rem;
-  line-height: 1.75;
-  color: #888;
+const HeroSub = styled.p`
+  font-size: 1.1rem;
   font-weight: 300;
-  max-width: 480px;
-  animation: ${fadeUp} 0.9s 0.15s cubic-bezier(0.16, 1, 0.3, 1) both;
+  color: #8a9ab0;
+  max-width: 560px;
+  margin: 0 auto 3rem;
+  line-height: 1.7;
 `;
 
-const HeroMeta = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-  animation: ${fadeUp} 0.9s 0.25s cubic-bezier(0.16, 1, 0.3, 1) both;
-`;
-
-const MetaLine = styled.div`
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: #555;
+const MidRule = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  gap: 1.5rem;
+  margin-bottom: 4.5rem;
 
-  &::before {
+  &::before, &::after {
     content: '';
-    display: block;
-    width: 20px;
+    flex: 1;
     height: 1px;
-    background: #4ade80;
-    flex-shrink: 0;
+    background: #232830;
   }
 `;
 
-const HeroCTA = styled.button`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-top: 0.5rem;
+const MidRuleOrb = styled.div`
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
   background: #4ade80;
-  color: #000;
-  border: none;
-  padding: 0.85rem 2rem;
-  font-family: 'Sora', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
-
-  &:hover {
-    background: #6ee89a;
-    transform: translateY(-1px);
-  }
+  flex-shrink: 0;
 `;
 
-// ─── Statement strip ──────────────────────────────────────────────────────────
+// ─── statement ────────────────────────────────────────────────────────────────
 
-const StatementStrip = styled.section`
-  border-bottom: 1px solid #1a1a1a;
-  padding: 5rem 3rem;
-  max-width: 1320px;
-  margin: 0 auto;
-
-  @media (max-width: 768px) { padding: 4rem 2rem; }
+const StatementBlock = styled.div`
+  margin-bottom: 6rem;
+  animation: ${fadeUp} 0.7s ease 0.25s both;
 `;
 
 const StatementInner = styled.div`
   display: grid;
-  grid-template-columns: 200px 1fr;
+  grid-template-columns: 180px 1fr;
   gap: 4rem;
-  align-items: start;
+  align-items: center;
+  padding: 3rem 0;
+  border-top: 1px solid #232830;
+  border-bottom: 1px solid #232830;
 
-  @media (max-width: 768px) {
+  @media (max-width: 700px) {
     grid-template-columns: 1fr;
-    gap: 1.5rem;
+    gap: 1rem;
   }
 `;
 
@@ -215,41 +175,55 @@ const StatementLabel = styled.div`
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: #4ade80;
-  padding-top: 0.4rem;
-  line-height: 1.6;
 `;
 
 const StatementQuote = styled.blockquote`
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(1.6rem, 3vw, 2.4rem);
-  font-weight: 700;
+  font-weight: 400;
   line-height: 1.25;
   color: #ffffff;
   margin: 0;
 
-  span {
-    color: #4ade80;
-  }
+  span { color: #4ade80; font-style: italic; }
 `;
 
-// ─── Steps ────────────────────────────────────────────────────────────────────
+// ─── steps ────────────────────────────────────────────────────────────────────
 
-const StepsSection = styled.section`
-  border-bottom: 1px solid #1a1a1a;
-  padding: 6rem 3rem;
-  max-width: 1320px;
-  margin: 0 auto;
-
-  @media (max-width: 768px) { padding: 4rem 2rem; }
+const SectionBlock = styled.div`
+  margin-bottom: 6rem;
 `;
 
-const SectionEyebrow = styled.div`
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #4ade80;
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
   margin-bottom: 3rem;
+  animation: ${fadeUp} 0.7s ease 0.35s both;
+`;
+
+const SectionTitle = styled.h2`
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+`;
+
+const SectionRule = styled.div`
+  flex: 1;
+  height: 1px;
+  background: #232830;
+`;
+
+const SectionCount = styled.span`
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6e7d8e;
+  white-space: nowrap;
 `;
 
 const StepsList = styled.div`
@@ -257,14 +231,14 @@ const StepsList = styled.div`
   flex-direction: column;
 `;
 
-const StepRow = styled.div`
+const StepRow = styled.div<{ delay: number }>`
   display: grid;
   grid-template-columns: 80px 1fr;
   gap: 3rem;
   padding: 2.5rem 0;
   border-bottom: 1px solid #141414;
   align-items: start;
-  animation: ${fadeUp} 0.7s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: ${fadeUp} 0.7s ease ${p => p.delay}s both;
 
   &:last-child { border-bottom: none; }
 
@@ -275,11 +249,11 @@ const StepRow = styled.div`
 `;
 
 const StepNumber = styled.div`
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Serif Display', serif;
   font-size: 3rem;
-  font-weight: 900;
+  font-weight: 400;
   font-style: italic;
-  color: #1e1e1e;
+  color: rgba(74,222,128,0.15);
   line-height: 1;
   user-select: none;
 `;
@@ -287,8 +261,9 @@ const StepNumber = styled.div`
 const StepBody = styled.div``;
 
 const StepTitle = styled.h3`
-  font-size: 1.15rem;
-  font-weight: 600;
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.35rem;
+  font-weight: 400;
   color: #ffffff;
   margin: 0 0 0.6rem;
   letter-spacing: -0.01em;
@@ -297,118 +272,171 @@ const StepTitle = styled.h3`
 const StepDesc = styled.p`
   font-size: 0.88rem;
   line-height: 1.7;
-  color: #666;
+  color: #8a9ab0;
   font-weight: 300;
   margin: 0;
-  max-width: 540px;
 `;
 
-// ─── Callout ──────────────────────────────────────────────────────────────────
-
-const CalloutSection = styled.section`
-  border-bottom: 1px solid #1a1a1a;
-  padding: 6rem 3rem;
-  max-width: 1320px;
-  margin: 0 auto;
-
-  @media (max-width: 768px) { padding: 4rem 2rem; }
-`;
+// ─── callout grid ─────────────────────────────────────────────────────────────
 
 const CalloutGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 1px;
-  background: #1a1a1a;
+  background: #232830;
+  border: 1px solid #232830;
+  margin-bottom: 6rem;
+  animation: ${fadeUp} 0.7s ease 0.4s both;
 
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-  }
+  @media (max-width: 700px) { grid-template-columns: 1fr; }
 `;
 
 const CalloutItem = styled.div`
-  background: #080808;
+  background: #111318;
   padding: 2.5rem;
+  transition: background 0.15s ease;
 
-  &:hover { background: #0d0d0d; }
+  &:hover { background: #1a1f2a; }
 `;
 
-const CalloutItemNum = styled.div`
-  font-family: 'Playfair Display', serif;
-  font-size: 2.5rem;
-  font-weight: 900;
+const CalloutNum = styled.div`
+  font-family: 'DM Serif Display', serif;
+  font-size: 2.75rem;
+  font-weight: 400;
   color: #4ade80;
   line-height: 1;
-  margin-bottom: 1rem;
+  margin-bottom: 0.75rem;
 `;
 
-const CalloutItemTitle = styled.div`
-  font-size: 0.8rem;
+const CalloutTitle = styled.div`
+  font-size: 0.75rem;
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: #ffffff;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0.6rem;
 `;
 
-const CalloutItemDesc = styled.div`
-  font-size: 0.83rem;
-  line-height: 1.65;
-  color: #555;
+const CalloutDesc = styled.div`
+  font-size: 0.85rem;
   font-weight: 300;
+  line-height: 1.65;
+  color: #6e7d8e;
+`;
+
+// ─── pull quote ───────────────────────────────────────────────────────────────
+
+const PullQuote = styled.blockquote`
+  text-align: center;
+  padding: 4rem 2rem;
+  margin-bottom: 5rem;
+  position: relative;
+  animation: ${fadeUp} 0.7s ease 0.5s both;
+
+  &::before {
+    content: '"';
+    font-family: 'DM Serif Display', serif;
+    font-size: 10rem;
+    color: rgba(74,222,128,0.07);
+    position: absolute;
+    top: -1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    line-height: 1;
+    pointer-events: none;
+  }
+`;
+
+const PullQuoteText = styled.p`
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: clamp(1.5rem, 3vw, 2.25rem);
+  color: #ffffff;
+  line-height: 1.4;
+  max-width: 700px;
+  margin: 0 auto 1.5rem;
+  position: relative;
+  z-index: 1;
+`;
+
+const PullQuoteAttr = styled.cite`
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-style: normal;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #4ade80;
 `;
 
 // ─── CTA ──────────────────────────────────────────────────────────────────────
 
-const CTASection = styled.section`
-  padding: 7rem 3rem;
-  max-width: 1320px;
-  margin: 0 auto;
+const CTASection = styled.div`
+  border-top: 2px solid #232830;
+  padding: 4rem 0 5rem;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2rem;
+  align-items: center;
+  justify-content: space-between;
+  gap: 3rem;
+  animation: ${fadeUp} 0.7s ease 0.55s both;
 
-  @media (max-width: 768px) { padding: 5rem 2rem; }
+  @media (max-width: 700px) {
+    flex-direction: column;
+    text-align: center;
+  }
 `;
 
-const CTAHeadline = styled.h2`
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(2rem, 4vw, 3.5rem);
-  font-weight: 900;
-  line-height: 1.1;
-  color: #ffffff;
-  max-width: 600px;
+const CTALeft = styled.div``;
 
-  em {
-    font-style: italic;
-    color: #4ade80;
-  }
+const CTALabel = styled.p`
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: #4ade80;
+  margin-bottom: 0.5rem;
+`;
+
+const CTATitle = styled.h2`
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 `;
 
 const CTAButton = styled.button`
-  display: inline-flex;
+  flex-shrink: 0;
+  display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.75rem;
   background: #4ade80;
   color: #000;
   border: none;
-  padding: 0.9rem 2.25rem;
-  font-family: 'Sora', sans-serif;
-  font-size: 0.8rem;
-  font-weight: 700;
+  padding: 1.1rem 2.25rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.2s ease;
-  clip-path: polygon(0 0, calc(100% - 8px) 0, 100% 8px, 100% 100%, 8px 100%, 0 calc(100% - 8px));
+  transition: background 0.2s ease;
 
   &:hover {
     background: #6ee89a;
-    transform: translateY(-1px);
+    svg { transform: translateX(4px); }
   }
+
+  svg { transition: transform 0.2s ease; }
 `;
 
-// ─── Component ────────────────────────────────────────────────────────────────
+const ArrowRight = () => (
+  <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+    <path d="M3 8h10M9 4l4 4-4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+  </svg>
+);
+
+// ─── data ─────────────────────────────────────────────────────────────────────
 
 const steps = [
   {
@@ -443,6 +471,8 @@ const callouts = [
   },
 ];
 
+// ─── component ────────────────────────────────────────────────────────────────
+
 const JobBoardIntegration: React.FC = () => {
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
 
@@ -450,92 +480,91 @@ const JobBoardIntegration: React.FC = () => {
     <>
       <FontImport />
       <Page>
+        <Wrapper>
 
-        {/* ── Hero ── */}
-        <HeroWrap>
-          <BackgroundWord>Post.</BackgroundWord>
+          {/* ── Top rule ── */}
+          <TopRule>
+            <TopLabel>Talos &mdash; Job Board Integration</TopLabel>
+            <TopMeta>Post once &bull; Candidates ranked automatically</TopMeta>
+          </TopRule>
 
-          <HeroTop>
-            <SideLabel>Job board integration</SideLabel>
-            <HeroContent>
-              <HeroHeadline>
-                Post once.<br />
-                Hire <em>faster.</em>
-              </HeroHeadline>
-            </HeroContent>
-          </HeroTop>
+          {/* ── Hero ── */}
+          <HeroSection>
+            <HeroKicker>One place for everything</HeroKicker>
+            <HeroTitle>
+              Post once.<br />
+              Hire <em>faster.</em>
+            </HeroTitle>
+            <HeroSub>
+              Post a job through Talos and your listing goes live without logging into anything else. Fill out your details once, in one place — no platform-hopping, no reformatting.
+            </HeroSub>
+            <MidRule>
+              <MidRuleOrb />
+            </MidRule>
+          </HeroSection>
 
-          <HeroBottom>
-            <HeroDesc>
-              Post a job through Talos and your listing goes live without
-              logging into anything else. Fill out your details once, in one
-              place — no platform-hopping, no reformatting, no juggling logins.
-            </HeroDesc>
-            <HeroMeta>
-              <MetaLine>Built for HVAC hiring</MetaLine>
-              <MetaLine>No platform accounts needed</MetaLine>
-              <MetaLine>Candidates ranked automatically</MetaLine>
-              <HeroCTA onClick={() => setIsDemoModalOpen(true)}>
-                See how it works →
-              </HeroCTA>
-            </HeroMeta>
-          </HeroBottom>
-        </HeroWrap>
+          {/* ── Statement ── */}
+          <StatementBlock>
+            <StatementInner>
+              <StatementLabel>The method</StatementLabel>
+              <StatementQuote>
+                "A few clicks.{' '}
+                <span>Your job is live.</span>"
+              </StatementQuote>
+            </StatementInner>
+          </StatementBlock>
 
-        {/* ── Statement ── */}
-        <StatementStrip>
-          <StatementInner>
-            <StatementLabel>
-              The method
-            </StatementLabel>
-            <StatementQuote>
-              "A few clicks.{' '}
-              <span>Your job is live.</span>"
-            </StatementQuote>
-          </StatementInner>
-        </StatementStrip>
+          {/* ── Steps ── */}
+          <SectionBlock>
+            <SectionHeader>
+              <SectionTitle>How it works</SectionTitle>
+              <SectionRule />
+              <SectionCount>Three steps</SectionCount>
+            </SectionHeader>
+            <StepsList>
+              {steps.map((step, i) => (
+                <StepRow key={i} delay={0.4 + i * 0.1}>
+                  <StepNumber>0{i + 1}</StepNumber>
+                  <StepBody>
+                    <StepTitle>{step.title}</StepTitle>
+                    <StepDesc>{step.desc}</StepDesc>
+                  </StepBody>
+                </StepRow>
+              ))}
+            </StepsList>
+          </SectionBlock>
 
-        {/* ── Steps ── */}
-        <StepsSection>
-          <SectionEyebrow>How it works</SectionEyebrow>
-          <StepsList>
-            {steps.map((step, i) => (
-              <StepRow key={i} style={{ animationDelay: `${i * 0.1}s` }}>
-                <StepNumber>0{i + 1}</StepNumber>
-                <StepBody>
-                  <StepTitle>{step.title}</StepTitle>
-                  <StepDesc>{step.desc}</StepDesc>
-                </StepBody>
-              </StepRow>
-            ))}
-          </StepsList>
-        </StepsSection>
-
-        {/* ── Callouts ── */}
-        <CalloutSection>
-          <SectionEyebrow>By the numbers</SectionEyebrow>
+          {/* ── Callouts ── */}
           <CalloutGrid>
             {callouts.map((item, i) => (
               <CalloutItem key={i}>
-                <CalloutItemNum>{item.num}</CalloutItemNum>
-                <CalloutItemTitle>{item.title}</CalloutItemTitle>
-                <CalloutItemDesc>{item.desc}</CalloutItemDesc>
+                <CalloutNum>{item.num}</CalloutNum>
+                <CalloutTitle>{item.title}</CalloutTitle>
+                <CalloutDesc>{item.desc}</CalloutDesc>
               </CalloutItem>
             ))}
           </CalloutGrid>
-        </CalloutSection>
 
-        {/* ── CTA ── */}
-        <CTASection>
-          <CTAHeadline>
-            Ready to stop spending your afternoon<br />
-            <em>posting jobs?</em>
-          </CTAHeadline>
-          <CTAButton onClick={() => setIsDemoModalOpen(true)}>
-            Get a demo →
-          </CTAButton>
-        </CTASection>
+          {/* ── Pull quote ── */}
+          <PullQuote>
+            <PullQuoteText>
+              Post it once. Let it work while you focus on the people worth calling.
+            </PullQuoteText>
+            <PullQuoteAttr>Talos Job Board Integration</PullQuoteAttr>
+          </PullQuote>
 
+          {/* ── CTA ── */}
+          <CTASection>
+            <CTALeft>
+              <CTALabel>Ready to post smarter?</CTALabel>
+              <CTATitle>See how it works</CTATitle>
+            </CTALeft>
+            <CTAButton onClick={() => setIsDemoModalOpen(true)}>
+              Get a Demo <ArrowRight />
+            </CTAButton>
+          </CTASection>
+
+        </Wrapper>
       </Page>
 
       <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
