@@ -199,6 +199,115 @@ function renderDescription(text: string) {
     });
 }
 
+// ── improved description renderer ─────────────────────────────────────────────
+
+const DescSection = styled.div`
+    margin-bottom: 1.5rem;
+    &:last-child { margin-bottom: 0; }
+`;
+
+const DescSectionHeader = styled.h3`
+    font-size: 1rem;
+    font-weight: 700;
+    color: #ffffff;
+    margin: 0 0 0.6rem;
+    letter-spacing: -0.01em;
+`;
+
+const DescParagraph = styled.p`
+    color: #b8bec8;
+    font-size: 0.95rem;
+    line-height: 1.75;
+    margin: 0 0 0.6rem;
+    &:last-child { margin-bottom: 0; }
+`;
+
+const DescBulletList = styled.ul`
+    list-style: disc;
+    padding-left: 1.4rem;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+`;
+
+const DescBulletItem = styled.li`
+    color: #b8bec8;
+    font-size: 0.95rem;
+    line-height: 1.65;
+`;
+
+const ALL_DESCRIPTION_HEADERS = new Set([
+    'About This Role', 'Responsibilities', 'Qualifications',
+    'Requirements', 'Preferred', 'What We Offer',
+    'Advancement Opportunities', 'Benefits',
+]);
+
+function renderDescriptionV2(text: string) {
+    if (!text) return null;
+
+    type Child = { type: 'para' | 'bullet'; text: string };
+    type SectionBlock = { kind: 'section'; heading: string; children: Child[] };
+    type ParaBlock = { kind: 'para'; text: string };
+    type Block = SectionBlock | ParaBlock;
+
+    const blocks: Block[] = [];
+    let current: SectionBlock | null = null;
+
+    for (const rawLine of text.split('\n')) {
+        const trimmed = rawLine.trim();
+        if (!trimmed || trimmed === '---') continue;
+        const stripped = trimmed.replace(/^#+\s*/, '');
+
+        if (ALL_DESCRIPTION_HEADERS.has(stripped)) {
+            current = { kind: 'section', heading: stripped, children: [] };
+            blocks.push(current);
+            continue;
+        }
+
+        const isBullet = /^[•\-\*]\s+/.test(trimmed);
+        const itemText = isBullet ? trimmed.replace(/^[•\-\*]\s+/, '') : trimmed;
+
+        if (current) {
+            current.children.push({ type: isBullet ? 'bullet' : 'para', text: itemText });
+        } else if (isBullet) {
+            const last = blocks[blocks.length - 1];
+            if (last?.kind === 'section') {
+                last.children.push({ type: 'bullet', text: itemText });
+            } else {
+                const s: SectionBlock = { kind: 'section', heading: '', children: [{ type: 'bullet', text: itemText }] };
+                blocks.push(s);
+                current = s;
+            }
+        } else {
+            blocks.push({ kind: 'para', text: trimmed });
+        }
+    }
+
+    return (
+        <>
+            {blocks.map((block, i) => {
+                if (block.kind === 'para') {
+                    return <DescParagraph key={i}>{block.text}</DescParagraph>;
+                }
+                const bullets = block.children.filter(c => c.type === 'bullet');
+                const paras   = block.children.filter(c => c.type === 'para');
+                return (
+                    <DescSection key={i}>
+                        {block.heading && <DescSectionHeader>{block.heading}</DescSectionHeader>}
+                        {paras.map((p, j)   => <DescParagraph key={`p-${j}`}>{p.text}</DescParagraph>)}
+                        {bullets.length > 0 && (
+                            <DescBulletList>
+                                {bullets.map((b, j) => <DescBulletItem key={`b-${j}`}>{b.text}</DescBulletItem>)}
+                            </DescBulletList>
+                        )}
+                    </DescSection>
+                );
+            })}
+        </>
+    );
+}
+
 const DetailsList = styled.ul`
     color: #ccc;
     font-size: 0.95rem;
@@ -551,7 +660,7 @@ const PublicJobDetail: React.FC = () => {
 
                     {job.description && (
                         <Section>
-                            <Description>{renderDescription(job.description)}</Description>
+                            <Description>{renderDescriptionV2(job.description)}</Description>
                         </Section>
                     )}
 
