@@ -421,7 +421,7 @@ const steps = [
   },
   {
     title: 'Candidates flow straight into your pipeline',
-    desc: 'Every applicant is scored and ranked automatically the moment they apply. By the time you open your dashboard, the work is already done.',
+    desc: 'Every applicant is scored and ranked automatically the instant they hit your pipeline.',
   },
 ];
 
