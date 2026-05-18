@@ -1281,7 +1281,7 @@ const TalentPoolManager: React.FC = () => {
       const res = await fetch(`${config.apiUrl}/api/pipeline/bulk-update`, {
         method: 'POST',
         headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ candidatePipelineIds: [...selectedIds], status }),
+        body: JSON.stringify({ candidatePipelineIds: Array.from(selectedIds), status }),
       });
       const data = await res.json();
       if (data.status === 'success') {
@@ -1330,7 +1330,7 @@ const TalentPoolManager: React.FC = () => {
     if (!window.confirm(`Remove ${selectedIds.size} candidate${selectedIds.size > 1 ? 's' : ''} from the talent pool? This cannot be undone.`)) return;
     setMassActionLoading(true);
     try {
-      await Promise.all([...selectedIds].map(id =>
+      await Promise.all(Array.from(selectedIds).map(id =>
         fetch(`${config.apiUrl}/api/pipeline/${id}`, { method: 'DELETE', headers: getAuthHeaders() })
       ));
       setCandidates(prev => prev.filter(c => !selectedIds.has(c.pipeline_id)));
