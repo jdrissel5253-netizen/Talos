@@ -454,128 +454,13 @@ const MassStatusWrapper = styled.div`
   position: relative;
 `;
 
-// ─── Split Layout ──────────────────────────────────────────────────────────────
-
-const SplitLayout = styled.div`
-  display: grid;
-  grid-template-columns: 256px 1fr;
-  gap: 1.25rem;
-  align-items: start;
-
-  @media (max-width: 860px) {
-    grid-template-columns: 1fr;
-  }
-`;
-
-const LeftPanel = styled.div`
-  position: sticky;
-  top: 96px;
-  max-height: calc(100vh - 120px);
-  display: flex;
-  flex-direction: column;
-  background: #0a0a0a;
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 8px;
-  overflow: hidden;
-`;
-
-const LeftPanelTop = styled.div`
-  padding: 0.875rem 0.875rem 0.75rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-  flex-shrink: 0;
-`;
-
-const LeftPanelTitle = styled.div`
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-  color: #555;
-  margin-bottom: 0.6rem;
-`;
-
-const SelectAllRow = styled.div`
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  margin-bottom: 0.6rem;
-  cursor: pointer;
-  user-select: none;
-`;
-
-const SelectAllLabel = styled.span`
-  font-size: 0.78rem;
-  color: #888;
-  cursor: pointer;
-  &:hover { color: #ccc; }
-`;
-
-const LeftSearch = styled.input`
-  width: 100%;
-  background: #111;
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 5px;
-  color: #e0e0e0;
-  font-size: 0.78rem;
-  padding: 0.38rem 0.6rem;
-  box-sizing: border-box;
-
-  &::placeholder { color: #3a3a3a; }
-  &:focus { outline: none; border-color: rgba(74, 222, 128, 0.4); }
-`;
-
-const LeftList = styled.div`
-  overflow-y: auto;
-  flex: 1;
-  padding: 0.25rem 0;
-`;
-
-const LeftListItem = styled.div<{ selected: boolean }>`
-  display: grid;
-  grid-template-columns: 16px 8px 1fr auto;
-  align-items: center;
-  gap: 0.45rem;
-  padding: 0.42rem 0.875rem;
-  cursor: pointer;
-  background: ${p => p.selected ? 'rgba(74, 222, 128, 0.06)' : 'transparent'};
-  border-left: 2px solid ${p => p.selected ? 'rgba(74,222,128,0.5)' : 'transparent'};
-  transition: background 0.1s, border-color 0.1s;
-
-  &:hover {
-    background: ${p => p.selected ? 'rgba(74, 222, 128, 0.09)' : 'rgba(255, 255, 255, 0.03)'};
-  }
-`;
-
 const StyledCheckbox = styled.input`
   width: 14px;
   height: 14px;
   cursor: pointer;
   accent-color: #4ade80;
   flex-shrink: 0;
-`;
-
-const TierDot = styled.span<{ tier: string }>`
-  width: 7px;
-  height: 7px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  background: ${p => p.tier === 'green' ? '#4ade80' : p.tier === 'yellow' ? '#fbbf24' : '#ef4444'};
-`;
-
-const LeftName = styled.span`
-  font-size: 0.78rem;
-  color: #c0c0c0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-`;
-
-const LeftScore = styled.span<{ tier: string }>`
-  font-size: 0.75rem;
-  font-weight: 700;
-  flex-shrink: 0;
-  color: ${p => p.tier === 'green' ? '#4ade80' : p.tier === 'yellow' ? '#fbbf24' : '#ef4444'};
+  margin-top: 0.2rem;
 `;
 
 // ─── Existing candidate display components ─────────────────────────────────────
@@ -809,7 +694,7 @@ const ViewToggleBtn = styled.button<{ active: boolean }>`
 
 const CompactRow = styled.div`
   display: grid;
-  grid-template-columns: 2.75rem 1fr auto auto auto;
+  grid-template-columns: 16px 2.75rem 1fr auto auto auto;
   align-items: center;
   gap: 0.75rem;
   padding: 0.5rem 0.75rem;
@@ -1048,7 +933,6 @@ const TalentPoolManager: React.FC = () => {
 
   // Selection + mass actions
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
-  const [leftSearch, setLeftSearch] = useState('');
   const [massActionLoading, setMassActionLoading] = useState(false);
   const [massStatusDropdownOpen, setMassStatusDropdownOpen] = useState(false);
 
@@ -1253,7 +1137,7 @@ const TalentPoolManager: React.FC = () => {
   };
 
   const toggleSelectAll = () => {
-    const visibleIds = leftPanelCandidates.map(c => c.pipeline_id);
+    const visibleIds = candidates.map(c => c.pipeline_id);
     const allVisible = visibleIds.every(id => selectedIds.has(id));
     if (allVisible) {
       setSelectedIds(prev => {
@@ -1358,19 +1242,19 @@ const TalentPoolManager: React.FC = () => {
     red: candidates.filter(c => c.tier === 'red')
   };
 
-  // Left panel: flat sorted list filtered by search
-  const leftPanelCandidates = candidates
-    .filter(c => !leftSearch || (c.filename || '').toLowerCase().includes(leftSearch.toLowerCase()))
-    .slice()
-    .sort((a, b) => b.tier_score - a.tier_score);
-
-  const allVisibleSelected = leftPanelCandidates.length > 0 &&
-    leftPanelCandidates.every(c => selectedIds.has(c.pipeline_id));
+  const allVisibleSelected = candidates.length > 0 &&
+    candidates.every(c => selectedIds.has(c.pipeline_id));
   const someSelected = selectedIds.size > 0;
 
   const renderCandidateCard = (candidate: Candidate) => (
     <CandidateCard key={candidate.pipeline_id}>
       <CandidateHeader>
+        <StyledCheckbox
+          type="checkbox"
+          checked={selectedIds.has(candidate.pipeline_id)}
+          onChange={() => toggleSelect(candidate.pipeline_id)}
+          onClick={e => e.stopPropagation()}
+        />
         <CandidateInfo>
           <CandidateName>
             {candidate.filename?.replace('.pdf', '') || 'Unknown Candidate'}
@@ -1499,6 +1383,13 @@ const TalentPoolManager: React.FC = () => {
   const renderCompactRow = (candidate: Candidate) => (
     <React.Fragment key={candidate.pipeline_id}>
       <CompactRow>
+        <StyledCheckbox
+          type="checkbox"
+          checked={selectedIds.has(candidate.pipeline_id)}
+          onChange={() => toggleSelect(candidate.pipeline_id)}
+          onClick={e => e.stopPropagation()}
+          style={{ marginTop: 0, alignSelf: 'center' }}
+        />
         <CompactScore tier={candidate.tier}>{candidate.tier_score}</CompactScore>
 
         <CompactNameBlock>
@@ -1748,6 +1639,18 @@ const TalentPoolManager: React.FC = () => {
         </FilterSection>
 
         <RefreshRow>
+          <StyledCheckbox
+            type="checkbox"
+            checked={allVisibleSelected}
+            onChange={toggleSelectAll}
+            style={{ marginTop: 0 }}
+          />
+          <span
+            style={{ fontSize: '0.75rem', color: '#666', cursor: 'pointer', userSelect: 'none' }}
+            onClick={toggleSelectAll}
+          >
+            {allVisibleSelected ? 'Deselect All' : 'Select All'}
+          </span>
           <RefreshBtn onClick={() => { fetchTalentPool(); setLastRefreshed(new Date()); }}>
             ↻ Refresh
           </RefreshBtn>
@@ -1799,90 +1702,43 @@ const TalentPoolManager: React.FC = () => {
             <p>Try adjusting your filters or upload resumes to build your talent pool.</p>
           </EmptyState>
         ) : (
-          <SplitLayout>
-            {/* Left selection panel */}
-            <LeftPanel>
-              <LeftPanelTop>
-                <LeftPanelTitle>
-                  Candidates ({candidates.length})
-                </LeftPanelTitle>
-                <SelectAllRow onClick={toggleSelectAll}>
-                  <StyledCheckbox
-                    type="checkbox"
-                    checked={allVisibleSelected}
-                    onChange={toggleSelectAll}
-                    onClick={e => e.stopPropagation()}
-                  />
-                  <SelectAllLabel>
-                    {allVisibleSelected ? 'Deselect All' : 'Select All'}
-                  </SelectAllLabel>
-                </SelectAllRow>
-                <LeftSearch
-                  placeholder="Search by name…"
-                  value={leftSearch}
-                  onChange={e => setLeftSearch(e.target.value)}
-                />
-              </LeftPanelTop>
-              <LeftList>
-                {leftPanelCandidates.map(c => (
-                  <LeftListItem
-                    key={c.pipeline_id}
-                    selected={selectedIds.has(c.pipeline_id)}
-                    onClick={() => toggleSelect(c.pipeline_id)}
-                  >
-                    <StyledCheckbox
-                      type="checkbox"
-                      checked={selectedIds.has(c.pipeline_id)}
-                      onChange={() => toggleSelect(c.pipeline_id)}
-                      onClick={e => e.stopPropagation()}
-                    />
-                    <TierDot tier={c.tier} />
-                    <LeftName>{extractCandidateName(c.filename || 'Unknown')}</LeftName>
-                    <LeftScore tier={c.tier}>{c.tier_score}</LeftScore>
-                  </LeftListItem>
-                ))}
-              </LeftList>
-            </LeftPanel>
+          <CandidatesGrid>
+            {candidatesByTier.green.length > 0 && (
+              <TierSection>
+                <TierHeader tier="green">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <CheckCircle size={20} /> GREEN TIER (80-100 points)
+                  </div>
+                  <span>{candidatesByTier.green.length} candidates</span>
+                </TierHeader>
+                {candidatesByTier.green.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
+              </TierSection>
+            )}
 
-            {/* Right candidate detail view */}
-            <CandidatesGrid>
-              {candidatesByTier.green.length > 0 && (
-                <TierSection>
-                  <TierHeader tier="green">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <CheckCircle size={20} /> GREEN TIER (80-100 points)
-                    </div>
-                    <span>{candidatesByTier.green.length} candidates</span>
-                  </TierHeader>
-                  {candidatesByTier.green.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
-                </TierSection>
-              )}
+            {candidatesByTier.yellow.length > 0 && (
+              <TierSection>
+                <TierHeader tier="yellow">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <AlertCircle size={20} /> YELLOW TIER (50-79 points)
+                  </div>
+                  <span>{candidatesByTier.yellow.length} candidates</span>
+                </TierHeader>
+                {candidatesByTier.yellow.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
+              </TierSection>
+            )}
 
-              {candidatesByTier.yellow.length > 0 && (
-                <TierSection>
-                  <TierHeader tier="yellow">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <AlertCircle size={20} /> YELLOW TIER (50-79 points)
-                    </div>
-                    <span>{candidatesByTier.yellow.length} candidates</span>
-                  </TierHeader>
-                  {candidatesByTier.yellow.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
-                </TierSection>
-              )}
-
-              {candidatesByTier.red.length > 0 && (
-                <TierSection>
-                  <TierHeader tier="red">
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <XCircle size={20} /> RED TIER (0-49 points)
-                    </div>
-                    <span>{candidatesByTier.red.length} candidates</span>
-                  </TierHeader>
-                  {candidatesByTier.red.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
-                </TierSection>
-              )}
-            </CandidatesGrid>
-          </SplitLayout>
+            {candidatesByTier.red.length > 0 && (
+              <TierSection>
+                <TierHeader tier="red">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <XCircle size={20} /> RED TIER (0-49 points)
+                  </div>
+                  <span>{candidatesByTier.red.length} candidates</span>
+                </TierHeader>
+                {candidatesByTier.red.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
+              </TierSection>
+            )}
+          </CandidatesGrid>
         )}
       </MainCard>
 
