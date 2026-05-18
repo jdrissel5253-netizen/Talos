@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { config } from '../config';
 import { getAuthHeaders, handleUnauthorized } from '../utils/auth';
-import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2, ChevronDown, ChevronRight, LayoutGrid, LayoutList } from 'lucide-react';
+import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2, ChevronDown, ChevronRight, LayoutGrid, LayoutList, Download } from 'lucide-react';
 import ResumePreviewModal from './ResumePreviewModal';
 import ResumeFileModal from './ResumeFileModal';
 import ContactRejectionModal from './ContactRejectionModal';
@@ -383,6 +383,202 @@ const LastRefreshedLabel = styled.span`
   font-size: 0.68rem;
   color: #444;
 `;
+
+// ─── Mass Action Bar ───────────────────────────────────────────────────────────
+
+const MassActionBar = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  padding: 0.625rem 1rem;
+  background: rgba(74, 222, 128, 0.05);
+  border: 1px solid rgba(74, 222, 128, 0.18);
+  border-radius: 7px;
+  margin-bottom: 1rem;
+`;
+
+const MassCount = styled.span`
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #4ade80;
+  margin-right: 0.25rem;
+  white-space: nowrap;
+`;
+
+const MassBtn = styled.button`
+  background: rgba(255, 255, 255, 0.05);
+  color: #a3a3a3;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 0.35rem 0.75rem;
+  border-radius: 5px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  white-space: nowrap;
+  transition: all 0.15s;
+
+  &:hover {
+    background: rgba(255, 255, 255, 0.09);
+    color: #e0e0e0;
+    border-color: rgba(255, 255, 255, 0.2);
+  }
+  &:disabled { opacity: 0.4; cursor: default; }
+`;
+
+const MassDangerBtn = styled(MassBtn)`
+  color: #f87171;
+  border-color: rgba(239, 68, 68, 0.25);
+  &:hover {
+    background: rgba(239, 68, 68, 0.1);
+    color: #fca5a5;
+    border-color: rgba(239, 68, 68, 0.4);
+  }
+`;
+
+const MassClearBtn = styled.button`
+  background: transparent;
+  border: none;
+  color: #555;
+  font-size: 0.75rem;
+  cursor: pointer;
+  margin-left: auto;
+  padding: 0.2rem 0.4rem;
+  &:hover { color: #999; }
+`;
+
+const MassStatusWrapper = styled.div`
+  position: relative;
+`;
+
+// ─── Split Layout ──────────────────────────────────────────────────────────────
+
+const SplitLayout = styled.div`
+  display: grid;
+  grid-template-columns: 256px 1fr;
+  gap: 1.25rem;
+  align-items: start;
+
+  @media (max-width: 860px) {
+    grid-template-columns: 1fr;
+  }
+`;
+
+const LeftPanel = styled.div`
+  position: sticky;
+  top: 96px;
+  max-height: calc(100vh - 120px);
+  display: flex;
+  flex-direction: column;
+  background: #0a0a0a;
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 8px;
+  overflow: hidden;
+`;
+
+const LeftPanelTop = styled.div`
+  padding: 0.875rem 0.875rem 0.75rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  flex-shrink: 0;
+`;
+
+const LeftPanelTitle = styled.div`
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: #555;
+  margin-bottom: 0.6rem;
+`;
+
+const SelectAllRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+  cursor: pointer;
+  user-select: none;
+`;
+
+const SelectAllLabel = styled.span`
+  font-size: 0.78rem;
+  color: #888;
+  cursor: pointer;
+  &:hover { color: #ccc; }
+`;
+
+const LeftSearch = styled.input`
+  width: 100%;
+  background: #111;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 5px;
+  color: #e0e0e0;
+  font-size: 0.78rem;
+  padding: 0.38rem 0.6rem;
+  box-sizing: border-box;
+
+  &::placeholder { color: #3a3a3a; }
+  &:focus { outline: none; border-color: rgba(74, 222, 128, 0.4); }
+`;
+
+const LeftList = styled.div`
+  overflow-y: auto;
+  flex: 1;
+  padding: 0.25rem 0;
+`;
+
+const LeftListItem = styled.div<{ selected: boolean }>`
+  display: grid;
+  grid-template-columns: 16px 8px 1fr auto;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.42rem 0.875rem;
+  cursor: pointer;
+  background: ${p => p.selected ? 'rgba(74, 222, 128, 0.06)' : 'transparent'};
+  border-left: 2px solid ${p => p.selected ? 'rgba(74,222,128,0.5)' : 'transparent'};
+  transition: background 0.1s, border-color 0.1s;
+
+  &:hover {
+    background: ${p => p.selected ? 'rgba(74, 222, 128, 0.09)' : 'rgba(255, 255, 255, 0.03)'};
+  }
+`;
+
+const StyledCheckbox = styled.input`
+  width: 14px;
+  height: 14px;
+  cursor: pointer;
+  accent-color: #4ade80;
+  flex-shrink: 0;
+`;
+
+const TierDot = styled.span<{ tier: string }>`
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: ${p => p.tier === 'green' ? '#4ade80' : p.tier === 'yellow' ? '#fbbf24' : '#ef4444'};
+`;
+
+const LeftName = styled.span`
+  font-size: 0.78rem;
+  color: #c0c0c0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  min-width: 0;
+`;
+
+const LeftScore = styled.span<{ tier: string }>`
+  font-size: 0.75rem;
+  font-weight: 700;
+  flex-shrink: 0;
+  color: ${p => p.tier === 'green' ? '#4ade80' : p.tier === 'yellow' ? '#fbbf24' : '#ef4444'};
+`;
+
+// ─── Existing candidate display components ─────────────────────────────────────
 
 const CandidatesGrid = styled.div`
   display: flex;
@@ -850,6 +1046,12 @@ const TalentPoolManager: React.FC = () => {
   // Auto-refresh
   const [lastRefreshed, setLastRefreshed] = useState<Date>(new Date());
 
+  // Selection + mass actions
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [leftSearch, setLeftSearch] = useState('');
+  const [massActionLoading, setMassActionLoading] = useState(false);
+  const [massStatusDropdownOpen, setMassStatusDropdownOpen] = useState(false);
+
   useEffect(() => {
     fetchTalentPool();
     fetchStats();
@@ -994,21 +1196,17 @@ const TalentPoolManager: React.FC = () => {
   };
 
   const handleSendMessage = (candidatePipelineId: number, messageType: string) => {
-    // Find the candidate
     const candidate = candidates.find(c => c.pipeline_id === candidatePipelineId);
     if (!candidate) return;
 
-    // Extract candidate name from filename
     const candidateName = extractCandidateName(candidate.filename || 'Candidate');
 
-    // Set up modal state
     setSelectedCandidateForContact({
       pipelineId: candidatePipelineId,
       name: candidateName,
       position: candidate.job_title || candidate.position_type || 'Position'
     });
 
-    // Determine mode and communication type
     if (messageType === 'rejection_email') {
       setContactMode('rejection');
       setContactCommunicationType('email');
@@ -1017,7 +1215,6 @@ const TalentPoolManager: React.FC = () => {
       setContactCommunicationType(messageType === 'sms' ? 'sms' : 'email');
     }
 
-    // Close dropdown and open modal
     setMessageDropdownOpen(null);
     setContactModalOpen(true);
   };
@@ -1041,23 +1238,118 @@ const TalentPoolManager: React.FC = () => {
   const handleContactSuccess = () => {
     setContactModalOpen(false);
     setSelectedCandidateForContact(null);
-    // Reload candidates and stats to reflect status changes
     fetchTalentPool();
     fetchStats();
   };
 
-  const getStars = (rating: number) => {
-    const fullStars = Math.floor(rating);
-    const halfStar = rating % 1 >= 0.5;
+  // ─── Selection handlers ──────────────────────────────────────────────────────
 
-    return (
-      <span style={{ display: 'flex', alignItems: 'center' }}>
-        {[...Array(5)].map((_, i) => (
-          <span key={i} style={{ opacity: i < fullStars ? 1 : 0.3 }}>★</span>
-        ))}
-      </span>
-    );
+  const toggleSelect = (id: number) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
   };
+
+  const toggleSelectAll = () => {
+    const visibleIds = leftPanelCandidates.map(c => c.pipeline_id);
+    const allVisible = visibleIds.every(id => selectedIds.has(id));
+    if (allVisible) {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        visibleIds.forEach(id => next.delete(id));
+        return next;
+      });
+    } else {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        visibleIds.forEach(id => next.add(id));
+        return next;
+      });
+    }
+  };
+
+  // ─── Mass action handlers ────────────────────────────────────────────────────
+
+  const handleBulkStatusChange = async (status: string) => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Set ${selectedIds.size} candidate${selectedIds.size > 1 ? 's' : ''} to "${status}"?`)) return;
+    setMassActionLoading(true);
+    setMassStatusDropdownOpen(false);
+    try {
+      const res = await fetch(`${config.apiUrl}/api/pipeline/bulk-update`, {
+        method: 'POST',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ candidatePipelineIds: [...selectedIds], status }),
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setCandidates(prev => prev.map(c =>
+          selectedIds.has(c.pipeline_id) ? { ...c, pipeline_status: status } : c
+        ));
+        setSelectedIds(new Set());
+      } else {
+        setError('Failed to update statuses');
+      }
+    } catch {
+      setError('Failed to update statuses');
+    } finally {
+      setMassActionLoading(false);
+    }
+  };
+
+  const handleBulkExportCSV = () => {
+    const selected = candidates.filter(c => selectedIds.has(c.pipeline_id));
+    const headers = ['Name', 'Score', 'Tier', 'Status', 'Experience (yrs)', 'Position', 'Location', 'Certifications', 'Notes'];
+    const rows = selected.map(c => [
+      extractCandidateName(c.filename || 'Unknown'),
+      c.tier_score,
+      c.tier,
+      c.pipeline_status,
+      c.years_of_experience ?? '',
+      c.position_type ?? '',
+      c.job_location ?? '',
+      (c.certifications_found || []).join('; '),
+      c.internal_notes ?? '',
+    ]);
+    const csv = [headers, ...rows]
+      .map(r => r.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(','))
+      .join('\n');
+    const blob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `talos-candidates-${new Date().toISOString().split('T')[0]}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleBulkRemove = async () => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Remove ${selectedIds.size} candidate${selectedIds.size > 1 ? 's' : ''} from the talent pool? This cannot be undone.`)) return;
+    setMassActionLoading(true);
+    try {
+      await Promise.all([...selectedIds].map(id =>
+        fetch(`${config.apiUrl}/api/pipeline/${id}`, { method: 'DELETE', headers: getAuthHeaders() })
+      ));
+      setCandidates(prev => prev.filter(c => !selectedIds.has(c.pipeline_id)));
+      setSelectedIds(new Set());
+      fetchStats();
+    } catch {
+      setError('Failed to remove some candidates');
+    } finally {
+      setMassActionLoading(false);
+    }
+  };
+
+  const getStars = (rating: number) => (
+    <span style={{ display: 'flex', alignItems: 'center' }}>
+      {[...Array(5)].map((_, i) => (
+        <span key={i} style={{ opacity: i < Math.floor(rating) ? 1 : 0.3 }}>★</span>
+      ))}
+    </span>
+  );
 
   // Group candidates by tier for display
   const candidatesByTier = {
@@ -1065,6 +1357,16 @@ const TalentPoolManager: React.FC = () => {
     yellow: candidates.filter(c => c.tier === 'yellow'),
     red: candidates.filter(c => c.tier === 'red')
   };
+
+  // Left panel: flat sorted list filtered by search
+  const leftPanelCandidates = candidates
+    .filter(c => !leftSearch || (c.filename || '').toLowerCase().includes(leftSearch.toLowerCase()))
+    .slice()
+    .sort((a, b) => b.tier_score - a.tier_score);
+
+  const allVisibleSelected = leftPanelCandidates.length > 0 &&
+    leftPanelCandidates.every(c => selectedIds.has(c.pipeline_id));
+  const someSelected = selectedIds.size > 0;
 
   const renderCandidateCard = (candidate: Candidate) => (
     <CandidateCard key={candidate.pipeline_id}>
@@ -1118,17 +1420,17 @@ const TalentPoolManager: React.FC = () => {
 
       <ActionButtons>
         <ActionButton onClick={() => navigate(`/candidates/${candidate.pipeline_id}`)}>
-            <FileText size={16} /> View Profile
-          </ActionButton>
-          <ActionButton onClick={() => {
-            setResumeFileCandidate({ id: candidate.candidate_id, filename: candidate.filename });
-            setIsResumeFileModalOpen(true);
-          }}>
-            Resume
-          </ActionButton>
-          <ActionButton onClick={() => handleViewResume(candidate)}>
-            Quick Summary
-          </ActionButton>
+          <FileText size={16} /> View Profile
+        </ActionButton>
+        <ActionButton onClick={() => {
+          setResumeFileCandidate({ id: candidate.candidate_id, filename: candidate.filename });
+          setIsResumeFileModalOpen(true);
+        }}>
+          Resume
+        </ActionButton>
+        <ActionButton onClick={() => handleViewResume(candidate)}>
+          Quick Summary
+        </ActionButton>
 
         <MessageDropdown>
           <ActionIcon
@@ -1454,6 +1756,38 @@ const TalentPoolManager: React.FC = () => {
           </LastRefreshedLabel>
         </RefreshRow>
 
+        {someSelected && (
+          <MassActionBar>
+            <MassCount>{selectedIds.size} selected</MassCount>
+
+            <MassStatusWrapper>
+              <MassBtn
+                onClick={() => setMassStatusDropdownOpen(o => !o)}
+                disabled={massActionLoading}
+              >
+                Set Status <ChevronDown size={12} />
+              </MassBtn>
+              <DropdownContent isOpen={massStatusDropdownOpen}>
+                {(['approved', 'contacted', 'backup', 'new', 'rejected'] as const).map(s => (
+                  <DropdownItem key={s} onClick={() => handleBulkStatusChange(s)}>
+                    {s.charAt(0).toUpperCase() + s.slice(1)}
+                  </DropdownItem>
+                ))}
+              </DropdownContent>
+            </MassStatusWrapper>
+
+            <MassBtn onClick={handleBulkExportCSV} disabled={massActionLoading}>
+              <Download size={13} /> Export CSV
+            </MassBtn>
+
+            <MassDangerBtn onClick={handleBulkRemove} disabled={massActionLoading}>
+              <Trash2 size={13} /> {massActionLoading ? 'Working…' : 'Remove'}
+            </MassDangerBtn>
+
+            <MassClearBtn onClick={() => setSelectedIds(new Set())}>✕ clear</MassClearBtn>
+          </MassActionBar>
+        )}
+
         {error && <ErrorMessage>{error}</ErrorMessage>}
 
         {loading ? (
@@ -1465,43 +1799,90 @@ const TalentPoolManager: React.FC = () => {
             <p>Try adjusting your filters or upload resumes to build your talent pool.</p>
           </EmptyState>
         ) : (
-          <CandidatesGrid>
-            {candidatesByTier.green.length > 0 && (
-              <TierSection>
-                <TierHeader tier="green">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <CheckCircle size={20} /> GREEN TIER (80-100 points)
-                  </div>
-                  <span>{candidatesByTier.green.length} candidates</span>
-                </TierHeader>
-                {candidatesByTier.green.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
-              </TierSection>
-            )}
+          <SplitLayout>
+            {/* Left selection panel */}
+            <LeftPanel>
+              <LeftPanelTop>
+                <LeftPanelTitle>
+                  Candidates ({candidates.length})
+                </LeftPanelTitle>
+                <SelectAllRow onClick={toggleSelectAll}>
+                  <StyledCheckbox
+                    type="checkbox"
+                    checked={allVisibleSelected}
+                    onChange={toggleSelectAll}
+                    onClick={e => e.stopPropagation()}
+                  />
+                  <SelectAllLabel>
+                    {allVisibleSelected ? 'Deselect All' : 'Select All'}
+                  </SelectAllLabel>
+                </SelectAllRow>
+                <LeftSearch
+                  placeholder="Search by name…"
+                  value={leftSearch}
+                  onChange={e => setLeftSearch(e.target.value)}
+                />
+              </LeftPanelTop>
+              <LeftList>
+                {leftPanelCandidates.map(c => (
+                  <LeftListItem
+                    key={c.pipeline_id}
+                    selected={selectedIds.has(c.pipeline_id)}
+                    onClick={() => toggleSelect(c.pipeline_id)}
+                  >
+                    <StyledCheckbox
+                      type="checkbox"
+                      checked={selectedIds.has(c.pipeline_id)}
+                      onChange={() => toggleSelect(c.pipeline_id)}
+                      onClick={e => e.stopPropagation()}
+                    />
+                    <TierDot tier={c.tier} />
+                    <LeftName>{extractCandidateName(c.filename || 'Unknown')}</LeftName>
+                    <LeftScore tier={c.tier}>{c.tier_score}</LeftScore>
+                  </LeftListItem>
+                ))}
+              </LeftList>
+            </LeftPanel>
 
-            {candidatesByTier.yellow.length > 0 && (
-              <TierSection>
-                <TierHeader tier="yellow">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <AlertCircle size={20} /> YELLOW TIER (50-79 points)
-                  </div>
-                  <span>{candidatesByTier.yellow.length} candidates</span>
-                </TierHeader>
-                {candidatesByTier.yellow.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
-              </TierSection>
-            )}
+            {/* Right candidate detail view */}
+            <CandidatesGrid>
+              {candidatesByTier.green.length > 0 && (
+                <TierSection>
+                  <TierHeader tier="green">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <CheckCircle size={20} /> GREEN TIER (80-100 points)
+                    </div>
+                    <span>{candidatesByTier.green.length} candidates</span>
+                  </TierHeader>
+                  {candidatesByTier.green.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
+                </TierSection>
+              )}
 
-            {candidatesByTier.red.length > 0 && (
-              <TierSection>
-                <TierHeader tier="red">
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <XCircle size={20} /> RED TIER (0-49 points)
-                  </div>
-                  <span>{candidatesByTier.red.length} candidates</span>
-                </TierHeader>
-                {candidatesByTier.red.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
-              </TierSection>
-            )}
-          </CandidatesGrid>
+              {candidatesByTier.yellow.length > 0 && (
+                <TierSection>
+                  <TierHeader tier="yellow">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <AlertCircle size={20} /> YELLOW TIER (50-79 points)
+                    </div>
+                    <span>{candidatesByTier.yellow.length} candidates</span>
+                  </TierHeader>
+                  {candidatesByTier.yellow.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
+                </TierSection>
+              )}
+
+              {candidatesByTier.red.length > 0 && (
+                <TierSection>
+                  <TierHeader tier="red">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <XCircle size={20} /> RED TIER (0-49 points)
+                    </div>
+                    <span>{candidatesByTier.red.length} candidates</span>
+                  </TierHeader>
+                  {candidatesByTier.red.map(viewMode === 'compact' ? renderCompactRow : renderCandidateCard)}
+                </TierSection>
+              )}
+            </CandidatesGrid>
+          </SplitLayout>
         )}
       </MainCard>
 
