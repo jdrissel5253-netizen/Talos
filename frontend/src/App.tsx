@@ -62,7 +62,7 @@ const GlobalStyle = createGlobalStyle`
     -moz-osx-font-smoothing: grayscale;
     line-height: 1.5;
     color: #e0e0e0;
-    background-color: #000000;
+    background-color: #111318;
   }
 
   html {

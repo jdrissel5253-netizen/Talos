@@ -1,19 +1,20 @@
 import React, { useState } from 'react';
-import styled, { createGlobalStyle, keyframes } from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 import { Plus } from 'lucide-react';
 
 const FontLoad = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Space+Mono:ital,wght@0,400;0,700;1,400&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 `;
 
-// ─── Shared ─────────────────────────────────────────────────────────────────────
+// ─── Shared ───────────────────────────────────────────────────────────────────
 
 const SectionLabel = styled.p`
-  font-family: 'Space Mono', 'Courier New', monospace;
-  font-size: 0.6875rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.65rem;
   letter-spacing: 0.22em;
   color: #4ade80;
   text-transform: uppercase;
+  font-weight: 600;
   margin-bottom: 1.75rem;
   display: flex;
   align-items: center;
@@ -29,10 +30,10 @@ const SectionLabel = styled.p`
   }
 `;
 
-// ─── Stats Strip ────────────────────────────────────────────────────────────────
+// ─── Stats Strip ──────────────────────────────────────────────────────────────
 
 const StatsStrip = styled.div`
-  background: rgba(0, 0, 0, 0.78);
+  background: rgba(17, 19, 24, 0.88);
   backdrop-filter: blur(14px);
   border-top: 1px solid rgba(74, 222, 128, 0.1);
   border-bottom: 1px solid rgba(74, 222, 128, 0.1);
@@ -54,7 +55,7 @@ const StatsGrid = styled.div`
 `;
 
 const StatDivider = styled.div`
-  background: rgba(74, 222, 128, 0.12);
+  background: rgba(74, 222, 128, 0.1);
 
   @media (max-width: 768px) {
     display: none;
@@ -86,17 +87,19 @@ const StatItem = styled.div`
 `;
 
 const StatNum = styled.div`
-  font-family: 'Space Mono', 'Courier New', monospace;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(3.5rem, 7vw, 6.5rem);
-  font-weight: 700;
+  font-weight: 400;
   color: #4ade80;
   line-height: 1;
   margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
 `;
 
 const StatTitle = styled.div`
-  font-size: 0.75rem;
-  font-weight: 700;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.72rem;
+  font-weight: 600;
   color: #ffffff;
   text-transform: uppercase;
   letter-spacing: 0.15em;
@@ -104,18 +107,20 @@ const StatTitle = styled.div`
 `;
 
 const StatDesc = styled.p`
+  font-family: 'DM Sans', sans-serif;
   font-size: 0.875rem;
-  color: #555;
+  font-weight: 300;
+  color: #6e7d8e;
   line-height: 1.55;
 `;
 
-// ─── Value Props ─────────────────────────────────────────────────────────────────
+// ─── Value Props ──────────────────────────────────────────────────────────────
 
 const ValueSection = styled.section`
   padding: 9rem 7vw;
-  background: rgba(6, 6, 6, 0.62);
+  background: rgba(17, 19, 24, 0.72);
   backdrop-filter: blur(8px);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(35, 40, 48, 0.8);
   position: relative;
   z-index: 2;
 `;
@@ -149,17 +154,20 @@ const ValueLeft = styled.div`
 `;
 
 const ValueHeadline = styled.h2`
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(2.25rem, 4vw, 3.5rem);
   font-weight: 400;
   color: #ffffff;
   line-height: 1.1;
+  letter-spacing: -0.02em;
   margin-bottom: 1.5rem;
 `;
 
 const ValueSubtext = styled.p`
+  font-family: 'DM Sans', sans-serif;
   font-size: 0.9375rem;
-  color: #555;
+  font-weight: 300;
+  color: #8a9ab0;
   line-height: 1.8;
   margin-bottom: 2.5rem;
 `;
@@ -167,21 +175,24 @@ const ValueSubtext = styled.p`
 const ApproachBox = styled.div`
   padding: 1.75rem;
   border: 1px solid rgba(74, 222, 128, 0.18);
-  background: rgba(74, 222, 128, 0.025);
+  background: rgba(74, 222, 128, 0.03);
 
   p {
+    font-family: 'DM Sans', sans-serif;
     font-size: 0.9rem;
-    color: #a3a3a3;
+    font-weight: 300;
+    color: #8a9ab0;
     line-height: 1.8;
     margin: 0;
   }
 `;
 
 const ApproachTag = styled.div`
-  font-family: 'Space Mono', monospace;
-  font-size: 0.625rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.6rem;
   letter-spacing: 0.18em;
   color: #4ade80;
+  font-weight: 600;
   text-transform: uppercase;
   margin-bottom: 0.875rem;
 `;
@@ -193,7 +204,7 @@ const GoalRow = styled.div`
   gap: 2rem;
   align-items: flex-start;
   padding: 2rem 0;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid rgba(35, 40, 48, 0.7);
   transition: transform 0.2s ease;
 
   &:first-child {
@@ -210,29 +221,32 @@ const GoalRow = styled.div`
 `;
 
 const GoalNum = styled.div`
-  font-family: 'Space Mono', monospace;
-  font-size: 0.6875rem;
-  color: #4ade80;
-  opacity: 0.65;
-  padding-top: 0.25rem;
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 1.1rem;
+  color: rgba(74,222,128,0.3);
+  padding-top: 0.15rem;
   flex-shrink: 0;
   width: 2rem;
+  line-height: 1;
 `;
 
 const GoalText = styled.p`
+  font-family: 'DM Sans', sans-serif;
   font-size: 1.0625rem;
-  color: #e0e0e0;
+  font-weight: 300;
+  color: #c8d0dc;
   line-height: 1.65;
 `;
 
-// ─── Features ────────────────────────────────────────────────────────────────────
+// ─── Features ─────────────────────────────────────────────────────────────────
 
 const FeaturesSection = styled.section`
   padding: 8rem 7vw;
-  background: rgba(0, 0, 0, 0.82);
+  background: rgba(17, 19, 24, 0.9);
   backdrop-filter: blur(14px);
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid rgba(35, 40, 48, 0.8);
+  border-bottom: 1px solid rgba(35, 40, 48, 0.8);
   position: relative;
   z-index: 2;
 `;
@@ -243,11 +257,12 @@ const FeaturesInner = styled.div`
 `;
 
 const FeaturesHeadline = styled.h2`
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(2.5rem, 5.5vw, 5rem);
   font-weight: 400;
   color: #ffffff;
   line-height: 1.05;
+  letter-spacing: -0.02em;
   margin-bottom: 3.5rem;
 `;
 
@@ -255,7 +270,7 @@ const FeaturesGrid = styled.div`
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 1px;
-  background: rgba(74, 222, 128, 0.08);
+  background: rgba(35, 40, 48, 0.9);
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
@@ -264,12 +279,12 @@ const FeaturesGrid = styled.div`
 `;
 
 const FeatureCard = styled.div`
-  background: rgba(4, 4, 4, 0.97);
+  background: rgba(17, 19, 24, 0.97);
   padding: 3rem 2.5rem;
-  transition: background 0.25s;
+  transition: background 0.2s ease;
 
   &:hover {
-    background: rgba(74, 222, 128, 0.03);
+    background: rgba(26, 31, 42, 0.98);
   }
 
   @media (max-width: 900px) {
@@ -278,26 +293,30 @@ const FeatureCard = styled.div`
 `;
 
 const FeatureNum = styled.div`
-  font-family: 'Space Mono', monospace;
-  font-size: 0.625rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.6rem;
   color: #4ade80;
   letter-spacing: 0.2em;
+  font-weight: 600;
   text-transform: uppercase;
   margin-bottom: 1.75rem;
 `;
 
 const FeatureTitle = styled.h3`
-  font-family: 'DM Serif Display', Georgia, serif;
-  font-size: 1.625rem;
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.5rem;
   font-weight: 400;
   color: #ffffff;
   margin-bottom: 1rem;
   line-height: 1.2;
+  letter-spacing: -0.01em;
 `;
 
 const FeatureDesc = styled.p`
-  font-size: 0.9375rem;
-  color: #555;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 300;
+  color: #8a9ab0;
   line-height: 1.75;
   margin-bottom: 1.75rem;
 `;
@@ -306,7 +325,7 @@ const FeatureBullets = styled.ul`
   list-style: none;
   padding: 0;
   margin: 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-top: 1px solid rgba(35, 40, 48, 0.9);
   padding-top: 1.5rem;
 `;
 
@@ -315,8 +334,10 @@ const FeatureBullet = styled.li`
   align-items: flex-start;
   gap: 0.875rem;
   margin-bottom: 0.875rem;
+  font-family: 'DM Sans', sans-serif;
   font-size: 0.875rem;
-  color: #a3a3a3;
+  font-weight: 300;
+  color: #8a9ab0;
   line-height: 1.55;
 
   &:last-child {
@@ -325,21 +346,21 @@ const FeatureBullet = styled.li`
 `;
 
 const BulletDot = styled.span`
-  width: 5px;
-  height: 5px;
+  width: 4px;
+  height: 4px;
   background: #4ade80;
   border-radius: 50%;
   flex-shrink: 0;
-  margin-top: 0.45rem;
+  margin-top: 0.5rem;
 `;
 
-// ─── FAQ ─────────────────────────────────────────────────────────────────────────
+// ─── FAQ ──────────────────────────────────────────────────────────────────────
 
 const FAQSection = styled.section`
   padding: 9rem 7vw;
-  background: rgba(3, 3, 3, 0.72);
+  background: rgba(17, 19, 24, 0.82);
   backdrop-filter: blur(10px);
-  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  border-top: 1px solid rgba(35, 40, 48, 0.8);
   position: relative;
   z-index: 2;
 `;
@@ -368,20 +389,21 @@ const FAQLeft = styled.div`
 `;
 
 const FAQTitle = styled.h2`
-  font-family: 'DM Serif Display', Georgia, serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(2rem, 3.5vw, 3rem);
   font-weight: 400;
   color: #ffffff;
   line-height: 1.15;
+  letter-spacing: -0.02em;
 `;
 
 const FAQRight = styled.div``;
 
 const FAQItem = styled.div`
-  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 1px solid rgba(35, 40, 48, 0.9);
 
   &:first-child {
-    border-top: 1px solid rgba(255, 255, 255, 0.07);
+    border-top: 1px solid rgba(35, 40, 48, 0.9);
   }
 `;
 
@@ -397,7 +419,8 @@ const FAQTrigger = styled.button`
   cursor: pointer;
   text-align: left;
   transition: color 0.15s;
-  color: #e0e0e0;
+  color: #c8d0dc;
+  font-family: 'DM Sans', sans-serif;
 
   &:hover {
     color: #ffffff;
@@ -406,7 +429,7 @@ const FAQTrigger = styled.button`
 
 const FAQQuestion = styled.span`
   font-size: 1rem;
-  font-weight: 500;
+  font-weight: 400;
   line-height: 1.5;
 `;
 
@@ -427,12 +450,14 @@ const FAQAnswer = styled.div<{ open: boolean }>`
 
 const FAQAnswerInner = styled.div`
   padding-bottom: 1.75rem;
+  font-family: 'DM Sans', sans-serif;
   font-size: 0.9375rem;
-  color: #6b6b6b;
+  font-weight: 300;
+  color: #8a9ab0;
   line-height: 1.8;
 `;
 
-// ─── Component ───────────────────────────────────────────────────────────────────
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const ContentSections: React.FC = () => {
   const [openFAQ, setOpenFAQ] = useState<number | null>(null);

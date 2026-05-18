@@ -3,7 +3,7 @@ import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import DemoModal from './DemoModal';
 
 const FontImport = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Sora:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=JetBrains+Mono:wght@400;500&display=swap');
 `;
 
 // ─── Animations ───────────────────────────────────────────────────────────────
@@ -36,59 +36,75 @@ const pulse = keyframes`
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 const Page = styled.div`
-  background: #080808;
-  color: #e8e8e8;
-  font-family: 'Sora', sans-serif;
+  background: #111318;
+  color: #e8eaf0;
+  font-family: 'DM Sans', sans-serif;
   overflow-x: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 10% 20%, rgba(74,222,128,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(74,222,128,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+`;
+
+const Wrapper = styled.div`
+  position: relative;
+  z-index: 1;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
+
+  @media (max-width: 768px) {
+    padding: 0 1.25rem;
+  }
 `;
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
 const HeroSection = styled.section`
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 6rem 3rem 5rem;
+  padding: 6rem 0 5rem;
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 5rem;
   align-items: center;
-  border-bottom: 1px solid #141414;
+  border-bottom: 1px solid #232830;
 
   @media (max-width: 960px) {
     grid-template-columns: 1fr;
-    padding: 5rem 2rem 4rem;
+    padding: 5rem 0 4rem;
     gap: 3.5rem;
   }
 `;
 
 const HeroLeft = styled.div`
-  animation: ${fadeUp} 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  animation: ${fadeUp} 0.7s ease 0.1s both;
 `;
 
 const HeroEyebrow = styled.div`
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-size: 0.65rem;
+  font-size: 0.68rem;
   font-weight: 600;
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: #4ade80;
-  margin-bottom: 1.75rem;
-
-  &::before {
-    content: '';
-    display: block;
-    width: 24px;
-    height: 1px;
-    background: #4ade80;
-  }
+  border: 1px solid rgba(74,222,128,0.25);
+  padding: 0.3rem 0.75rem;
+  margin-bottom: 2rem;
 `;
 
 const HeroHeadline = styled.h1`
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(2.8rem, 5vw, 5.2rem);
-  font-weight: 900;
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(2.8rem, 5vw, 5rem);
+  font-weight: 400;
   line-height: 1.05;
   letter-spacing: -0.02em;
   color: #fff;
@@ -104,27 +120,27 @@ const HeroBody = styled.p`
   font-size: 1rem;
   font-weight: 300;
   line-height: 1.85;
-  color: #777;
+  color: #8a9ab0;
   max-width: 420px;
   margin-bottom: 2.5rem;
 `;
 
 const HeroCTA = styled.button`
   background: #4ade80;
-  color: #000;
+  color: #0a0f0a;
   border: none;
-  padding: 1rem 2.25rem;
-  font-family: 'Sora', sans-serif;
+  padding: 0.9rem 2.25rem;
+  font-family: 'DM Sans', sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   cursor: pointer;
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
     background: #6ee89a;
     transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(74,222,128,0.25);
   }
 `;
 
@@ -133,49 +149,60 @@ const HeroCTA = styled.button`
 const Leaderboard = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  animation: ${fadeIn} 1s ease 0.3s both;
+  background: #1a1f2a;
+  border: 1px solid #232830;
+  overflow: hidden;
+  animation: ${fadeIn} 0.8s ease 0.3s both;
+
+  &::before {
+    content: '';
+    display: block;
+    height: 3px;
+    background: linear-gradient(90deg, #4ade80, #6ee89a, #4ade80);
+  }
 `;
 
 const LeaderboardHeader = styled.div`
   display: grid;
-  grid-template-columns: 32px 1fr 64px 80px;
+  grid-template-columns: 32px 1fr 80px;
   gap: 1rem;
-  padding: 0 1.25rem 0.75rem;
+  padding: 0.9rem 1.25rem;
+  background: #0d1014;
+  border-bottom: 1px solid #232830;
   align-items: center;
 `;
 
 const LeaderboardHeadCell = styled.span`
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #2a2a2a;
+  color: #6e7d8e;
 `;
 
 const CandidateRow = styled.div<{ delay: number }>`
   display: grid;
-  grid-template-columns: 32px 1fr 64px 80px;
+  grid-template-columns: 32px 1fr 80px;
   gap: 1rem;
   padding: 1.1rem 1.25rem;
-  background: #0d0d0d;
-  border: 1px solid #141414;
+  border-bottom: 1px solid #232830;
   align-items: center;
   cursor: default;
-  transition: border-color 0.2s ease;
-  animation: ${scoreReveal} 0.6s cubic-bezier(0.16, 1, 0.3, 1) ${p => p.delay}s both;
+  transition: background 0.15s ease;
+  animation: ${scoreReveal} 0.5s ease ${p => p.delay}s both;
 
-  &:hover {
-    border-color: #222;
-  }
+  &:last-of-type { border-bottom: none; }
+
+  &:hover { background: #232830; }
 `;
 
 const CandidateRank = styled.span`
-  font-family: 'Playfair Display', serif;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: #2a2a2a;
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 1rem;
+  color: rgba(74,222,128,0.2);
   text-align: center;
+  line-height: 1;
 `;
 
 const CandidateInfo = styled.div`
@@ -187,30 +214,21 @@ const CandidateInfo = styled.div`
 const CandidateName = styled.span`
   font-size: 0.875rem;
   font-weight: 500;
-  color: #e8e8e8;
+  color: #c8d0dc;
   letter-spacing: -0.01em;
 `;
 
 const CandidateMeta = styled.span`
   font-size: 0.7rem;
   font-weight: 300;
-  color: #333;
+  color: #6e7d8e;
   letter-spacing: 0.02em;
 `;
 
-const CandidateScore = styled.span<{ color: string }>`
-  font-family: 'Playfair Display', serif;
-  font-size: 1.5rem;
-  font-weight: 700;
-  color: ${p => p.color};
-  text-align: center;
-  line-height: 1;
-`;
-
 const TierBadge = styled.div<{ color: string; bg: string }>`
-  padding: 0.3rem 0.75rem;
+  padding: 0.25rem 0.6rem;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   font-weight: 500;
   letter-spacing: 0.12em;
   text-transform: uppercase;
@@ -225,12 +243,14 @@ const LeaderboardFooter = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
+  background: #0d1014;
+  border-top: 1px solid #232830;
 `;
 
 const FooterNote = styled.span`
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
-  color: #222;
+  font-size: 0.58rem;
+  color: #2e3540;
   letter-spacing: 0.08em;
 `;
 
@@ -239,7 +259,7 @@ const LiveIndicator = styled.span`
   align-items: center;
   gap: 0.4rem;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
+  font-size: 0.58rem;
   color: #4ade80;
   letter-spacing: 0.1em;
 
@@ -256,16 +276,18 @@ const LiveIndicator = styled.span`
 // ─── Philosophy Section ───────────────────────────────────────────────────────
 
 const PhilosophySection = styled.section`
+  position: relative;
+  z-index: 1;
   background: #4ade80;
-  padding: 5rem 3rem;
+  padding: 5rem 2.5rem;
 
   @media (max-width: 768px) {
-    padding: 4rem 2rem;
+    padding: 4rem 1.5rem;
   }
 `;
 
 const PhilosophyInner = styled.div`
-  max-width: 1320px;
+  max-width: 1120px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -279,11 +301,12 @@ const PhilosophyInner = styled.div`
 `;
 
 const PhilosophyHeadline = styled.h2`
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(2rem, 3.5vw, 3.2rem);
-  font-weight: 900;
+  font-weight: 400;
   color: #000;
-  line-height: 1.1;
+  line-height: 1.12;
+  letter-spacing: -0.02em;
 `;
 
 const PhilosophyRight = styled.div`
@@ -308,157 +331,55 @@ const PhilosophyNote = styled.p`
   padding-top: 1.25rem;
 `;
 
-// ─── Tiers ────────────────────────────────────────────────────────────────────
+// ─── Section Utilities ────────────────────────────────────────────────────────
 
-const TiersSection = styled.section`
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 7rem 3rem;
-  border-bottom: 1px solid #141414;
-
-  @media (max-width: 768px) {
-    padding: 5rem 2rem;
-  }
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 3.5rem;
 `;
 
-const TiersHeader = styled.div`
-  margin-bottom: 4rem;
+const SectionTitle = styled.h2`
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 `;
 
-const TiersEyebrow = styled.div`
-  font-size: 0.65rem;
+const SectionRule = styled.div`
+  flex: 1;
+  height: 1px;
+  background: #232830;
+`;
+
+const SectionEyebrow = styled.div`
+  font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #555;
-  margin-bottom: 1.25rem;
-`;
-
-const TiersTitle = styled.h2`
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(2rem, 3.5vw, 3rem);
-  font-weight: 700;
-  color: #fff;
-  line-height: 1.15;
-
-  em {
-    font-style: italic;
-    color: #4ade80;
-  }
-`;
-
-const TiersStack = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-`;
-
-const TierRow = styled.div<{ borderColor: string }>`
-  display: grid;
-  grid-template-columns: 180px 1fr 1fr;
-  border: 1px solid #141414;
-  border-left: 3px solid ${p => p.borderColor};
-  transition: background 0.2s ease;
-  cursor: default;
-
-  &:hover {
-    background: #0d0d0d;
-  }
-
-  @media (max-width: 768px) {
-    grid-template-columns: 1fr;
-    border-left: 3px solid ${p => p.borderColor};
-  }
-`;
-
-const TierLeft = styled.div`
-  padding: 2.5rem 2rem;
-  border-right: 1px solid #141414;
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-
-  @media (max-width: 768px) {
-    border-right: none;
-    border-bottom: 1px solid #141414;
-    padding: 1.75rem 1.5rem;
-  }
-`;
-
-const TierLabel = styled.div<{ color: string }>`
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.65rem;
-  font-weight: 500;
-  letter-spacing: 0.15em;
-  text-transform: uppercase;
-  color: ${p => p.color};
-`;
-
-const TierRange = styled.div`
-  font-family: 'Playfair Display', serif;
-  font-size: 2rem;
-  font-weight: 700;
-  color: #ffffff;
-  line-height: 1;
-`;
-
-const TierMiddle = styled.div`
-  padding: 2.5rem 2rem;
-  border-right: 1px solid #141414;
-
-  @media (max-width: 768px) {
-    border-right: none;
-    border-bottom: 1px solid #141414;
-    padding: 1.75rem 1.5rem;
-  }
-`;
-
-const TierDesc = styled.p`
-  font-size: 0.9rem;
-  font-weight: 300;
-  line-height: 1.8;
-  color: #777;
-`;
-
-const TierRight = styled.div`
-  padding: 2.5rem 2rem;
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-
-  @media (max-width: 768px) {
-    padding: 1.75rem 1.5rem;
-  }
-`;
-
-const TierAction = styled.div`
-  font-size: 0.82rem;
-  font-weight: 500;
-  color: #e8e8e8;
-  letter-spacing: -0.01em;
-`;
-
-const TierSubaction = styled.div`
-  font-size: 0.78rem;
-  font-weight: 300;
-  color: #444;
-  line-height: 1.6;
+  color: #6e7d8e;
+  margin-bottom: 1rem;
 `;
 
 // ─── Signals Section ──────────────────────────────────────────────────────────
 
 const SignalsSection = styled.section`
-  background: #0a0a0a;
-  border-bottom: 1px solid #141414;
-  padding: 7rem 3rem;
+  position: relative;
+  z-index: 1;
+  background: #0d1014;
+  border-bottom: 1px solid #232830;
+  padding: 7rem 2.5rem;
 
   @media (max-width: 768px) {
-    padding: 5rem 2rem;
+    padding: 5rem 1.25rem;
   }
 `;
 
 const SignalsInner = styled.div`
-  max-width: 1320px;
+  max-width: 1120px;
   margin: 0 auto;
   display: grid;
   grid-template-columns: 1fr 1.5fr;
@@ -471,23 +392,13 @@ const SignalsInner = styled.div`
   }
 `;
 
-const SignalsLeft = styled.div``;
-
-const SignalsEyebrow = styled.div`
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #555;
-  margin-bottom: 1.25rem;
-`;
-
 const SignalsTitle = styled.h2`
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(1.8rem, 3vw, 2.6rem);
-  font-weight: 700;
+  font-weight: 400;
   color: #fff;
   line-height: 1.2;
+  letter-spacing: -0.02em;
   margin-bottom: 1.5rem;
 
   em {
@@ -500,7 +411,7 @@ const SignalsSubtext = styled.p`
   font-size: 0.88rem;
   font-weight: 300;
   line-height: 1.85;
-  color: #555;
+  color: #8a9ab0;
 `;
 
 const SignalsList = styled.div`
@@ -510,14 +421,14 @@ const SignalsList = styled.div`
 
 const SignalItem = styled.div`
   padding: 1.75rem 0;
-  border-bottom: 1px solid #141414;
+  border-bottom: 1px solid #1a1f2a;
   display: grid;
   grid-template-columns: 1fr auto;
   align-items: center;
   gap: 2rem;
   cursor: default;
 
-  &:first-child { border-top: 1px solid #141414; }
+  &:first-child { border-top: 1px solid #1a1f2a; }
 
   &:hover .signal-bar-fill {
     filter: brightness(1.3);
@@ -529,7 +440,7 @@ const SignalInfo = styled.div``;
 const SignalName = styled.div`
   font-size: 0.9rem;
   font-weight: 500;
-  color: #e8e8e8;
+  color: #c8d0dc;
   margin-bottom: 0.35rem;
   letter-spacing: -0.01em;
 `;
@@ -537,14 +448,14 @@ const SignalName = styled.div`
 const SignalDesc = styled.div`
   font-size: 0.78rem;
   font-weight: 300;
-  color: #444;
+  color: #6e7d8e;
   line-height: 1.5;
 `;
 
 const SignalBar = styled.div`
   width: 100px;
   height: 2px;
-  background: #141414;
+  background: #232830;
   position: relative;
   flex-shrink: 0;
 `;
@@ -562,8 +473,8 @@ const SignalBarFill = styled.div<{ fill: string; color: string }>`
 
 const SignalWeight = styled.div`
   font-family: 'JetBrains Mono', monospace;
-  font-size: 0.6rem;
-  color: #333;
+  font-size: 0.58rem;
+  color: #6e7d8e;
   letter-spacing: 0.1em;
   margin-top: 0.4rem;
   text-align: right;
@@ -572,35 +483,20 @@ const SignalWeight = styled.div`
 // ─── Benefits ─────────────────────────────────────────────────────────────────
 
 const BenefitsSection = styled.section`
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 7rem 3rem;
-  border-bottom: 1px solid #141414;
-
-  @media (max-width: 768px) {
-    padding: 5rem 2rem;
-  }
-`;
-
-const BenefitsHeader = styled.div`
-  margin-bottom: 4rem;
-`;
-
-const BenefitsEyebrow = styled.div`
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #555;
-  margin-bottom: 1.25rem;
+  position: relative;
+  z-index: 1;
+  padding: 7rem 0;
+  border-bottom: 1px solid #232830;
 `;
 
 const BenefitsTitle = styled.h2`
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(2rem, 3.5vw, 3rem);
-  font-weight: 700;
+  font-weight: 400;
   color: #fff;
   line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 4rem;
 
   em {
     font-style: italic;
@@ -611,8 +507,9 @@ const BenefitsTitle = styled.h2`
 const BenefitsGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0;
-  border: 1px solid #141414;
+  gap: 1px;
+  background: #232830;
+  border: 1px solid #232830;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
@@ -620,86 +517,80 @@ const BenefitsGrid = styled.div`
 `;
 
 const BenefitItem = styled.div`
+  background: #111318;
   padding: 2.75rem;
-  border-right: 1px solid #141414;
-  border-bottom: 1px solid #141414;
+  position: relative;
+  overflow: hidden;
   cursor: default;
   transition: background 0.2s ease;
 
-  &:nth-child(2n) { border-right: none; }
-  &:nth-last-child(-n+2) { border-bottom: none; }
-
   &:hover {
-    background: #0d0d0d;
+    background: #1a1f2a;
   }
 
   &:hover .benefit-accent {
-    color: #4ade80;
-  }
-
-  @media (max-width: 768px) {
-    border-right: none;
-    &:nth-last-child(-n+2) { border-bottom: 1px solid #141414; }
-    &:last-child { border-bottom: none; }
+    color: rgba(74,222,128,0.4);
   }
 `;
 
 const BenefitAccent = styled.div`
-  font-family: 'Playfair Display', serif;
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: #1e1e1e;
-  margin-bottom: 1rem;
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 3.5rem;
+  color: rgba(74,222,128,0.07);
+  position: absolute;
+  top: 1rem;
+  right: 1.75rem;
+  line-height: 1;
+  pointer-events: none;
   transition: color 0.2s ease;
 `;
 
 const BenefitTitle = styled.h3`
-  font-size: 1rem;
-  font-weight: 600;
-  color: #e8e8e8;
-  margin-bottom: 0.65rem;
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.3rem;
+  font-weight: 400;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
   letter-spacing: -0.01em;
 `;
 
 const BenefitDesc = styled.p`
-  font-size: 0.82rem;
+  font-size: 0.875rem;
   font-weight: 300;
   line-height: 1.85;
-  color: #555;
+  color: #8a9ab0;
 `;
 
 // ─── Closing ─────────────────────────────────────────────────────────────────
 
 const ClosingSection = styled.section`
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 8rem 3rem;
+  position: relative;
+  z-index: 1;
+  padding: 8rem 0;
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
   gap: 2rem;
-
-  @media (max-width: 768px) {
-    padding: 5rem 2rem;
-  }
 `;
 
 const ClosingLabel = styled.div`
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #555;
+  color: #6e7d8e;
 `;
 
 const ClosingHeadline = styled.h2`
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(2rem, 4vw, 3.5rem);
-  font-weight: 700;
+  font-weight: 400;
   color: #fff;
   line-height: 1.12;
   max-width: 640px;
+  letter-spacing: -0.02em;
 
   em {
     font-style: italic;
@@ -711,26 +602,26 @@ const ClosingBody = styled.p`
   font-size: 1rem;
   font-weight: 300;
   line-height: 1.8;
-  color: #666;
+  color: #8a9ab0;
   max-width: 480px;
 `;
 
 const ClosingCTA = styled.button`
   background: transparent;
   color: #4ade80;
-  border: 1px solid #4ade80;
-  padding: 1rem 2.5rem;
-  font-family: 'Sora', sans-serif;
+  border: 1px solid rgba(74,222,128,0.4);
+  padding: 0.9rem 2.5rem;
+  font-family: 'DM Sans', sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   cursor: pointer;
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-  transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
 
   &:hover {
     background: #4ade80;
-    color: #000;
+    border-color: #4ade80;
+    color: #0a0f0a;
     transform: translateY(-2px);
   }
 `;
@@ -738,10 +629,10 @@ const ClosingCTA = styled.button`
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const MOCK_CANDIDATES = [
-  { rank: 1, name: 'D. Mitchell',  meta: 'HVAC Service Technician', tier: 'Green',  tColor: '#4ade80', tBg: 'rgba(74,222,128,0.06)' },
-  { rank: 2, name: 'R. Castillo',  meta: 'HVAC Installer',          tier: 'Green',  tColor: '#4ade80', tBg: 'rgba(74,222,128,0.06)' },
-  { rank: 3, name: 'T. Okonkwo',   meta: 'HVAC Apprentice',         tier: 'Yellow', tColor: '#fbbf24', tBg: 'rgba(251,191,36,0.06)' },
-  { rank: 4, name: 'J. Hartmann',  meta: 'HVAC Service Technician', tier: 'Red',    tColor: '#ef4444', tBg: 'rgba(239,68,68,0.06)'  },
+  { rank: 1, name: 'D. Mitchell',  meta: 'HVAC Service Technician', tier: 'Green',  tColor: '#4ade80', tBg: 'rgba(74,222,128,0.08)'  },
+  { rank: 2, name: 'R. Castillo',  meta: 'HVAC Installer',          tier: 'Green',  tColor: '#4ade80', tBg: 'rgba(74,222,128,0.08)'  },
+  { rank: 3, name: 'T. Okonkwo',   meta: 'HVAC Apprentice',         tier: 'Yellow', tColor: '#fbbf24', tBg: 'rgba(251,191,36,0.08)'  },
+  { rank: 4, name: 'J. Hartmann',  meta: 'HVAC Service Technician', tier: 'Red',    tColor: '#ef4444', tBg: 'rgba(239,68,68,0.08)'   },
 ];
 
 const SIGNALS = [
@@ -775,7 +666,7 @@ const SIGNALS = [
   },
   {
     name: 'Role Alignment',
-    desc: 'How closely the candidate\'s background maps to the specific position requirements',
+    desc: "How closely the candidate's background maps to the specific position requirements",
     fill: '72%',
     color: '#4ade80',
     weight: 'High weight',
@@ -822,61 +713,63 @@ const CandidateRanking: React.FC = () => {
       <FontImport />
       <Page>
 
-        {/* ── Hero ── */}
-        <HeroSection>
-          <HeroLeft>
-            <HeroEyebrow>Candidate Ranking</HeroEyebrow>
-            <HeroHeadline>
-              Every applicant<br />
-              ranked before you<br />
-              read a single<br />
-              <em>resume.</em>
-            </HeroHeadline>
-            <HeroBody>
-              You open your pipeline to a ranked list — not a pile.
-              The strongest candidates are already at the top,
-              waiting for your call.
-            </HeroBody>
-            <HeroCTA onClick={() => setIsDemoModalOpen(true)}>
-              See It in Action
-            </HeroCTA>
-          </HeroLeft>
+        <Wrapper>
+          {/* ── Hero ── */}
+          <HeroSection>
+            <HeroLeft>
+              <HeroEyebrow>Candidate Ranking</HeroEyebrow>
+              <HeroHeadline>
+                Every applicant<br />
+                ranked before you<br />
+                read a single<br />
+                <em>resume.</em>
+              </HeroHeadline>
+              <HeroBody>
+                You open your pipeline to a ranked list — not a pile.
+                The strongest candidates are already at the top,
+                waiting for your call.
+              </HeroBody>
+              <HeroCTA onClick={() => setIsDemoModalOpen(true)}>
+                See It in Action
+              </HeroCTA>
+            </HeroLeft>
 
-          {/* Mock leaderboard */}
-          <Leaderboard>
-            <LeaderboardHeader>
-              <LeaderboardHeadCell>#</LeaderboardHeadCell>
-              <LeaderboardHeadCell>Candidate</LeaderboardHeadCell>
-              <LeaderboardHeadCell>Tier</LeaderboardHeadCell>
-            </LeaderboardHeader>
+            {/* Mock leaderboard */}
+            <Leaderboard>
+              <LeaderboardHeader>
+                <LeaderboardHeadCell>#</LeaderboardHeadCell>
+                <LeaderboardHeadCell>Candidate</LeaderboardHeadCell>
+                <LeaderboardHeadCell>Tier</LeaderboardHeadCell>
+              </LeaderboardHeader>
 
-            {MOCK_CANDIDATES.slice(0, visibleRows).map((c, i) => (
-              <CandidateRow key={i} delay={0}>
-                <CandidateRank>{c.rank}</CandidateRank>
-                <CandidateInfo>
-                  <CandidateName>{c.name}</CandidateName>
-                  <CandidateMeta>{c.meta}</CandidateMeta>
-                </CandidateInfo>
-                <TierBadge color={c.tColor} bg={c.tBg}>{c.tier}</TierBadge>
-              </CandidateRow>
-            ))}
+              {MOCK_CANDIDATES.slice(0, visibleRows).map((c, i) => (
+                <CandidateRow key={i} delay={0}>
+                  <CandidateRank>{c.rank}</CandidateRank>
+                  <CandidateInfo>
+                    <CandidateName>{c.name}</CandidateName>
+                    <CandidateMeta>{c.meta}</CandidateMeta>
+                  </CandidateInfo>
+                  <TierBadge color={c.tColor} bg={c.tBg}>{c.tier}</TierBadge>
+                </CandidateRow>
+              ))}
 
-            {visibleRows < MOCK_CANDIDATES.length && (
-              <CandidateRow delay={0} style={{ opacity: 0.3 }}>
-                <CandidateRank>·</CandidateRank>
-                <CandidateInfo>
-                  <CandidateName style={{ color: '#222' }}>Analyzing...</CandidateName>
-                </CandidateInfo>
-                <TierBadge color="#222" bg="transparent">—</TierBadge>
-              </CandidateRow>
-            )}
+              {visibleRows < MOCK_CANDIDATES.length && (
+                <CandidateRow delay={0} style={{ opacity: 0.3 }}>
+                  <CandidateRank>·</CandidateRank>
+                  <CandidateInfo>
+                    <CandidateName style={{ color: '#2e3540' }}>Analyzing...</CandidateName>
+                  </CandidateInfo>
+                  <TierBadge color="#2e3540" bg="transparent">—</TierBadge>
+                </CandidateRow>
+              )}
 
-            <LeaderboardFooter>
-              <FooterNote>4 applicants · HVAC Service Technician</FooterNote>
-              <LiveIndicator>Live ranking</LiveIndicator>
-            </LeaderboardFooter>
-          </Leaderboard>
-        </HeroSection>
+              <LeaderboardFooter>
+                <FooterNote>4 applicants · HVAC Service Technician</FooterNote>
+                <LiveIndicator>Live ranking</LiveIndicator>
+              </LeaderboardFooter>
+            </Leaderboard>
+          </HeroSection>
+        </Wrapper>
 
         {/* ── Philosophy ── */}
         <PhilosophySection>
@@ -902,46 +795,79 @@ const CandidateRanking: React.FC = () => {
           </PhilosophyInner>
         </PhilosophySection>
 
+        {/* ── Signals ── */}
+        <SignalsSection>
+          <SignalsInner>
+            <div>
+              <SectionEyebrow>How the score is built</SectionEyebrow>
+              <SignalsTitle>
+                What Talos<br />
+                actually <em>measures.</em>
+              </SignalsTitle>
+              <SignalsSubtext>
+                Generic tools apply the same checklist to every industry.
+                Talos uses a scoring formula built from the ground up for HVAC —
+                factoring in role-specific certifications, experience type, and
+                the signals that actually predict success.
+              </SignalsSubtext>
+            </div>
+            <SignalsList>
+              {SIGNALS.map((s, i) => (
+                <SignalItem key={i}>
+                  <SignalInfo>
+                    <SignalName>{s.name}</SignalName>
+                    <SignalDesc>{s.desc}</SignalDesc>
+                  </SignalInfo>
+                  <div>
+                    <SignalBar>
+                      <SignalBarFill className="signal-bar-fill" fill={s.fill} color={s.color} />
+                    </SignalBar>
+                    <SignalWeight>{s.weight}</SignalWeight>
+                  </div>
+                </SignalItem>
+              ))}
+            </SignalsList>
+          </SignalsInner>
+        </SignalsSection>
 
-
-        {/* ── Benefits ── */}
-        <BenefitsSection>
-          <BenefitsHeader>
-            <BenefitsEyebrow>What this means for you</BenefitsEyebrow>
+        <Wrapper>
+          {/* ── Benefits ── */}
+          <BenefitsSection>
+            <SectionEyebrow>What this means for you</SectionEyebrow>
             <BenefitsTitle>
               Less time screening.<br />
               <em>Better</em> hires.
             </BenefitsTitle>
-          </BenefitsHeader>
 
-          <BenefitsGrid>
-            {BENEFITS.map((b, i) => (
-              <BenefitItem key={i}>
-                <BenefitAccent className="benefit-accent">{b.num}</BenefitAccent>
-                <BenefitTitle>{b.title}</BenefitTitle>
-                <BenefitDesc>{b.desc}</BenefitDesc>
-              </BenefitItem>
-            ))}
-          </BenefitsGrid>
-        </BenefitsSection>
+            <BenefitsGrid>
+              {BENEFITS.map((b, i) => (
+                <BenefitItem key={i}>
+                  <BenefitAccent className="benefit-accent">{b.num}</BenefitAccent>
+                  <BenefitTitle>{b.title}</BenefitTitle>
+                  <BenefitDesc>{b.desc}</BenefitDesc>
+                </BenefitItem>
+              ))}
+            </BenefitsGrid>
+          </BenefitsSection>
 
-        {/* ── Closing ── */}
-        <ClosingSection>
-          <ClosingLabel>Ready to see it live</ClosingLabel>
-          <ClosingHeadline>
-            See your next hire<br />
-            <em>ranked</em> before the<br />
-            interview.
-          </ClosingHeadline>
-          <ClosingBody>
-            Book a demo and submit a real resume from one of your open roles.
-            Watch Talos score it, place it in a tier, and explain the ranking —
-            live, in 20 minutes.
-          </ClosingBody>
-          <ClosingCTA onClick={() => setIsDemoModalOpen(true)}>
-            See Candidate Ranking Live
-          </ClosingCTA>
-        </ClosingSection>
+          {/* ── Closing ── */}
+          <ClosingSection>
+            <ClosingLabel>Ready to see it live</ClosingLabel>
+            <ClosingHeadline>
+              See your next hire<br />
+              <em>ranked</em> before the<br />
+              interview.
+            </ClosingHeadline>
+            <ClosingBody>
+              Book a demo and submit a real resume from one of your open roles.
+              Watch Talos score it, place it in a tier, and explain the ranking —
+              live, in 20 minutes.
+            </ClosingBody>
+            <ClosingCTA onClick={() => setIsDemoModalOpen(true)}>
+              See Candidate Ranking Live
+            </ClosingCTA>
+          </ClosingSection>
+        </Wrapper>
 
       </Page>
       <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />

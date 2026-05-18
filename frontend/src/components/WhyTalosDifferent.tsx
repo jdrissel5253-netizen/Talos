@@ -3,13 +3,13 @@ import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import DemoModal from './DemoModal';
 
 const FontImport = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Sora:wght@300;400;500;600&display=swap');
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
 `;
 
 // ─── Animations ───────────────────────────────────────────────────────────────
 
 const fadeUp = keyframes`
-  from { opacity: 0; transform: translateY(28px); }
+  from { opacity: 0; transform: translateY(24px); }
   to   { opacity: 1; transform: translateY(0); }
 `;
 
@@ -21,64 +21,78 @@ const fadeIn = keyframes`
 // ─── Page Shell ───────────────────────────────────────────────────────────────
 
 const Page = styled.div`
-  background: #080808;
-  color: #e8e8e8;
-  font-family: 'Sora', sans-serif;
+  background: #111318;
+  color: #e8eaf0;
+  font-family: 'DM Sans', sans-serif;
   overflow-x: hidden;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      radial-gradient(ellipse 80% 50% at 10% 20%, rgba(74,222,128,0.04) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 90% 80%, rgba(74,222,128,0.03) 0%, transparent 50%);
+    pointer-events: none;
+    z-index: 0;
+  }
+`;
+
+const Wrapper = styled.div`
+  position: relative;
+  z-index: 1;
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 0 2.5rem;
+
+  @media (max-width: 768px) {
+    padding: 0 1.25rem;
+  }
 `;
 
 // ─── Hero ─────────────────────────────────────────────────────────────────────
 
 const HeroWrap = styled.section`
   position: relative;
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 7rem 3rem 6rem;
-  display: flex;
-  flex-direction: column;
-  gap: 3rem;
-  border-bottom: 1px solid #1a1a1a;
+  padding: 7rem 0 6rem;
+  border-bottom: 1px solid #232830;
   overflow: hidden;
-
-  @media (max-width: 768px) {
-    padding: 5rem 2rem 4rem;
-  }
+  animation: ${fadeUp} 0.7s ease 0.1s both;
 `;
 
-const BackgroundWord = styled.div`
+const GhostWord = styled.div`
   position: absolute;
-  right: -2rem;
+  right: -1rem;
   top: 50%;
   transform: translateY(-50%);
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(8rem, 16vw, 18rem);
-  font-weight: 900;
   font-style: italic;
+  font-weight: 400;
   color: transparent;
-  -webkit-text-stroke: 1px #1c1c1c;
+  -webkit-text-stroke: 1px #1e2330;
   user-select: none;
   pointer-events: none;
   line-height: 1;
   white-space: nowrap;
-  animation: ${fadeIn} 1.2s ease both;
+  animation: ${fadeIn} 1.4s ease both;
 
-  @media (max-width: 768px) {
-    display: none;
-  }
+  @media (max-width: 768px) { display: none; }
 `;
 
 const HeroTop = styled.div`
   display: flex;
   align-items: flex-start;
   gap: 2rem;
-  animation: ${fadeUp} 0.9s cubic-bezier(0.16, 1, 0.3, 1) both;
+  margin-bottom: 3rem;
 `;
 
 const SideLabel = styled.div`
   writing-mode: vertical-rl;
   text-orientation: mixed;
   transform: rotate(180deg);
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.22em;
   text-transform: uppercase;
@@ -89,23 +103,16 @@ const SideLabel = styled.div`
   display: flex;
   align-items: center;
 
-  @media (max-width: 768px) {
-    display: none;
-  }
-`;
-
-const HeroContent = styled.div`
-  flex: 1;
+  @media (max-width: 768px) { display: none; }
 `;
 
 const HeroHeadline = styled.h1`
-  font-family: 'Playfair Display', serif;
-  font-size: clamp(3rem, 6vw, 6.5rem);
-  font-weight: 900;
-  line-height: 1.02;
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(3rem, 6vw, 6rem);
+  font-weight: 400;
+  line-height: 1.05;
   letter-spacing: -0.025em;
   color: #ffffff;
-  margin-bottom: 0;
 
   em {
     font-style: italic;
@@ -118,11 +125,10 @@ const HeroBottom = styled.div`
   grid-template-columns: 1fr 1fr;
   gap: 4rem;
   align-items: end;
-  animation: ${fadeUp} 0.9s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
 
   @media (max-width: 768px) {
     grid-template-columns: 1fr;
-    gap: 2rem;
+    gap: 2.5rem;
   }
 `;
 
@@ -130,7 +136,7 @@ const HeroDesc = styled.p`
   font-size: 1rem;
   font-weight: 300;
   line-height: 1.85;
-  color: #777;
+  color: #8a9ab0;
   max-width: 480px;
 `;
 
@@ -138,11 +144,9 @@ const HeroMeta = styled.div`
   display: flex;
   flex-direction: column;
   align-items: flex-end;
-  gap: 1.25rem;
+  gap: 1rem;
 
-  @media (max-width: 768px) {
-    align-items: flex-start;
-  }
+  @media (max-width: 768px) { align-items: flex-start; }
 `;
 
 const MetaLine = styled.div`
@@ -151,60 +155,53 @@ const MetaLine = styled.div`
   gap: 0.75rem;
   font-size: 0.8rem;
   font-weight: 400;
-  color: #444;
-  letter-spacing: 0.05em;
+  color: #6e7d8e;
+  letter-spacing: 0.04em;
 
   &::before {
     content: '';
     display: block;
     width: 20px;
     height: 1px;
-    background: #333;
+    background: #232830;
   }
 `;
 
 const HeroCTA = styled.button`
-  align-self: flex-end;
+  margin-top: 0.5rem;
   background: #4ade80;
-  color: #000;
+  color: #0a0f0a;
   border: none;
   padding: 0.9rem 2rem;
-  font-family: 'Sora', sans-serif;
-  font-size: 0.8rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.875rem;
   font-weight: 600;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
+  letter-spacing: 0.04em;
   cursor: pointer;
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
     background: #6ee89a;
     transform: translateY(-2px);
-  }
-
-  @media (max-width: 768px) {
-    align-self: flex-start;
+    box-shadow: 0 8px 24px rgba(74,222,128,0.25);
   }
 `;
 
 // ─── Philosophy Strip ─────────────────────────────────────────────────────────
 
 const PhilosophyStrip = styled.section`
-  background: #0d0d0d;
-  border-bottom: 1px solid #1a1a1a;
-  padding: 5rem 3rem;
-
-  @media (max-width: 768px) {
-    padding: 4rem 2rem;
-  }
+  position: relative;
+  z-index: 1;
+  background: #0d1014;
+  border-bottom: 1px solid #232830;
+  padding: 5rem 2.5rem;
 `;
 
 const PhilosophyInner = styled.div`
-  max-width: 1320px;
+  max-width: 1120px;
   margin: 0 auto;
   display: grid;
-  grid-template-columns: 220px 1fr;
+  grid-template-columns: 200px 1fr;
   gap: 5rem;
   align-items: start;
 
@@ -215,61 +212,86 @@ const PhilosophyInner = styled.div`
 `;
 
 const PhilosophyLabel = styled.div`
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #444;
+  color: #6e7d8e;
   padding-top: 0.5rem;
-  line-height: 1.8;
+  line-height: 2;
 `;
 
 const PhilosophyQuote = styled.blockquote`
   margin: 0;
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(1.6rem, 3vw, 2.4rem);
   font-style: italic;
-  font-weight: 700;
+  font-weight: 400;
   color: #ffffff;
-  line-height: 1.3;
+  line-height: 1.35;
 
-  span {
-    color: #4ade80;
-  }
+  span { color: #4ade80; }
+`;
+
+// ─── Section Utilities ────────────────────────────────────────────────────────
+
+const SectionHeader = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 1.5rem;
+  margin-bottom: 3.5rem;
+`;
+
+const SectionTitle = styled.h2`
+  font-family: 'DM Serif Display', serif;
+  font-size: 2rem;
+  font-weight: 400;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  white-space: nowrap;
+`;
+
+const SectionRule = styled.div`
+  flex: 1;
+  height: 1px;
+  background: #232830;
+`;
+
+const SectionCount = styled.span`
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #6e7d8e;
+  white-space: nowrap;
 `;
 
 // ─── Comparison Table ─────────────────────────────────────────────────────────
 
 const ComparisonSection = styled.section`
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 7rem 3rem;
-  border-bottom: 1px solid #1a1a1a;
-
-  @media (max-width: 768px) {
-    padding: 5rem 2rem;
-  }
-`;
-
-const ComparisonHeader = styled.div`
-  margin-bottom: 3.5rem;
+  position: relative;
+  z-index: 1;
+  padding: 7rem 0;
+  border-bottom: 1px solid #232830;
 `;
 
 const ComparisonEyebrow = styled.div`
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #555;
-  margin-bottom: 1.25rem;
+  color: #6e7d8e;
+  margin-bottom: 0.75rem;
 `;
 
 const ComparisonTitle = styled.h2`
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(2rem, 3.5vw, 3rem);
-  font-weight: 700;
+  font-weight: 400;
   color: #ffffff;
   line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 3.5rem;
 
   em {
     font-style: italic;
@@ -279,14 +301,14 @@ const ComparisonTitle = styled.h2`
 
 const Table = styled.div`
   width: 100%;
-  border: 1px solid #1a1a1a;
+  border: 1px solid #232830;
 `;
 
 const TableHead = styled.div`
   display: grid;
   grid-template-columns: 1.2fr 1fr 1fr;
-  background: #0d0d0d;
-  border-bottom: 1px solid #1a1a1a;
+  background: #1a1f2a;
+  border-bottom: 1px solid #232830;
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr 1fr;
@@ -294,13 +316,13 @@ const TableHead = styled.div`
 `;
 
 const TableHeadCell = styled.div<{ accent?: boolean; hide?: boolean }>`
-  padding: 1.1rem 1.5rem;
-  font-size: 0.65rem;
+  padding: 1rem 1.5rem;
+  font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: ${p => p.accent ? '#4ade80' : '#444'};
-  border-right: 1px solid #1a1a1a;
+  color: ${p => p.accent ? '#4ade80' : '#6e7d8e'};
+  border-right: 1px solid #232830;
 
   &:last-child { border-right: none; }
 
@@ -312,11 +334,11 @@ const TableHeadCell = styled.div<{ accent?: boolean; hide?: boolean }>`
 const TableRow = styled.div`
   display: grid;
   grid-template-columns: 1.2fr 1fr 1fr;
-  border-bottom: 1px solid #111;
+  border-bottom: 1px solid #1a1f2a;
   transition: background 0.15s ease;
 
   &:last-child { border-bottom: none; }
-  &:hover { background: #0d0d0d; }
+  &:hover { background: #1a1f2a; }
 
   @media (max-width: 600px) {
     grid-template-columns: 1fr 1fr;
@@ -326,10 +348,10 @@ const TableRow = styled.div`
 const TableCell = styled.div<{ dim?: boolean; bright?: boolean; hide?: boolean }>`
   padding: 1.4rem 1.5rem;
   font-size: 0.875rem;
-  font-weight: ${p => p.bright ? '500' : '300'};
-  color: ${p => p.bright ? '#e8e8e8' : p.dim ? '#3a3a3a' : '#777'};
+  font-weight: ${p => p.bright ? '400' : '300'};
+  color: ${p => p.bright ? '#e8eaf0' : p.dim ? '#2e3540' : '#6e7d8e'};
   line-height: 1.5;
-  border-right: 1px solid #111;
+  border-right: 1px solid #1a1f2a;
   display: flex;
   align-items: center;
   gap: 0.6rem;
@@ -340,7 +362,7 @@ const TableCell = styled.div<{ dim?: boolean; bright?: boolean; hide?: boolean }
     width: 5px;
     height: 5px;
     border-radius: 50%;
-    background: ${p => p.bright ? '#4ade80' : '#2a2a2a'};
+    background: ${p => p.bright ? '#4ade80' : '#232830'};
     flex-shrink: 0;
   }
 
@@ -350,27 +372,23 @@ const TableCell = styled.div<{ dim?: boolean; bright?: boolean; hide?: boolean }
 `;
 
 const CategoryCell = styled(TableCell)`
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: #555;
+  color: #6e7d8e;
 `;
 
 // ─── AI Deep Dive ─────────────────────────────────────────────────────────────
 
 const AISection = styled.section`
-  max-width: 1320px;
-  margin: 0 auto;
-  padding: 7rem 3rem;
-  border-bottom: 1px solid #1a1a1a;
-
-  @media (max-width: 768px) {
-    padding: 5rem 2rem;
-  }
+  position: relative;
+  z-index: 1;
+  padding: 7rem 0;
+  border-bottom: 1px solid #232830;
 `;
 
-const AIHeader = styled.div`
+const AIGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 5rem;
@@ -383,11 +401,12 @@ const AIHeader = styled.div`
 `;
 
 const AITitle = styled.h2`
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(2rem, 3.5vw, 3rem);
-  font-weight: 700;
+  font-weight: 400;
   color: #ffffff;
   line-height: 1.15;
+  letter-spacing: -0.02em;
 
   em {
     font-style: italic;
@@ -399,14 +418,13 @@ const AISubtext = styled.p`
   font-size: 0.9rem;
   font-weight: 300;
   line-height: 1.85;
-  color: #666;
+  color: #8a9ab0;
   padding-top: 0.5rem;
 `;
 
 const AIList = styled.div`
   display: flex;
   flex-direction: column;
-  gap: 0;
 `;
 
 const AIItem = styled.div`
@@ -414,24 +432,24 @@ const AIItem = styled.div`
   grid-template-columns: 48px 1fr;
   gap: 2rem;
   padding: 2.5rem 0;
-  border-bottom: 1px solid #131313;
+  border-bottom: 1px solid #1a1f2a;
   align-items: start;
+  transition: background 0.15s ease;
   cursor: default;
 
-  &:first-child { border-top: 1px solid #131313; }
+  &:first-child { border-top: 1px solid #1a1f2a; }
 
-  &:hover .ai-num {
-    color: #4ade80;
-  }
+  &:hover .ai-num { color: #4ade80; }
 `;
 
 const AINum = styled.span`
-  font-family: 'Playfair Display', serif;
-  font-size: 0.8rem;
-  font-weight: 700;
-  color: #222;
-  padding-top: 3px;
+  font-family: 'DM Serif Display', serif;
+  font-style: italic;
+  font-size: 1.5rem;
+  color: rgba(74,222,128,0.2);
+  padding-top: 2px;
   transition: color 0.2s ease;
+  line-height: 1;
 `;
 
 const AIContent = styled.div`
@@ -447,27 +465,30 @@ const AIContent = styled.div`
 `;
 
 const AIItemTitle = styled.h3`
-  font-family: 'Sora', sans-serif;
-  font-size: 1rem;
-  font-weight: 600;
-  color: #e8e8e8;
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.15rem;
+  font-weight: 400;
+  color: #ffffff;
   letter-spacing: -0.01em;
-  line-height: 1.4;
+  line-height: 1.35;
 `;
 
 const AIItemDesc = styled.p`
-  font-size: 0.85rem;
+  font-size: 0.875rem;
   font-weight: 300;
   line-height: 1.85;
-  color: #666;
+  color: #8a9ab0;
 `;
 
-// ─── Full-Bleed CTA ───────────────────────────────────────────────────────────
+// ─── Closing CTA ─────────────────────────────────────────────────────────────
 
 const ClosingSection = styled.section`
-  padding: 8rem 3rem;
-  max-width: 1320px;
-  margin: 0 auto;
+  position: relative;
+  z-index: 1;
+  padding: 8rem 0;
+`;
+
+const ClosingGrid = styled.div`
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 6rem;
@@ -475,15 +496,12 @@ const ClosingSection = styled.section`
 
   @media (max-width: 900px) {
     grid-template-columns: 1fr;
-    padding: 5rem 2rem;
     gap: 3rem;
   }
 `;
 
-const ClosingLeft = styled.div``;
-
 const ClosingEyebrow = styled.div`
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 600;
   letter-spacing: 0.2em;
   text-transform: uppercase;
@@ -492,24 +510,20 @@ const ClosingEyebrow = styled.div`
 `;
 
 const ClosingHeadline = styled.h2`
-  font-family: 'Playfair Display', serif;
+  font-family: 'DM Serif Display', serif;
   font-size: clamp(2.2rem, 4vw, 3.5rem);
-  font-weight: 700;
+  font-weight: 400;
   color: #ffffff;
   line-height: 1.12;
-`;
-
-const ClosingRight = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 2.5rem;
+  letter-spacing: -0.02em;
 `;
 
 const ClosingBody = styled.p`
   font-size: 1rem;
   font-weight: 300;
   line-height: 1.85;
-  color: #777;
+  color: #8a9ab0;
+  margin-bottom: 2rem;
 `;
 
 const ClosingCTARow = styled.div`
@@ -521,27 +535,27 @@ const ClosingCTARow = styled.div`
 
 const ClosingCTA = styled.button`
   background: #4ade80;
-  color: #000;
+  color: #0a0f0a;
   border: none;
-  padding: 1rem 2.25rem;
-  font-family: 'Sora', sans-serif;
+  padding: 0.9rem 2.25rem;
+  font-family: 'DM Sans', sans-serif;
   font-size: 0.875rem;
   font-weight: 600;
   letter-spacing: 0.04em;
   cursor: pointer;
-  clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 10px, 100% 100%, 10px 100%, 0 calc(100% - 10px));
-  transition: background 0.2s ease, transform 0.2s ease;
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
     background: #6ee89a;
     transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(74,222,128,0.25);
   }
 `;
 
 const ClosingNote = styled.span`
   font-size: 0.8rem;
   font-weight: 300;
-  color: #444;
+  color: #6e7d8e;
   letter-spacing: 0.03em;
 `;
 
@@ -594,7 +608,7 @@ const AI_ITEMS = [
   {
     num: '02',
     title: 'Equivalent Title Recognition',
-    desc: 'Job titles vary by company — what matters is what someone actually did. Talos reads the work, not just the title, so strong candidates don\'t get missed on a technicality.',
+    desc: "Job titles vary by company — what matters is what someone actually did. Talos reads the work, not just the title, so strong candidates don't get missed on a technicality.",
   },
   {
     num: '03',
@@ -618,41 +632,41 @@ const WhyTalosDifferent: React.FC = () => {
       <FontImport />
       <Page>
 
-        {/* ── Hero ── */}
-        <HeroWrap>
-          <BackgroundWord>Different.</BackgroundWord>
+        <Wrapper>
+          {/* ── Hero ── */}
+          <HeroWrap>
+            <GhostWord>Different.</GhostWord>
 
-          <HeroTop>
-            <SideLabel>Why Talos is different</SideLabel>
-            <HeroContent>
+            <HeroTop>
+              <SideLabel>Why Talos is different</SideLabel>
               <HeroHeadline>
                 Finally, a hiring tool<br />
                 that actually <em>knows</em><br />
                 your trade.
               </HeroHeadline>
-            </HeroContent>
-          </HeroTop>
+            </HeroTop>
 
-          <HeroBottom>
-            <HeroDesc>
-              Generic recruiting platforms treat HVAC like any other industry.
-              Talos was built from scratch on the assumption that hiring a
-              residential service tech and hiring a commercial installer are
-              fundamentally different problems — and they deserve fundamentally
-              different tools.
-            </HeroDesc>
-            <HeroMeta>
-              <MetaLine>Built exclusively for HVAC</MetaLine>
-              <MetaLine>11 role-specific scoring frameworks</MetaLine>
-              <MetaLine>No staffing agency fees</MetaLine>
-              <HeroCTA onClick={() => setIsDemoModalOpen(true)}>
-                See the Difference
-              </HeroCTA>
-            </HeroMeta>
-          </HeroBottom>
-        </HeroWrap>
+            <HeroBottom>
+              <HeroDesc>
+                Generic recruiting platforms treat HVAC like any other industry.
+                Talos was built from scratch on the assumption that hiring a
+                residential service tech and hiring a commercial installer are
+                fundamentally different problems — and they deserve fundamentally
+                different tools.
+              </HeroDesc>
+              <HeroMeta>
+                <MetaLine>Built exclusively for HVAC</MetaLine>
+                <MetaLine>11 role-specific scoring frameworks</MetaLine>
+                <MetaLine>No staffing agency fees</MetaLine>
+                <HeroCTA onClick={() => setIsDemoModalOpen(true)}>
+                  See the Difference
+                </HeroCTA>
+              </HeroMeta>
+            </HeroBottom>
+          </HeroWrap>
+        </Wrapper>
 
-        {/* ── Philosophy ── */}
+        {/* ── Philosophy Strip ── */}
         <PhilosophyStrip>
           <PhilosophyInner>
             <PhilosophyLabel>
@@ -664,89 +678,97 @@ const WhyTalosDifferent: React.FC = () => {
           </PhilosophyInner>
         </PhilosophyStrip>
 
-        {/* ── Comparison Table ── */}
-        <ComparisonSection>
-          <ComparisonHeader>
+        <Wrapper>
+          {/* ── Comparison Table ── */}
+          <ComparisonSection>
             <ComparisonEyebrow>Side by side</ComparisonEyebrow>
             <ComparisonTitle>
               Generic platforms<br />
               vs. <em>Talos.</em>
             </ComparisonTitle>
-          </ComparisonHeader>
 
-          <Table>
-            <TableHead>
-              <TableHeadCell>Category</TableHeadCell>
-              <TableHeadCell hide>Generic Platforms</TableHeadCell>
-              <TableHeadCell accent>Talos</TableHeadCell>
-            </TableHead>
-            {COMPARISON_ROWS.map((row, i) => (
-              <TableRow key={i}>
-                <CategoryCell>{row.category}</CategoryCell>
-                <TableCell dim hide>{row.generic}</TableCell>
-                <TableCell bright>
-                  <span className="dot" />
-                  {row.talos}
-                </TableCell>
-              </TableRow>
-            ))}
-          </Table>
-        </ComparisonSection>
+            <Table>
+              <TableHead>
+                <TableHeadCell>Category</TableHeadCell>
+                <TableHeadCell hide>Generic Platforms</TableHeadCell>
+                <TableHeadCell accent>Talos</TableHeadCell>
+              </TableHead>
+              {COMPARISON_ROWS.map((row, i) => (
+                <TableRow key={i}>
+                  <CategoryCell>{row.category}</CategoryCell>
+                  <TableCell dim hide>{row.generic}</TableCell>
+                  <TableCell bright>
+                    <span className="dot" />
+                    {row.talos}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </Table>
+          </ComparisonSection>
 
-        {/* ── AI Deep Dive ── */}
-        <AISection>
-          <AIHeader>
-            <AITitle>
-              What makes<br />
-              Talos <em>actually</em><br />
-              different.
-            </AITitle>
-            <AISubtext>
-              Generic tools apply the same checklist to every industry.
-              Talos uses a scoring formula built from the ground up for HVAC —
-              factoring in role-specific certifications, experience type, and
-              the skills that actually matter on the job.
-            </AISubtext>
-          </AIHeader>
+          {/* ── AI Deep Dive ── */}
+          <AISection>
+            <AIGrid>
+              <AITitle>
+                What makes<br />
+                Talos <em>actually</em><br />
+                different.
+              </AITitle>
+              <AISubtext>
+                Generic tools apply the same checklist to every industry.
+                Talos uses a scoring formula built from the ground up for HVAC —
+                factoring in role-specific certifications, experience type, and
+                the skills that actually matter on the job.
+              </AISubtext>
+            </AIGrid>
 
-          <AIList>
-            {AI_ITEMS.map((item, i) => (
-              <AIItem key={i}>
-                <AINum className="ai-num">{item.num}</AINum>
-                <AIContent>
-                  <AIItemTitle>{item.title}</AIItemTitle>
-                  <AIItemDesc>{item.desc}</AIItemDesc>
-                </AIContent>
-              </AIItem>
-            ))}
-          </AIList>
-        </AISection>
+            <SectionHeader>
+              <SectionTitle>Under the hood</SectionTitle>
+              <SectionRule />
+              <SectionCount>{AI_ITEMS.length} capabilities</SectionCount>
+            </SectionHeader>
 
-        {/* ── Closing ── */}
-        <ClosingSection>
-          <ClosingLeft>
-            <ClosingEyebrow>Ready to see it live</ClosingEyebrow>
-            <ClosingHeadline>
-              See exactly how<br />
-              Talos would work<br />
-              for your company.
-            </ClosingHeadline>
-          </ClosingLeft>
-          <ClosingRight>
-            <ClosingBody>
-              A live walkthrough takes 20 minutes. You'll see the AI score
-              a real resume, generate a job description for one of your open
-              roles, and get a full picture of what your pipeline would look
-              like inside Talos — with no commitment required.
-            </ClosingBody>
-            <ClosingCTARow>
-              <ClosingCTA onClick={() => setIsDemoModalOpen(true)}>
-                Book a Demo
-              </ClosingCTA>
-              <ClosingNote>No commitment. 20 minutes.</ClosingNote>
-            </ClosingCTARow>
-          </ClosingRight>
-        </ClosingSection>
+            <AIList>
+              {AI_ITEMS.map((item, i) => (
+                <AIItem key={i}>
+                  <AINum className="ai-num">{item.num}</AINum>
+                  <AIContent>
+                    <AIItemTitle>{item.title}</AIItemTitle>
+                    <AIItemDesc>{item.desc}</AIItemDesc>
+                  </AIContent>
+                </AIItem>
+              ))}
+            </AIList>
+          </AISection>
+
+          {/* ── Closing ── */}
+          <ClosingSection>
+            <ClosingGrid>
+              <div>
+                <ClosingEyebrow>Ready to see it live</ClosingEyebrow>
+                <ClosingHeadline>
+                  See exactly how<br />
+                  Talos would work<br />
+                  for your company.
+                </ClosingHeadline>
+              </div>
+              <div>
+                <ClosingBody>
+                  A live walkthrough takes 20 minutes. You'll see the AI score
+                  a real resume, generate a job description for one of your open
+                  roles, and get a full picture of what your pipeline would look
+                  like inside Talos — with no commitment required.
+                </ClosingBody>
+                <ClosingCTARow>
+                  <ClosingCTA onClick={() => setIsDemoModalOpen(true)}>
+                    Book a Demo
+                  </ClosingCTA>
+                  <ClosingNote>No commitment. 20 minutes.</ClosingNote>
+                </ClosingCTARow>
+              </div>
+            </ClosingGrid>
+          </ClosingSection>
+        </Wrapper>
 
       </Page>
       <DemoModal isOpen={isDemoModalOpen} onClose={() => setIsDemoModalOpen(false)} />
