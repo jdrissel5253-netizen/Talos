@@ -22,7 +22,15 @@ const TopRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 2rem;
+  margin-bottom: 2.5rem;
+`;
+
+const PageTitle = styled.h1`
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 0;
+  letter-spacing: -0.02em;
 `;
 
 const BackBtn = styled.button`
@@ -39,14 +47,142 @@ const BackBtn = styled.button`
   &:hover { border-color: #4ade80; color: #4ade80; }
 `;
 
-const PageTitle = styled.h1`
-  font-size: 1.25rem;
+/* ── Avatar card ── */
+const AvatarCard = styled.div`
+  background: #1a1f2a;
+  border: 1px solid #232830;
+  padding: 2rem 1.75rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    text-align: center;
+    gap: 1rem;
+  }
+`;
+
+const Avatar = styled.div`
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1e3a2a 0%, #14271d 100%);
+  border: 2px solid #4ade8040;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.4rem;
   font-weight: 700;
-  color: #fff;
-  margin-bottom: 0;
+  color: #4ade80;
+  flex-shrink: 0;
   letter-spacing: -0.02em;
 `;
 
+const AvatarInfo = styled.div`
+  flex: 1;
+  min-width: 0;
+`;
+
+const AvatarName = styled.div`
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.25rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const AvatarEmail = styled.div`
+  font-size: 0.8rem;
+  color: #6e7d8e;
+  margin-bottom: 0.6rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+`;
+
+const BadgeRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  @media (max-width: 480px) { justify-content: center; }
+`;
+
+const ActiveBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #4ade80;
+  background: rgba(74, 222, 128, 0.1);
+  border: 1px solid rgba(74, 222, 128, 0.25);
+  padding: 0.25rem 0.65rem;
+
+  &::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #4ade80;
+    display: inline-block;
+  }
+`;
+
+const PlanBadge = styled.span`
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8a9ab0;
+  background: rgba(138, 154, 176, 0.08);
+  border: 1px solid rgba(138, 154, 176, 0.18);
+  padding: 0.25rem 0.65rem;
+`;
+
+/* ── Info strip ── */
+const InfoStrip = styled.div`
+  background: #1a1f2a;
+  border: 1px solid #232830;
+  padding: 1.25rem 1.75rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  gap: 2.5rem;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    gap: 1rem;
+  }
+`;
+
+const InfoItem = styled.div``;
+
+const InfoLabel = styled.div`
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #4a5568;
+  margin-bottom: 0.3rem;
+`;
+
+const InfoValue = styled.div`
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #c8d3e0;
+`;
+
+/* ── Sections ── */
 const Section = styled.div`
   background: #1a1f2a;
   border: 1px solid #232830;
@@ -117,10 +253,67 @@ const Msg = styled.div<{ error?: boolean }>`
   color: ${p => p.error ? '#f87171' : '#4ade80'};
 `;
 
+/* ── Support card ── */
+const SupportCard = styled.div`
+  background: #161b24;
+  border: 1px solid #232830;
+  padding: 1.5rem 1.75rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+
+  @media (max-width: 480px) {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+`;
+
+const SupportText = styled.div``;
+
+const SupportHeading = styled.div`
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #c8d3e0;
+  margin-bottom: 0.3rem;
+`;
+
+const SupportSub = styled.div`
+  font-size: 0.78rem;
+  color: #4a5568;
+`;
+
+const SupportLink = styled.a`
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #4ade80;
+  text-decoration: none;
+  white-space: nowrap;
+  &:hover { text-decoration: underline; }
+`;
+
+function getInitials(companyName: string, email: string): string {
+  if (companyName && companyName.trim()) {
+    const words = companyName.trim().split(/\s+/);
+    if (words.length >= 2) return (words[0][0] + words[1][0]).toUpperCase();
+    return companyName.trim().slice(0, 2).toUpperCase();
+  }
+  return email ? email[0].toUpperCase() : '?';
+}
+
+function formatMemberSince(dateStr: string): string {
+  if (!dateStr) return '—';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+}
+
 const AccountSettings: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [companyName, setCompanyName] = useState('');
+  const [createdAt, setCreatedAt] = useState('');
   const [profileMsg, setProfileMsg] = useState<{ text: string; error: boolean } | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
 
@@ -137,6 +330,7 @@ const AccountSettings: React.FC = () => {
         if (data.status === 'success') {
           setEmail(data.data.email);
           setCompanyName(data.data.companyName || '');
+          setCreatedAt(data.data.createdAt || '');
         }
       })
       .catch(() => {});
@@ -195,6 +389,9 @@ const AccountSettings: React.FC = () => {
     }
   };
 
+  const initials = getInitials(companyName, email);
+  const displayName = companyName || email || 'Your Account';
+
   return (
     <Page>
       <Inner>
@@ -202,6 +399,33 @@ const AccountSettings: React.FC = () => {
           <PageTitle>Account Settings</PageTitle>
           <BackBtn onClick={() => navigate('/dashboard')}>← Dashboard</BackBtn>
         </TopRow>
+
+        <AvatarCard>
+          <Avatar>{initials}</Avatar>
+          <AvatarInfo>
+            <AvatarName>{displayName}</AvatarName>
+            <AvatarEmail>{email}</AvatarEmail>
+            <BadgeRow>
+              <ActiveBadge>Active</ActiveBadge>
+              <PlanBadge>Professional</PlanBadge>
+            </BadgeRow>
+          </AvatarInfo>
+        </AvatarCard>
+
+        <InfoStrip>
+          <InfoItem>
+            <InfoLabel>Member since</InfoLabel>
+            <InfoValue>{formatMemberSince(createdAt)}</InfoValue>
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>Account type</InfoLabel>
+            <InfoValue>HVAC Employer</InfoValue>
+          </InfoItem>
+          <InfoItem>
+            <InfoLabel>Platform</InfoLabel>
+            <InfoValue>Talos Hiring</InfoValue>
+          </InfoItem>
+        </InfoStrip>
 
         <Section>
           <SectionTitle>Profile</SectionTitle>
@@ -259,6 +483,14 @@ const AccountSettings: React.FC = () => {
             {pwMsg && <Msg error={pwMsg.error}>{pwMsg.text}</Msg>}
           </form>
         </Section>
+
+        <SupportCard>
+          <SupportText>
+            <SupportHeading>Need help with your account?</SupportHeading>
+            <SupportSub>Our team typically responds within one business day.</SupportSub>
+          </SupportText>
+          <SupportLink href="mailto:support@gotalos.io">support@gotalos.io</SupportLink>
+        </SupportCard>
       </Inner>
     </Page>
   );

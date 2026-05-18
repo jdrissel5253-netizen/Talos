@@ -1,7 +1,11 @@
 import React from 'react';
-import styled from 'styled-components';
+import styled, { createGlobalStyle } from 'styled-components';
 import { Link } from 'react-router-dom';
 import { CheckCircle } from 'lucide-react';
+
+const FontImport = createGlobalStyle`
+  @import url('https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&display=swap');
+`;
 
 const HeroContainer = styled.section`
   min-height: 100vh;
@@ -33,11 +37,12 @@ const HeroContent = styled.div`
 `;
 
 const HeroTitle = styled.h1`
-  font-size: 4rem;
-  font-weight: 800;
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(3rem, 6vw, 5.5rem);
+  font-weight: 400;
   color: #ffffff;
   margin-bottom: 2rem;
-  line-height: 1.1;
+  line-height: 1.08;
   letter-spacing: -0.02em;
 
   @media (max-width: 768px) {
@@ -50,16 +55,18 @@ const HeroTitle = styled.h1`
 `;
 
 const HeroSubtitle = styled.p`
-  font-size: 1.25rem;
-  color: #a3a3a3;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 1.15rem;
+  font-weight: 300;
+  color: #8a9ab0;
   margin-bottom: 3rem;
-  line-height: 1.7;
-  max-width: 600px;
+  line-height: 1.8;
+  max-width: 560px;
   margin-left: auto;
   margin-right: auto;
 
   @media (max-width: 768px) {
-    font-size: 1.1rem;
+    font-size: 1.05rem;
   }
 `;
 
@@ -74,59 +81,39 @@ const CTAGroup = styled.div`
 const JobsLink = styled(Link)`
   display: inline-block;
   background: transparent;
-  border: 1px solid #4ade80;
+  border: 1px solid rgba(74,222,128,0.4);
   color: #4ade80;
-  padding: 1rem 2rem;
-  font-size: 1.125rem;
+  padding: 0.9rem 2rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
   font-weight: 600;
-  border-radius: 8px;
+  letter-spacing: 0.03em;
   text-decoration: none;
-  transition: all 0.3s ease;
+  transition: background 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
 
   &:hover {
-    background: #4ade8015;
+    background: rgba(74,222,128,0.06);
+    border-color: #4ade80;
     transform: translateY(-2px);
   }
 `;
 
 const CTAButton = styled.button`
-  background-color: #4ade80;
+  background: #4ade80;
   border: none;
-  color: #000000;
-  padding: 1rem 3rem;
-  font-size: 1.125rem;
-  font-weight: 700;
-  border-radius: 8px;
+  color: #0a0f0a;
+  padding: 0.9rem 2.5rem;
+  font-family: 'DM Sans', sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 0 20px rgba(74, 222, 128, 0.3);
-  position: relative;
-  overflow: hidden;
-
-  &::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: -100%;
-    width: 100%;
-    height: 100%;
-    background: linear-gradient(
-      90deg,
-      transparent,
-      rgba(255, 255, 255, 0.4),
-      transparent
-    );
-    transition: 0.5s;
-  }
+  transition: background 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
 
   &:hover {
+    background: #6ee89a;
     transform: translateY(-2px);
-    box-shadow: 0 0 30px rgba(74, 222, 128, 0.5);
-    background-color: #5ce08e;
-
-    &::before {
-      left: 100%;
-    }
+    box-shadow: 0 8px 24px rgba(74,222,128,0.25);
   }
 
   &:active {
@@ -153,12 +140,11 @@ const TrustBadge = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #e0e0e0;
-  font-size: 0.9rem;
+  font-family: 'DM Sans', sans-serif;
+  color: #8a9ab0;
+  font-size: 0.875rem;
   font-weight: 500;
 `;
-
-
 
 interface HeroSectionProps {
   onDemoClick: () => void;
@@ -166,42 +152,43 @@ interface HeroSectionProps {
 
 const HeroSection: React.FC<HeroSectionProps> = ({ onDemoClick }) => {
   return (
-    <HeroContainer>
+    <>
+      <FontImport />
+      <HeroContainer>
+        <HeroLayout>
+          <HeroContent>
+            <HeroTitle>
+              The key to finding reliable technicians
+            </HeroTitle>
+            <HeroSubtitle>
+              Streamline your HVAC hiring process with automated sourcing,
+              job board posting, and intelligent candidate ranking.
+              Find the right talent faster.
+            </HeroSubtitle>
+            <CTAGroup>
+              <CTAButton onClick={onDemoClick}>
+                Get Demo
+              </CTAButton>
+            </CTAGroup>
 
-      <HeroLayout>
-        <HeroContent>
-          <HeroTitle>
-            The key to finding reliable technicians
-          </HeroTitle>
-          <HeroSubtitle>
-            Streamline your HVAC hiring process with automated sourcing,
-            job board posting, and intelligent candidate ranking.
-            Find the right talent faster.
-          </HeroSubtitle>
-          <CTAGroup>
-            <CTAButton onClick={onDemoClick}>
-              Get Demo
-            </CTAButton>
-            <JobsLink to="/jobs">View Open Positions</JobsLink>
-          </CTAGroup>
-
-          <TrustIndicators>
-            <TrustBadge>
-              <CheckCircle size={18} color="#4ade80" />
-              Top Job Boards
-            </TrustBadge>
-            <TrustBadge>
-              <CheckCircle size={18} color="#4ade80" />
-              AI-Powered Matching
-            </TrustBadge>
-            <TrustBadge>
-              <CheckCircle size={18} color="#4ade80" />
-              HVAC-Specialized
-            </TrustBadge>
-          </TrustIndicators>
-        </HeroContent>
-      </HeroLayout>
-    </HeroContainer>
+            <TrustIndicators>
+              <TrustBadge>
+                <CheckCircle size={16} color="#4ade80" />
+                Top Job Boards
+              </TrustBadge>
+              <TrustBadge>
+                <CheckCircle size={16} color="#4ade80" />
+                AI-Powered Matching
+              </TrustBadge>
+              <TrustBadge>
+                <CheckCircle size={16} color="#4ade80" />
+                HVAC-Specialized
+              </TrustBadge>
+            </TrustIndicators>
+          </HeroContent>
+        </HeroLayout>
+      </HeroContainer>
+    </>
   );
 };
 

@@ -1044,7 +1044,7 @@ const JobsManagement: React.FC = () => {
     }), [candidates]);
 
     const renderCompactCandidate = (candidate: CandidatePipeline) => (
-        <CompactCandidateRow key={candidate.id}>
+        <CompactCandidateRow key={`compact-${candidate.id}`}>
             <CompactScore tier={candidate.tier}>{candidate.tier_score}</CompactScore>
             <div style={{ overflow: 'hidden' }}>
                 <CompactName>{candidate.filename?.replace('.pdf', '') || 'Unknown'}</CompactName>
@@ -1067,7 +1067,7 @@ const JobsManagement: React.FC = () => {
     );
 
     const renderCandidateCard = (candidate: CandidatePipeline) => (
-        <CandidateCard key={candidate.id} isSelected={selectedCandidates.has(candidate.id)}>
+        <CandidateCard key={`card-${candidate.id}`} isSelected={selectedCandidates.has(candidate.id)}>
             <CandidateHeader>
                 <CandidateInfo>
                     <CandidateName>
