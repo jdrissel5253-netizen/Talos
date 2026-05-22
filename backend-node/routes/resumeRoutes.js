@@ -172,7 +172,8 @@ router.get('/preview/:candidateId', async (req, res) => {
 <meta charset="utf-8"/>
 <style>
   body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.5;
-         max-width: 820px; margin: 2rem auto; padding: 0 2rem; color: #1a1a1a; }
+         max-width: 820px; margin: 2rem auto; padding: 0 2rem; color: #1a1a1a;
+         background: #ffffff; }
   h1 { font-size: 1.4em; } h2 { font-size: 1.15em; } h3 { font-size: 1em; }
   table { border-collapse: collapse; width: 100%; }
   td, th { padding: 4px 8px; border: 1px solid #ccc; }

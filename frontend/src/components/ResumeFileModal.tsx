@@ -70,7 +70,7 @@ const CloseButton = styled.button`
 
 const IframeWrapper = styled.div`
   flex: 1;
-  background: #333;
+  background: #ffffff;
   display: flex;
   align-items: center;
   justify-content: center;
