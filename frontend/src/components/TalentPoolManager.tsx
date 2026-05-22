@@ -45,6 +45,7 @@ interface ApplicationEntry {
   pipeline_id: number;
   job_title: string;
   position_type: string;
+  required_years_experience?: number;
   tier: 'green' | 'yellow' | 'red';
   tier_score: number;
   pipeline_status: string;
@@ -1298,7 +1299,12 @@ const TalentPoolManager: React.FC = () => {
             <div style={{ color: '#555', fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}>Loading…</div>
           ) : (personApplications[candidate.pipeline_id] || []).map(app => (
             <ApplicationRow key={app.pipeline_id}>
-              <AppJobTitle>{app.job_title || app.position_type}</AppJobTitle>
+              <AppJobTitle>
+                {app.job_title || app.position_type}
+                {app.required_years_experience != null && app.required_years_experience > 0 && (
+                  <span style={{ marginLeft: '0.4rem', color: '#555', fontSize: '0.72rem' }}>{app.required_years_experience}yr req</span>
+                )}
+              </AppJobTitle>
               <AppStatus>{app.pipeline_status}</AppStatus>
               <AppScore tier={app.tier}>{app.tier_score}</AppScore>
             </ApplicationRow>
@@ -1484,7 +1490,12 @@ const TalentPoolManager: React.FC = () => {
             <div style={{ color: '#555', fontSize: '0.75rem' }}>Loading…</div>
           ) : (personApplications[candidate.pipeline_id] || []).map(app => (
             <ApplicationRow key={app.pipeline_id}>
-              <AppJobTitle style={{ fontSize: '0.8rem' }}>{app.job_title || app.position_type}</AppJobTitle>
+              <AppJobTitle style={{ fontSize: '0.8rem' }}>
+                {app.job_title || app.position_type}
+                {app.required_years_experience != null && app.required_years_experience > 0 && (
+                  <span style={{ marginLeft: '0.4rem', color: '#555', fontSize: '0.7rem' }}>{app.required_years_experience}yr req</span>
+                )}
+              </AppJobTitle>
               <AppStatus>{app.pipeline_status}</AppStatus>
               <AppScore tier={app.tier} style={{ fontSize: '0.8rem' }}>{app.tier_score}</AppScore>
             </ApplicationRow>
