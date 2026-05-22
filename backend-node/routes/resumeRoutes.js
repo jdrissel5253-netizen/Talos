@@ -2,6 +2,7 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const mammoth = require('mammoth');
 const { analyzeResume } = require('../services/resumeAnalyzer');
 const { batchService, candidateService, analysisService, jobService, candidatePipelineService, sanitize } = require('../services/databaseService');
 const { calculateTier, calculateStarRating } = require('../services/scoringService');
@@ -134,6 +135,62 @@ router.get('/file/:candidateId', async (req, res) => {
     } catch (error) {
         logger.error('Error serving resume file', { error: error.message, stack: error.stack });
         res.status(500).json({ status: 'error', message: 'Failed to retrieve resume' });
+    }
+});
+
+// Serve a browser-renderable preview of any resume (PDF or DOCX)
+router.get('/preview/:candidateId', async (req, res) => {
+    let tempPath = null;
+    try {
+        const candidateId = parseInt(req.params.candidateId);
+        if (!candidateId || isNaN(candidateId)) {
+            return res.status(400).json({ status: 'error', message: 'Invalid candidate ID' });
+        }
+
+        const candidate = await candidateService.findById(candidateId);
+        if (!candidate || !candidate.file_path) {
+            return res.status(404).json({ status: 'error', message: 'Resume not found' });
+        }
+
+        if (!isS3Key(candidate.file_path)) {
+            return res.status(404).json({ status: 'error', message: 'Resume file not available' });
+        }
+
+        const ext = path.extname(candidate.file_path).toLowerCase();
+
+        if (ext === '.pdf') {
+            res.setHeader('Content-Disposition', `inline; filename="${candidate.filename}"`);
+            return await streamResumeTo(candidate.file_path, res);
+        }
+
+        if (ext === '.docx' || ext === '.doc') {
+            tempPath = await downloadResumeToTemp(candidate.file_path);
+            const { value: html } = await mammoth.convertToHtml({ path: tempPath });
+            const page = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8"/>
+<style>
+  body { font-family: Calibri, Arial, sans-serif; font-size: 11pt; line-height: 1.5;
+         max-width: 820px; margin: 2rem auto; padding: 0 2rem; color: #1a1a1a; }
+  h1 { font-size: 1.4em; } h2 { font-size: 1.15em; } h3 { font-size: 1em; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { padding: 4px 8px; border: 1px solid #ccc; }
+  p { margin: 0.4em 0; }
+</style>
+</head>
+<body>${html}</body>
+</html>`;
+            res.setHeader('Content-Type', 'text/html; charset=utf-8');
+            return res.send(page);
+        }
+
+        res.status(415).json({ status: 'error', message: 'Preview not supported for this file type' });
+    } catch (error) {
+        logger.error('Error generating resume preview', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to generate preview' });
+    } finally {
+        if (tempPath) { try { fs.unlinkSync(tempPath); } catch (_) {} }
     }
 });
 

@@ -89,29 +89,39 @@ const StatusText = styled.p`
 
 const ResumeFileModal: React.FC<Props> = ({ isOpen, onClose, candidateId, filename }) => {
   const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [htmlContent, setHtmlContent] = useState<string | null>(null);
   const [status, setStatus] = useState<'loading' | 'ready' | 'error'>('loading');
   const prevCandidateId = useRef<number | null>(null);
 
   useEffect(() => {
     if (!isOpen || !candidateId) return;
-    if (candidateId === prevCandidateId.current && blobUrl) return;
+    if (candidateId === prevCandidateId.current && (blobUrl || htmlContent)) return;
 
     prevCandidateId.current = candidateId;
     setStatus('loading');
     setBlobUrl(null);
+    setHtmlContent(null);
 
     let objectUrl: string;
 
-    fetch(`${config.apiUrl}/api/resume/file/${candidateId}`, {
+    fetch(`${config.apiUrl}/api/resume/preview/${candidateId}`, {
       headers: getAuthHeaders()
     })
       .then(res => {
         if (!res.ok) throw new Error(`${res.status}`);
-        return res.blob();
+        const contentType = res.headers.get('content-type') || '';
+        if (contentType.includes('text/html')) {
+          return res.text().then(html => ({ type: 'html' as const, data: html }));
+        }
+        return res.blob().then(blob => ({ type: 'blob' as const, data: blob }));
       })
-      .then(blob => {
-        objectUrl = URL.createObjectURL(blob);
-        setBlobUrl(objectUrl);
+      .then(result => {
+        if (result.type === 'html') {
+          setHtmlContent(result.data);
+        } else {
+          objectUrl = URL.createObjectURL(result.data);
+          setBlobUrl(objectUrl);
+        }
         setStatus('ready');
       })
       .catch(() => setStatus('error'));
@@ -124,6 +134,7 @@ const ResumeFileModal: React.FC<Props> = ({ isOpen, onClose, candidateId, filena
   useEffect(() => {
     if (!isOpen) {
       setBlobUrl(null);
+      setHtmlContent(null);
       setStatus('loading');
       prevCandidateId.current = null;
     }
@@ -146,6 +157,9 @@ const ResumeFileModal: React.FC<Props> = ({ isOpen, onClose, candidateId, filena
           {status === 'error' && <StatusText>Failed to load resume. The file may no longer be available.</StatusText>}
           {status === 'ready' && blobUrl && (
             <StyledIframe src={blobUrl} title="Resume" />
+          )}
+          {status === 'ready' && htmlContent && (
+            <StyledIframe srcDoc={htmlContent} title="Resume" />
           )}
         </IframeWrapper>
       </Modal>
