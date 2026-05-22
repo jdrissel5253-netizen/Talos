@@ -161,7 +161,8 @@ router.post('/', async (req, res) => {
             company_culture: sanitize.trimString(req.body.company_culture, 2000),
             flexible_on_title: req.body.flexible_on_title !== false, // Default to true
             drivers_license_required: req.body.drivers_license_required === true || req.body.drivers_license_required === 'true',
-            valid_through: sanitize.trimString(req.body.valid_through, 10) || null
+            valid_through: sanitize.trimString(req.body.valid_through, 10) || null,
+            job_label: sanitize.trimString(req.body.job_label, 100) || null
         };
 
         // Validate salary/pay range ordering

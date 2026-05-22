@@ -35,6 +35,8 @@ interface Candidate {
   strengths: string[];
   weaknesses: string[];
   job_title: string;
+  job_label?: string;
+  required_years_experience?: number;
   position_type: string;
   job_location: string;
   jobs_applied: number;
@@ -44,6 +46,8 @@ interface Candidate {
 interface ApplicationEntry {
   pipeline_id: number;
   job_title: string;
+  job_label?: string;
+  required_years_experience?: number;
   position_type: string;
   tier: 'green' | 'yellow' | 'red';
   tier_score: number;
@@ -1271,8 +1275,13 @@ const TalentPoolManager: React.FC = () => {
             <StarRating>{getStars(candidate.star_rating)}</StarRating>
             {candidate.give_them_a_chance && <Badge>High Potential</Badge>}
           </CandidateName>
-          <div style={{ color: '#999', fontSize: '0.9rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap' }}>
+          <div style={{ color: '#999', fontSize: '0.9rem', display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: '0.35rem' }}>
             {candidate.position_type} • {candidate.job_location || 'Remote/TBD'}
+            {candidate.job_label && (
+              <span style={{ background: 'rgba(167,139,250,0.15)', color: '#a78bfa', fontSize: '0.72rem', fontWeight: 600, padding: '0.1rem 0.5rem', borderRadius: '10px', border: '1px solid rgba(167,139,250,0.3)' }}>
+                {candidate.job_label}
+              </span>
+            )}
             {candidate.jobs_applied > 1 ? (
               <JobsBadge onClick={() => handleToggleApplications(candidate.pipeline_id)}>
                 {expandedPipelineId === candidate.pipeline_id
@@ -1281,7 +1290,7 @@ const TalentPoolManager: React.FC = () => {
                 {candidate.jobs_applied} jobs applied
               </JobsBadge>
             ) : (
-              <span style={{ marginLeft: '0.5rem', color: '#4ade80', fontSize: '0.8rem', fontWeight: 600, opacity: 0.7 }}>
+              <span style={{ color: '#4ade80', fontSize: '0.8rem', fontWeight: 600, opacity: 0.7 }}>
                 · {candidate.job_title}
               </span>
             )}
@@ -1298,7 +1307,19 @@ const TalentPoolManager: React.FC = () => {
             <div style={{ color: '#555', fontSize: '0.8rem', padding: '0.25rem 0.5rem' }}>Loading…</div>
           ) : (personApplications[candidate.pipeline_id] || []).map(app => (
             <ApplicationRow key={app.pipeline_id}>
-              <AppJobTitle>{app.job_title || app.position_type}</AppJobTitle>
+              <AppJobTitle>
+                {app.job_title || app.position_type}
+                {app.job_label && (
+                  <span style={{ marginLeft: '0.4rem', background: 'rgba(167,139,250,0.15)', color: '#a78bfa', fontSize: '0.68rem', fontWeight: 600, padding: '0.1rem 0.45rem', borderRadius: '10px', border: '1px solid rgba(167,139,250,0.3)' }}>
+                    {app.job_label}
+                  </span>
+                )}
+                {!app.job_label && app.required_years_experience != null && app.required_years_experience > 0 && (
+                  <span style={{ marginLeft: '0.4rem', color: '#666', fontSize: '0.72rem' }}>
+                    {app.required_years_experience}yr req
+                  </span>
+                )}
+              </AppJobTitle>
               <AppStatus>{app.pipeline_status}</AppStatus>
               <AppScore tier={app.tier}>{app.tier_score}</AppScore>
             </ApplicationRow>

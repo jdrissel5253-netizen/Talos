@@ -388,8 +388,8 @@ const jobService = {
                 qualifications_years, qualifications_certifications, qualifications_other,
                 education_requirements, other_relevant_titles, advancement_opportunities,
                 advancement_timeline, company_culture, ai_generated_description,
-                flexible_on_title, drivers_license_required, status
-            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33) RETURNING *`,
+                flexible_on_title, drivers_license_required, status, job_label
+            ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26, $27, $28, $29, $30, $31, $32, $33, $34) RETURNING *`,
             [
                 userId,
                 jobData.title,
@@ -423,7 +423,8 @@ const jobService = {
                 jobData.ai_generated_description,
                 jobData.flexible_on_title !== false ? 1 : 0,
                 jobData.drivers_license_required ? 1 : 0,
-                'active'
+                'active',
+                jobData.job_label || null
             ]
         );
         return result.rows[0];
@@ -504,7 +505,7 @@ const jobService = {
             'education_requirements', 'other_relevant_titles', 'advancement_opportunities',
             'advancement_timeline', 'company_culture', 'ai_generated_description',
             'flexible_on_title', 'drivers_license_required', 'status', 'updated_at',
-            'valid_through'
+            'valid_through', 'job_label'
         ];
 
         const fields = [];
@@ -946,6 +947,8 @@ const candidatePipelineService = {
                     j.title as job_title,
                     j.position_type,
                     j.location as job_location,
+                    j.job_label,
+                    j.required_years_experience,
                     COALESCE(c.applicant_email, c.filename) AS person_key
                 FROM candidate_pipeline cp
                 JOIN candidates c ON cp.candidate_id = c.id
@@ -1056,6 +1059,8 @@ const candidatePipelineService = {
             SELECT
                 cp.id AS pipeline_id,
                 j.title AS job_title,
+                j.job_label,
+                j.required_years_experience,
                 j.position_type,
                 cp.tier,
                 cp.tier_score,
