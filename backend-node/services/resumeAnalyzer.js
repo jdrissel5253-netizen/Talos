@@ -3546,9 +3546,10 @@ STEP 2: IDENTIFY ALL RELEVANT SALES EXPERIENCE
    e) Calculate duration of EACH position in years and months
    f) SUM all durations to get TOTAL relevant sales experience
 
-STEP 3: CLASSIFY EXPERIENCE TIER
+STEP 3: CLASSIFY EXPERIENCE TIER (CRITICAL - DO THE MATH BEFORE CLASSIFYING)
+   First write: "Total sales years = ___, Required = ${requiredYearsExperience} yrs, Close minimum = ${requiredYearsExperience * 0.5} yrs"
    a) If TOTAL sales years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
-   b) If TOTAL sales years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
+   b) If TOTAL sales years >= ${requiredYearsExperience * 0.5} AND TOTAL sales years < ${requiredYearsExperience}: This is "CLOSE TO REQUIRED" tier
    c) If TOTAL sales years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
 
 STEP 4: EVALUATE THE 4 CORE COMPETENCIES
@@ -3665,9 +3666,10 @@ STEP 2: IDENTIFY ALL RELEVANT EXPERIENCE
    e) Calculate duration of EACH position in years and months
    f) SUM all durations to get TOTAL relevant experience
 
-STEP 3: CLASSIFY EXPERIENCE TIER
+STEP 3: CLASSIFY EXPERIENCE TIER (CRITICAL - DO THE MATH BEFORE CLASSIFYING)
+   First write: "Total years = ___, Required = ${requiredYearsExperience} yrs, Close minimum = ${requiredYearsExperience * 0.5} yrs"
    a) If TOTAL years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
-   b) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
+   b) If TOTAL years >= ${requiredYearsExperience * 0.5} AND TOTAL years < ${requiredYearsExperience}: This is "CLOSE TO REQUIRED" tier
    c) If TOTAL years < ${requiredYearsExperience * 0.5} BUT has labor experience: This is "NOT CLOSE BUT HAS LABOR" tier
    d) If NO labor-intensive experience (only office/professional/creative roles): This is "NO TRANSFERABLE SKILLS" tier
 
@@ -3790,9 +3792,10 @@ STEP 2: IDENTIFY ALL RELEVANT EXPERIENCE
    f) Calculate duration of EACH position in years and months
    g) SUM all durations to get TOTAL relevant experience
 
-STEP 3: CLASSIFY EXPERIENCE TIER
+STEP 3: CLASSIFY EXPERIENCE TIER (CRITICAL - DO THE MATH BEFORE CLASSIFYING)
+   First write: "Total years = ___, Required = ${requiredYearsExperience} yrs, Close minimum = ${requiredYearsExperience * 0.5} yrs"
    a) If TOTAL years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
-   b) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
+   b) If TOTAL years >= ${requiredYearsExperience * 0.5} AND TOTAL years < ${requiredYearsExperience}: This is "CLOSE TO REQUIRED" tier
    c) If TOTAL years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
 
 STEP 4: EVALUATE THE 4 CORE COMPETENCY CATEGORIES (MUST HAVE 2+)
@@ -3916,9 +3919,10 @@ STEP 2: IDENTIFY ALL RELEVANT EXPERIENCE
    d) Calculate duration of EACH position in years and months
    e) SUM all durations to get TOTAL relevant experience
 
-STEP 3: CLASSIFY EXPERIENCE TIER
+STEP 3: CLASSIFY EXPERIENCE TIER (CRITICAL - DO THE MATH BEFORE CLASSIFYING)
+   First write: "Total years = ___, Required = ${requiredYearsExperience} yrs, Close minimum = ${requiredYearsExperience * 0.5} yrs"
    a) If TOTAL years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
-   b) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
+   b) If TOTAL years >= ${requiredYearsExperience * 0.5} AND TOTAL years < ${requiredYearsExperience}: This is "CLOSE TO REQUIRED" tier
    c) If TOTAL years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
 
 STEP 4: EVALUATE THE 4 CORE COMPETENCY CATEGORIES
@@ -4029,9 +4033,10 @@ STEP 1: IDENTIFY ALL RELEVANT EXPERIENCE
    d) Calculate duration of EACH position in years and months
    e) SUM all durations to get TOTAL relevant experience
 
-STEP 2: CLASSIFY EXPERIENCE TIER
+STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO THE MATH BEFORE CLASSIFYING)
+   First write: "Total years = ___, Required = ${requiredYearsExperience} yrs, Close minimum = ${requiredYearsExperience * 0.5} yrs"
    a) If TOTAL years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
-   b) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
+   b) If TOTAL years >= ${requiredYearsExperience * 0.5} AND TOTAL years < ${requiredYearsExperience}: This is "CLOSE TO REQUIRED" tier
    c) If TOTAL years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
 
 STEP 3: EVALUATE THE 4 CORE COMPETENCY CATEGORIES
@@ -4143,9 +4148,10 @@ STEP 1: IDENTIFY ALL RELEVANT EXPERIENCE
    d) Calculate duration of EACH position in years and months
    e) SUM all durations to get TOTAL relevant experience
 
-STEP 2: CLASSIFY EXPERIENCE TIER
+STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO THE MATH BEFORE CLASSIFYING)
+   First write: "Total years = ___, Required = ${requiredYearsExperience} yrs, Close minimum = ${requiredYearsExperience * 0.5} yrs"
    a) If TOTAL years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
-   b) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
+   b) If TOTAL years >= ${requiredYearsExperience * 0.5} AND TOTAL years < ${requiredYearsExperience}: This is "CLOSE TO REQUIRED" tier
    c) If TOTAL years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
 
 STEP 3: EVALUATE THE 4 CORE COMPETENCY CATEGORIES
@@ -4257,9 +4263,10 @@ STEP 1: IDENTIFY ALL RELEVANT EXPERIENCE
    d) Calculate duration of EACH position in years and months
    e) SUM all durations to get TOTAL relevant experience
 
-STEP 2: CLASSIFY EXPERIENCE TIER
+STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO THE MATH BEFORE CLASSIFYING)
+   First write: "Total years = ___, Required = ${requiredYearsExperience} yrs, Close minimum = ${requiredYearsExperience * 0.5} yrs"
    a) If TOTAL years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
-   b) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
+   b) If TOTAL years >= ${requiredYearsExperience * 0.5} AND TOTAL years < ${requiredYearsExperience}: This is "CLOSE TO REQUIRED" tier
    c) If TOTAL years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
 
 STEP 3: EVALUATE THE 4 SKILL CATEGORIES
@@ -4389,9 +4396,10 @@ STEP 1: CALCULATE TOTAL HVAC EXPERIENCE
    e) Example: If someone has "Sept 2021-Present (4 years)" + "Oct 2017-Sept 2021 (4 years)" = 8 years TOTAL
    f) Do NOT count non-HVAC jobs (electrician, delivery, etc.) unless they have significant HVAC components
 
-STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO NOT SKIP)
+STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO THE MATH BEFORE CLASSIFYING)
+   First write: "Total years = ___, Required = ${requiredYearsExperience} yrs, Close minimum = ${requiredYearsExperience * 0.5} yrs"
    a) If TOTAL years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
-   b) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
+   b) If TOTAL years >= ${requiredYearsExperience * 0.5} AND TOTAL years < ${requiredYearsExperience}: This is "CLOSE TO REQUIRED" tier
    c) If TOTAL years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
    d) ALWAYS use TOTAL years from Step 1, not just the most recent position
 
@@ -4510,9 +4518,10 @@ STEP 1: CALCULATE TOTAL PM/MAINTENANCE EXPERIENCE
    f) If flexible on title is NO: equivalent role experience counts toward "Close to Required" only, not "Required"
    g) Example: If someone has "2022-Present (3 years)" + "2019-2022 (3 years)" = 6 years TOTAL
 
-STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO NOT SKIP)
+STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO THE MATH BEFORE CLASSIFYING)
+   First write: "Total years = ___, Required = ${requiredYearsExperience} yrs, Close minimum = ${requiredYearsExperience * 0.5} yrs"
    a) If TOTAL years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
-   b) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
+   b) If TOTAL years >= ${requiredYearsExperience * 0.5} AND TOTAL years < ${requiredYearsExperience}: This is "CLOSE TO REQUIRED" tier
    c) If TOTAL years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
    d) If flexible on title is NO and candidate qualifies only via equivalent titles: apply -9 point penalty to their Close-to-Required score
    e) ALWAYS use TOTAL years from Step 1, not just the most recent position
@@ -4632,9 +4641,10 @@ STEP 1: CALCULATE TOTAL INSTALLER EXPERIENCE
    f) If flexible on title is NO: equivalent role experience counts toward "Close to Required" only, not "Required"
    g) Example: If someone has "2022-Present (3 years)" + "2019-2022 (3 years)" = 6 years TOTAL
 
-STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO NOT SKIP)
+STEP 2: CLASSIFY EXPERIENCE TIER (CRITICAL - DO THE MATH BEFORE CLASSIFYING)
+   First write: "Total years = ___, Required = ${requiredYearsExperience} yrs, Close minimum = ${requiredYearsExperience * 0.5} yrs"
    a) If TOTAL years >= ${requiredYearsExperience}: This is "REQUIRED EXPERIENCE" tier
-   b) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: This is "CLOSE TO REQUIRED" tier
+   b) If TOTAL years >= ${requiredYearsExperience * 0.5} AND TOTAL years < ${requiredYearsExperience}: This is "CLOSE TO REQUIRED" tier
    c) If TOTAL years < ${requiredYearsExperience * 0.5}: This is "NOT CLOSE TO REQUIRED" tier
    d) If flexible on title is NO and candidate qualifies only via equivalent titles: apply -9 point penalty to their Close-to-Required score
    e) ALWAYS use TOTAL years from Step 1, not just the most recent position
@@ -4798,12 +4808,13 @@ STEP 2: EVALUATE THE 4 CORE COMPETENCY CATEGORIES
 
    Rate each category as: STRONG / MODERATE / WEAK
 
-STEP 3: CLASSIFY EXPERIENCE TIER
+STEP 3: CLASSIFY EXPERIENCE TIER (CRITICAL - DO THE MATH BEFORE CLASSIFYING)
+   First write: "Total years = ___, Required = ${requiredYearsExperience} yrs, Close minimum = ${requiredYearsExperience * 0.5} yrs"
    a) If TOTAL years >= ${requiredYearsExperience} in lead/senior role (or equivalent with 3-4 competencies): "REQUIRED EXPERIENCE" tier
    b) ${!flexibleOnTitle ?
                `If flexibility is OFF and candidate has ${requiredYearsExperience}+ years as Service Tech/Installer/Maintenance (without Lead/Senior title): "CLOSE TO REQUIRED" tier with -9 penalty` :
                ''}
-   c) If TOTAL years is ${requiredYearsExperience * 0.5} to ${requiredYearsExperience * 0.95}: "CLOSE TO REQUIRED" tier
+   c) If TOTAL years >= ${requiredYearsExperience * 0.5} AND TOTAL years < ${requiredYearsExperience}: "CLOSE TO REQUIRED" tier
    d) If TOTAL years < ${requiredYearsExperience * 0.5}: "NOT CLOSE TO REQUIRED" tier
 
 STEP 4: ASSESS RESUME QUALITY
