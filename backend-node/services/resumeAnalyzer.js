@@ -1,5 +1,6 @@
 const Anthropic = require('@anthropic-ai/sdk');
 const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
 const fs = require('fs').promises;
 const path = require('path');
 const logger = require('./logger');
@@ -3485,14 +3486,20 @@ async function analyzeResume(filePath, position = 'HVAC Technician', requiredYea
       if (ext === '.pdf') {
          resumeText = await extractTextFromPDF(filePath);
          if (!resumeText || resumeText.trim().length < 50) {
-            const err = new Error('This PDF appears to be a scanned image and contains no extractable text. Please upload a text-based PDF.');
+            const err = new Error('This PDF appears to be a scanned image and contains no extractable text. Please upload a text-based PDF or Word document.');
+            err.code = 'EMPTY_RESUME';
+            throw err;
+         }
+      } else if (ext === '.docx' || ext === '.doc') {
+         const result = await mammoth.extractRawText({ path: filePath });
+         resumeText = result.value;
+         if (!resumeText || resumeText.trim().length < 50) {
+            const err = new Error('This Word document appears to be empty or contains no extractable text.');
             err.code = 'EMPTY_RESUME';
             throw err;
          }
       } else {
-         // For DOC/DOCX, you'd need additional library like mammoth
-         // For now, we'll handle PDF only
-         throw new Error('Only PDF files are currently supported');
+         throw new Error('Unsupported file type. Please upload a PDF or Word document (.docx).');
       }
 
       const jobLocationLine = jobLocation ? `Job Location: ${jobLocation}\n\n` : '';
