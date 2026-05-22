@@ -107,19 +107,15 @@ const ResumeFileModal: React.FC<Props> = ({ isOpen, onClose, candidateId, filena
     fetch(`${config.apiUrl}/api/resume/preview/${candidateId}`, {
       headers: getAuthHeaders()
     })
-      .then(res => {
-        if (!res.ok) throw new Error(`${res.status}`);
-        const contentType = res.headers.get('content-type') || '';
+      .then(async response => {
+        if (!response.ok) throw new Error(`${response.status}`);
+        const contentType = response.headers.get('content-type') || '';
         if (contentType.includes('text/html')) {
-          return res.text().then(html => ({ type: 'html' as const, data: html }));
-        }
-        return res.blob().then(blob => ({ type: 'blob' as const, data: blob }));
-      })
-      .then(result => {
-        if (result.type === 'html') {
-          setHtmlContent(result.data);
+          const html = await response.text();
+          setHtmlContent(html);
         } else {
-          objectUrl = URL.createObjectURL(result.data);
+          const blob = await response.blob();
+          objectUrl = URL.createObjectURL(blob);
           setBlobUrl(objectUrl);
         }
         setStatus('ready');
