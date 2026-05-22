@@ -703,7 +703,6 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
     qualifications_certifications: parseJsonField<string>(editJob?.qualifications_certifications, []),
     education_requirements: editJob?.education_requirements || 'no_degree',
     other_relevant_titles: parseJsonField<string>(editJob?.other_relevant_titles, []),
-    job_label: (editJob as any)?.job_label || '',
     flexible_on_title: editJob?.flexible_on_title !== undefined ? editJob.flexible_on_title : true,
     drivers_license_required: editJob?.drivers_license_required || false,
     advancement_opportunities: editJob?.advancement_opportunities || false,
@@ -968,25 +967,6 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
                   value={formData.company_name}
                   onChange={handleChange}
                   placeholder="Your company name"
-                />
-              </FormGroup>
-            </FormRow>
-
-            <FormRow>
-              <FormGroup>
-                <Label>
-                  Job Label
-                  <TooltipIcon>?
-                    <Tooltip>Optional short identifier to distinguish postings with the same title — e.g. "Senior", "Entry Level", "5+ yrs"</Tooltip>
-                  </TooltipIcon>
-                </Label>
-                <Input
-                  type="text"
-                  name="job_label"
-                  value={formData.job_label}
-                  onChange={handleChange}
-                  placeholder="e.g. Senior, Entry Level, 5+ yrs (optional)"
-                  maxLength={100}
                 />
               </FormGroup>
             </FormRow>
