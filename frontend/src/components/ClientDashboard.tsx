@@ -855,11 +855,6 @@ const ClientDashboard: React.FC = () => {
                   <StatSub>awaiting action</StatSub>
                 </StatTile>
                 <StatTile>
-                  <StatLabel>Approved</StatLabel>
-                  <StatValue accent="#a78bfa">{stats?.statusBreakdown.approved ?? 0}</StatValue>
-                  <StatSub>moving forward</StatSub>
-                </StatTile>
-                <StatTile>
                   <StatLabel>Contacted</StatLabel>
                   <StatValue accent="#34d399">{stats?.statusBreakdown.contacted ?? 0}</StatValue>
                   <StatSub>in outreach</StatSub>
