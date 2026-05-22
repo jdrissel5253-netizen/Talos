@@ -977,7 +977,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
                 <Label>
                   Job Label
                   <TooltipIcon>?
-                    <Tooltip>Optional short identifier to distinguish postings with the same title — e.g. "Senior", "Austin", "5+ yrs"</Tooltip>
+                    <Tooltip>Optional short identifier to distinguish postings with the same title — e.g. "Senior", "Entry Level", "5+ yrs"</Tooltip>
                   </TooltipIcon>
                 </Label>
                 <Input
@@ -985,7 +985,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
                   name="job_label"
                   value={formData.job_label}
                   onChange={handleChange}
-                  placeholder="e.g. Senior, Austin, 5+ yrs (optional)"
+                  placeholder="e.g. Senior, Entry Level, 5+ yrs (optional)"
                   maxLength={100}
                 />
               </FormGroup>
