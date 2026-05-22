@@ -893,6 +893,9 @@ const TalentPoolManager: React.FC = () => {
   const [selectedCandidate, setSelectedCandidate] = useState<Candidate | null>(null);
   const [isResumeModalOpen, setIsResumeModalOpen] = useState(false);
 
+  // Scheduling link from account settings
+  const [schedulingLink, setSchedulingLink] = useState('');
+
   // Contact Modal State
   const [contactModalOpen, setContactModalOpen] = useState(false);
   const [selectedCandidateForContact, setSelectedCandidateForContact] = useState<{ pipelineId: number; name: string; position: string; } | null>(null);
@@ -935,6 +938,13 @@ const TalentPoolManager: React.FC = () => {
   const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
   const [massActionLoading, setMassActionLoading] = useState(false);
   const [massStatusDropdownOpen, setMassStatusDropdownOpen] = useState(false);
+
+  useEffect(() => {
+    fetch(`${config.apiUrl}/api/auth/me`, { headers: getAuthHeaders() })
+      .then(r => r.json())
+      .then(d => { if (d.status === 'success' && d.data.schedulingLink) setSchedulingLink(d.data.schedulingLink); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     fetchTalentPool();
@@ -1339,6 +1349,24 @@ const TalentPoolManager: React.FC = () => {
           </DropdownContent>
         </MessageDropdown>
 
+        {schedulingLink && (
+          <ActionIcon
+            color="#a78bfa"
+            onClick={() => {
+              const name = extractCandidateName(candidate.filename || 'Candidate');
+              try {
+                const url = new URL(schedulingLink);
+                url.searchParams.set('name', name);
+                window.open(url.toString(), '_blank');
+              } catch {
+                window.open(schedulingLink, '_blank');
+              }
+            }}
+            title="Schedule Interview"
+          >
+            <Calendar size={16} />
+          </ActionIcon>
+        )}
         <ActionIcon
           color="#ef4444"
           onClick={() => handleRemoveCandidate(candidate.pipeline_id)}
