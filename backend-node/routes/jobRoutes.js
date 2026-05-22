@@ -37,6 +37,38 @@ router.get('/', async (req, res) => {
 });
 
 /**
+ * GET /api/jobs/suggest-titles?title=...
+ * Return AI-generated related job titles for the given position
+ */
+router.get('/suggest-titles', async (req, res) => {
+    try {
+        const title = (req.query.title || '').trim();
+        if (!title) {
+            return res.status(400).json({ status: 'error', message: 'title query param required' });
+        }
+
+        const message = await anthropic.messages.create({
+            model: 'claude-haiku-4-5-20251001',
+            max_tokens: 200,
+            temperature: 0.3,
+            messages: [{
+                role: 'user',
+                content: `List 6-8 alternative or related job titles for someone hiring a "${title}". These are titles a qualified candidate might have on their resume — similar roles, related trades, or adjacent positions in the HVAC/mechanical services industry. Return ONLY a JSON array of strings, nothing else. Example: ["Title 1", "Title 2"]`
+            }]
+        });
+
+        const text = message.content[0].text.trim();
+        const match = text.match(/\[[\s\S]*\]/);
+        const suggestions = match ? JSON.parse(match[0]) : [];
+
+        res.json({ status: 'success', data: { suggestions } });
+    } catch (error) {
+        logger.error('Error suggesting titles', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to suggest titles' });
+    }
+});
+
+/**
  * GET /api/jobs/:id
  * Get a specific job with its candidate pipeline
  */

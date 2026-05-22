@@ -237,6 +237,38 @@ const AddButton = styled.button`
   }
 `;
 
+const SuggestionsWrap = styled.div`
+  margin-top: 0.75rem;
+`;
+
+const SuggestionsLabel = styled.p`
+  font-size: 0.8rem;
+  color: #888;
+  margin-bottom: 0.5rem;
+`;
+
+const ChipsRow = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+`;
+
+const SuggestionChip = styled.button`
+  background: #1e2a1e;
+  color: #4ade80;
+  border: 1px solid #4ade8050;
+  border-radius: 20px;
+  padding: 0.3rem 0.85rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s ease;
+
+  &:hover {
+    background: #4ade8020;
+    border-color: #4ade80;
+  }
+`;
+
 const RadioGroup = styled.div`
   display: flex;
   gap: 2rem;
@@ -682,6 +714,8 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
 
   const [newCertification, setNewCertification] = useState('');
   const [newTitle, setNewTitle] = useState('');
+  const [titleSuggestions, setTitleSuggestions] = useState<string[]>([]);
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value, type } = e.target;
@@ -693,6 +727,17 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
       if (name === 'title') {
         setFormData(prev => ({ ...prev, title: value, key_responsibilities: ['', '', ''] }));
         setRespIsOther([false, false, false]);
+        setTitleSuggestions([]);
+        if (value) {
+          setLoadingSuggestions(true);
+          fetch(`${config.apiUrl}/api/jobs/suggest-titles?title=${encodeURIComponent(value)}`, {
+            headers: getAuthHeaders()
+          })
+            .then(r => r.json())
+            .then(res => { if (res.status === 'success') setTitleSuggestions(res.data.suggestions); })
+            .catch(() => {})
+            .finally(() => setLoadingSuggestions(false));
+        }
       }
     }
   };
@@ -1266,6 +1311,33 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
                   <AddButton type="button" onClick={addTitle}>Add</AddButton>
                 </ArrayItemRow>
               </ArrayInputContainer>
+              {(loadingSuggestions || titleSuggestions.length > 0) && (
+                <SuggestionsWrap>
+                  <SuggestionsLabel>
+                    {loadingSuggestions ? 'Fetching suggestions…' : 'Suggested titles — click to add:'}
+                  </SuggestionsLabel>
+                  {!loadingSuggestions && (
+                    <ChipsRow>
+                      {titleSuggestions
+                        .filter(s => !formData.other_relevant_titles.includes(s))
+                        .map(suggestion => (
+                          <SuggestionChip
+                            key={suggestion}
+                            type="button"
+                            onClick={() => {
+                              setFormData(prev => ({
+                                ...prev,
+                                other_relevant_titles: [...prev.other_relevant_titles, suggestion]
+                              }));
+                            }}
+                          >
+                            + {suggestion}
+                          </SuggestionChip>
+                        ))}
+                    </ChipsRow>
+                  )}
+                </SuggestionsWrap>
+              )}
             </FormGroup>
 
             <FormGroup>
