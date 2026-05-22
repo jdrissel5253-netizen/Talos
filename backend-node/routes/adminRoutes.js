@@ -142,6 +142,11 @@ router.post('/reanalyze-zero-scores', async (req, res) => {
         return res.json({ status: 'success', message: 'No zero-score candidates found.', results: [] });
     }
 
+    // Respond immediately so the load balancer doesn't time out — processing continues in background
+    res.json({ status: 'started', message: `Re-analyzing ${candidates.length} candidates in the background. Check server logs for results.`, total: candidates.length });
+
+    // Process asynchronously after response is sent
+
     logger.info('Admin reanalyze-zero-scores started', { count: candidates.length });
 
     const results = [];
@@ -235,8 +240,7 @@ router.post('/reanalyze-zero-scores', async (req, res) => {
     const failed = results.filter(r => r.status === 'failed').length;
     const skipped = results.filter(r => r.status === 'skipped').length;
 
-    logger.info('Admin reanalyze-zero-scores complete', { succeeded, failed, skipped });
-    res.json({ status: 'success', summary: { total: candidates.length, succeeded, failed, skipped }, results });
+    logger.info('Admin reanalyze-zero-scores complete', { succeeded, failed, skipped, results });
 });
 
 module.exports = router;
