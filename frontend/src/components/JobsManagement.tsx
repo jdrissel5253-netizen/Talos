@@ -778,6 +778,7 @@ const JobsManagement: React.FC = () => {
     const [loadingCandidates, setLoadingCandidates] = useState(false);
     const [resumeModal, setResumeModal] = useState<{ candidateId: number; filename: string } | null>(null);
     const [viewMode, setViewMode] = useState<'cards' | 'compact'>('cards');
+    const [schedulingLink, setSchedulingLink] = useState('');
 
     const navigate = useNavigate();
     const { jobId } = useParams<{ jobId: string }>();
@@ -786,6 +787,17 @@ const JobsManagement: React.FC = () => {
     useEffect(() => {
         if (searchParams.get('new') === 'true') setShowAddJobForm(true);
     }, []);
+
+    const openSchedulingLink = (candidateName: string) => {
+        if (!schedulingLink) return;
+        try {
+            const url = new URL(schedulingLink);
+            url.searchParams.set('name', candidateName);
+            window.open(url.toString(), '_blank');
+        } catch {
+            window.open(schedulingLink, '_blank');
+        }
+    };
 
     const copyApplyLink = (job: Job) => {
         const baseUrl = window.location.origin;
@@ -799,6 +811,10 @@ const JobsManagement: React.FC = () => {
     // Load jobs on mount
     useEffect(() => {
         loadJobs();
+        fetch(`${config.apiUrl}/api/auth/me`, { headers: getAuthHeaders() })
+            .then(r => r.json())
+            .then(d => { if (d.status === 'success') setSchedulingLink(d.data.schedulingLink || ''); })
+            .catch(() => {});
     }, []);
 
     // Sync selectedJob when URL param changes (e.g. browser back/forward)
@@ -1060,6 +1076,11 @@ const JobsManagement: React.FC = () => {
             <ActionIcon color="#4ade80" onClick={() => handleCandidateAction(candidate.id, 'approved')} title="Approve">
                 <Check size={13} />
             </ActionIcon>
+            {schedulingLink && (
+                <ActionIcon color="#a78bfa" onClick={() => openSchedulingLink(candidate.filename?.replace('.pdf', '') || '')} title="Schedule Interview">
+                    <Calendar size={13} />
+                </ActionIcon>
+            )}
             <ActionIcon color="#ef4444" onClick={() => handleCandidateAction(candidate.id, 'rejected')} title="Reject">
                 <X size={13} />
             </ActionIcon>
@@ -1125,6 +1146,11 @@ const JobsManagement: React.FC = () => {
                         </DropdownItem>
                     </DropdownContent>
                 </MessageDropdown>
+                {schedulingLink && (
+                    <ActionIcon color="#a78bfa" onClick={() => openSchedulingLink(candidate.filename?.replace('.pdf', '') || '')} title="Schedule Interview">
+                        <Calendar size={14} />
+                    </ActionIcon>
+                )}
                 <ActionIcon color="#fbbf24" onClick={() => handleCandidateAction(candidate.id, 'backup')} title="Move to Backup">
                     <ThumbsUp size={14} />
                 </ActionIcon>

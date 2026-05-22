@@ -313,6 +313,7 @@ const AccountSettings: React.FC = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState('');
   const [companyName, setCompanyName] = useState('');
+  const [schedulingLink, setSchedulingLink] = useState('');
   const [createdAt, setCreatedAt] = useState('');
   const [profileMsg, setProfileMsg] = useState<{ text: string; error: boolean } | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
@@ -330,6 +331,7 @@ const AccountSettings: React.FC = () => {
         if (data.status === 'success') {
           setEmail(data.data.email);
           setCompanyName(data.data.companyName || '');
+          setSchedulingLink(data.data.schedulingLink || '');
           setCreatedAt(data.data.createdAt || '');
         }
       })
@@ -344,7 +346,7 @@ const AccountSettings: React.FC = () => {
       const res = await fetch(`${config.apiUrl}/api/auth/profile`, {
         method: 'PUT',
         headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ companyName }),
+        body: JSON.stringify({ companyName, schedulingLink }),
       });
       const data = await res.json();
       setProfileMsg({ text: data.status === 'success' ? 'Company name updated.' : (data.message || 'Update failed.'), error: data.status !== 'success' });
@@ -439,6 +441,14 @@ const AccountSettings: React.FC = () => {
               value={companyName}
               onChange={e => setCompanyName(e.target.value)}
               placeholder="Your company name"
+            />
+            <Label htmlFor="scheduling-link">Scheduling link</Label>
+            <Input
+              id="scheduling-link"
+              type="url"
+              value={schedulingLink}
+              onChange={e => setSchedulingLink(e.target.value)}
+              placeholder="https://calendly.com/your-link"
             />
             <Button type="submit" disabled={profileLoading}>
               {profileLoading ? 'Saving...' : 'Save changes'}

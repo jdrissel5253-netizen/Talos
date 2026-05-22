@@ -171,10 +171,10 @@ const userService = {
         );
     },
 
-    async updateProfile(userId, { companyName }) {
+    async updateProfile(userId, { companyName, schedulingLink }) {
         const result = await db.query(
-            'UPDATE users SET company_name = $1 WHERE id = $2 RETURNING id, email, company_name, role',
-            [companyName, userId]
+            'UPDATE users SET company_name = $1, scheduling_link = $2 WHERE id = $3 RETURNING id, email, company_name, scheduling_link, role',
+            [companyName, schedulingLink ?? null, userId]
         );
         return result.rows[0];
     },

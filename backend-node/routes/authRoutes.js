@@ -256,7 +256,7 @@ router.get('/me', authenticateToken, async (req, res) => {
     try {
         const user = await userService.findById(req.user.userId);
         if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
-        res.json({ status: 'success', data: { id: user.id, email: user.email, companyName: user.company_name, role: user.role, createdAt: user.created_at } });
+        res.json({ status: 'success', data: { id: user.id, email: user.email, companyName: user.company_name, role: user.role, createdAt: user.created_at, schedulingLink: user.scheduling_link || '' } });
     } catch (error) {
         logger.error('Get profile error', { error: error.message });
         res.status(500).json({ status: 'error', message: 'Failed to load profile' });
@@ -269,8 +269,9 @@ router.get('/me', authenticateToken, async (req, res) => {
 router.put('/profile', authenticateToken, async (req, res) => {
     try {
         const companyName = sanitize.trimString(req.body.companyName, 255);
-        const user = await userService.updateProfile(req.user.userId, { companyName });
-        res.json({ status: 'success', data: { companyName: user.company_name } });
+        const schedulingLink = sanitize.trimString(req.body.schedulingLink, 500);
+        const user = await userService.updateProfile(req.user.userId, { companyName, schedulingLink });
+        res.json({ status: 'success', data: { companyName: user.company_name, schedulingLink: user.scheduling_link || '' } });
     } catch (error) {
         logger.error('Update profile error', { error: error.message });
         res.status(500).json({ status: 'error', message: 'Failed to update profile' });

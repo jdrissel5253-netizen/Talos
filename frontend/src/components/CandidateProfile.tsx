@@ -458,6 +458,14 @@ const CandidateProfile: React.FC = () => {
   const [resumeOpen, setResumeOpen] = useState(false);
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [contactModal, setContactModal] = useState<{ mode: 'contact' | 'rejection'; commType: 'email' | 'sms' } | null>(null);
+  const [schedulingLink, setSchedulingLink] = useState('');
+
+  useEffect(() => {
+    fetch(`${appConfig.apiUrl}/api/auth/me`, { headers: getAuthHeaders() })
+      .then(r => r.json())
+      .then(d => { if (d.status === 'success') setSchedulingLink(d.data.schedulingLink || ''); })
+      .catch(() => {});
+  }, []);
 
   useEffect(() => {
     const headers = { ...getAuthHeaders(), 'Content-Type': 'application/json' };
@@ -523,6 +531,19 @@ const CandidateProfile: React.FC = () => {
                 <ActionBtn onClick={() => setContactModal({ mode: 'contact', commType: 'sms' })}>
                   <Smartphone size={13} /> SMS
                 </ActionBtn>
+                {schedulingLink && (
+                  <ActionBtn onClick={() => {
+                    try {
+                      const url = new URL(schedulingLink);
+                      url.searchParams.set('name', displayName);
+                      window.open(url.toString(), '_blank');
+                    } catch {
+                      window.open(schedulingLink, '_blank');
+                    }
+                  }} style={{ borderColor: 'rgba(167,139,250,0.3)', color: '#a78bfa' }}>
+                    <Calendar size={13} /> Schedule Interview
+                  </ActionBtn>
+                )}
                 <ActionBtn onClick={() => setContactModal({ mode: 'rejection', commType: 'email' })}
                   style={{ borderColor: 'rgba(239,68,68,0.3)', color: '#f87171' }}>
                   <XCircle size={13} /> Reject
