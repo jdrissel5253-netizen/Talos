@@ -17,15 +17,10 @@ const upload = multer({
     storage: multer.memoryStorage(),
     limits: { fileSize: 5 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
-        const allowedTypes = [
-            'application/pdf',
-            'application/msword',
-            'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-        ];
-        if (allowedTypes.includes(file.mimetype)) {
+        if (file.mimetype === 'application/pdf') {
             cb(null, true);
         } else {
-            cb(new Error('Invalid file type. Please upload a PDF or Word document.'));
+            cb(new Error('Invalid file type. Please upload a PDF file.'));
         }
     }
 });
@@ -193,30 +188,10 @@ async function processResumeInBackground(candidate, s3KeyOrPath, name, email, ph
                     overallScore: analysisResult.overallScore || 0,
                     scoreOutOf10: Math.round((analysisResult.overallScore || 0) / 10),
                     summary: fullSummary,
-                    technicalSkills: {
-                        score: analysisResult.scores?.technicalSkills || 0,
-                        found: analysisResult.skillsFound || [],
-                        missing: [],
-                        feedback: ''
-                    },
-                    certifications: {
-                        score: analysisResult.scores?.certifications || 0,
-                        found: analysisResult.certificationsFound || [],
-                        recommended: [],
-                        feedback: ''
-                    },
-                    experience: {
-                        score: analysisResult.scores?.experience || 0,
-                        yearsOfExperience: analysisResult.yearsOfExperience || 0,
-                        relevantExperience: [],
-                        feedback: ''
-                    },
-                    presentationQuality: {
-                        score: analysisResult.scores?.presentation || 0,
-                        strengths: [],
-                        improvements: [],
-                        feedback: ''
-                    },
+                    technicalSkills: analysisResult.technicalSkills || { score: 0, found: [], missing: [], feedback: '' },
+                    certifications: analysisResult.certifications || { score: 0, found: [], recommended: [], feedback: '' },
+                    experience: analysisResult.experience || { score: 0, yearsOfExperience: 0, relevantExperience: [], feedback: '' },
+                    presentationQuality: analysisResult.presentationQuality || { score: 0, strengths: [], improvements: [], feedback: '' },
                     strengths: analysisResult.strengths || [],
                     weaknesses: analysisResult.weaknesses || [],
                     recommendations: analysisResult.recommendations || [],

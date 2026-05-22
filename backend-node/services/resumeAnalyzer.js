@@ -4943,7 +4943,7 @@ Provide thorough, honest, and actionable feedback specifically tailored to the $
       // Call Claude API with retry on transient failures
       const message = await retryWithBackoff(() =>
          anthropic.messages.create({
-            model: "claude-sonnet-4-5-20250929",  // Using Claude Sonnet 4.5
+            model: "claude-sonnet-4-6",
             max_tokens: 4096,
             temperature: 0,  // Set to 0 for deterministic, consistent grading
             messages: [{

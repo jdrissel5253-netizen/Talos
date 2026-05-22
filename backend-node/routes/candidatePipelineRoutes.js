@@ -556,7 +556,7 @@ Requirements:
 Generate the SMS text:`;
 
         const message = await anthropic.messages.create({
-            model: "claude-3-haiku-20240307",
+            model: "claude-haiku-4-5-20251001",
             max_tokens: 150,
             temperature: 0.5,
             messages: [{
@@ -595,7 +595,7 @@ Requirements:
 Generate the complete email:`;
 
         const message = await anthropic.messages.create({
-            model: "claude-3-haiku-20240307",
+            model: "claude-haiku-4-5-20251001",
             max_tokens: 500,
             temperature: 0.5,
             messages: [{
@@ -642,7 +642,7 @@ Requirements:
 Generate the email:`;
 
         const message = await anthropic.messages.create({
-            model: "claude-3-haiku-20240307",
+            model: "claude-haiku-4-5-20251001",
             max_tokens: 400,
             temperature: 0.5,
             messages: [{

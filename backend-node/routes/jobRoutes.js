@@ -430,7 +430,7 @@ Generate a 3-sentence summary following this format:
 Keep it professional, concise, and actionable.`;
 
         const message = await anthropic.messages.create({
-            model: "claude-3-haiku-20240307",
+            model: "claude-haiku-4-5-20251001",
             max_tokens: 300,
             temperature: 0.3,
             messages: [{
@@ -518,7 +518,7 @@ CRITICAL RULES:
 
 
         const message = await anthropic.messages.create({
-            model: "claude-sonnet-4-5-20250929",  // Using Claude Sonnet 4.5
+            model: "claude-sonnet-4-6",
             max_tokens: 2000,
             temperature: 0.7,
             messages: [{
