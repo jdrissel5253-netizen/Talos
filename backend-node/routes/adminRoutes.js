@@ -148,7 +148,8 @@ router.post('/reanalyze-zero-scores', async (req, res) => {
 
     for (const row of candidates) {
         const ext = path.extname(row.file_path || row.filename || '').toLowerCase();
-        if (ext && ext !== '.pdf') {
+        const supported = ['.pdf', '.docx', '.doc'];
+        if (ext && !supported.includes(ext)) {
             results.push({ candidateId: row.candidate_id, status: 'skipped', reason: `${ext} not supported` });
             continue;
         }
