@@ -31,11 +31,20 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
   const [interviewType, setInterviewType] = useState<'video' | 'phone' | 'in-person'>('video');
   const [tone, setTone] = useState<'conversational' | 'friendly' | 'professional'>('friendly');
   const [isNudge, setIsNudge] = useState(false);
-  const [schedulingLink, setSchedulingLink] = useState(config.defaultSchedulingLink || '[link]');
+  const [schedulingLink, setSchedulingLink] = useState(config.defaultSchedulingLink || '');
   const [silentRejection, setSilentRejection] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load scheduling link from account settings when modal opens
+  useEffect(() => {
+    if (!isOpen) return;
+    fetch(`${config.apiUrl}/api/auth/me`, { headers: getAuthHeaders() })
+      .then(r => r.json())
+      .then(d => { if (d.status === 'success' && d.data.schedulingLink) setSchedulingLink(d.data.schedulingLink); })
+      .catch(() => {});
+  }, [isOpen]);
 
   // Escape key to close & auto-focus
   useEffect(() => {
