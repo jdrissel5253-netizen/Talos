@@ -924,7 +924,7 @@ const ClientDashboard: React.FC = () => {
                     </CardHeader>
                     <AttentionBody>
                       {needsAttention.map(job => (
-                        <AttentionRow key={job.id} onClick={() => navigate('/jobs-management')}>
+                        <AttentionRow key={job.id} onClick={() => navigate(`/jobs-management/${job.id}`)}>
                           <AttentionDot />
                           <AttentionTitle>{job.title}</AttentionTitle>
                           {job.city && <AttentionCity>{job.city}</AttentionCity>}
@@ -990,7 +990,7 @@ const ClientDashboard: React.FC = () => {
                       {activeJobs.map(job => {
                         const jobCandidates = candidatesByJob[job.id] ?? [];
                         return (
-                          <JobTile key={job.id} onClick={() => navigate('/jobs-management')}>
+                          <JobTile key={job.id} onClick={() => navigate(`/jobs-management/${job.id}`)}>
                             <JobTileTitle>
                               {job.title}
                               {job.new_candidate_count > 0 && (
