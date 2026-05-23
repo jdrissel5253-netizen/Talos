@@ -547,7 +547,10 @@ const CandidateItem = styled.div`
   gap: 0.75rem;
   padding: 0.9rem 1.5rem;
   border-bottom: 1px solid #1e2330;
+  cursor: pointer;
+  transition: background 0.15s ease;
 
+  &:hover { background: #1e2330; }
   &:last-child { border-bottom: none; }
 `;
 
@@ -1055,7 +1058,7 @@ const ClientDashboard: React.FC = () => {
                   ) : (
                     <CandidatesBody>
                       {topCandidates.map(c => (
-                        <CandidateItem key={c.pipeline_id}>
+                        <CandidateItem key={c.pipeline_id} onClick={() => navigate(`/candidates/${c.pipeline_id}`)}>
                           <TierChip tier={c.tier}>{c.tier.toUpperCase()}</TierChip>
                           <CandidateNameText>{friendlyName(c.filename)}</CandidateNameText>
                           <CandidateJobText>{c.job_title}</CandidateJobText>
