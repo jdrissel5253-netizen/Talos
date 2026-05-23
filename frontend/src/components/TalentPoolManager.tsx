@@ -966,7 +966,10 @@ const TalentPoolManager: React.FC = () => {
     if (searchParams.get('gmail_connected')) {
       checkGmailConnection();
       navigate('/talent-pool', { replace: true });
+      return;
     }
+    if (searchParams.get('tier')) setTierFilter(searchParams.get('tier') || '');
+    if (searchParams.get('status')) setStatusFilter(searchParams.get('status') || '');
   }, [searchParams]);
 
   const checkGmailConnection = async () => {

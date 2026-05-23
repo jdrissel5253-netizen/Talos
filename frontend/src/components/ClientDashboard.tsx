@@ -169,7 +169,7 @@ const StatTile = styled.div<{ accent?: string }>`
   gap: 0.5rem;
   border-right: 1px solid #232830;
   border-bottom: 1px solid #232830;
-  cursor: default;
+  cursor: pointer;
   transition: background 0.15s ease;
 
   &:hover { background: #1e2330; }
@@ -837,27 +837,27 @@ const ClientDashboard: React.FC = () => {
             <>
               {/* ── Stats ── */}
               <StatsRow>
-                <StatTile>
+                <StatTile onClick={() => navigate('/jobs-management')}>
                   <StatLabel>Active Jobs</StatLabel>
                   <StatValue accent="#4ade80">{activeJobs.length}</StatValue>
                   <StatSub>open positions</StatSub>
                 </StatTile>
-                <StatTile>
+                <StatTile onClick={() => navigate('/talent-pool-manager')}>
                   <StatLabel>Total Candidates</StatLabel>
                   <StatValue>{stats?.total ?? 0}</StatValue>
                   <StatSub>in pipeline</StatSub>
                 </StatTile>
-                <StatTile>
+                <StatTile onClick={() => navigate('/talent-pool-manager?tier=green')}>
                   <StatLabel>Green Tier</StatLabel>
                   <StatValue accent="#4ade80">{stats?.tierDistribution.green ?? 0}</StatValue>
                   <StatSub>top-ranked</StatSub>
                 </StatTile>
-                <StatTile>
+                <StatTile onClick={() => navigate('/talent-pool-manager?status=new')}>
                   <StatLabel>Pending Review</StatLabel>
                   <StatValue accent="#f59e0b">{stats?.statusBreakdown.new ?? 0}</StatValue>
                   <StatSub>awaiting action</StatSub>
                 </StatTile>
-                <StatTile>
+                <StatTile onClick={() => navigate('/talent-pool-manager?status=contacted')}>
                   <StatLabel>Contacted</StatLabel>
                   <StatValue accent="#34d399">{stats?.statusBreakdown.contacted ?? 0}</StatValue>
                   <StatSub>in outreach</StatSub>
