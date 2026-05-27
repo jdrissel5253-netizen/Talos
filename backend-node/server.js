@@ -68,6 +68,10 @@ const USE_POSTGRES = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV
             await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_expires TIMESTAMPTZ`);
             await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS scheduling_link VARCHAR(500)`);
             await db.query(`ALTER TABLE jobs ADD COLUMN IF NOT EXISTS job_label VARCHAR(100)`);
+            await db.query(`ALTER TABLE jobs ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL`);
+            await db.query(`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS applicant_email VARCHAR(255)`);
+            await db.query(`CREATE INDEX IF NOT EXISTS idx_candidates_applicant_email ON candidates(applicant_email)`);
+            await db.query(`ALTER TABLE candidate_pipeline ADD COLUMN IF NOT EXISTS internal_notes TEXT`);
             await db.query(`
                 CREATE TABLE IF NOT EXISTS demo_requests (
                     id SERIAL PRIMARY KEY,
