@@ -58,6 +58,11 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
     return () => document.removeEventListener('keydown', handleKeyDown);
   }, [isOpen, onClose]);
 
+  // Auto-populate recipient email from candidate data
+  useEffect(() => {
+    if (candidate.email) setRecipientEmail(candidate.email);
+  }, [candidate.email]);
+
   // Update mode when initialMode changes
   useEffect(() => {
     setMode(initialMode);

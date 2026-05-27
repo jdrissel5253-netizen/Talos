@@ -250,7 +250,7 @@ interface Candidate {
   tier_score: number;
   filename: string;
   file_path: string;
-  email?: string;
+  applicant_email?: string;
   contacted_via: string | null;
   contacted_at: string | null;
   summary: string;
@@ -359,7 +359,7 @@ const CandidateListScreen: React.FC = () => {
           pipelineId: candidate.pipeline_id,
           name: extractCandidateName(candidate.filename),
           position: position!,
-          email: candidate.email
+          email: candidate.applicant_email
         }
       });
     }
@@ -380,7 +380,7 @@ const CandidateListScreen: React.FC = () => {
           pipelineId: candidate.pipeline_id,
           name: extractCandidateName(candidate.filename),
           position: position!,
-          email: candidate.email
+          email: candidate.applicant_email
         }
       });
     }
@@ -397,7 +397,7 @@ const CandidateListScreen: React.FC = () => {
           pipelineId: candidate.pipeline_id,
           name: extractCandidateName(candidate.filename),
           position: position!,
-          email: candidate.email
+          email: candidate.applicant_email
         }
       });
     }
