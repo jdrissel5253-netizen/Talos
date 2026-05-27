@@ -26,12 +26,19 @@ pool.on('error', (err) => {
     // Don't crash the app on DB errors
 });
 
+// Convert SQLite-style ? placeholders to PostgreSQL $1, $2, ... placeholders
+const convertPlaceholders = (text) => {
+    let i = 0;
+    return text.replace(/\?/g, () => `$${++i}`);
+};
+
 // Query helper function
 const isProduction = process.env.NODE_ENV === 'production';
 const query = async (text, params) => {
     const start = Date.now();
     try {
-        const res = await pool.query(text, params);
+        const pgText = convertPlaceholders(text);
+        const res = await pool.query(pgText, params);
         const duration = Date.now() - start;
         if (isProduction) {
             if (duration > 1000) {

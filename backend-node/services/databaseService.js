@@ -714,7 +714,7 @@ const candidatePipelineService = {
 
     async findByJobId(jobId, filters = {}) {
         let query = `
-            SELECT cp.*, c.filename, a.overall_score, a.score_out_of_10,
+            SELECT cp.*, c.filename, c.email, a.overall_score, a.score_out_of_10,
                    a.years_of_experience, a.certifications_found, a.hiring_recommendation
             FROM candidate_pipeline cp
             JOIN candidates c ON cp.candidate_id = c.id

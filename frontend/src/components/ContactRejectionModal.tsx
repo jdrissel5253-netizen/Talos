@@ -11,6 +11,7 @@ interface ContactRejectionModalProps {
     pipelineId: number;
     name: string;
     position: string;
+    email?: string;
   };
   initialMode: 'contact' | 'rejection';
   initialCommunicationType?: 'email' | 'sms';
@@ -141,6 +142,11 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
       if (!response.ok) {
         const data = await response.json();
         throw new Error(data.message || 'Failed to send message');
+      }
+
+      if (communicationType === 'email' && candidate.email) {
+        const mailtoUrl = `mailto:${encodeURIComponent(candidate.email)}?subject=${encodeURIComponent(renderedMessage.subject || '')}&body=${encodeURIComponent(renderedMessage.body)}`;
+        window.open(mailtoUrl, '_blank');
       }
 
       onSuccess();
@@ -317,6 +323,9 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
           {/* Candidate Info */}
           <CandidateInfo>
             <strong>Candidate:</strong> {candidate.name} | <strong>Position:</strong> {candidate.position}
+            {candidate.email && (
+              <> | <strong>To:</strong> {candidate.email}</>
+            )}
           </CandidateInfo>
         </ModalBody>
 

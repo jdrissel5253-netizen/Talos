@@ -250,6 +250,7 @@ interface Candidate {
   tier_score: number;
   filename: string;
   file_path: string;
+  email?: string;
   contacted_via: string | null;
   contacted_at: string | null;
   summary: string;
@@ -275,7 +276,7 @@ const CandidateListScreen: React.FC = () => {
     isOpen: boolean;
     mode: 'contact' | 'rejection';
     communicationType?: 'email' | 'sms';
-    candidate?: { pipelineId: number; name: string; position: string };
+    candidate?: { pipelineId: number; name: string; position: string; email?: string };
   }>({ isOpen: false, mode: 'contact' });
 
   useEffect(() => {
@@ -357,7 +358,8 @@ const CandidateListScreen: React.FC = () => {
         candidate: {
           pipelineId: candidate.pipeline_id,
           name: extractCandidateName(candidate.filename),
-          position: position!
+          position: position!,
+          email: candidate.email
         }
       });
     }
@@ -377,7 +379,8 @@ const CandidateListScreen: React.FC = () => {
         candidate: {
           pipelineId: candidate.pipeline_id,
           name: extractCandidateName(candidate.filename),
-          position: position!
+          position: position!,
+          email: candidate.email
         }
       });
     }
@@ -393,7 +396,8 @@ const CandidateListScreen: React.FC = () => {
         candidate: {
           pipelineId: candidate.pipeline_id,
           name: extractCandidateName(candidate.filename),
-          position: position!
+          position: position!,
+          email: candidate.email
         }
       });
     }
