@@ -569,6 +569,7 @@ const CandidateProfile: React.FC = () => {
                   pipelineId: profile.pipeline_id,
                   name: displayName,
                   position: profile.job_title,
+                  email: profile.applicant_email ?? undefined,
                 }}
                 initialMode={contactModal?.mode ?? 'contact'}
                 initialCommunicationType={contactModal?.commType ?? 'email'}
