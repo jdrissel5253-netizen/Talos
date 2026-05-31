@@ -261,6 +261,14 @@ const candidateService = {
     async findById(id) {
         const result = await db.query('SELECT * FROM candidates WHERE id = $1', [id]);
         return result.rows[0];
+    },
+
+    async updateEmailIfMissing(id, email) {
+        if (!email) return;
+        await db.query(
+            'UPDATE candidates SET applicant_email = $1 WHERE id = $2 AND applicant_email IS NULL',
+            [email, id]
+        );
     }
 };
 

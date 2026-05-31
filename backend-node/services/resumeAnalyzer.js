@@ -3502,6 +3502,10 @@ async function analyzeResume(filePath, position = 'HVAC Technician', requiredYea
          throw new Error('Unsupported file type. Please upload a PDF or Word document (.docx).');
       }
 
+      // Extract email address from resume text before sending to Claude
+      const emailMatch = resumeText.match(/\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b/);
+      const extractedEmail = emailMatch ? emailMatch[0].toLowerCase() : null;
+
       const jobLocationLine = jobLocation ? `Job Location: ${jobLocation}\n\n` : '';
 
       // Check if we're using the tiered framework for HVAC Service Technician, Lead HVAC Technician, Dispatcher, Administrative Assistant, Customer Service Rep, Apprentice, Bookkeeper, Warehouse Associate, or Sales Rep
@@ -4984,6 +4988,7 @@ Provide thorough, honest, and actionable feedback specifically tailored to the $
 
       // Convert overallScore (0-100) to scoreOutOf10
       analysis.scoreOutOf10 = Math.round(analysis.overallScore / 10);
+      analysis.extractedEmail = extractedEmail;
 
       // Clean up the uploaded file after analysis
       await fs.unlink(filePath).catch(err => logger.error('Error deleting file', { error: err.message }));
