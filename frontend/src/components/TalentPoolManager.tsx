@@ -39,6 +39,7 @@ interface Candidate {
   job_location: string;
   jobs_applied: number;
   internal_notes: string | null;
+  applicant_email?: string;
 }
 
 interface ApplicationEntry {
@@ -899,7 +900,7 @@ const TalentPoolManager: React.FC = () => {
 
   // Contact Modal State
   const [contactModalOpen, setContactModalOpen] = useState(false);
-  const [selectedCandidateForContact, setSelectedCandidateForContact] = useState<{ pipelineId: number; name: string; position: string; } | null>(null);
+  const [selectedCandidateForContact, setSelectedCandidateForContact] = useState<{ pipelineId: number; name: string; position: string; email?: string; } | null>(null);
   const [contactMode, setContactMode] = useState<'contact' | 'rejection'>('contact');
   const [contactCommunicationType, setContactCommunicationType] = useState<'email' | 'sms'>('email');
   const [messageDropdownOpen, setMessageDropdownOpen] = useState<number | null>(null);
@@ -1102,7 +1103,8 @@ const TalentPoolManager: React.FC = () => {
     setSelectedCandidateForContact({
       pipelineId: candidatePipelineId,
       name: candidateName,
-      position: candidate.job_title || candidate.position_type || 'Position'
+      position: candidate.job_title || candidate.position_type || 'Position',
+      email: candidate.applicant_email
     });
 
     if (messageType === 'rejection_email') {
