@@ -342,10 +342,33 @@ const ContactValue = styled.span`
   font-weight: 500;
 `;
 
-const EmailEditRow = styled.div`
+const HeroContactSection = styled.div`
+  border-top: 1px solid #1e2330;
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+`;
+
+const HeroContactLabel = styled.span`
+  font-size: 0.6rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #6e7d8e;
+`;
+
+const HeroContactValue = styled.span`
+  font-size: 0.85rem;
+  color: #c8d0dc;
+  font-weight: 500;
+`;
+
+const HeroContactRow = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.4rem;
+  gap: 0.5rem;
 `;
 
 const EmailInput = styled.input`
@@ -353,10 +376,10 @@ const EmailInput = styled.input`
   border: 1px solid #2a3040;
   color: #c8d0dc;
   font-family: 'Sora', sans-serif;
-  font-size: 0.82rem;
+  font-size: 0.85rem;
   padding: 0.3rem 0.6rem;
   outline: none;
-  width: 200px;
+  width: 220px;
   &:focus { border-color: #4ade80; }
 `;
 
@@ -367,7 +390,7 @@ const IconBtn = styled.button`
   border: none;
   cursor: pointer;
   padding: 0.2rem;
-  color: #6e7d8e;
+  color: #3a4555;
   transition: color 0.15s;
   &:hover { color: #4ade80; }
 `;
@@ -657,34 +680,36 @@ const CandidateProfile: React.FC = () => {
                       </StatusBadge>
                     )}
                   </MetaRow>
-                  {emailEditing ? (
-                    <EmailEditRow>
-                      <EmailInput
-                        autoFocus
-                        type="email"
-                        value={emailDraft}
-                        onChange={e => setEmailDraft(e.target.value)}
-                        onKeyDown={e => { if (e.key === 'Enter') handleEmailSave(); if (e.key === 'Escape') setEmailEditing(false); }}
-                        placeholder="email@example.com"
-                      />
-                      <IconBtn onClick={handleEmailSave} disabled={emailSaving} title="Save">
-                        <Check size={14} color="#4ade80" />
-                      </IconBtn>
-                      <IconBtn onClick={() => setEmailEditing(false)} title="Cancel">
-                        <X size={14} color="#f87171" />
-                      </IconBtn>
-                    </EmailEditRow>
-                  ) : (
-                    <EmailEditRow>
-                      <MetaItem>
-                        <Mail size={11} />
-                        {profile.applicant_email || <span style={{ color: '#4a5568', fontStyle: 'italic' }}>Add email</span>}
-                      </MetaItem>
-                      <IconBtn onClick={() => { setEmailDraft(profile.applicant_email || ''); setEmailEditing(true); }} title="Edit email">
-                        <Pencil size={11} />
-                      </IconBtn>
-                    </EmailEditRow>
-                  )}
+                  <HeroContactSection>
+                    <HeroContactLabel>Email</HeroContactLabel>
+                    {emailEditing ? (
+                      <HeroContactRow>
+                        <EmailInput
+                          autoFocus
+                          type="email"
+                          value={emailDraft}
+                          onChange={e => setEmailDraft(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') handleEmailSave(); if (e.key === 'Escape') setEmailEditing(false); }}
+                          placeholder="email@example.com"
+                        />
+                        <IconBtn onClick={handleEmailSave} disabled={emailSaving} title="Save">
+                          <Check size={14} color="#4ade80" />
+                        </IconBtn>
+                        <IconBtn onClick={() => setEmailEditing(false)} title="Cancel">
+                          <X size={14} color="#f87171" />
+                        </IconBtn>
+                      </HeroContactRow>
+                    ) : (
+                      <HeroContactRow>
+                        <HeroContactValue>
+                          {profile.applicant_email || <span style={{ color: '#3a4555', fontStyle: 'italic' }}>Add email</span>}
+                        </HeroContactValue>
+                        <IconBtn onClick={() => { setEmailDraft(profile.applicant_email || ''); setEmailEditing(true); }} title="Edit email">
+                          <Pencil size={11} />
+                        </IconBtn>
+                      </HeroContactRow>
+                    )}
+                  </HeroContactSection>
                 </HeroLeft>
 
                 <HeroRight>
