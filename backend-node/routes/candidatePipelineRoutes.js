@@ -148,6 +148,33 @@ router.put('/:id/notes', async (req, res) => {
 });
 
 /**
+ * PUT /api/pipeline/:id/email
+ * Update the applicant email for the candidate linked to this pipeline entry
+ */
+router.put('/:id/email', async (req, res) => {
+    try {
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+
+        await assertPipelineOwner(pipelineId, req.user);
+
+        const email = sanitize.email(req.body.email) || null;
+
+        await db.query(
+            `UPDATE candidates SET applicant_email = $1
+             WHERE id = (SELECT candidate_id FROM candidate_pipeline WHERE id = $2)`,
+            [email, pipelineId]
+        );
+
+        res.json({ status: 'success', data: { email } });
+    } catch (error) {
+        logger.error('Error updating candidate email', { error: error.message });
+        const code = error.statusCode || 500;
+        res.status(code).json({ status: 'error', message: code === 500 ? 'Failed to update email' : error.message });
+    }
+});
+
+/**
  * PUT /api/pipeline/:id/status
  * Update pipeline status for a candidate
  */

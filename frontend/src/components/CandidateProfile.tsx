@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import { ArrowLeft, User, Briefcase, Star, Shield, AlertTriangle, Award, Phone, Mail, MapPin, Calendar, Clock, FileText, Smartphone, XCircle } from 'lucide-react';
+import { ArrowLeft, User, Briefcase, Star, Shield, AlertTriangle, Award, Phone, Mail, MapPin, Calendar, Clock, FileText, Smartphone, XCircle, Pencil, Check, X } from 'lucide-react';
 import { getAuthHeaders } from '../utils/auth';
 import { config as appConfig } from '../config';
 import ResumeFileModal from './ResumeFileModal';
@@ -342,6 +342,36 @@ const ContactValue = styled.span`
   font-weight: 500;
 `;
 
+const EmailEditRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+`;
+
+const EmailInput = styled.input`
+  background: #111318;
+  border: 1px solid #2a3040;
+  color: #c8d0dc;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.82rem;
+  padding: 0.3rem 0.6rem;
+  outline: none;
+  width: 200px;
+  &:focus { border-color: #4ade80; }
+`;
+
+const IconBtn = styled.button`
+  display: flex;
+  align-items: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0.2rem;
+  color: #6e7d8e;
+  transition: color 0.15s;
+  &:hover { color: #4ade80; }
+`;
+
 // ─── action bar ───────────────────────────────────────────────────────────────
 
 const ActionBar = styled.div`
@@ -459,6 +489,9 @@ const CandidateProfile: React.FC = () => {
   const [statusUpdating, setStatusUpdating] = useState(false);
   const [contactModal, setContactModal] = useState<{ mode: 'contact' | 'rejection'; commType: 'email' | 'sms' } | null>(null);
   const [schedulingLink, setSchedulingLink] = useState('');
+  const [emailEditing, setEmailEditing] = useState(false);
+  const [emailDraft, setEmailDraft] = useState('');
+  const [emailSaving, setEmailSaving] = useState(false);
 
   useEffect(() => {
     fetch(`${appConfig.apiUrl}/api/auth/me`, { headers: getAuthHeaders() })
@@ -480,6 +513,24 @@ const CandidateProfile: React.FC = () => {
   }, [pipelineId]);
 
   const displayName = profile ? friendlyName(profile.filename) : '';
+
+  const handleEmailSave = async () => {
+    if (!profile || emailSaving) return;
+    setEmailSaving(true);
+    try {
+      const res = await fetch(`${appConfig.apiUrl}/api/pipeline/${profile.pipeline_id}/email`, {
+        method: 'PUT',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: emailDraft.trim() }),
+      });
+      if (res.ok) {
+        setProfile(p => p ? { ...p, applicant_email: emailDraft.trim() || null } : p);
+        setEmailEditing(false);
+      }
+    } finally {
+      setEmailSaving(false);
+    }
+  };
 
   const handleStatusChange = async (newStatus: string) => {
     if (!profile || statusUpdating) return;
@@ -697,36 +748,58 @@ const CandidateProfile: React.FC = () => {
               )}
 
               {/* ── Contact Info ── */}
-              {(profile.applicant_email || profile.contacted_at) && (
-                <Card>
-                  <CardHeader>
-                    <Phone size={13} color="#8a9ab0" />
-                    <CardTitle>Contact Information</CardTitle>
-                  </CardHeader>
-                  <CardBody>
-                    <ContactGrid>
-                      {profile.applicant_email && (
-                        <ContactItem>
-                          <ContactLabel>Email</ContactLabel>
-                          <ContactValue>{profile.applicant_email}</ContactValue>
-                        </ContactItem>
+              <Card>
+                <CardHeader>
+                  <Phone size={13} color="#8a9ab0" />
+                  <CardTitle>Contact Information</CardTitle>
+                </CardHeader>
+                <CardBody>
+                  <ContactGrid>
+                    <ContactItem>
+                      <ContactLabel>Email</ContactLabel>
+                      {emailEditing ? (
+                        <EmailEditRow>
+                          <EmailInput
+                            autoFocus
+                            type="email"
+                            value={emailDraft}
+                            onChange={e => setEmailDraft(e.target.value)}
+                            onKeyDown={e => { if (e.key === 'Enter') handleEmailSave(); if (e.key === 'Escape') setEmailEditing(false); }}
+                            placeholder="email@example.com"
+                          />
+                          <IconBtn onClick={handleEmailSave} disabled={emailSaving} title="Save">
+                            <Check size={14} color="#4ade80" />
+                          </IconBtn>
+                          <IconBtn onClick={() => setEmailEditing(false)} title="Cancel">
+                            <X size={14} color="#f87171" />
+                          </IconBtn>
+                        </EmailEditRow>
+                      ) : (
+                        <EmailEditRow>
+                          <ContactValue>
+                            {profile.applicant_email || <span style={{ color: '#4a5568', fontStyle: 'italic' }}>No email on file</span>}
+                          </ContactValue>
+                          <IconBtn onClick={() => { setEmailDraft(profile.applicant_email || ''); setEmailEditing(true); }} title="Edit email">
+                            <Pencil size={12} />
+                          </IconBtn>
+                        </EmailEditRow>
                       )}
-                      {profile.contacted_via && (
-                        <ContactItem>
-                          <ContactLabel>Contacted Via</ContactLabel>
-                          <ContactValue>{profile.contacted_via}</ContactValue>
-                        </ContactItem>
-                      )}
-                      {profile.contacted_at && (
-                        <ContactItem>
-                          <ContactLabel>Last Contacted</ContactLabel>
-                          <ContactValue>{new Date(profile.contacted_at).toLocaleDateString()}</ContactValue>
-                        </ContactItem>
-                      )}
-                    </ContactGrid>
-                  </CardBody>
-                </Card>
-              )}
+                    </ContactItem>
+                    {profile.contacted_via && (
+                      <ContactItem>
+                        <ContactLabel>Contacted Via</ContactLabel>
+                        <ContactValue>{profile.contacted_via}</ContactValue>
+                      </ContactItem>
+                    )}
+                    {profile.contacted_at && (
+                      <ContactItem>
+                        <ContactLabel>Last Contacted</ContactLabel>
+                        <ContactValue>{new Date(profile.contacted_at).toLocaleDateString()}</ContactValue>
+                      </ContactItem>
+                    )}
+                  </ContactGrid>
+                </CardBody>
+              </Card>
             </>
           )}
         </Inner>
