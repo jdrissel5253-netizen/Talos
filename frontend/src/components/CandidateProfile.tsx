@@ -657,6 +657,34 @@ const CandidateProfile: React.FC = () => {
                       </StatusBadge>
                     )}
                   </MetaRow>
+                  {emailEditing ? (
+                    <EmailEditRow>
+                      <EmailInput
+                        autoFocus
+                        type="email"
+                        value={emailDraft}
+                        onChange={e => setEmailDraft(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleEmailSave(); if (e.key === 'Escape') setEmailEditing(false); }}
+                        placeholder="email@example.com"
+                      />
+                      <IconBtn onClick={handleEmailSave} disabled={emailSaving} title="Save">
+                        <Check size={14} color="#4ade80" />
+                      </IconBtn>
+                      <IconBtn onClick={() => setEmailEditing(false)} title="Cancel">
+                        <X size={14} color="#f87171" />
+                      </IconBtn>
+                    </EmailEditRow>
+                  ) : (
+                    <EmailEditRow>
+                      <MetaItem>
+                        <Mail size={11} />
+                        {profile.applicant_email || <span style={{ color: '#4a5568', fontStyle: 'italic' }}>Add email</span>}
+                      </MetaItem>
+                      <IconBtn onClick={() => { setEmailDraft(profile.applicant_email || ''); setEmailEditing(true); }} title="Edit email">
+                        <Pencil size={11} />
+                      </IconBtn>
+                    </EmailEditRow>
+                  )}
                 </HeroLeft>
 
                 <HeroRight>
@@ -747,59 +775,31 @@ const CandidateProfile: React.FC = () => {
                 </Card>
               )}
 
-              {/* ── Contact Info ── */}
-              <Card>
-                <CardHeader>
-                  <Phone size={13} color="#8a9ab0" />
-                  <CardTitle>Contact Information</CardTitle>
-                </CardHeader>
-                <CardBody>
-                  <ContactGrid>
-                    <ContactItem>
-                      <ContactLabel>Email</ContactLabel>
-                      {emailEditing ? (
-                        <EmailEditRow>
-                          <EmailInput
-                            autoFocus
-                            type="email"
-                            value={emailDraft}
-                            onChange={e => setEmailDraft(e.target.value)}
-                            onKeyDown={e => { if (e.key === 'Enter') handleEmailSave(); if (e.key === 'Escape') setEmailEditing(false); }}
-                            placeholder="email@example.com"
-                          />
-                          <IconBtn onClick={handleEmailSave} disabled={emailSaving} title="Save">
-                            <Check size={14} color="#4ade80" />
-                          </IconBtn>
-                          <IconBtn onClick={() => setEmailEditing(false)} title="Cancel">
-                            <X size={14} color="#f87171" />
-                          </IconBtn>
-                        </EmailEditRow>
-                      ) : (
-                        <EmailEditRow>
-                          <ContactValue>
-                            {profile.applicant_email || <span style={{ color: '#4a5568', fontStyle: 'italic' }}>No email on file</span>}
-                          </ContactValue>
-                          <IconBtn onClick={() => { setEmailDraft(profile.applicant_email || ''); setEmailEditing(true); }} title="Edit email">
-                            <Pencil size={12} />
-                          </IconBtn>
-                        </EmailEditRow>
+              {/* ── Contact Info (contacted_via / last contacted only) ── */}
+              {(profile.contacted_via || profile.contacted_at) && (
+                <Card>
+                  <CardHeader>
+                    <Phone size={13} color="#8a9ab0" />
+                    <CardTitle>Contact Information</CardTitle>
+                  </CardHeader>
+                  <CardBody>
+                    <ContactGrid>
+                      {profile.contacted_via && (
+                        <ContactItem>
+                          <ContactLabel>Contacted Via</ContactLabel>
+                          <ContactValue>{profile.contacted_via}</ContactValue>
+                        </ContactItem>
                       )}
-                    </ContactItem>
-                    {profile.contacted_via && (
-                      <ContactItem>
-                        <ContactLabel>Contacted Via</ContactLabel>
-                        <ContactValue>{profile.contacted_via}</ContactValue>
-                      </ContactItem>
-                    )}
-                    {profile.contacted_at && (
-                      <ContactItem>
-                        <ContactLabel>Last Contacted</ContactLabel>
-                        <ContactValue>{new Date(profile.contacted_at).toLocaleDateString()}</ContactValue>
-                      </ContactItem>
-                    )}
-                  </ContactGrid>
-                </CardBody>
-              </Card>
+                      {profile.contacted_at && (
+                        <ContactItem>
+                          <ContactLabel>Last Contacted</ContactLabel>
+                          <ContactValue>{new Date(profile.contacted_at).toLocaleDateString()}</ContactValue>
+                        </ContactItem>
+                      )}
+                    </ContactGrid>
+                  </CardBody>
+                </Card>
+              )}
             </>
           )}
         </Inner>
