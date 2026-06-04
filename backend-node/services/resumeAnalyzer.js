@@ -3502,9 +3502,9 @@ async function analyzeResume(filePath, position = 'HVAC Technician', requiredYea
          throw new Error('Unsupported file type. Please upload a PDF or Word document (.docx).');
       }
 
-      // Extract email address from resume text before sending to Claude
+      // Regex fallback: extract email from raw text in case Claude misses it
       const emailMatch = resumeText.match(/\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b/);
-      const extractedEmail = emailMatch ? emailMatch[0].toLowerCase() : null;
+      const regexEmail = emailMatch ? emailMatch[0].toLowerCase() : null;
 
       const jobLocationLine = jobLocation ? `Job Location: ${jobLocation}\n\n` : '';
 
@@ -3641,7 +3641,8 @@ Return your analysis in this EXACT JSON format:
   "strengths": ["<overall strength 1>", "<overall strength 2>", "<overall strength 3>"],
   "weaknesses": ["<weakness 1 if any>", "<weakness 2 if any>"],
   "recommendations": ["<recommendation 1>", "<recommendation 2>"],
-  "hiringRecommendation": "<STRONG_YES (90+) | YES (80-89) | MAYBE (70-79) | PROBABLY_NOT (50-69) | NO (<50)>"
+  "hiringRecommendation": "<STRONG_YES (90+) | YES (80-89) | MAYBE (70-79) | PROBABLY_NOT (50-69) | NO (<50)>",
+  "email": "<candidate's email address found in the resume, or null if not present>"
 }`;
       } else if (useWarehouseAssociateFramework) {
          // Use the detailed Warehouse Associate evaluation framework
@@ -3763,7 +3764,8 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
   "keyStrengths": ["strength1", "strength2", "strength3"],
   "concerns": ["concern1", "concern2"],
   "recommendationSummary": "<2-3 sentence recommendation>",
-  "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
+  "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>",
+  "email": "<candidate's email address found in the resume, or null if not present>"
 }`;
 
       } else if (useBookkeeperFramework) {
@@ -3894,7 +3896,8 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
   "keyStrengths": ["strength1", "strength2", "strength3"],
   "concerns": ["concern1", "concern2"],
   "recommendationSummary": "<2-3 sentence recommendation>",
-  "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
+  "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>",
+  "email": "<candidate's email address found in the resume, or null if not present>"
 }`;
 
       } else if (useApprenticeFramework) {
@@ -4014,7 +4017,8 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
   "keyStrengths": ["strength1", "strength2", "strength3"],
   "concerns": ["concern1", "concern2"],
   "recommendationSummary": "<2-3 sentence recommendation>",
-  "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
+  "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>",
+  "email": "<candidate's email address found in the resume, or null if not present>"
 }`;
 
       } else if (useCustomerServiceRepFramework) {
@@ -4121,7 +4125,8 @@ REQUIRED JSON OUTPUT FORMAT:
   "recommendationSummary": "<2-3 sentence summary>",
   "matchingExperience": ["<job title 1 - duration>", "<job title 2 - duration>"],
   "scoringMatrixRow": "<exact row from matrix that was used>",
-  "scoringReasoning": "<brief explanation of why this score was chosen>"
+  "scoringReasoning": "<brief explanation of why this score was chosen>",
+  "email": "<candidate's email address found in the resume, or null if not present>"
 }
 
 CRITICAL RULES:
@@ -4236,7 +4241,8 @@ REQUIRED JSON OUTPUT FORMAT:
   "recommendationSummary": "<2-3 sentence summary>",
   "matchingExperience": ["<job title 1 - duration>", "<job title 2 - duration>"],
   "scoringMatrixRow": "<exact row from matrix that was used>",
-  "scoringReasoning": "<brief explanation of why this score was chosen>"
+  "scoringReasoning": "<brief explanation of why this score was chosen>",
+  "email": "<candidate's email address found in the resume, or null if not present>"
 }
 
 CRITICAL RULES:
@@ -4375,7 +4381,8 @@ Provide your evaluation in the following JSON format:
   "strengths": ["<top 3-5 strengths relevant to Dispatcher role>"],
   "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
   "recommendations": ["<3-5 specific recommendations for improvement>"],
-  "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>"
+  "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>",
+  "email": "<candidate's email address found in the resume, or null if not present>"
 }
 
 IMPORTANT: Your overallScore MUST align with the tier ranges (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair.`;
@@ -4496,7 +4503,8 @@ STEP 9: VALIDATE YOUR ANSWER
   "strengths": ["<top 3-5 strengths relevant to Service Technician role>"],
   "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
   "recommendations": ["<3-5 specific recommendations for improvement>"],
-  "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>"
+  "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>",
+  "email": "<candidate's email address found in the resume, or null if not present>"
 }
 
 IMPORTANT: Your overallScore MUST align with the tier ranges specified in the framework (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair in your evaluation.`;
@@ -4619,7 +4627,8 @@ STEP 9: VALIDATE YOUR ANSWER
   "strengths": ["<top 3-5 strengths relevant to PM Technician role>"],
   "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
   "recommendations": ["<3-5 specific recommendations for improvement>"],
-  "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>"
+  "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>",
+  "email": "<candidate's email address found in the resume, or null if not present>"
 }
 
 IMPORTANT: Your overallScore MUST align with the tier ranges specified in the framework (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair in your evaluation.`;
@@ -4736,7 +4745,8 @@ STEP 9: VALIDATE YOUR ANSWER
   "strengths": ["<top 3-5 strengths relevant to HVAC Installer role>"],
   "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
   "recommendations": ["<3-5 specific recommendations for improvement>"],
-  "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>"
+  "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>",
+  "email": "<candidate's email address found in the resume, or null if not present>"
 }
 
 IMPORTANT: Your overallScore MUST align with the tier ranges specified in the framework (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair in your evaluation.`;
@@ -4895,7 +4905,8 @@ REQUIRED JSON OUTPUT FORMAT:
   "recommendationSummary": "<2-3 sentence summary>",
   "matchingExperience": ["<job title 1 - duration>", "<job title 2 - duration>"],
   "scoringMatrixRow": "<exact row from matrix that was used>",
-  "scoringReasoning": "<brief explanation of why this score was chosen, including competency evaluation>"
+  "scoringReasoning": "<brief explanation of why this score was chosen, including competency evaluation>",
+  "email": "<candidate's email address found in the resume, or null if not present>"
 }
 
 CRITICAL RULES:
@@ -4947,7 +4958,8 @@ Please analyze this resume for the ${positionCriteria.title} position and provid
   "strengths": ["<top 3-5 strengths relevant to ${positionCriteria.title}>"],
   "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
   "recommendations": ["<3-5 specific recommendations for improvement>"],
-  "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>"
+  "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>",
+  "email": "<candidate's email address found in the resume, or null if not present>"
 }
 
 Key skills and qualifications to look for in a ${positionCriteria.title}:
@@ -4988,7 +5000,8 @@ Provide thorough, honest, and actionable feedback specifically tailored to the $
 
       // Convert overallScore (0-100) to scoreOutOf10
       analysis.scoreOutOf10 = Math.round(analysis.overallScore / 10);
-      analysis.extractedEmail = extractedEmail;
+      // Prefer Claude's extracted email; fall back to regex result
+      analysis.extractedEmail = analysis.email ? analysis.email.toLowerCase() : regexEmail;
 
       // Clean up the uploaded file after analysis
       await fs.unlink(filePath).catch(err => logger.error('Error deleting file', { error: err.message }));
