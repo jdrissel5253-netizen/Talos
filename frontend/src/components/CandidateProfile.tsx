@@ -390,7 +390,7 @@ const IconBtn = styled.button`
   border: none;
   cursor: pointer;
   padding: 0.2rem;
-  color: #3a4555;
+  color: #6e7d8e;
   transition: color 0.15s;
   &:hover { color: #4ade80; }
 `;
@@ -702,7 +702,7 @@ const CandidateProfile: React.FC = () => {
                     ) : (
                       <HeroContactRow>
                         <HeroContactValue>
-                          {profile.applicant_email || <span style={{ color: '#3a4555', fontStyle: 'italic' }}>Add email</span>}
+                          {profile.applicant_email || <span style={{ color: '#6e7d8e', fontStyle: 'italic' }}>Add email</span>}
                         </HeroContactValue>
                         <IconBtn onClick={() => { setEmailDraft(profile.applicant_email || ''); setEmailEditing(true); }} title="Edit email">
                           <Pencil size={11} />
