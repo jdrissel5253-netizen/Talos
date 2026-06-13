@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink, LayoutGrid, LayoutList } from 'lucide-react';
+import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink, LayoutGrid, LayoutList, Minimize2, ChevronDown } from 'lucide-react';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
 import AddJobForm from './AddJobForm';
@@ -224,16 +224,16 @@ const CardEditButton = styled.button`
     }
 `;
 
-const MainContent = styled.div`
+const MainContent = styled.div<{ compact?: boolean }>`
     flex: 1;
-    padding: 2rem;
+    padding: ${p => p.compact ? '1.25rem 1.5rem' : '2rem'};
     overflow-y: auto;
     min-width: 0;
 `;
 
-const ContentHeader = styled.div`
-    margin-bottom: 1.5rem;
-    padding-bottom: 1.5rem;
+const ContentHeader = styled.div<{ compact?: boolean }>`
+    margin-bottom: ${p => p.compact ? '0.75rem' : '1.5rem'};
+    padding-bottom: ${p => p.compact ? '0.75rem' : '1.5rem'};
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 `;
 
@@ -250,12 +250,41 @@ const ContentSubtitle = styled.p`
     font-size: 0.875rem;
 `;
 
-const JobDetailsCard = styled.div`
+const JobDetailsCard = styled.div<{ compact?: boolean }>`
     background: #0d0d0d;
     border: 1px solid rgba(255, 255, 255, 0.07);
     border-radius: 8px;
-    padding: 1.5rem;
-    margin-bottom: 1.75rem;
+    padding: ${p => p.compact ? '0' : '1.5rem'};
+    margin-bottom: ${p => p.compact ? '1rem' : '1.75rem'};
+`;
+
+const JobDetailsToggle = styled.button`
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    color: #4ade80;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.12em;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s ease;
+
+    &:hover {
+        background: rgba(74, 222, 128, 0.04);
+    }
+`;
+
+const JobDetailsBody = styled.div`
+    padding: 1.25rem 1.5rem 1.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
 `;
 
 const DetailRow = styled.div`
@@ -350,19 +379,19 @@ const DeleteButton = styled.button`
     }
 `;
 
-const PipelineTabs = styled.div`
+const PipelineTabs = styled.div<{ compact?: boolean }>`
     display: flex;
     gap: 0;
-    margin-bottom: 1.25rem;
+    margin-bottom: ${p => p.compact ? '0.75rem' : '1.25rem'};
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
 `;
 
-const Tab = styled.button<{ isActive: boolean }>`
+const Tab = styled.button<{ isActive: boolean; compact?: boolean }>`
     background: transparent;
     color: ${props => props.isActive ? '#ffffff' : '#555'};
     border: none;
     border-bottom: 2px solid ${props => props.isActive ? '#4ade80' : 'transparent'};
-    padding: 0.75rem 1.25rem;
+    padding: ${p => p.compact ? '0.5rem 1rem' : '0.75rem 1.25rem'};
     font-weight: 600;
     font-size: 0.875rem;
     cursor: pointer;
@@ -374,12 +403,12 @@ const Tab = styled.button<{ isActive: boolean }>`
     }
 `;
 
-const FilterSortBar = styled.div`
+const FilterSortBar = styled.div<{ compact?: boolean }>`
     background: #0d0d0d;
     border: 1px solid rgba(255, 255, 255, 0.07);
     border-radius: 7px;
-    padding: 0.875rem 1rem;
-    margin-bottom: 1.25rem;
+    padding: ${p => p.compact ? '0.5rem 0.75rem' : '0.875rem 1rem'};
+    margin-bottom: ${p => p.compact ? '0.75rem' : '1.25rem'};
     display: flex;
     gap: 0.75rem;
     flex-wrap: wrap;
@@ -415,12 +444,12 @@ const ViewToggleBtn = styled.button<{ active: boolean }>`
     &:hover { border-color: rgba(74,222,128,0.3); color: #4ade80; }
 `;
 
-const CompactCandidateRow = styled.div`
+const CompactCandidateRow = styled.div<{ compact?: boolean }>`
     display: grid;
     grid-template-columns: 44px 1fr auto auto auto;
     align-items: center;
     gap: 0.75rem;
-    padding: 0.6rem 0.75rem;
+    padding: ${p => p.compact ? '0.35rem 0.75rem' : '0.6rem 0.75rem'};
     border-bottom: 1px solid rgba(255,255,255,0.04);
     transition: background 0.12s ease;
     &:last-child { border-bottom: none; }
@@ -490,20 +519,20 @@ const BulkActionButton = styled.button`
     }
 `;
 
-const CandidatesGrid = styled.div`
+const CandidatesGrid = styled.div<{ compact?: boolean }>`
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: ${p => p.compact ? '1rem' : '1.5rem'};
 `;
 
 const TierSection = styled.div``;
 
-const TierHeader = styled.div<{ tier: string }>`
+const TierHeader = styled.div<{ tier: string; compact?: boolean }>`
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0.75rem 1rem;
-    margin-bottom: 0.75rem;
+    padding: ${p => p.compact ? '0.5rem 0.875rem' : '0.75rem 1rem'};
+    margin-bottom: ${p => p.compact ? '0.5rem' : '0.75rem'};
     border-left: 3px solid ${props => {
         if (props.tier === 'green') return '#4ade80';
         if (props.tier === 'yellow') return '#fbbf24';
@@ -526,12 +555,12 @@ const TierHeader = styled.div<{ tier: string }>`
     }};
 `;
 
-const CandidateCard = styled.div<{ isSelected: boolean }>`
+const CandidateCard = styled.div<{ isSelected: boolean; compact?: boolean }>`
     background: #0d0d0d;
     border: 1px solid ${props => props.isSelected ? 'rgba(74, 222, 128, 0.35)' : 'rgba(255, 255, 255, 0.07)'};
     border-radius: 8px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 0.625rem;
+    padding: ${p => p.compact ? '0.875rem 1.125rem' : '1.25rem 1.5rem'};
+    margin-bottom: ${p => p.compact ? '0.5rem' : '0.625rem'};
     transition: border-color 0.15s ease;
 
     &:last-child { margin-bottom: 0; }
@@ -541,11 +570,11 @@ const CandidateCard = styled.div<{ isSelected: boolean }>`
     }
 `;
 
-const CandidateHeader = styled.div`
+const CandidateHeader = styled.div<{ compact?: boolean }>`
     display: flex;
     justify-content: space-between;
     align-items: start;
-    margin-bottom: 0.75rem;
+    margin-bottom: ${p => p.compact ? '0.4rem' : '0.75rem'};
 `;
 
 const CandidateInfo = styled.div`
@@ -591,11 +620,11 @@ const Badge = styled.span`
     letter-spacing: 0.04em;
 `;
 
-const ActionButtons = styled.div`
+const ActionButtons = styled.div<{ compact?: boolean }>`
     display: flex;
     gap: 0.4rem;
-    margin-top: 1rem;
-    padding-top: 0.875rem;
+    margin-top: ${p => p.compact ? '0.5rem' : '1rem'};
+    padding-top: ${p => p.compact ? '0.5rem' : '0.875rem'};
     border-top: 1px solid rgba(255, 255, 255, 0.06);
 `;
 
@@ -619,11 +648,17 @@ const ActionIcon = styled.button<{ color: string }>`
     }
 `;
 
-const Summary = styled.p`
+const Summary = styled.p<{ compact?: boolean }>`
     color: #666;
     line-height: 1.65;
-    margin-bottom: 0.875rem;
+    margin-bottom: ${p => p.compact ? '0.5rem' : '0.875rem'};
     font-size: 0.9rem;
+    ${p => p.compact && `
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    `}
 `;
 
 const MetaRow = styled.div`
@@ -780,6 +815,8 @@ const JobsManagement: React.FC = () => {
     const [resumeModal, setResumeModal] = useState<{ candidateId: number; filename: string } | null>(null);
     const [viewMode, setViewMode] = useState<'cards' | 'compact'>('cards');
     const [schedulingLink, setSchedulingLink] = useState('');
+    const [compactPage, setCompactPage] = useState(() => localStorage.getItem('jobsManagementCompactPage') === 'true');
+    const [jobDetailsExpanded, setJobDetailsExpanded] = useState(false);
 
     const navigate = useNavigate();
     const { jobId } = useParams<{ jobId: string }>();
@@ -788,6 +825,10 @@ const JobsManagement: React.FC = () => {
     useEffect(() => {
         if (searchParams.get('new') === 'true') setShowAddJobForm(true);
     }, []);
+
+    useEffect(() => {
+        localStorage.setItem('jobsManagementCompactPage', String(compactPage));
+    }, [compactPage]);
 
     const openSchedulingLink = (candidateName: string) => {
         if (!schedulingLink) return;
@@ -1062,7 +1103,7 @@ const JobsManagement: React.FC = () => {
     }), [candidates]);
 
     const renderCompactCandidate = (candidate: CandidatePipeline) => (
-        <CompactCandidateRow key={`compact-${candidate.id}`}>
+        <CompactCandidateRow key={`compact-${candidate.id}`} compact={compactPage}>
             <CompactScore tier={candidate.tier}>{candidate.tier_score}</CompactScore>
             <div style={{ overflow: 'hidden' }}>
                 <CompactName>{candidate.filename?.replace('.pdf', '') || 'Unknown'}</CompactName>
@@ -1090,8 +1131,8 @@ const JobsManagement: React.FC = () => {
     );
 
     const renderCandidateCard = (candidate: CandidatePipeline) => (
-        <CandidateCard key={`card-${candidate.id}`} isSelected={selectedCandidates.has(candidate.id)}>
-            <CandidateHeader>
+        <CandidateCard key={`card-${candidate.id}`} isSelected={selectedCandidates.has(candidate.id)} compact={compactPage}>
+            <CandidateHeader compact={compactPage}>
                 <CandidateInfo>
                     <CandidateName>
                         <Checkbox
@@ -1107,7 +1148,7 @@ const JobsManagement: React.FC = () => {
                 <Score tier={candidate.tier}>{candidate.tier_score}</Score>
             </CandidateHeader>
 
-            <Summary>{candidate.ai_summary}</Summary>
+            <Summary compact={compactPage}>{candidate.ai_summary}</Summary>
 
             <MetaRow>
                 <MetaItem><Calendar size={13} /> {candidate.years_of_experience} yrs exp</MetaItem>
@@ -1124,7 +1165,7 @@ const JobsManagement: React.FC = () => {
                 </ViewBtn>
             </ViewActions>
 
-            <ActionButtons>
+            <ActionButtons compact={compactPage}>
                 <ActionIcon color="#4ade80" onClick={() => handleCandidateAction(candidate.id, 'approved')} title="Approve">
                     <Check size={14} />
                 </ActionIcon>
@@ -1162,6 +1203,8 @@ const JobsManagement: React.FC = () => {
             </ActionButtons>
         </CandidateCard>
     );
+
+    const JobDetailsWrapper = compactPage ? JobDetailsBody : React.Fragment;
 
     return (
         <>
@@ -1261,29 +1304,46 @@ const JobsManagement: React.FC = () => {
                     )}
                 </LeftPanel>
 
-                <MainContent>
+                <MainContent compact={compactPage}>
                     {selectedJob ? (
                         <>
-                            <ContentHeader>
+                            <ContentHeader compact={compactPage}>
                                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
                                     <div>
                                         <ContentTitle>{selectedJob.title}</ContentTitle>
                                         <ContentSubtitle>Candidate Pipeline</ContentSubtitle>
                                     </div>
-                                    {candidates.length > 0 && (
-                                        <div style={{ display: 'flex', gap: '0.35rem' }}>
-                                            <ViewToggleBtn active={viewMode === 'cards'} onClick={() => setViewMode('cards')} title="Card view">
-                                                <LayoutGrid size={16} />
-                                            </ViewToggleBtn>
-                                            <ViewToggleBtn active={viewMode === 'compact'} onClick={() => setViewMode('compact')} title="Compact view">
-                                                <LayoutList size={16} />
-                                            </ViewToggleBtn>
-                                        </div>
-                                    )}
+                                    <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                        {candidates.length > 0 && (
+                                            <>
+                                                <ViewToggleBtn active={viewMode === 'cards'} onClick={() => setViewMode('cards')} title="Card view">
+                                                    <LayoutGrid size={16} />
+                                                </ViewToggleBtn>
+                                                <ViewToggleBtn active={viewMode === 'compact'} onClick={() => setViewMode('compact')} title="Compact view">
+                                                    <LayoutList size={16} />
+                                                </ViewToggleBtn>
+                                            </>
+                                        )}
+                                        <ViewToggleBtn
+                                            active={compactPage}
+                                            onClick={() => setCompactPage(!compactPage)}
+                                            title={compactPage ? 'Switch to full page view' : 'Switch to compact page view'}
+                                        >
+                                            <Minimize2 size={16} />
+                                        </ViewToggleBtn>
+                                    </div>
                                 </div>
                             </ContentHeader>
 
-                            <JobDetailsCard>
+                            <JobDetailsCard compact={compactPage}>
+                                {compactPage && (
+                                    <JobDetailsToggle onClick={() => setJobDetailsExpanded(!jobDetailsExpanded)}>
+                                        <span>Job Details &amp; Application Link</span>
+                                        <ChevronDown size={16} style={{ transform: jobDetailsExpanded ? 'rotate(180deg)' : 'none', transition: 'transform 0.15s ease' }} />
+                                    </JobDetailsToggle>
+                                )}
+                                {(!compactPage || jobDetailsExpanded) && (
+                                <JobDetailsWrapper>
                                 <h3 style={{ color: '#4ade80', marginBottom: '0.75rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}>Application Link</h3>
                                 <div style={{ marginBottom: '1.5rem' }}>
                                     <a
@@ -1353,27 +1413,29 @@ const JobsManagement: React.FC = () => {
                                         <X size={16} /> Delete Job
                                     </DeleteButton>
                                 </JobActionsRow>
+                                </JobDetailsWrapper>
+                                )}
                             </JobDetailsCard>
 
-                            <PipelineTabs>
-                                <Tab isActive={activeTab === 'all'} onClick={() => setActiveTab('all')}>
+                            <PipelineTabs compact={compactPage}>
+                                <Tab compact={compactPage} isActive={activeTab === 'all'} onClick={() => setActiveTab('all')}>
                                     All ({candidates.length})
                                 </Tab>
-                                <Tab isActive={activeTab === 'approved'} onClick={() => setActiveTab('approved')}>
+                                <Tab compact={compactPage} isActive={activeTab === 'approved'} onClick={() => setActiveTab('approved')}>
                                     Approved
                                 </Tab>
-                                <Tab isActive={activeTab === 'contacted'} onClick={() => setActiveTab('contacted')}>
+                                <Tab compact={compactPage} isActive={activeTab === 'contacted'} onClick={() => setActiveTab('contacted')}>
                                     Contacted
                                 </Tab>
-                                <Tab isActive={activeTab === 'backup'} onClick={() => setActiveTab('backup')}>
+                                <Tab compact={compactPage} isActive={activeTab === 'backup'} onClick={() => setActiveTab('backup')}>
                                     Backups
                                 </Tab>
-                                <Tab isActive={activeTab === 'rejected'} onClick={() => setActiveTab('rejected')}>
+                                <Tab compact={compactPage} isActive={activeTab === 'rejected'} onClick={() => setActiveTab('rejected')}>
                                     Rejected
                                 </Tab>
                             </PipelineTabs>
 
-                            <FilterSortBar>
+                            <FilterSortBar compact={compactPage}>
                                 <span style={{ color: '#555', fontWeight: 600, fontSize: '0.8125rem' }}>Filter & Sort:</span>
                                 <Select value={filterTier} onChange={(e) => setFilterTier(e.target.value)}>
                                     <option value="all">All Tiers</option>
@@ -1405,14 +1467,14 @@ const JobsManagement: React.FC = () => {
                                 </BulkActionsBar>
                             )}
 
-                            <CandidatesGrid>
+                            <CandidatesGrid compact={compactPage}>
                                 {loadingCandidates ? (
                                     <LoadingSpinner>Loading candidates...</LoadingSpinner>
                                 ) : activeTab === 'all' ? (
                                     <>
                                         {candidatesByTier.green.length > 0 && (
                                             <TierSection>
-                                                <TierHeader tier="green">
+                                                <TierHeader tier="green" compact={compactPage}>
                                                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><CheckCircle size={14} /> Green Tier (80-100)</span>
                                                     <span>{candidatesByTier.green.length} candidates</span>
                                                 </TierHeader>
@@ -1421,7 +1483,7 @@ const JobsManagement: React.FC = () => {
                                         )}
                                         {candidatesByTier.yellow.length > 0 && (
                                             <TierSection>
-                                                <TierHeader tier="yellow">
+                                                <TierHeader tier="yellow" compact={compactPage}>
                                                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><AlertCircle size={14} /> Yellow Tier (50-79)</span>
                                                     <span>{candidatesByTier.yellow.length} candidates</span>
                                                 </TierHeader>
@@ -1430,7 +1492,7 @@ const JobsManagement: React.FC = () => {
                                         )}
                                         {candidatesByTier.red.length > 0 && (
                                             <TierSection>
-                                                <TierHeader tier="red">
+                                                <TierHeader tier="red" compact={compactPage}>
                                                     <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><XCircle size={14} /> Red Tier (0-49)</span>
                                                     <span>{candidatesByTier.red.length} candidates</span>
                                                 </TierHeader>
