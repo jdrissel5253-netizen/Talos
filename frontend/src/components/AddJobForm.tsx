@@ -1146,7 +1146,13 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
               </TooltipIcon>
             </SectionTitle>
 
-            {formData.key_responsibilities.map((resp, index) => (
+            {formData.key_responsibilities.map((resp, index) => {
+              const selectedElsewhere = new Set(
+                formData.key_responsibilities.filter((r, i) => i !== index && r && r !== 'Other (type your own)')
+              );
+              const availableOptions = getResponsibilityOptions(formData.title)
+                .filter(opt => opt === 'Other (type your own)' || !selectedElsewhere.has(opt));
+              return (
               <FormGroup key={index}>
                 <Label>Responsibility {index + 1}</Label>
                 <Select
@@ -1154,7 +1160,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
                   onChange={(e) => handleResponsibilitySelect(index, e.target.value)}
                 >
                   <option value="">-- Select a responsibility --</option>
-                  {getResponsibilityOptions(formData.title).map(opt => (
+                  {availableOptions.map(opt => (
                     <option key={opt} value={opt}>{opt}</option>
                   ))}
                 </Select>
@@ -1169,7 +1175,8 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
                   />
                 )}
               </FormGroup>
-            ))}
+              );
+            })}
           </FormSection>
 
           <FormSection>
