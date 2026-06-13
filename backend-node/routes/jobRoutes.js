@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const { jobService, candidatePipelineService, analysisService, candidateService, sanitize } = require('../services/databaseService');
-const { calculateTier, calculateStarRating, adjustScoreForVehicle } = require('../services/scoringService');
+const { calculateTier, calculateStarRating, adjustScoreForVehicle, determineGiveThemAChance } = require('../services/scoringService');
 const Anthropic = require('@anthropic-ai/sdk');
 const logger = require('../services/logger');
 
@@ -368,7 +368,15 @@ router.post('/:id/candidates/:candidateId', async (req, res) => {
         const adjusted_score = adjustScoreForVehicle(score, vehicle_status, job.vehicle_required);
 
         // Determine "Give Them a Chance" flag
-        const give_them_a_chance = await determineGiveThemAChance(analysis, job, score);
+        const give_them_a_chance = determineGiveThemAChance({
+            score,
+            yearsOfExperience: analysis.years_of_experience,
+            requiredYears: job.required_years_experience,
+            certificationsScore: analysis.certifications_score,
+            technicalSkillsScore: analysis.technical_skills_score,
+            presentationScore: analysis.presentation_score,
+            summary: analysis.summary
+        });
 
         // Generate AI summary
         const ai_summary = await generateCandidateSummary(analysis, job, tier, candidate.filename);
@@ -398,41 +406,6 @@ router.post('/:id/candidates/:candidateId', async (req, res) => {
         });
     }
 });
-
-/**
- * Helper function: Determine if candidate gets "Give Them a Chance" flag
- */
-async function determineGiveThemAChance(analysis, job, score) {
-    // Only apply to Green or Yellow tier candidates
-    if (score < 50) return false;
-
-    const yearsExp = analysis.years_of_experience;
-    const requiredYears = job.required_years_experience;
-
-    // High upside despite limited experience
-    if (yearsExp < requiredYears && yearsExp >= requiredYears * 0.5) {
-        // Check if they have strong certifications or skills
-        if (analysis.certifications_score >= 80 || analysis.technical_skills_score >= 80) {
-            return true;
-        }
-    }
-
-    // Overqualified but likely to perform well
-    if (yearsExp > requiredYears * 2 && score >= 75) {
-        return true;
-    }
-
-    // Strong transferable background (check keywords)
-    const summary = analysis.summary.toLowerCase();
-    const transferableKeywords = ['maintenance', 'customer service', 'promoted', 'manager', 'supervisor'];
-    const hasTransferableBackground = transferableKeywords.some(keyword => summary.includes(keyword));
-
-    if (hasTransferableBackground && analysis.presentation_score >= 70) {
-        return true;
-    }
-
-    return false;
-}
 
 /**
  * Helper function: Generate AI candidate summary using Claude Haiku

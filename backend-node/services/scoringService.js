@@ -50,8 +50,55 @@ function adjustScoreForVehicle(score, vehicleStatus, vehicleRequired) {
     return Math.min(100, Math.max(0, adjusted));
 }
 
+/**
+ * Determine the "Give Them a Chance" (High Potential) flag.
+ * Flags yellow/green-tier candidates (score >= 50) who may be undervalued by
+ * their overall score alone due to compensating strengths.
+ * @param {Object} params
+ * @param {number} params.score - Overall score 0-100
+ * @param {number} [params.yearsOfExperience] - Candidate's years of relevant experience
+ * @param {number} [params.requiredYears] - Job's required years of experience
+ * @param {number} [params.certificationsScore] - Certifications sub-score 0-100
+ * @param {number} [params.technicalSkillsScore] - Technical skills sub-score 0-100
+ * @param {number} [params.presentationScore] - Presentation/communication sub-score 0-100
+ * @param {string} [params.summary] - Free-text candidate summary
+ * @returns {boolean}
+ */
+function determineGiveThemAChance({ score, yearsOfExperience, requiredYears, certificationsScore, technicalSkillsScore, presentationScore, summary }) {
+    // Only apply to Green or Yellow tier candidates
+    if (score < 50) return false;
+
+    const yearsExp = yearsOfExperience || 0;
+    const reqYears = requiredYears || 0;
+
+    // High upside despite limited experience
+    if (yearsExp < reqYears && yearsExp >= reqYears * 0.5) {
+        // Check if they have strong certifications or skills
+        if (certificationsScore >= 80 || technicalSkillsScore >= 80) {
+            return true;
+        }
+    }
+
+    // Overqualified but likely to perform well
+    if (yearsExp > reqYears * 2 && score >= 75) {
+        return true;
+    }
+
+    // Strong transferable background (check keywords)
+    const lowerSummary = (summary || '').toLowerCase();
+    const transferableKeywords = ['maintenance', 'customer service', 'promoted', 'manager', 'supervisor'];
+    const hasTransferableBackground = transferableKeywords.some(keyword => lowerSummary.includes(keyword));
+
+    if (hasTransferableBackground && presentationScore >= 70) {
+        return true;
+    }
+
+    return false;
+}
+
 module.exports = {
     calculateTier,
     calculateStarRating,
-    adjustScoreForVehicle
+    adjustScoreForVehicle,
+    determineGiveThemAChance
 };

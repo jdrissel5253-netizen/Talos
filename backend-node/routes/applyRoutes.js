@@ -4,7 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const { candidateService, analysisService, candidatePipelineService, jobService, userService, sanitize } = require('../services/databaseService');
 const { analyzeResume } = require('../services/resumeAnalyzer');
-const { calculateTier, calculateStarRating } = require('../services/scoringService');
+const { calculateTier, calculateStarRating, determineGiveThemAChance } = require('../services/scoringService');
 const { uploadResume, downloadResumeToTemp, isS3Key } = require('../config/s3');
 const db = require('../config/database');
 const logger = require('../services/logger');
@@ -223,7 +223,15 @@ async function processResumeInBackground(candidate, s3KeyOrPath, name, email, ph
                         tier,
                         tier_score: Math.round(score),
                         star_rating,
-                        give_them_a_chance: false,
+                        give_them_a_chance: determineGiveThemAChance({
+                            score,
+                            yearsOfExperience: analysisResult?.experience?.yearsOfExperience,
+                            requiredYears: job.required_years_experience,
+                            certificationsScore: analysisResult?.certifications?.score,
+                            technicalSkillsScore: analysisResult?.technicalSkills?.score,
+                            presentationScore: analysisResult?.presentationQuality?.score,
+                            summary: analysisResult?.summary
+                        }),
                         vehicle_status: 'unknown',
                         ai_summary: `Applied via public link. Score: ${score}/100. ${analysisResult?.hiringRecommendation || 'Pending review'}.`,
                         internal_notes: `Source: Public Apply Page`,
@@ -316,7 +324,15 @@ async function addToGeneralTalentPool(candidateId, name, email, phone, score, ti
         tier,
         tier_score: Math.round(score),
         star_rating: Math.round(star_rating * 10) / 10,
-        give_them_a_chance: score >= 40 && score < 50,
+        give_them_a_chance: determineGiveThemAChance({
+            score,
+            yearsOfExperience: analysisResult?.experience?.yearsOfExperience,
+            requiredYears: generalJob.required_years_experience,
+            certificationsScore: analysisResult?.certifications?.score,
+            technicalSkillsScore: analysisResult?.technicalSkills?.score,
+            presentationScore: analysisResult?.presentationQuality?.score,
+            summary: analysisResult?.summary
+        }),
         vehicle_status: 'unknown',
         ai_summary: `Public application. Score: ${score}/100. ${analysisResult?.hiringRecommendation || 'Pending review'}.`,
         internal_notes: 'Source: Public Apply Page',

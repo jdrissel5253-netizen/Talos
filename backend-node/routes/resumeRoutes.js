@@ -5,7 +5,7 @@ const fs = require('fs');
 const mammoth = require('mammoth');
 const { analyzeResume } = require('../services/resumeAnalyzer');
 const { batchService, candidateService, analysisService, jobService, candidatePipelineService, sanitize } = require('../services/databaseService');
-const { calculateTier, calculateStarRating } = require('../services/scoringService');
+const { calculateTier, calculateStarRating, determineGiveThemAChance } = require('../services/scoringService');
 const { uploadResume, downloadResumeToTemp, streamResumeTo, isS3Key } = require('../config/s3');
 const logger = require('../services/logger');
 
@@ -50,7 +50,15 @@ async function addCandidateToTalentPool(candidateId, analysis, evaluatedPosition
             tier,
             tier_score: Math.round(score),
             star_rating: Math.round(star_rating * 10) / 10,
-            give_them_a_chance: score >= 70 && score < 80,
+            give_them_a_chance: determineGiveThemAChance({
+                score,
+                yearsOfExperience: analysis.experience?.yearsOfExperience,
+                requiredYears: generalJob.required_years_experience,
+                certificationsScore: analysis.certifications?.score,
+                technicalSkillsScore: analysis.technicalSkills?.score,
+                presentationScore: analysis.presentationQuality?.score,
+                summary: analysis.summary
+            }),
             vehicle_status: 'unknown',
             ai_summary: `Batch upload. Score: ${score}/100. ${analysis.hiringRecommendation || 'Pending review'}. ${analysis.summary || ''}`.trim(),
             internal_notes: 'Source: Batch Resume Upload',
@@ -258,7 +266,15 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
                 tier,
                 tier_score: Math.round(score),
                 star_rating: Math.round(star_rating * 10) / 10,
-                give_them_a_chance: score >= 70 && score < 80,
+                give_them_a_chance: determineGiveThemAChance({
+                    score,
+                    yearsOfExperience: analysis.experience?.yearsOfExperience,
+                    requiredYears: targetJob.required_years_experience,
+                    certificationsScore: analysis.certifications?.score,
+                    technicalSkillsScore: analysis.technicalSkills?.score,
+                    presentationScore: analysis.presentationQuality?.score,
+                    summary: analysis.summary
+                }),
                 vehicle_status: 'unknown',
                 ai_summary: `Score: ${score}/100. ${analysis.hiringRecommendation || ''}. ${analysis.summary || ''}`.trim(),
                 internal_notes: 'Source: Single Resume Upload',

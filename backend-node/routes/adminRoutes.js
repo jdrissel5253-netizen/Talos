@@ -5,7 +5,7 @@ const path = require('path');
 const db = require('../config/database');
 const logger = require('../services/logger');
 const { analyzeResume } = require('../services/resumeAnalyzer');
-const { calculateTier, calculateStarRating } = require('../services/scoringService');
+const { calculateTier, calculateStarRating, determineGiveThemAChance } = require('../services/scoringService');
 const { downloadResumeToTemp, isS3Key } = require('../config/s3');
 
 const USE_POSTGRES = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV === 'production';
@@ -216,7 +216,15 @@ router.post('/reanalyze-zero-scores', async (req, res) => {
                     give_them_a_chance=$4, ai_summary=$5 WHERE id=$6
             `, [
                 tier, Math.round(score), Math.round(starRating * 10) / 10,
-                score >= 40 && score < 50 ? 1 : 0,
+                determineGiveThemAChance({
+                    score,
+                    yearsOfExperience: analysis.experience?.yearsOfExperience,
+                    requiredYears,
+                    certificationsScore: analysis.certifications?.score,
+                    technicalSkillsScore: analysis.technicalSkills?.score,
+                    presentationScore: analysis.presentationQuality?.score,
+                    summary: analysis.summary
+                }) ? 1 : 0,
                 `Re-analyzed. Score: ${score}/100. ${analysis.hiringRecommendation || ''}.`,
                 row.pipeline_id
             ]);
@@ -331,7 +339,15 @@ router.post('/reanalyze-all', async (req, res) => {
                     give_them_a_chance=$4, ai_summary=$5 WHERE id=$6
             `, [
                 tier, Math.round(score), Math.round(starRating * 10) / 10,
-                score >= 40 && score < 50 ? 1 : 0,
+                determineGiveThemAChance({
+                    score,
+                    yearsOfExperience: analysis.experience?.yearsOfExperience,
+                    requiredYears,
+                    certificationsScore: analysis.certifications?.score,
+                    technicalSkillsScore: analysis.technicalSkills?.score,
+                    presentationScore: analysis.presentationQuality?.score,
+                    summary: analysis.summary
+                }) ? 1 : 0,
                 `Re-analyzed. Score: ${score}/100. ${analysis.hiringRecommendation || ''}.`,
                 row.pipeline_id
             ]);
@@ -447,7 +463,15 @@ router.post('/reanalyze-candidate/:candidateId', async (req, res) => {
                 give_them_a_chance=$4, ai_summary=$5 WHERE id=$6
         `, [
             tier, Math.round(score), Math.round(starRating * 10) / 10,
-            score >= 40 && score < 50 ? 1 : 0,
+            determineGiveThemAChance({
+                score,
+                yearsOfExperience: analysis.experience?.yearsOfExperience,
+                requiredYears,
+                certificationsScore: analysis.certifications?.score,
+                technicalSkillsScore: analysis.technicalSkills?.score,
+                presentationScore: analysis.presentationQuality?.score,
+                summary: analysis.summary
+            }) ? 1 : 0,
             `Re-analyzed. Score: ${score}/100. ${analysis.hiringRecommendation || ''}.`,
             row.pipeline_id
         ]);

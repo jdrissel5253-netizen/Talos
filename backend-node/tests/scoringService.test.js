@@ -2,6 +2,7 @@ const {
     calculateTier,
     calculateStarRating,
     adjustScoreForVehicle,
+    determineGiveThemAChance,
 } = require('../services/scoringService');
 
 // ─── calculateTier ───────────────────────────────────────────────────────────
@@ -123,5 +124,109 @@ describe('adjustScoreForVehicle', () => {
             expect(adjustScoreForVehicle(5, 'no_vehicle', true)).toBe(0);
             expect(adjustScoreForVehicle(0, 'no_vehicle', true)).toBe(0);
         });
+    });
+});
+
+// ─── determineGiveThemAChance ────────────────────────────────────────────────
+
+describe('determineGiveThemAChance', () => {
+    test('red tier (score < 50) never qualifies, regardless of other factors', () => {
+        expect(determineGiveThemAChance({
+            score: 49,
+            yearsOfExperience: 5,
+            requiredYears: 2,
+            certificationsScore: 100,
+            technicalSkillsScore: 100,
+            presentationScore: 100,
+            summary: 'promoted to manager, customer service expert'
+        })).toBe(false);
+    });
+
+    test('limited experience but strong certifications qualifies', () => {
+        expect(determineGiveThemAChance({
+            score: 60,
+            yearsOfExperience: 1,
+            requiredYears: 2,
+            certificationsScore: 85,
+            technicalSkillsScore: 0,
+            presentationScore: 0,
+            summary: ''
+        })).toBe(true);
+    });
+
+    test('limited experience with weak certs and skills does not qualify', () => {
+        expect(determineGiveThemAChance({
+            score: 60,
+            yearsOfExperience: 1,
+            requiredYears: 2,
+            certificationsScore: 50,
+            technicalSkillsScore: 50,
+            presentationScore: 0,
+            summary: ''
+        })).toBe(false);
+    });
+
+    test('overqualified with high score qualifies', () => {
+        expect(determineGiveThemAChance({
+            score: 75,
+            yearsOfExperience: 10,
+            requiredYears: 2,
+            certificationsScore: 0,
+            technicalSkillsScore: 0,
+            presentationScore: 0,
+            summary: ''
+        })).toBe(true);
+    });
+
+    test('overqualified but score below 75 does not qualify on that basis alone', () => {
+        expect(determineGiveThemAChance({
+            score: 70,
+            yearsOfExperience: 10,
+            requiredYears: 2,
+            certificationsScore: 0,
+            technicalSkillsScore: 0,
+            presentationScore: 0,
+            summary: ''
+        })).toBe(false);
+    });
+
+    test('transferable background with strong presentation qualifies', () => {
+        expect(determineGiveThemAChance({
+            score: 55,
+            yearsOfExperience: 0,
+            requiredYears: 0,
+            certificationsScore: 0,
+            technicalSkillsScore: 0,
+            presentationScore: 75,
+            summary: 'Previously worked in customer service before transitioning to HVAC.'
+        })).toBe(true);
+    });
+
+    test('transferable keywords without strong presentation do not qualify', () => {
+        expect(determineGiveThemAChance({
+            score: 55,
+            yearsOfExperience: 0,
+            requiredYears: 0,
+            certificationsScore: 0,
+            technicalSkillsScore: 0,
+            presentationScore: 60,
+            summary: 'Previously worked in customer service before transitioning to HVAC.'
+        })).toBe(false);
+    });
+
+    test('solid yellow-tier candidate with no compensating factors does not qualify', () => {
+        expect(determineGiveThemAChance({
+            score: 65,
+            yearsOfExperience: 2,
+            requiredYears: 2,
+            certificationsScore: 60,
+            technicalSkillsScore: 60,
+            presentationScore: 60,
+            summary: 'Experienced HVAC technician with solid fundamentals.'
+        })).toBe(false);
+    });
+
+    test('handles missing optional fields without throwing', () => {
+        expect(determineGiveThemAChance({ score: 60 })).toBe(false);
     });
 });
