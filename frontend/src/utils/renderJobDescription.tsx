@@ -1,40 +1,40 @@
 import React from 'react';
 import styled from 'styled-components';
 
-export const DescSection = styled.div`
-    margin-bottom: 1.25rem;
+export const DescSection = styled.div<{ small?: boolean }>`
+    margin-bottom: ${p => p.small ? '0.75rem' : '1.25rem'};
     &:last-child { margin-bottom: 0; }
 `;
 
-export const DescSectionHeader = styled.h3`
-    font-size: 0.9rem;
+export const DescSectionHeader = styled.h3<{ small?: boolean }>`
+    font-size: ${p => p.small ? '0.66rem' : '0.9rem'};
     font-weight: 700;
     color: #e0e0e0;
-    margin: 0 0 0.5rem;
+    margin: ${p => p.small ? '0 0 0.3rem' : '0 0 0.5rem'};
     letter-spacing: -0.01em;
 `;
 
-export const DescParagraph = styled.p`
+export const DescParagraph = styled.p<{ small?: boolean }>`
     color: #a3a3a3;
-    font-size: 0.88rem;
-    line-height: 1.75;
-    margin: 0 0 0.5rem;
+    font-size: ${p => p.small ? '0.625rem' : '0.88rem'};
+    line-height: ${p => p.small ? '1.3' : '1.75'};
+    margin: ${p => p.small ? '0 0 0.3rem' : '0 0 0.5rem'};
     &:last-child { margin-bottom: 0; }
 `;
 
-export const DescBulletList = styled.ul`
+export const DescBulletList = styled.ul<{ small?: boolean }>`
     list-style: disc;
     padding-left: 1.25rem;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 0.3rem;
+    gap: ${p => p.small ? '0.15rem' : '0.3rem'};
 `;
 
-export const DescBulletItem = styled.li`
+export const DescBulletItem = styled.li<{ small?: boolean }>`
     color: #a3a3a3;
-    font-size: 0.88rem;
-    line-height: 1.6;
+    font-size: ${p => p.small ? '0.625rem' : '0.88rem'};
+    line-height: ${p => p.small ? '1.25' : '1.6'};
 `;
 
 const SECTION_HEADERS = new Set([
@@ -52,7 +52,7 @@ function preprocess(text: string): string {
     return t;
 }
 
-export function renderJobDescription(text: string): React.ReactNode {
+export function renderJobDescription(text: string, small?: boolean): React.ReactNode {
     if (!text) return null;
     text = preprocess(text);
 
@@ -98,17 +98,17 @@ export function renderJobDescription(text: string): React.ReactNode {
         <>
             {blocks.map((block, i) => {
                 if (block.kind === 'para') {
-                    return <DescParagraph key={i}>{block.text}</DescParagraph>;
+                    return <DescParagraph key={i} small={small}>{block.text}</DescParagraph>;
                 }
                 const bullets = block.children.filter(c => c.type === 'bullet');
                 const paras   = block.children.filter(c => c.type === 'para');
                 return (
-                    <DescSection key={i}>
-                        {block.heading && <DescSectionHeader>{block.heading}</DescSectionHeader>}
-                        {paras.map((p, j)   => <DescParagraph key={`p-${j}`}>{p.text}</DescParagraph>)}
+                    <DescSection key={i} small={small}>
+                        {block.heading && <DescSectionHeader small={small}>{block.heading}</DescSectionHeader>}
+                        {paras.map((p, j)   => <DescParagraph key={`p-${j}`} small={small}>{p.text}</DescParagraph>)}
                         {bullets.length > 0 && (
-                            <DescBulletList>
-                                {bullets.map((b, j) => <DescBulletItem key={`b-${j}`}>{b.text}</DescBulletItem>)}
+                            <DescBulletList small={small}>
+                                {bullets.map((b, j) => <DescBulletItem key={`b-${j}`} small={small}>{b.text}</DescBulletItem>)}
                             </DescBulletList>
                         )}
                     </DescSection>

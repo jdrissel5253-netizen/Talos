@@ -2,7 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import styled from 'styled-components';
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink, LayoutGrid, LayoutList, Minimize2, ChevronDown } from 'lucide-react';
+import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink, LayoutGrid, LayoutList, Minimize2, ChevronDown, ZoomOut, ZoomIn } from 'lucide-react';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
 import AddJobForm from './AddJobForm';
@@ -832,6 +832,7 @@ const JobsManagement: React.FC = () => {
     const [compactPage, setCompactPage] = useState(() => localStorage.getItem('jobsManagementCompactPage') === 'true');
     const [jobDetailsExpanded, setJobDetailsExpanded] = useState(false);
     const [compactJobsList, setCompactJobsList] = useState(() => localStorage.getItem('jobsManagementCompactJobsList') === 'true');
+    const [smallDescription, setSmallDescription] = useState(() => localStorage.getItem('jobsManagementSmallDescription') === 'true');
 
     const navigate = useNavigate();
     const { jobId } = useParams<{ jobId: string }>();
@@ -848,6 +849,10 @@ const JobsManagement: React.FC = () => {
     useEffect(() => {
         localStorage.setItem('jobsManagementCompactJobsList', String(compactJobsList));
     }, [compactJobsList]);
+
+    useEffect(() => {
+        localStorage.setItem('jobsManagementSmallDescription', String(smallDescription));
+    }, [smallDescription]);
 
     const openSchedulingLink = (candidateName: string) => {
         if (!schedulingLink) return;
@@ -1363,6 +1368,13 @@ const JobsManagement: React.FC = () => {
                                         >
                                             <Minimize2 size={16} />
                                         </ViewToggleBtn>
+                                        <ViewToggleBtn
+                                            active={smallDescription}
+                                            onClick={() => setSmallDescription(!smallDescription)}
+                                            title={smallDescription ? 'Restore job description text size' : 'Shrink job description text'}
+                                        >
+                                            {smallDescription ? <ZoomIn size={16} /> : <ZoomOut size={16} />}
+                                        </ViewToggleBtn>
                                     </div>
                                 </div>
                             </ContentHeader>
@@ -1416,7 +1428,7 @@ const JobsManagement: React.FC = () => {
                                 </DetailRow>
                                 {selectedJob.description && (
                                     <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid #1e1e1e' }}>
-                                        {renderJobDescription(selectedJob.description)}
+                                        {renderJobDescription(selectedJob.description, smallDescription)}
                                     </div>
                                 )}
                                 <JobActionsRow>
