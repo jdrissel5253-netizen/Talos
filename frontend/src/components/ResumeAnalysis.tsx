@@ -398,6 +398,7 @@ const ResumeAnalysis: React.FC = () => {
         {!isSidebarCollapsed && (
           <>
             <ToggleButton onClick={() => setIsSidebarCollapsed(true)}>Hide ◀</ToggleButton>
+            <ViewAllButton onClick={() => navigate('/dashboard')} style={{ marginBottom: '1rem' }}>← Dashboard</ViewAllButton>
             <SidebarTitle>My Jobs</SidebarTitle>
             <ViewAllButton onClick={() => navigate('/jobs-management')}>View All Jobs →</ViewAllButton>
             <ViewAllButton onClick={() => navigate('/talent-pool-manager')} style={{ marginTop: '0.5rem' }}>
