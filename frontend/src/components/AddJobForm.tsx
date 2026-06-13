@@ -387,6 +387,17 @@ const Tooltip = styled.span`
   display: none;
 `;
 
+const ExperienceWarning = styled.div`
+  margin-top: 0.6rem;
+  padding: 0.75rem 1rem;
+  background: #2a1f00;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  color: #fcd34d;
+  font-size: 0.85rem;
+  line-height: 1.5;
+`;
+
 const TooltipIcon = styled.span`
   background: #333333;
   color: #4ade80;
@@ -454,6 +465,12 @@ const JOB_TITLE_OPTIONS = [
   'HVAC Service Manager',
   'Apprentice'
 ];
+
+const SENIOR_ROLES = new Set([
+  'Lead HVAC Technician',
+  'Lead HVAC Installer',
+  'HVAC Service Manager',
+]);
 
 const YEARS_OF_EXPERIENCE_OPTIONS = [
   { value: '0', label: 'No experience required' },
@@ -1171,6 +1188,11 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
                     <option key={option.value} value={option.value}>{option.label}</option>
                   ))}
                 </Select>
+                {SENIOR_ROLES.has(formData.title) && formData.qualifications_years === '0' && (
+                  <ExperienceWarning>
+                    <strong>Heads up:</strong> For a <strong>{formData.title}</strong> role, setting 0 required years causes the AI to skip competency evaluation and score candidates primarily on resume formatting quality — which won't surface the right people. Set a real experience floor (3+ years recommended) so the AI evaluates leadership, diagnostics, and technical depth instead.
+                  </ExperienceWarning>
+                )}
               </FormGroup>
 
               <FormGroup>
