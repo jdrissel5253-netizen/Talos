@@ -1439,7 +1439,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
                     onClick={handleRegenerate}
                     disabled={isRegenerating}
                   >
-                    {isRegenerating ? 'Regenerating...' : '↺ Regenerate with AI'}
+                    {isRegenerating ? 'Regenerating...' : '↺ Regenerate'}
                   </RegenerateButton>
                 </div>
                 <TextArea
