@@ -257,8 +257,8 @@ const Header: React.FC = () => {
             <DropdownContent isOpen={productOpen}>
               <DropdownItem to="/job-board-integration">Job Board Integration</DropdownItem>
               <DropdownItem to="/job-description-writer">Job Description Writer</DropdownItem>
-              <DropdownItem to="/candidate-ranking">Candidate Ranking System</DropdownItem>
-              <DropdownItem to="/candidate-messages">Candidate Message Generator</DropdownItem>
+              {!isLoggedIn() && <DropdownItem to="/candidate-ranking">Candidate Ranking System</DropdownItem>}
+              {!isLoggedIn() && <DropdownItem to="/candidate-messages">Candidate Message Generator</DropdownItem>}
               <DropdownItem to={isLoggedIn() ? '/talent-pool-manager' : '/talent-pool'}>Personalized Talent Pool</DropdownItem>
               <DropdownItem to="/hvac-insights">HVAC Hiring Insights</DropdownItem>
             </DropdownContent>
@@ -297,8 +297,8 @@ const Header: React.FC = () => {
         <MobileNavBtn onClick={() => {}}>Product</MobileNavBtn>
         <MobileSub to="/job-board-integration" onClick={closeMobile}>Job Board Integration</MobileSub>
         <MobileSub to="/job-description-writer" onClick={closeMobile}>Job Description Writer</MobileSub>
-        <MobileSub to="/candidate-ranking" onClick={closeMobile}>Candidate Ranking</MobileSub>
-        <MobileSub to="/candidate-messages" onClick={closeMobile}>Candidate Messages</MobileSub>
+        {!isLoggedIn() && <MobileSub to="/candidate-ranking" onClick={closeMobile}>Candidate Ranking</MobileSub>}
+        {!isLoggedIn() && <MobileSub to="/candidate-messages" onClick={closeMobile}>Candidate Messages</MobileSub>}
         <MobileSub to={isLoggedIn() ? '/talent-pool-manager' : '/talent-pool'} onClick={closeMobile}>Personalized Talent Pool</MobileSub>
         <MobileSub to="/hvac-insights" onClick={closeMobile}>HVAC Hiring Insights</MobileSub>
 
