@@ -170,13 +170,14 @@ const JobsList = styled.div`
     padding: 0.875rem;
 `;
 
-const JobCard = styled.div<{ isActive: boolean }>`
+const JobCard = styled.div<{ isActive: boolean; compact?: boolean }>`
     background: ${props => props.isActive ? 'rgba(74, 222, 128, 0.05)' : 'transparent'};
     border: 1px solid ${props => props.isActive ? 'rgba(74, 222, 128, 0.3)' : 'rgba(255, 255, 255, 0.07)'};
     border-radius: 7px;
-    padding: 0.875rem;
-    padding-bottom: 2rem;
-    margin-bottom: 0.625rem;
+    padding: ${p => p.compact ? '0.5rem 0.75rem' : '0.875rem'};
+    padding-right: ${p => p.compact ? '2.5rem' : '0.875rem'};
+    padding-bottom: ${p => p.compact ? '0.5rem' : '2rem'};
+    margin-bottom: ${p => p.compact ? '0.35rem' : '0.625rem'};
     cursor: pointer;
     transition: all 0.15s ease;
     position: relative;
@@ -187,12 +188,17 @@ const JobCard = styled.div<{ isActive: boolean }>`
     }
 `;
 
-const JobTitle = styled.h3`
-    font-size: 0.9375rem;
+const JobTitle = styled.h3<{ compact?: boolean }>`
+    font-size: ${p => p.compact ? '0.8125rem' : '0.9375rem'};
     font-weight: 600;
     color: #e0e0e0;
-    margin-bottom: 0.4rem;
+    margin-bottom: ${p => p.compact ? '0' : '0.4rem'};
     line-height: 1.3;
+    ${p => p.compact ? `
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    ` : ''}
 `;
 
 const JobMeta = styled.div`
@@ -203,20 +209,28 @@ const JobMeta = styled.div`
     gap: 0.2rem;
 `;
 
-const CardEditButton = styled.button`
+const CardEditButton = styled.button<{ compact?: boolean }>`
     position: absolute;
-    bottom: 0.5rem;
-    right: 0.5rem;
     background: transparent;
     border: 1px solid rgba(74, 222, 128, 0.2);
     color: #4ade80;
-    font-size: 0.675rem;
     font-weight: 600;
-    padding: 0.18rem 0.5rem;
     border-radius: 4px;
     cursor: pointer;
     font-family: inherit;
     transition: all 0.15s ease;
+    ${p => p.compact ? `
+        top: 50%;
+        right: 0.5rem;
+        transform: translateY(-50%);
+        font-size: 0.625rem;
+        padding: 0.1rem 0.4rem;
+    ` : `
+        bottom: 0.5rem;
+        right: 0.5rem;
+        font-size: 0.675rem;
+        padding: 0.18rem 0.5rem;
+    `}
 
     &:hover {
         background: rgba(74, 222, 128, 0.08);
@@ -817,6 +831,7 @@ const JobsManagement: React.FC = () => {
     const [schedulingLink, setSchedulingLink] = useState('');
     const [compactPage, setCompactPage] = useState(() => localStorage.getItem('jobsManagementCompactPage') === 'true');
     const [jobDetailsExpanded, setJobDetailsExpanded] = useState(false);
+    const [compactJobsList, setCompactJobsList] = useState(() => localStorage.getItem('jobsManagementCompactJobsList') === 'true');
 
     const navigate = useNavigate();
     const { jobId } = useParams<{ jobId: string }>();
@@ -829,6 +844,10 @@ const JobsManagement: React.FC = () => {
     useEffect(() => {
         localStorage.setItem('jobsManagementCompactPage', String(compactPage));
     }, [compactPage]);
+
+    useEffect(() => {
+        localStorage.setItem('jobsManagementCompactJobsList', String(compactJobsList));
+    }, [compactJobsList]);
 
     const openSchedulingLink = (candidateName: string) => {
         if (!schedulingLink) return;
@@ -1251,7 +1270,16 @@ const JobsManagement: React.FC = () => {
                     {!isLeftPanelCollapsed && (
                         <>
                             <PanelHeader>
-                                <PanelTitle>My Jobs</PanelTitle>
+                                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1rem' }}>
+                                    <PanelTitle style={{ marginBottom: 0 }}>My Jobs</PanelTitle>
+                                    <ViewToggleBtn
+                                        active={compactJobsList}
+                                        onClick={() => setCompactJobsList(!compactJobsList)}
+                                        title={compactJobsList ? 'Switch to full job cards' : 'Switch to compact job cards'}
+                                    >
+                                        <Minimize2 size={14} />
+                                    </ViewToggleBtn>
+                                </div>
                                 <BackButton onClick={() => navigate('/dashboard')}>
                                     ← Dashboard
                                 </BackButton>
@@ -1279,15 +1307,19 @@ const JobsManagement: React.FC = () => {
                                         <JobCard
                                             key={job.id}
                                             isActive={selectedJob?.id === job.id}
+                                            compact={compactJobsList}
                                             onClick={() => navigate(`/jobs-management/${job.id}`)}
                                         >
-                                            <JobTitle>{job.title}</JobTitle>
-                                            <JobMeta>
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {job.location}</span>
-                                                <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Briefcase size={14} /> {job.required_years_experience}+ years</span>
-                                                {job.vehicle_required && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Car size={14} /> Vehicle Required</span>}
-                                            </JobMeta>
+                                            <JobTitle compact={compactJobsList}>{job.title}</JobTitle>
+                                            {!compactJobsList && (
+                                                <JobMeta>
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {job.location}</span>
+                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Briefcase size={14} /> {job.required_years_experience}+ years</span>
+                                                    {job.vehicle_required && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Car size={14} /> Vehicle Required</span>}
+                                                </JobMeta>
+                                            )}
                                             <CardEditButton
+                                                compact={compactJobsList}
                                                 onClick={(e) => {
                                                     e.stopPropagation();
                                                     openEditForm(job);
