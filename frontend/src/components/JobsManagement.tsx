@@ -1270,14 +1270,16 @@ const JobsManagement: React.FC = () => {
                                         <ContentTitle>{selectedJob.title}</ContentTitle>
                                         <ContentSubtitle>Candidate Pipeline</ContentSubtitle>
                                     </div>
-                                    <div style={{ display: 'flex', gap: '0.35rem' }}>
-                                        <ViewToggleBtn active={viewMode === 'cards'} onClick={() => setViewMode('cards')} title="Card view">
-                                            <LayoutGrid size={16} />
-                                        </ViewToggleBtn>
-                                        <ViewToggleBtn active={viewMode === 'compact'} onClick={() => setViewMode('compact')} title="Compact view">
-                                            <LayoutList size={16} />
-                                        </ViewToggleBtn>
-                                    </div>
+                                    {candidates.length > 0 && (
+                                        <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                            <ViewToggleBtn active={viewMode === 'cards'} onClick={() => setViewMode('cards')} title="Card view">
+                                                <LayoutGrid size={16} />
+                                            </ViewToggleBtn>
+                                            <ViewToggleBtn active={viewMode === 'compact'} onClick={() => setViewMode('compact')} title="Compact view">
+                                                <LayoutList size={16} />
+                                            </ViewToggleBtn>
+                                        </div>
+                                    )}
                                 </div>
                             </ContentHeader>
 
