@@ -2585,6 +2585,137 @@ ${generateUnifiedScoringRubric(requiredYears, false)}
 }
 
 /**
+ * Get Warehouse Associate tiered evaluation criteria
+ */
+function getWarehouseAssociateCriteria(requiredYears, flexibleOnTitle = true) {
+   const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
+
+   return {
+      framework: `
+WAREHOUSE ASSOCIATE RESUME EVALUATION FRAMEWORK
+Job Requirement: ${requiredYears} years of Warehouse Associate or equivalent experience
+Flexibility on Role Title: ${flexibleOnTitle ? 'YES - Accept equivalent roles with transferable skills' : 'NO - Strict title matching, equivalent roles score lower'}
+
+=== CRITICAL EVALUATION RULES ===
+
+THIS IS AN ENTRY-LEVEL POSITION OPEN TO A LARGE TALENT POOL
+- Focus on RELIABILITY, PHYSICAL CAPABILITY, and WORK ETHIC over formal experience
+- Candidates with retail, labor, or service backgrounds should be evaluated favorably
+- Only candidates with NO transferable skills (purely office/professional/creative roles) should score low
+
+=== HARD REQUIREMENTS (BINARY FILTERS) ===
+
+If the job post lists these as REQUIRED, candidates MUST meet them:
+1. Ability to lift 40-50+ lbs (no stated physical limitations)
+2. Driver's license or reliable transportation (only if explicitly required)
+3. High school diploma/GED (only if explicitly required)
+
+=== EXPERIENCE CATEGORIES ===
+
+DIRECT EXPERIENCE:
+- Warehouse Associate, Material Handler, Order Picker, Picker/Packer, Stocker, Shipping & Receiving, Inventory Associate, Distribution Associate
+
+STRONG EQUIVALENTS:
+- Retail Stocker, Manufacturing Worker, Construction Laborer, Landscaping, General Laborer, Movers, Custodian (heavy tasks), Loading Dock Worker, Fulfillment Associate
+
+CONDITIONAL EQUIVALENTS (Count IF resume shows 1-2 core competencies):
+- Retail Sales (with backroom duties), Restaurant Server/Cook (physical labor), Maintenance Worker (material handling), Delivery Driver (loading/unloading), Farm Worker
+
+=== CORE COMPETENCY EVALUATION ===
+
+Evaluate against these FOUR competency categories. Strong candidates show evidence in 1-2 categories (NOT all 4):
+
+A. PHYSICAL LABOR & MATERIAL HANDLING (Strong/Moderate/Weak)
+   - Loading/unloading trucks
+   - Lifting/carrying 40-50+ lbs
+   - Pulling orders, stocking shelves
+   - Operating pallet jacks or forklifts
+   - Moving equipment or materials
+
+B. WAREHOUSE & INVENTORY TASKS (Strong/Moderate/Weak)
+   - Picking/packing orders
+   - Shipping & receiving
+   - Cycle counts and inventory management
+   - Organizing stockrooms, labeling
+   - Using barcode scanners or WMS software
+
+C. RELIABILITY & WORK ETHIC (Strong/Moderate/Weak)
+   - Consistent attendance
+   - Working independently or as part of a team
+   - Following safety procedures
+   - Time management
+   - Availability for varied shifts
+
+D. FAST-PACED OR REPETITIVE WORK (Strong/Moderate/Weak)
+   - Manufacturing lines or distribution centers
+   - Retail backroom operations
+   - High-volume, labor-intensive environments
+   - Meeting quotas or working under time pressure
+
+SCORING: Candidates with Strong evidence in 1-2 categories should score well, even without all 4.
+
+=== NON-TRANSFERABLE ROLES ===
+
+Candidates with ONLY office/administrative, professional, creative, medical/scientific, or technology roles (e.g. Director, Manager, Accountant, Engineer, Hairdresser, Artist, Doctor, Biologist, Developer) should score in the Red tier UNLESS they also have warehouse/labor experience.
+
+=== CERTIFICATIONS & SKILLS (BONUS) ===
+
+Valuable but NOT required - give bonus points for:
+- Forklift certification
+- Pallet jack certification
+- OSHA safety certification
+- Hazmat handling
+- WMS (Warehouse Management System) experience
+- RF scanner experience
+- CDL
+
+${flexibleOnTitle ?
+            `FLEXIBILITY MODE: ON
+- Strong Equivalents count as FULL warehouse experience
+- Conditional Equivalents count as FULL experience IF resume demonstrates 1-2 core competencies
+- Focus on transferable skills and potential, not just job titles` :
+            `FLEXIBILITY MODE: OFF
+- Strong Equivalents count as "Close to Required" experience (apply -${flexibilityPenalty} point penalty)
+- Conditional Equivalents drop to lower end of "Close to Required" with -${flexibilityPenalty} point penalty
+- Example: A candidate scoring 79 would drop to 70 with flexibility OFF`}
+
+=== RESUME QUALITY DEFINITIONS ===
+
+- GOOD RESUME: Proper formatting, no typos, clear job descriptions showing physical duties with 2+ bullets per role
+- MID RESUME: Professional formatting with few errors, may lack detailed bullets
+- POOR RESUME: Multiple typos/grammar errors, poor formatting, lacks substantive content
+
+=== WORK GAPS ===
+
+- NO WORK GAP: Under 6 months of unemployment
+- SMALL WORK GAP: 6 months to 1 year of unemployment
+- LARGE WORK GAP: Over 1 year of unemployment
+- Entry-level candidates should not be heavily penalized for gaps; overlapping jobs = POSITIVE
+
+=== JOB STABILITY ===
+
+- NOT JOB HOPPY: 1+ years per job, or limited job history (entry-level)
+- JOB HOPPY: Multiple jobs under 6 months each
+- NOTE: Entry-level workers may have shorter tenures - be lenient
+
+=== LOCATION/DISTANCE ===
+
+- WITHIN 30 MILES: Minimal impact
+- 30-50 MILES: Moderate negative impact
+- OVER 50 MILES: Major negative impact
+
+${generateUnifiedScoringRubric(requiredYears, false)}
+
+`,
+      scoring: {
+         greenTier: { min: 80, max: 100 },
+         yellowTier: { min: 50, max: 79 },
+         redTier: { min: 0, max: 49 }
+      }
+   };
+}
+
+/**
  * Get Bookkeeper tiered evaluation criteria
  */
 function getBookkeeperCriteria(requiredYears, flexibleOnTitle = true) {
