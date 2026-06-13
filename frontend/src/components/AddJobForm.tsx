@@ -1190,7 +1190,7 @@ const AddJobForm: React.FC<AddJobFormProps> = ({ onClose, onJobCreated, editJob 
                 </Select>
                 {SENIOR_ROLES.has(formData.title) && formData.qualifications_years === '0' && (
                   <ExperienceWarning>
-                    <strong>Heads up:</strong> For a <strong>{formData.title}</strong> role, setting 0 required years causes the AI to skip competency evaluation and score candidates primarily on resume formatting quality — which won't surface the right people. Set a real experience floor (3+ years recommended) so the AI evaluates leadership, diagnostics, and technical depth instead.
+                    ⚠️ <strong>Heads up:</strong> With 0 years required, Talos scores candidates on how polished their resume looks — not their actual skills or leadership experience. For a <strong>{formData.title}</strong>, we recommend requiring at least 3 years so the right candidates rise to the top.
                   </ExperienceWarning>
                 )}
               </FormGroup>
