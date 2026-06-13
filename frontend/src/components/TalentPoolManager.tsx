@@ -1324,7 +1324,7 @@ const TalentPoolManager: React.FC = () => {
       </MetaRow>
 
       <ActionButtons>
-        <ActionButton onClick={() => navigate(`/candidates/${candidate.pipeline_id}`)}>
+        <ActionButton onClick={() => navigate(`/candidates/${candidate.pipeline_id}`, { state: { from: '/talent-pool-manager' } })}>
           <FileText size={16} /> View Profile
         </ActionButton>
         <ActionButton onClick={() => {
@@ -1463,7 +1463,7 @@ const TalentPoolManager: React.FC = () => {
         <CompactStatusBadge status={candidate.pipeline_status}>{candidate.pipeline_status}</CompactStatusBadge>
 
         <CompactActions>
-          <ActionIcon color="#a3a3a3" title="View Profile" onClick={() => navigate(`/candidates/${candidate.pipeline_id}`)}>
+          <ActionIcon color="#a3a3a3" title="View Profile" onClick={() => navigate(`/candidates/${candidate.pipeline_id}`, { state: { from: '/talent-pool-manager' } })}>
             <FileText size={14} />
           </ActionIcon>
           <ActionIcon color="#a3a3a3" title="Resume" onClick={() => {

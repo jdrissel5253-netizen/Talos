@@ -1072,7 +1072,7 @@ const JobsManagement: React.FC = () => {
                     <span style={{ color: '#333' }}>{candidate.pipeline_status}</span>
                 </CompactMeta>
             </div>
-            <ActionIcon color="#a3a3a3" onClick={() => navigate(`/candidates/${candidate.id}`)} title="Profile">
+            <ActionIcon color="#a3a3a3" onClick={() => navigate(`/candidates/${candidate.id}`, { state: { from: '/jobs-management' } })} title="Profile">
                 <User size={13} />
             </ActionIcon>
             <ActionIcon color="#4ade80" onClick={() => handleCandidateAction(candidate.id, 'approved')} title="Approve">
@@ -1119,7 +1119,7 @@ const JobsManagement: React.FC = () => {
                 <ViewBtn onClick={() => setResumeModal({ candidateId: candidate.candidate_id, filename: candidate.filename })}>
                     <FileText size={12} /> Resume
                 </ViewBtn>
-                <ViewBtn onClick={() => navigate(`/candidates/${candidate.id}`)}>
+                <ViewBtn onClick={() => navigate(`/candidates/${candidate.id}`, { state: { from: '/jobs-management' } })}>
                     <User size={12} /> Profile
                 </ViewBtn>
             </ViewActions>

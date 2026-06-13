@@ -1023,7 +1023,7 @@ const ClientDashboard: React.FC = () => {
                             {jobCandidates.length > 0 && (
                               <JobCandidateList>
                                 {jobCandidates.map(c => (
-                                  <JobCandidateRow key={c.pipeline_id} onClick={e => { e.stopPropagation(); navigate(`/candidates/${c.pipeline_id}`); }}>
+                                  <JobCandidateRow key={c.pipeline_id} onClick={e => { e.stopPropagation(); navigate(`/candidates/${c.pipeline_id}`, { state: { from: '/dashboard' } }); }}>
                                     <TierChip tier={c.tier}>{c.tier.toUpperCase()}</TierChip>
                                     <JobCandidateName>{friendlyName(c.filename)}</JobCandidateName>
                                     <JobCandidateScore>{c.tier_score}/100</JobCandidateScore>
@@ -1058,7 +1058,7 @@ const ClientDashboard: React.FC = () => {
                   ) : (
                     <CandidatesBody>
                       {topCandidates.map(c => (
-                        <CandidateItem key={c.pipeline_id} onClick={() => navigate(`/candidates/${c.pipeline_id}`)}>
+                        <CandidateItem key={c.pipeline_id} onClick={() => navigate(`/candidates/${c.pipeline_id}`, { state: { from: '/dashboard' } })}>
                           <TierChip tier={c.tier}>{c.tier.toUpperCase()}</TierChip>
                           <CandidateNameText>{friendlyName(c.filename)}</CandidateNameText>
                           <CandidateJobText>{c.job_title}</CandidateJobText>

@@ -259,7 +259,7 @@ const Header: React.FC = () => {
               <DropdownItem to="/job-description-writer">Job Description Writer</DropdownItem>
               <DropdownItem to="/candidate-ranking">Candidate Ranking System</DropdownItem>
               <DropdownItem to="/candidate-messages">Candidate Message Generator</DropdownItem>
-              <DropdownItem to="/talent-pool">Personalized Talent Pool</DropdownItem>
+              <DropdownItem to={isLoggedIn() ? '/talent-pool-manager' : '/talent-pool'}>Personalized Talent Pool</DropdownItem>
               <DropdownItem to="/hvac-insights">HVAC Hiring Insights</DropdownItem>
             </DropdownContent>
           </NavItem>
@@ -299,7 +299,7 @@ const Header: React.FC = () => {
         <MobileSub to="/job-description-writer" onClick={closeMobile}>Job Description Writer</MobileSub>
         <MobileSub to="/candidate-ranking" onClick={closeMobile}>Candidate Ranking</MobileSub>
         <MobileSub to="/candidate-messages" onClick={closeMobile}>Candidate Messages</MobileSub>
-        <MobileSub to="/talent-pool" onClick={closeMobile}>Personalized Talent Pool</MobileSub>
+        <MobileSub to={isLoggedIn() ? '/talent-pool-manager' : '/talent-pool'} onClick={closeMobile}>Personalized Talent Pool</MobileSub>
         <MobileSub to="/hvac-insights" onClick={closeMobile}>HVAC Hiring Insights</MobileSub>
 
         <MobileNavLink to="/pricing" onClick={closeMobile}>Pricing</MobileNavLink>

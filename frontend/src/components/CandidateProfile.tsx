@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import { ArrowLeft, User, Briefcase, Star, Shield, AlertTriangle, Award, Phone, Mail, MapPin, Calendar, Clock, FileText, Smartphone, XCircle, Pencil, Check, X } from 'lucide-react';
 import { getAuthHeaders } from '../utils/auth';
@@ -505,6 +505,7 @@ interface Profile {
 const CandidateProfile: React.FC = () => {
   const { pipelineId } = useParams<{ pipelineId: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [profile, setProfile] = useState<Profile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
@@ -575,7 +576,7 @@ const CandidateProfile: React.FC = () => {
       <FontImport />
       <Page>
         <TopBar>
-          <BackButton onClick={() => navigate(-1)}>
+          <BackButton onClick={() => navigate((location.state as any)?.from ?? '/talent-pool-manager')}>
             <ArrowLeft size={13} /> Back
           </BackButton>
           <TopBarTitle>Candidate Profile</TopBarTitle>

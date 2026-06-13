@@ -1,5 +1,6 @@
 import React, { Suspense, lazy } from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { isLoggedIn } from './utils/auth';
 import styled, { createGlobalStyle } from 'styled-components';
 import Header from './components/Header';
 import Footer from './components/Footer';
@@ -37,6 +38,11 @@ const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/TermsOfService'));
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const Pricing = lazy(() => import('./components/Pricing'));
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  if (!isLoggedIn()) return <Navigate to="/login" replace />;
+  return <>{children}</>;
+}
 
 // Loading fallback for lazy-loaded routes
 const LoadingFallback = styled.div`
@@ -133,12 +139,9 @@ function AppLayout() {
         <MainContent>
           <Suspense fallback={<LoadingFallback>Loading...</LoadingFallback>}>
             <Routes>
+              {/* Public routes */}
               <Route path="/" element={<Home />} />
               <Route path="/login" element={<Login />} />
-              <Route path="/dashboard" element={<ClientDashboard />} />
-              <Route path="/resume-analysis" element={<ResumeAnalysis />} />
-              <Route path="/batch-resume-analysis" element={<BatchResumeAnalysis />} />
-              <Route path="/jobs-management/:jobId?" element={<JobsManagement />} />
               <Route path="/why-talos" element={<WhyTalos />} />
               <Route path="/why-different" element={<WhyTalosDifferent />} />
               <Route path="/job-board-integration" element={<JobBoardIntegration />} />
@@ -146,20 +149,25 @@ function AppLayout() {
               <Route path="/candidate-ranking" element={<CandidateRanking />} />
               <Route path="/candidate-messages" element={<CandidateMessages />} />
               <Route path="/talent-pool" element={<TalentPool />} />
-              <Route path="/talent-pool-dashboard" element={<TalentPoolHome />} />
-              <Route path="/talent-pool/jobs" element={<JobSelectionScreen />} />
-              <Route path="/talent-pool/candidates" element={<CandidateListScreen />} />
-              <Route path="/talent-pool-old" element={<TalentPool />} />
-              <Route path="/talent-pool-manager" element={<TalentPoolManager />} />
               <Route path="/hvac-insights" element={<HVACInsights />} />
-              <Route path="/candidates/:pipelineId" element={<CandidateProfile />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/account" element={<AccountSettings />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
-              <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/pricing" element={<Pricing />} />
+
+              {/* Protected routes */}
+              <Route path="/dashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
+              <Route path="/resume-analysis" element={<ProtectedRoute><ResumeAnalysis /></ProtectedRoute>} />
+              <Route path="/batch-resume-analysis" element={<ProtectedRoute><BatchResumeAnalysis /></ProtectedRoute>} />
+              <Route path="/jobs-management/:jobId?" element={<ProtectedRoute><JobsManagement /></ProtectedRoute>} />
+              <Route path="/talent-pool-dashboard" element={<ProtectedRoute><TalentPoolHome /></ProtectedRoute>} />
+              <Route path="/talent-pool/jobs" element={<ProtectedRoute><JobSelectionScreen /></ProtectedRoute>} />
+              <Route path="/talent-pool/candidates" element={<ProtectedRoute><CandidateListScreen /></ProtectedRoute>} />
+              <Route path="/talent-pool-manager" element={<ProtectedRoute><TalentPoolManager /></ProtectedRoute>} />
+              <Route path="/candidates/:pipelineId" element={<ProtectedRoute><CandidateProfile /></ProtectedRoute>} />
+              <Route path="/account" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
+              <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             </Routes>
           </Suspense>
         </MainContent>
