@@ -378,7 +378,7 @@ const ResumeAnalysis: React.FC = () => {
     try {
       const res = await fetch(
         `${config.apiUrl}/api/jobs/${selectedJobForAdd}/candidates/${candidateId}`,
-        { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ vehicle_status: 'unknown' }) }
+        { method: 'POST', headers: { 'Content-Type': 'application/json', ...getAuthHeaders() }, body: JSON.stringify({ vehicle_status: 'unknown' }) }
       );
       if (res.ok) {
         alert('Candidate added to job successfully!');
