@@ -30,7 +30,11 @@ if (missing.length > 0) {
 }
 
 const app = express();
-app.set('trust proxy', 1); // ALB sits in front — trust one proxy hop for accurate client IPs
+// Classic ELB -> EB nginx -> Node, both of which append to X-Forwarded-For,
+// so the real client IP is 2 hops back from the socket. With trust proxy=1,
+// req.ip resolved to the ELB's internal IP for every request, causing all
+// clients (and the rate limiters keyed on req.ip) to share one bucket.
+app.set('trust proxy', 2);
 const PORT = 8080; // Hardcoded to fix AWS EB stuck env var mismatch
 
 // Create uploads directory if it doesn't exist
@@ -143,7 +147,9 @@ app.use((req, res, next) => {
             method: req.method,
             url: req.originalUrl,
             status: res.statusCode,
-            durationMs: duration
+            durationMs: duration,
+            ip: req.ip,
+            xff: req.headers['x-forwarded-for']
         });
     });
 
@@ -186,7 +192,9 @@ const authLimiter = rateLimit({
     message: { status: 'error', message: 'Too many login attempts. Please try again later.' }
 });
 
-app.use(generalLimiter);
+// Scope to /api only — unmatched paths (e.g. bot scans of /backup, /.git, etc.)
+// fall straight through to the 404 handler without consuming limiter quota.
+app.use('/api', generalLimiter);
 
 // CORS
 app.use(cors({
