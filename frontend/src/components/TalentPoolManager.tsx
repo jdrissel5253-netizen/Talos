@@ -74,7 +74,6 @@ interface TalentPoolStats {
 
 const STATUS_TABS: { key: string; label: string }[] = [
   { key: 'new', label: 'Unreviewed' },
-  { key: '', label: 'All' },
   { key: 'approved', label: 'Approved' },
   { key: 'contacted', label: 'Contacted' },
   { key: 'backup', label: 'Backup' },
