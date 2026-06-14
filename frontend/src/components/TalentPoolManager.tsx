@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled, { keyframes } from 'styled-components';
 import { config } from '../config';
 import { getAuthHeaders, handleUnauthorized } from '../utils/auth';
-import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2, ChevronDown, ChevronRight, LayoutGrid, LayoutList, Download, Eye, Target, Loader2 } from 'lucide-react';
+import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2, ChevronDown, ChevronRight, LayoutGrid, LayoutList, Download, Eye, Target, Loader2, Check, ThumbsUp } from 'lucide-react';
 import ResumePreviewModal from './ResumePreviewModal';
 import ResumeFileModal from './ResumeFileModal';
 import ContactRejectionModal from './ContactRejectionModal';
@@ -1198,6 +1198,22 @@ const TalentPoolManager: React.FC = () => {
     setContactModalOpen(true);
   };
 
+  const handleCandidateAction = async (pipelineId: number, status: string) => {
+    try {
+      const response = await fetch(`${config.apiUrl}/api/pipeline/${pipelineId}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+        body: JSON.stringify({ status })
+      });
+      if (!response.ok) throw new Error('Failed to update status');
+      setCandidates(prev => prev.filter(c => c.pipeline_id !== pipelineId));
+      fetchStats();
+    } catch (err) {
+      console.error('Error updating candidate status:', err);
+      setError('Failed to update candidate status');
+    }
+  };
+
   const handleRemoveCandidate = async (pipelineId: number) => {
     if (!window.confirm('Remove this candidate from the talent pool?')) return;
     try {
@@ -1511,6 +1527,27 @@ const TalentPoolManager: React.FC = () => {
           </ActionIcon>
         )}
         <ActionIcon
+          color="#4ade80"
+          onClick={() => handleCandidateAction(candidate.pipeline_id, 'approved')}
+          title="Approve"
+        >
+          <Check size={16} />
+        </ActionIcon>
+        <ActionIcon
+          color="#fbbf24"
+          onClick={() => handleCandidateAction(candidate.pipeline_id, 'backup')}
+          title="Maybe (move to backup)"
+        >
+          <ThumbsUp size={16} />
+        </ActionIcon>
+        <ActionIcon
+          color="#ef4444"
+          onClick={() => handleCandidateAction(candidate.pipeline_id, 'rejected')}
+          title="Reject"
+        >
+          <X size={16} />
+        </ActionIcon>
+        <ActionIcon
           color="#ef4444"
           onClick={() => handleRemoveCandidate(candidate.pipeline_id)}
           title="Remove from talent pool"
@@ -1636,6 +1673,15 @@ const TalentPoolManager: React.FC = () => {
               <DropdownItem onClick={() => handleSendMessage(candidate.pipeline_id, 'rejection_email')}><X size={14} style={{ marginRight: '8px' }} /> Rejection</DropdownItem>
             </DropdownContent>
           </MessageDropdown>
+          <ActionIcon color="#4ade80" title="Approve" onClick={() => handleCandidateAction(candidate.pipeline_id, 'approved')}>
+            <Check size={14} />
+          </ActionIcon>
+          <ActionIcon color="#fbbf24" title="Maybe (move to backup)" onClick={() => handleCandidateAction(candidate.pipeline_id, 'backup')}>
+            <ThumbsUp size={14} />
+          </ActionIcon>
+          <ActionIcon color="#ef4444" title="Reject" onClick={() => handleCandidateAction(candidate.pipeline_id, 'rejected')}>
+            <X size={14} />
+          </ActionIcon>
           <ActionIcon color="#ef4444" title="Remove" onClick={() => handleRemoveCandidate(candidate.pipeline_id)}>
             <Trash2 size={14} />
           </ActionIcon>
