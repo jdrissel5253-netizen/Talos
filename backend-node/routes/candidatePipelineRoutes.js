@@ -1,10 +1,14 @@
 const express = require('express');
 const router = express.Router();
+const fs = require('fs');
 const db = require('../config/database');
 const { candidatePipelineService, sanitize } = require('../services/databaseService');
 const gmailService = require('../services/gmailService');
 const Anthropic = require('@anthropic-ai/sdk');
 const logger = require('../services/logger');
+const { analyzeResume, extractResumeText, recommendBestFitPosition } = require('../services/resumeAnalyzer');
+const { calculateTier, calculateStarRating, determineGiveThemAChance } = require('../services/scoringService');
+const { downloadResumeToTemp, isS3Key } = require('../config/s3');
 
 // Initialize Anthropic client for automated messaging
 const anthropic = new Anthropic({
@@ -20,6 +24,15 @@ async function assertPipelineOwner(pipelineId, user) {
         throw err;
     }
 }
+
+// Mirror databaseService's array/number helpers so analyses upserts work for both PG and SQLite
+const USE_POSTGRES_DB = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV === 'production';
+const toNum = (v) => { const n = Number(v); return isNaN(n) ? 0 : n; };
+const toArr = (v) => {
+    if (!v) return USE_POSTGRES_DB ? [] : '[]';
+    if (Array.isArray(v)) return USE_POSTGRES_DB ? v.map(String) : JSON.stringify(v);
+    return USE_POSTGRES_DB ? [String(v)] : JSON.stringify([v]);
+};
 
 /**
  * GET /api/pipeline/talent-pool
@@ -510,6 +523,163 @@ router.put('/:id/contact-status', async (req, res) => {
             status: 'error',
             message: 'Failed to update contact status'
         });
+    }
+});
+
+/**
+ * POST /api/pipeline/:id/find-best-fit
+ * Re-analyze a General Talent Pool candidate's resume to identify which
+ * position they're the strongest fit for, then re-score them against that
+ * position's evaluation framework.
+ */
+router.post('/:id/find-best-fit', async (req, res) => {
+    let tempPath = null;
+    try {
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+        }
+
+        await assertPipelineOwner(pipelineId, req.user);
+
+        const { rows } = await db.query(`
+            SELECT cp.id as pipeline_id, cp.candidate_id, cp.job_id,
+                   c.file_path, c.filename,
+                   j.required_years_experience, j.flexible_on_title, j.city, j.zip_code
+            FROM candidate_pipeline cp
+            JOIN candidates c ON cp.candidate_id = c.id
+            JOIN jobs j ON cp.job_id = j.id
+            WHERE cp.id = $1
+        `, [pipelineId]);
+
+        const row = rows[0];
+        if (!row) {
+            return res.status(404).json({ status: 'error', message: 'Candidate not found' });
+        }
+        if (!row.file_path) {
+            return res.status(400).json({ status: 'error', message: 'No resume on file for this candidate' });
+        }
+
+        // Download resume from S3 if needed
+        const filePath = isS3Key(row.file_path)
+            ? (tempPath = await downloadResumeToTemp(row.file_path))
+            : row.file_path;
+
+        if (!fs.existsSync(filePath)) {
+            return res.status(400).json({ status: 'error', message: 'Resume file not found' });
+        }
+
+        // Stage 1: identify the best-fit position from resume content
+        const resumeText = await extractResumeText(filePath);
+        const { bestFitPosition, reasoning, runnerUpPosition } = await recommendBestFitPosition(resumeText);
+
+        // Stage 2: score the resume against that position's evaluation framework
+        const requiredYears = row.required_years_experience || 2;
+        const flexibleOnTitle = row.flexible_on_title !== false;
+        const jobLocation = [row.city, row.zip_code].filter(Boolean).join(', ') || null;
+        const analysis = await analyzeResume(filePath, bestFitPosition, requiredYears, flexibleOnTitle, jobLocation);
+        tempPath = null; // analyzeResume deletes the file itself
+
+        const score = toNum(analysis.overallScore);
+        const tier = calculateTier(score);
+        const starRating = calculateStarRating(score);
+        const giveThemAChance = determineGiveThemAChance({
+            score,
+            yearsOfExperience: analysis.experience?.yearsOfExperience,
+            requiredYears,
+            certificationsScore: analysis.certifications?.score,
+            technicalSkillsScore: analysis.technicalSkills?.score,
+            presentationScore: analysis.presentationQuality?.score,
+            summary: analysis.summary
+        });
+        const aiSummary = `Best Fit: ${bestFitPosition}. Score: ${score}/100. ${analysis.hiringRecommendation || ''}. ${analysis.summary || ''}`.trim();
+
+        // Upsert the analyses record
+        await db.query(`
+            INSERT INTO analyses (
+                candidate_id, overall_score, score_out_of_10, summary,
+                technical_skills_score, technical_skills_found, technical_skills_missing, technical_skills_feedback,
+                certifications_score, certifications_found, certifications_recommended, certifications_feedback,
+                experience_score, years_of_experience, relevant_experience, experience_feedback,
+                presentation_score, presentation_strengths, presentation_improvements, presentation_feedback,
+                strengths, weaknesses, recommendations, hiring_recommendation
+            ) VALUES (
+                $1, $2, $3, $4,
+                $5, $6, $7, $8,
+                $9, $10, $11, $12,
+                $13, $14, $15, $16,
+                $17, $18, $19, $20,
+                $21, $22, $23, $24
+            )
+            ON CONFLICT (candidate_id) DO UPDATE SET
+                overall_score              = excluded.overall_score,
+                score_out_of_10            = excluded.score_out_of_10,
+                summary                    = excluded.summary,
+                technical_skills_score     = excluded.technical_skills_score,
+                technical_skills_found     = excluded.technical_skills_found,
+                technical_skills_missing   = excluded.technical_skills_missing,
+                technical_skills_feedback  = excluded.technical_skills_feedback,
+                certifications_score       = excluded.certifications_score,
+                certifications_found       = excluded.certifications_found,
+                certifications_recommended = excluded.certifications_recommended,
+                certifications_feedback    = excluded.certifications_feedback,
+                experience_score           = excluded.experience_score,
+                years_of_experience        = excluded.years_of_experience,
+                relevant_experience        = excluded.relevant_experience,
+                experience_feedback        = excluded.experience_feedback,
+                presentation_score         = excluded.presentation_score,
+                presentation_strengths     = excluded.presentation_strengths,
+                presentation_improvements  = excluded.presentation_improvements,
+                presentation_feedback      = excluded.presentation_feedback,
+                strengths                  = excluded.strengths,
+                weaknesses                 = excluded.weaknesses,
+                recommendations            = excluded.recommendations,
+                hiring_recommendation      = excluded.hiring_recommendation,
+                updated_at                 = CURRENT_TIMESTAMP
+        `, [
+            row.candidate_id,
+            toNum(analysis.overallScore), Math.round(score / 10), analysis.summary || '',
+            toNum(analysis.technicalSkills?.score), toArr(analysis.technicalSkills?.found), toArr(analysis.technicalSkills?.missing), analysis.technicalSkills?.feedback || '',
+            toNum(analysis.certifications?.score), toArr(analysis.certifications?.found), toArr(analysis.certifications?.recommended), analysis.certifications?.feedback || '',
+            toNum(analysis.experience?.score), analysis.experience?.yearsOfExperience || 0, toArr(analysis.experience?.relevantExperience), analysis.experience?.feedback || '',
+            toNum(analysis.presentationQuality?.score), toArr(analysis.presentationQuality?.strengths), toArr(analysis.presentationQuality?.improvements), analysis.presentationQuality?.feedback || '',
+            toArr(analysis.strengths), toArr(analysis.weaknesses), toArr(analysis.recommendations), analysis.hiringRecommendation || 'MAYBE'
+        ]);
+
+        // Update the pipeline entry with the new best-fit position and score
+        const { rows: updatedRows } = await db.query(`
+            UPDATE candidate_pipeline
+            SET tier = $1, tier_score = $2, star_rating = $3, give_them_a_chance = $4,
+                ai_summary = $5, evaluated_position = $6
+            WHERE id = $7
+            RETURNING tier, tier_score, star_rating, give_them_a_chance, ai_summary, evaluated_position
+        `, [tier, Math.round(score), starRating, giveThemAChance, aiSummary, bestFitPosition, pipelineId]);
+
+        res.json({
+            status: 'success',
+            data: {
+                ...updatedRows[0],
+                years_of_experience: analysis.experience?.yearsOfExperience || 0,
+                certifications_found: analysis.certifications?.found || [],
+                hiring_recommendation: analysis.hiringRecommendation,
+                strengths: analysis.strengths || [],
+                weaknesses: analysis.weaknesses || [],
+                summary: analysis.summary,
+                reasoning,
+                runnerUpPosition
+            }
+        });
+    } catch (error) {
+        if (error.code === 'EMPTY_RESUME') {
+            return res.status(422).json({ status: 'error', message: error.message });
+        }
+        logger.error('Error finding best fit', { error: error.message, stack: error.stack });
+        const code = error.statusCode || 500;
+        res.status(code).json({ status: 'error', message: code === 500 ? 'Failed to find best fit' : error.message });
+    } finally {
+        if (tempPath) {
+            try { fs.unlinkSync(tempPath); } catch (_) {}
+        }
     }
 });
 

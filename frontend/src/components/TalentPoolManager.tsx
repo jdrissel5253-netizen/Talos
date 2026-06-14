@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import styled from 'styled-components';
+import styled, { keyframes } from 'styled-components';
 import { config } from '../config';
 import { getAuthHeaders, handleUnauthorized } from '../utils/auth';
-import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2, ChevronDown, ChevronRight, LayoutGrid, LayoutList, Download, Eye } from 'lucide-react';
+import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2, ChevronDown, ChevronRight, LayoutGrid, LayoutList, Download, Eye, Target, Loader2 } from 'lucide-react';
 import ResumePreviewModal from './ResumePreviewModal';
 import ResumeFileModal from './ResumeFileModal';
 import ContactRejectionModal from './ContactRejectionModal';
@@ -584,6 +584,15 @@ const BestFitBadge = styled.span`
   text-overflow: ellipsis;
 `;
 
+const spin = keyframes`
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+`;
+
+const SpinIcon = styled(Loader2)`
+  animation: ${spin} 1s linear infinite;
+`;
+
 const Summary = styled.p`
   color: #666;
   line-height: 1.65;
@@ -634,6 +643,8 @@ const ActionButton = styled.button`
     color: #4ade80;
     border-color: rgba(74, 222, 128, 0.3);
   }
+
+  &:disabled { opacity: 0.5; cursor: default; }
 `;
 
 const JobsBadge = styled.button`
@@ -824,6 +835,8 @@ const ActionIcon = styled.button<{ color: string }>`
     background: ${props => props.color}18;
     border-color: ${props => props.color}80;
   }
+
+  &:disabled { opacity: 0.5; cursor: default; }
 `;
 
 const MessageDropdown = styled.div`
@@ -919,6 +932,9 @@ const TalentPoolManager: React.FC = () => {
   const [contactMode, setContactMode] = useState<'contact' | 'rejection'>('contact');
   const [contactCommunicationType, setContactCommunicationType] = useState<'email' | 'sms'>('email');
   const [messageDropdownOpen, setMessageDropdownOpen] = useState<number | null>(null);
+
+  // Find Best Fit
+  const [findingBestFitId, setFindingBestFitId] = useState<number | null>(null);
 
   // View mode
   const [viewMode, setViewMode] = useState<'cards' | 'compact'>('cards');
@@ -1150,6 +1166,43 @@ const TalentPoolManager: React.FC = () => {
     }
   };
 
+  const handleFindBestFit = async (pipelineId: number) => {
+    if (findingBestFitId) return;
+    setFindingBestFitId(pipelineId);
+    try {
+      const response = await fetch(`${config.apiUrl}/api/pipeline/${pipelineId}/find-best-fit`, {
+        method: 'POST',
+        headers: getAuthHeaders()
+      });
+      const data = await response.json();
+      if (!response.ok || data.status !== 'success') {
+        throw new Error(data.message || 'Failed to find best fit');
+      }
+      const result = data.data;
+      setCandidates(prev => prev.map(c => c.pipeline_id === pipelineId ? {
+        ...c,
+        tier: result.tier,
+        tier_score: Number(result.tier_score),
+        star_rating: Number(result.star_rating),
+        give_them_a_chance: result.give_them_a_chance,
+        ai_summary: result.ai_summary,
+        evaluated_position: result.evaluated_position,
+        years_of_experience: Number(result.years_of_experience),
+        certifications_found: result.certifications_found || [],
+        hiring_recommendation: result.hiring_recommendation,
+        strengths: result.strengths || [],
+        weaknesses: result.weaknesses || [],
+        summary: result.summary
+      } : c));
+      fetchStats();
+    } catch (err) {
+      console.error('Error finding best fit:', err);
+      setError(err instanceof Error ? err.message : 'Failed to find best fit');
+    } finally {
+      setFindingBestFitId(null);
+    }
+  };
+
   const handleContactSuccess = () => {
     setContactModalOpen(false);
     setSelectedCandidateForContact(null);
@@ -1358,6 +1411,16 @@ const TalentPoolManager: React.FC = () => {
         <ActionButton onClick={() => handleViewResume(candidate)}>
           Quick Summary
         </ActionButton>
+        {candidate.position_type === 'General' && (
+          <ActionButton
+            onClick={() => handleFindBestFit(candidate.pipeline_id)}
+            disabled={findingBestFitId === candidate.pipeline_id}
+            title="Re-analyze this resume to find the position they're the strongest fit for"
+          >
+            {findingBestFitId === candidate.pipeline_id ? <SpinIcon size={16} /> : <Target size={16} />}
+            Find Best Fit
+          </ActionButton>
+        )}
 
         <MessageDropdown>
           <ActionIcon
@@ -1505,6 +1568,16 @@ const TalentPoolManager: React.FC = () => {
           }}>
             <ClipboardList size={14} />
           </ActionIcon>
+          {candidate.position_type === 'General' && (
+            <ActionIcon
+              color="#60a5fa"
+              title="Find Best Fit: re-analyze this resume to find the position they're the strongest fit for"
+              onClick={() => handleFindBestFit(candidate.pipeline_id)}
+              disabled={findingBestFitId === candidate.pipeline_id}
+            >
+              {findingBestFitId === candidate.pipeline_id ? <SpinIcon size={14} /> : <Target size={14} />}
+            </ActionIcon>
+          )}
           <MessageDropdown>
             <ActionIcon color="#3b82f6" title="Send Message"
               onClick={() => setMessageDropdownOpen(messageDropdownOpen === candidate.pipeline_id ? null : candidate.pipeline_id)}>

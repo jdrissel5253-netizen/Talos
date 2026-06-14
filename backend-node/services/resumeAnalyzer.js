@@ -3606,32 +3606,111 @@ ${generateUnifiedScoringRubric(requiredYears, false)}
 }
 
 /**
+ * Extract resume text from a PDF or Word document on disk.
+ * Throws an EMPTY_RESUME error if no usable text is found.
+ */
+async function extractResumeText(filePath) {
+   const ext = path.extname(filePath).toLowerCase();
+
+   if (ext === '.pdf') {
+      const resumeText = await extractTextFromPDF(filePath);
+      if (!resumeText || resumeText.trim().length < 50) {
+         const err = new Error('This PDF appears to be a scanned image and contains no extractable text. Please upload a text-based PDF or Word document.');
+         err.code = 'EMPTY_RESUME';
+         throw err;
+      }
+      return resumeText;
+   } else if (ext === '.docx' || ext === '.doc') {
+      const result = await mammoth.extractRawText({ path: filePath });
+      const resumeText = result.value;
+      if (!resumeText || resumeText.trim().length < 50) {
+         const err = new Error('This Word document appears to be empty or contains no extractable text.');
+         err.code = 'EMPTY_RESUME';
+         throw err;
+      }
+      return resumeText;
+   } else {
+      throw new Error('Unsupported file type. Please upload a PDF or Word document (.docx).');
+   }
+}
+
+// Canonical position titles that map to a dedicated tiered scoring framework
+// in analyzeResume(). Used by recommendBestFitPosition() to pick a position
+// whose framework can then be used to score the candidate.
+const BEST_FIT_POSITIONS = [
+   { title: 'HVAC Service Technician', description: 'Diagnoses, repairs, installs, and maintains residential/commercial HVAC systems in the field.' },
+   { title: 'Lead HVAC Technician', description: 'Senior HVAC technician who also leads/trains other techs and handles complex commercial systems.' },
+   { title: 'HVAC Installer', description: 'Installs new HVAC equipment and ductwork at residential or commercial job sites.' },
+   { title: 'Preventative Maintenance Technician', description: 'Performs scheduled maintenance, inspections, and tune-ups on commercial HVAC equipment.' },
+   { title: 'HVAC Apprentice', description: 'Entry-level HVAC role learning the trade under supervision; little formal experience required.' },
+   { title: 'HVAC Dispatcher', description: 'Coordinates technician schedules and routes, fields incoming service calls, and communicates with customers.' },
+   { title: 'Customer Service Representative', description: 'Handles inbound customer calls, emails, and support tickets in a call-center or office environment.' },
+   { title: 'Administrative Assistant', description: 'General office support: scheduling, data entry, correspondence, and document preparation.' },
+   { title: 'Bookkeeper', description: 'Manages accounts payable/receivable, invoicing, reconciliations, and basic accounting tasks.' },
+   { title: 'Warehouse Associate', description: 'Physical warehouse work: receiving, picking/packing, inventory control, and material handling.' },
+   { title: 'HVAC Sales Representative', description: 'In-home or B2B sales of HVAC systems and services, including quoting and closing deals.' }
+];
+
+/**
+ * Use a single lightweight Claude call to identify which position this
+ * candidate's resume is the strongest fit for, based on their actual work
+ * history and skills (not just keyword matching).
+ */
+async function recommendBestFitPosition(resumeText) {
+   const prompt = `You are an expert recruiter. Based on the resume below, identify which ONE of the following job positions this candidate is the STRONGEST fit for, based on their actual work history, skills, and experience.
+
+Positions:
+${BEST_FIT_POSITIONS.map(p => `- ${p.title}: ${p.description}`).join('\n')}
+
+Resume:
+${resumeText}
+
+Respond with ONLY a JSON object in this EXACT format (the "bestFitPosition" and "runnerUpPosition" values must be copied exactly, character-for-character, from the position titles listed above):
+{
+  "bestFitPosition": "<best-fit position title>",
+  "reasoning": "<1-2 sentence explanation of why this position is the best match based on their resume>",
+  "runnerUpPosition": "<second-best position title, or null>"
+}`;
+
+   const message = await retryWithBackoff(() =>
+      anthropic.messages.create({
+         model: "claude-sonnet-4-6",
+         max_tokens: 300,
+         temperature: 0,
+         messages: [{
+            role: "user",
+            content: prompt
+         }]
+      })
+   );
+
+   const responseText = message.content[0].text;
+   const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+   if (!jsonMatch) {
+      throw new Error('Failed to parse best-fit recommendation response');
+   }
+
+   const result = JSON.parse(jsonMatch[0]);
+
+   // Guard against the model returning a title that doesn't exactly match
+   // one of our canonical positions (which analyzeResume() dispatches on).
+   const validTitles = BEST_FIT_POSITIONS.map(p => p.title);
+   const matchTitle = (title) => validTitles.find(t => t.toLowerCase() === String(title || '').toLowerCase()) || null;
+
+   return {
+      bestFitPosition: matchTitle(result.bestFitPosition) || 'HVAC Service Technician',
+      reasoning: result.reasoning || '',
+      runnerUpPosition: matchTitle(result.runnerUpPosition)
+   };
+}
+
+/**
  * Analyze resume using Claude AI with HVAC-specific criteria
  */
 async function analyzeResume(filePath, position = 'HVAC Technician', requiredYearsExperience = 2, flexibleOnTitle = true, jobLocation = null) {
    try {
       // Extract text from resume
-      let resumeText;
-      const ext = path.extname(filePath).toLowerCase();
-
-      if (ext === '.pdf') {
-         resumeText = await extractTextFromPDF(filePath);
-         if (!resumeText || resumeText.trim().length < 50) {
-            const err = new Error('This PDF appears to be a scanned image and contains no extractable text. Please upload a text-based PDF or Word document.');
-            err.code = 'EMPTY_RESUME';
-            throw err;
-         }
-      } else if (ext === '.docx' || ext === '.doc') {
-         const result = await mammoth.extractRawText({ path: filePath });
-         resumeText = result.value;
-         if (!resumeText || resumeText.trim().length < 50) {
-            const err = new Error('This Word document appears to be empty or contains no extractable text.');
-            err.code = 'EMPTY_RESUME';
-            throw err;
-         }
-      } else {
-         throw new Error('Unsupported file type. Please upload a PDF or Word document (.docx).');
-      }
+      const resumeText = await extractResumeText(filePath);
 
       // Regex fallback: extract email from raw text in case Claude misses it
       const emailMatch = resumeText.match(/\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b/);
@@ -5151,5 +5230,7 @@ Provide thorough, honest, and actionable feedback specifically tailored to the $
 }
 
 module.exports = {
-   analyzeResume
+   analyzeResume,
+   extractResumeText,
+   recommendBestFitPosition
 };
