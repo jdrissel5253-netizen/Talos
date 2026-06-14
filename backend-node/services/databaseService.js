@@ -664,13 +664,20 @@ const candidatePipelineService = {
     async updateStatus(candidatePipelineId, status) {
         // Fetch current status to enforce state machine
         const current = await db.query(
-            'SELECT pipeline_status FROM candidate_pipeline WHERE id = $1',
+            'SELECT * FROM candidate_pipeline WHERE id = $1',
             [candidatePipelineId]
         );
         if (current.rows.length === 0) {
             throw Object.assign(new Error('Pipeline entry not found'), { statusCode: 404 });
         }
         const currentStatus = current.rows[0].pipeline_status;
+
+        // Already in the requested status - treat as a no-op success
+        // (e.g. clicking "Reject" twice on an already-rejected candidate)
+        if (currentStatus === status) {
+            return current.rows[0];
+        }
+
         const allowed = PIPELINE_TRANSITIONS[currentStatus];
         if (!allowed || !allowed.includes(status)) {
             throw Object.assign(
@@ -700,6 +707,8 @@ const candidatePipelineService = {
 
         const invalid = [];
         for (const row of currentRows.rows) {
+            // Already in the requested status - no-op, not an error
+            if (row.pipeline_status === status) continue;
             const allowed = PIPELINE_TRANSITIONS[row.pipeline_status];
             if (!allowed || !allowed.includes(status)) {
                 invalid.push({ id: row.id, from: row.pipeline_status });

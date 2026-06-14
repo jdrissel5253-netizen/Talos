@@ -1017,10 +1017,17 @@ const JobsManagement: React.FC = () => {
             });
 
             if (response.ok) {
-                if (selectedJob) {
-                    loadCandidates(selectedJob.id);
-                }
-                setSelectedCandidates(new Set());
+                // Remove the candidate from the current view immediately so the
+                // action (e.g. Reject/Approve/Backup) gives visible feedback,
+                // instead of leaving them in place with the same action buttons.
+                setCandidates(prev => prev.filter(c => c.id !== candidatePipelineId));
+                setSelectedCandidates(prev => {
+                    const next = new Set(prev);
+                    next.delete(candidatePipelineId);
+                    return next;
+                });
+            } else {
+                setError('Failed to update candidate status. Please try again.');
             }
         } catch (error) {
             console.error('Error updating candidate:', error);
@@ -1042,10 +1049,11 @@ const JobsManagement: React.FC = () => {
             });
 
             if (response.ok) {
-                if (selectedJob) {
-                    loadCandidates(selectedJob.id);
-                }
+                const updatedIds = selectedCandidates;
+                setCandidates(prev => prev.filter(c => !updatedIds.has(c.id)));
                 setSelectedCandidates(new Set());
+            } else {
+                setError('Failed to update candidates. Please try again.');
             }
         } catch (error) {
             console.error('Error bulk updating:', error);
