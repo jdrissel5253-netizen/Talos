@@ -154,8 +154,7 @@ NOTE: There is NO CI/CD pipeline. All deploys are manual.
     TalentPool.tsx        — saved talent pool management
     TalentPoolHome.tsx    — talent pool landing
     TalentPoolManager.tsx — add/remove candidates from pool
-    BatchResumeAnalysis.tsx — bulk upload + AI analysis UI
-    ResumeAnalysis.tsx    — single resume analysis view
+    BatchResumeAnalysis.tsx — Resume Analyzer (single + batch upload, AI analysis UI)
     ResumeFileModal.tsx   — in-app resume PDF viewer
     ResumePreviewModal.tsx — quick resume preview overlay
     JobDescriptionWriter.tsx — AI-powered JD generator

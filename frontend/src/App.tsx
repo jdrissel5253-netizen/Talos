@@ -14,7 +14,6 @@ import GoogleAuthHandler from './components/GoogleAuthHandler';
 const JobsManagement = lazy(() => import('./components/JobsManagement'));
 const BatchResumeAnalysis = lazy(() => import('./components/BatchResumeAnalysis'));
 const TalentPoolManager = lazy(() => import('./components/TalentPoolManager'));
-const ResumeAnalysis = lazy(() => import('./components/ResumeAnalysis'));
 const WhyTalos = lazy(() => import('./components/WhyTalos'));
 const WhyTalosDifferent = lazy(() => import('./components/WhyTalosDifferent'));
 const JobBoardIntegration = lazy(() => import('./components/JobBoardIntegration'));
@@ -158,7 +157,6 @@ function AppLayout() {
 
               {/* Protected routes */}
               <Route path="/dashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />
-              <Route path="/resume-analysis" element={<ProtectedRoute><ResumeAnalysis /></ProtectedRoute>} />
               <Route path="/batch-resume-analysis" element={<ProtectedRoute><BatchResumeAnalysis /></ProtectedRoute>} />
               <Route path="/jobs-management/:jobId?" element={<ProtectedRoute><JobsManagement /></ProtectedRoute>} />
               <Route path="/talent-pool-dashboard" element={<ProtectedRoute><TalentPoolHome /></ProtectedRoute>} />
