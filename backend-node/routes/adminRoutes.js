@@ -4,7 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const db = require('../config/database');
 const logger = require('../services/logger');
-const { analyzeResume } = require('../services/resumeAnalyzer');
+const { analyzeResume, extractResumeText, extractCandidateNameOnly } = require('../services/resumeAnalyzer');
+const { candidateService } = require('../services/databaseService');
 const { calculateTier, calculateStarRating, determineGiveThemAChance } = require('../services/scoringService');
 const { downloadResumeToTemp, isS3Key } = require('../config/s3');
 
@@ -483,6 +484,80 @@ router.post('/reanalyze-candidate/:candidateId', async (req, res) => {
     } finally {
         if (tempPath) { try { fs.unlinkSync(tempPath); } catch (_) {} }
     }
+});
+
+/**
+ * POST /api/admin/backfill-candidate-names
+ * Backfill candidates.full_name for existing candidates using a cheap
+ * dedicated name-extraction AI call (does not touch scores/analyses).
+ */
+router.post('/backfill-candidate-names', async (req, res) => {
+    const limit = parseInt(req.query.limit) || null;
+
+    const { rows: candidates } = await db.query(`
+        SELECT id, filename, file_path
+        FROM candidates
+        WHERE full_name IS NULL AND file_path IS NOT NULL
+        ORDER BY id ASC
+        ${limit ? `LIMIT ${limit}` : ''}
+    `);
+
+    if (candidates.length === 0) {
+        return res.json({ status: 'success', message: 'No candidates need backfilling.', results: [] });
+    }
+
+    // Respond immediately so the load balancer doesn't time out — processing continues in background
+    res.json({ status: 'started', message: `Backfilling names for ${candidates.length} candidates in the background. Check server logs for results.`, total: candidates.length });
+
+    logger.info('Admin backfill-candidate-names started', { count: candidates.length });
+
+    let succeeded = 0;
+    let notFound = 0;
+    let failed = 0;
+    let skipped = 0;
+
+    for (const row of candidates) {
+        const ext = path.extname(row.file_path || row.filename || '').toLowerCase();
+        const supported = ['.pdf', '.docx', '.doc'];
+        if (ext && !supported.includes(ext)) {
+            skipped++;
+            continue;
+        }
+
+        let tempPath = null;
+        try {
+            const filePath = isS3Key(row.file_path)
+                ? (tempPath = await downloadResumeToTemp(row.file_path))
+                : row.file_path;
+
+            if (!fs.existsSync(filePath)) {
+                skipped++;
+                continue;
+            }
+
+            const resumeText = await extractResumeText(filePath);
+            const candidateName = await extractCandidateNameOnly(resumeText);
+
+            if (!candidateName) {
+                notFound++;
+                continue;
+            }
+
+            await candidateService.updateFullName(row.id, candidateName);
+            succeeded++;
+            logger.info('Backfilled candidate name', { candidateId: row.id, candidateName });
+        } catch (err) {
+            failed++;
+            logger.error('Backfill candidate name failed', { candidateId: row.id, error: err.message });
+        } finally {
+            if (tempPath) { try { fs.unlinkSync(tempPath); } catch (_) {} }
+        }
+
+        // Brief pause between API calls
+        await new Promise(r => setTimeout(r, 1000));
+    }
+
+    logger.info('Admin backfill-candidate-names complete', { succeeded, notFound, skipped, failed });
 });
 
 module.exports = router;
