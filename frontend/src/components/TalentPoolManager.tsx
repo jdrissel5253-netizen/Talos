@@ -40,6 +40,7 @@ interface Candidate {
   jobs_applied: number;
   internal_notes: string | null;
   applicant_email?: string;
+  evaluated_position?: string | null;
 }
 
 interface ApplicationEntry {
@@ -567,6 +568,20 @@ const Badge = styled.span`
   font-size: 0.7rem;
   font-weight: 600;
   letter-spacing: 0.04em;
+`;
+
+const BestFitBadge = styled.span`
+  background: rgba(96, 165, 250, 0.12);
+  color: #60a5fa;
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  padding: 0.15rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  white-space: nowrap;
+  max-width: 14rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
 `;
 
 const Summary = styled.p`
@@ -1293,7 +1308,14 @@ const TalentPoolManager: React.FC = () => {
             )}
           </div>
         </CandidateInfo>
-        <Score tier={candidate.tier}>{candidate.tier_score}</Score>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.35rem' }}>
+          <Score tier={candidate.tier}>{candidate.tier_score}</Score>
+          {candidate.evaluated_position && candidate.evaluated_position !== 'General' && candidate.evaluated_position !== candidate.position_type && (
+            <BestFitBadge title={`This score reflects fit for ${candidate.evaluated_position}`}>
+              Best Fit: {candidate.evaluated_position}
+            </BestFitBadge>
+          )}
+        </div>
       </CandidateHeader>
 
       <Summary>{candidate.ai_summary}</Summary>
@@ -1450,6 +1472,14 @@ const TalentPoolManager: React.FC = () => {
               <span style={{ marginLeft: '0.4rem', color: '#4ade80', fontSize: '0.72rem', fontWeight: 600, opacity: 0.7 }}>
                 · {candidate.job_title}
               </span>
+            )}
+            {candidate.evaluated_position && candidate.evaluated_position !== 'General' && candidate.evaluated_position !== candidate.position_type && (
+              <BestFitBadge
+                style={{ fontSize: '0.65rem', padding: '0.05rem 0.4rem', marginLeft: '0.4rem', maxWidth: '9rem', flexShrink: 0 }}
+                title={`This score reflects fit for ${candidate.evaluated_position}`}
+              >
+                Best Fit: {candidate.evaluated_position}
+              </BestFitBadge>
             )}
           </CompactSub>
         </CompactNameBlock>

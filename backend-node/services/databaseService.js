@@ -939,6 +939,7 @@ const candidatePipelineService = {
                     cp.contacted_via,
                     cp.contacted_at,
                     cp.internal_notes,
+                    cp.evaluated_position,
                     c.filename,
                     c.file_path,
                     c.applicant_email,
