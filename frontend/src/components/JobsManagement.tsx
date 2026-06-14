@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
 import styled from 'styled-components';
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink, LayoutGrid, LayoutList, Minimize2, ChevronDown, ZoomOut, ZoomIn } from 'lucide-react';
+import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink, LayoutGrid, LayoutList, Minimize2, ChevronDown, ZoomOut, ZoomIn, Settings, Edit2, Pause, Play, Trash2 } from 'lucide-react';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
 import AddJobForm from './AddJobForm';
@@ -176,7 +176,7 @@ const JobCard = styled.div<{ isActive: boolean; compact?: boolean }>`
     border: 1px solid ${props => props.isActive ? 'rgba(74, 222, 128, 0.3)' : 'rgba(255, 255, 255, 0.07)'};
     border-radius: 7px;
     padding: ${p => p.compact ? '0.5rem 0.75rem' : '0.875rem'};
-    padding-right: ${p => p.compact ? '4.2rem' : '0.875rem'};
+    padding-right: ${p => p.compact ? '2.2rem' : '0.875rem'};
     padding-bottom: ${p => p.compact ? '0.5rem' : '2rem'};
     margin-bottom: ${p => p.compact ? '0.35rem' : '0.625rem'};
     cursor: pointer;
@@ -210,11 +210,8 @@ const JobMeta = styled.div`
     gap: 0.2rem;
 `;
 
-const CardActions = styled.div<{ compact?: boolean }>`
+const JobMenuWrapper = styled.div<{ compact?: boolean }>`
     position: absolute;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
     ${p => p.compact ? `
         top: 50%;
         right: 0.5rem;
@@ -225,58 +222,69 @@ const CardActions = styled.div<{ compact?: boolean }>`
     `}
 `;
 
-const CardEditButton = styled.button<{ compact?: boolean }>`
+const GearButton = styled.button<{ compact?: boolean }>`
     background: transparent;
-    border: 1px solid rgba(74, 222, 128, 0.2);
-    color: #4ade80;
-    font-weight: 600;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    color: #888;
     border-radius: 4px;
     cursor: pointer;
-    font-family: inherit;
-    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.15s ease;
     ${p => p.compact ? `
-        font-size: 0.625rem;
-        padding: 0.1rem 0.4rem;
+        width: 20px;
+        height: 20px;
     ` : `
-        font-size: 0.675rem;
-        padding: 0.18rem 0.5rem;
+        width: 24px;
+        height: 24px;
     `}
 
     &:hover {
-        background: rgba(74, 222, 128, 0.08);
-        border-color: rgba(74, 222, 128, 0.5);
+        background: rgba(255, 255, 255, 0.06);
+        border-color: rgba(255, 255, 255, 0.3);
+        color: #ccc;
+    }
+`;
+
+const JobMenuDropdown = styled.div<{ isOpen: boolean }>`
+    display: ${props => props.isOpen ? 'block' : 'none'};
+    position: absolute;
+    right: 0;
+    top: calc(100% + 4px);
+    background: #1a1a1a;
+    min-width: 160px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
+    border-radius: 7px;
+    z-index: 20;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    overflow: hidden;
+`;
+
+const JobMenuItem = styled.button<{ danger?: boolean }>`
+    background: none;
+    border: none;
+    color: ${p => p.danger ? '#ef4444' : '#a3a3a3'};
+    padding: 0.6rem 0.9rem;
+    text-align: left;
+    cursor: pointer;
+    width: 100%;
+    font-size: 0.8rem;
+    font-family: inherit;
+    white-space: nowrap;
+    transition: all 0.15s ease;
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+
+    &:hover {
+        background: ${p => p.danger ? 'rgba(239, 68, 68, 0.08)' : 'rgba(255, 255, 255, 0.05)'};
+        color: ${p => p.danger ? '#f87171' : '#e0e0e0'};
     }
 
     &:disabled {
         opacity: 0.6;
         cursor: default;
-    }
-`;
-
-const CardDeleteButton = styled.button<{ compact?: boolean }>`
-    background: transparent;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    color: #ef4444;
-    font-weight: 600;
-    border-radius: 4px;
-    cursor: pointer;
-    font-family: inherit;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    transition: all 0.15s ease;
-    ${p => p.compact ? `
-        font-size: 0.625rem;
-        padding: 0.1rem 0.3rem;
-    ` : `
-        font-size: 0.675rem;
-        padding: 0.18rem 0.4rem;
-    `}
-
-    &:hover {
-        background: rgba(239, 68, 68, 0.08);
-        border-color: rgba(239, 68, 68, 0.5);
     }
 `;
 
@@ -875,6 +883,9 @@ const JobsManagement: React.FC = () => {
     const [jobDetailsExpanded, setJobDetailsExpanded] = useState(false);
     const [compactJobsList, setCompactJobsList] = useState(() => localStorage.getItem('jobsManagementCompactJobsList') === 'true');
     const [smallDescription, setSmallDescription] = useState(() => localStorage.getItem('jobsManagementSmallDescription') === 'true');
+    const [openJobMenuId, setOpenJobMenuId] = useState<number | null>(null);
+    const [togglingJobStatus, setTogglingJobStatus] = useState<number | null>(null);
+    const jobMenuRef = useRef<HTMLDivElement>(null);
 
     const navigate = useNavigate();
     const { jobId } = useParams<{ jobId: string }>();
@@ -895,6 +906,18 @@ const JobsManagement: React.FC = () => {
     useEffect(() => {
         localStorage.setItem('jobsManagementSmallDescription', String(smallDescription));
     }, [smallDescription]);
+
+    // Close the job actions menu when clicking outside of it
+    useEffect(() => {
+        if (openJobMenuId === null) return;
+        const handleClickOutside = (e: MouseEvent) => {
+            if (jobMenuRef.current && !jobMenuRef.current.contains(e.target as Node)) {
+                setOpenJobMenuId(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [openJobMenuId]);
 
     const openSchedulingLink = (candidateName: string) => {
         if (!schedulingLink) return;
@@ -986,6 +1009,30 @@ const JobsManagement: React.FC = () => {
             }
         } catch {
             alert('Failed to delete job. Please try again.');
+        }
+    };
+
+    const toggleJobStatus = async (job: Job) => {
+        const newStatus = job.status === 'active' ? 'inactive' : 'active';
+        setTogglingJobStatus(job.id);
+        try {
+            const response = await fetch(`${config.apiUrl}/api/jobs/${job.id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
+                body: JSON.stringify({ status: newStatus }),
+            });
+            if (!response.ok) {
+                alert('Failed to update job status. Please try again.');
+                return;
+            }
+            setJobs(prev => prev.map(j => j.id === job.id ? { ...j, status: newStatus } : j));
+            if (selectedJob?.id === job.id) {
+                setSelectedJob(prev => prev ? { ...prev, status: newStatus } : prev);
+            }
+        } catch {
+            alert('Failed to update job status. Please try again.');
+        } finally {
+            setTogglingJobStatus(null);
         }
     };
 
@@ -1375,28 +1422,54 @@ const JobsManagement: React.FC = () => {
                                                     {job.vehicle_required && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Car size={14} /> Vehicle Required</span>}
                                                 </JobMeta>
                                             )}
-                                            <CardActions compact={compactJobsList}>
-                                                <CardEditButton
+                                            <JobMenuWrapper
+                                                compact={compactJobsList}
+                                                ref={openJobMenuId === job.id ? jobMenuRef : undefined}
+                                            >
+                                                <GearButton
                                                     compact={compactJobsList}
                                                     onClick={(e) => {
                                                         e.stopPropagation();
-                                                        openEditForm(job);
+                                                        setOpenJobMenuId(openJobMenuId === job.id ? null : job.id);
                                                     }}
-                                                    disabled={loadingEditJob === job.id}
+                                                    title="Job actions"
                                                 >
-                                                    {loadingEditJob === job.id ? '...' : 'Edit'}
-                                                </CardEditButton>
-                                                <CardDeleteButton
-                                                    compact={compactJobsList}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        deleteJob(job);
-                                                    }}
-                                                    title="Delete job"
-                                                >
-                                                    <X size={compactJobsList ? 11 : 12} />
-                                                </CardDeleteButton>
-                                            </CardActions>
+                                                    <Settings size={compactJobsList ? 12 : 14} />
+                                                </GearButton>
+                                                <JobMenuDropdown isOpen={openJobMenuId === job.id}>
+                                                    <JobMenuItem
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setOpenJobMenuId(null);
+                                                            openEditForm(job);
+                                                        }}
+                                                        disabled={loadingEditJob === job.id}
+                                                    >
+                                                        <Edit2 size={14} /> {loadingEditJob === job.id ? 'Loading...' : 'Edit'}
+                                                    </JobMenuItem>
+                                                    <JobMenuItem
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setOpenJobMenuId(null);
+                                                            toggleJobStatus(job);
+                                                        }}
+                                                        disabled={togglingJobStatus === job.id}
+                                                    >
+                                                        {job.status === 'active' ? <Pause size={14} /> : <Play size={14} />}
+                                                        {togglingJobStatus === job.id ? 'Updating...' : (job.status === 'active' ? 'Deactivate' : 'Activate')}
+                                                    </JobMenuItem>
+                                                    <JobMenuItem
+                                                        danger
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setOpenJobMenuId(null);
+                                                            deleteJob(job);
+                                                        }}
+                                                    >
+                                                        <Trash2 size={14} /> Delete
+                                                    </JobMenuItem>
+                                                </JobMenuDropdown>
+                                            </JobMenuWrapper>
                                         </JobCard>
                                     ))
                                 )}
