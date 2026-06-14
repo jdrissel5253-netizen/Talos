@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
@@ -222,15 +223,16 @@ const JobMenuWrapper = styled.div<{ compact?: boolean }>`
     `}
 `;
 
-const GearButton = styled.button<{ compact?: boolean }>`
-    background: #1f1f1f;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    color: #999;
+const GearButton = styled.button<{ compact?: boolean; isOpen?: boolean }>`
+    background: ${p => p.isOpen ? '#3a3a3a' : '#2a2a2a'};
+    border: 1px solid ${p => p.isOpen ? 'rgba(255, 255, 255, 0.3)' : 'rgba(255, 255, 255, 0.15)'};
+    color: ${p => p.isOpen ? '#fff' : '#bbb'};
     border-radius: 5px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
     transition: all 0.15s ease;
     ${p => p.compact ? `
         width: 22px;
@@ -241,22 +243,19 @@ const GearButton = styled.button<{ compact?: boolean }>`
     `}
 
     &:hover {
-        background: #2a2a2a;
-        border-color: rgba(255, 255, 255, 0.2);
-        color: #e0e0e0;
+        background: #3a3a3a;
+        border-color: rgba(255, 255, 255, 0.3);
+        color: #fff;
     }
 `;
 
-const JobMenuDropdown = styled.div<{ isOpen: boolean }>`
-    display: ${props => props.isOpen ? 'block' : 'none'};
-    position: absolute;
-    right: 0;
-    top: calc(100% + 4px);
+const JobMenuDropdown = styled.div`
+    position: fixed;
     background: #1a1a1a;
     min-width: 160px;
     box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
     border-radius: 7px;
-    z-index: 20;
+    z-index: 50;
     border: 1px solid rgba(255, 255, 255, 0.1);
     overflow: hidden;
 `;
@@ -884,8 +883,10 @@ const JobsManagement: React.FC = () => {
     const [compactJobsList, setCompactJobsList] = useState(() => localStorage.getItem('jobsManagementCompactJobsList') === 'true');
     const [smallDescription, setSmallDescription] = useState(() => localStorage.getItem('jobsManagementSmallDescription') === 'true');
     const [openJobMenuId, setOpenJobMenuId] = useState<number | null>(null);
+    const [jobMenuAnchor, setJobMenuAnchor] = useState<{ top: number; left: number } | null>(null);
     const [togglingJobStatus, setTogglingJobStatus] = useState<number | null>(null);
-    const jobMenuRef = useRef<HTMLDivElement>(null);
+    const jobMenuButtonRef = useRef<HTMLDivElement>(null);
+    const jobMenuDropdownRef = useRef<HTMLDivElement>(null);
 
     const navigate = useNavigate();
     const { jobId } = useParams<{ jobId: string }>();
@@ -907,16 +908,28 @@ const JobsManagement: React.FC = () => {
         localStorage.setItem('jobsManagementSmallDescription', String(smallDescription));
     }, [smallDescription]);
 
-    // Close the job actions menu when clicking outside of it
+    // Close the job actions menu when clicking outside of it, or on scroll/resize
+    // (the dropdown is portaled to <body> with a fixed position computed on open,
+    // so it would otherwise drift out of place if the page moves under it)
     useEffect(() => {
         if (openJobMenuId === null) return;
         const handleClickOutside = (e: MouseEvent) => {
-            if (jobMenuRef.current && !jobMenuRef.current.contains(e.target as Node)) {
+            const target = e.target as Node;
+            const inButton = jobMenuButtonRef.current?.contains(target);
+            const inDropdown = jobMenuDropdownRef.current?.contains(target);
+            if (!inButton && !inDropdown) {
                 setOpenJobMenuId(null);
             }
         };
+        const handleReposition = () => setOpenJobMenuId(null);
         document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
+        window.addEventListener('scroll', handleReposition, true);
+        window.addEventListener('resize', handleReposition);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+            window.removeEventListener('scroll', handleReposition, true);
+            window.removeEventListener('resize', handleReposition);
+        };
     }, [openJobMenuId]);
 
     const openSchedulingLink = (candidateName: string) => {
@@ -979,12 +992,16 @@ const JobsManagement: React.FC = () => {
             const response = await fetch(`${config.apiUrl}/api/jobs/${job.id}`, { headers: getAuthHeaders() });
             if (response.ok) {
                 const data = await response.json();
-                setEditingJob(data.data?.job ?? job);
+                if (data.data?.job) {
+                    setEditingJob(data.data.job);
+                } else {
+                    setError('Failed to load job details for editing. Please try again.');
+                }
             } else {
-                setEditingJob(job);
+                setError('Failed to load job details for editing. Please try again.');
             }
         } catch {
-            setEditingJob(job);
+            setError('Failed to load job details for editing. Please try again.');
         } finally {
             setLoadingEditJob(null);
         }
@@ -1408,35 +1425,48 @@ const JobsManagement: React.FC = () => {
                                     </EmptyState>
                                 ) : (
                                     jobs.map(job => (
-                                        <JobCard
-                                            key={job.id}
-                                            isActive={selectedJob?.id === job.id}
-                                            compact={compactJobsList}
-                                            onClick={() => navigate(`/jobs-management/${job.id}`)}
-                                        >
-                                            <JobTitle compact={compactJobsList}>{job.title}</JobTitle>
-                                            {!compactJobsList && (
-                                                <JobMeta>
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {job.location}</span>
-                                                    <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Briefcase size={14} /> {job.required_years_experience}+ years</span>
-                                                    {job.vehicle_required && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Car size={14} /> Vehicle Required</span>}
-                                                </JobMeta>
-                                            )}
-                                            <JobMenuWrapper
+                                        <React.Fragment key={job.id}>
+                                            <JobCard
+                                                isActive={selectedJob?.id === job.id}
                                                 compact={compactJobsList}
-                                                ref={openJobMenuId === job.id ? jobMenuRef : undefined}
+                                                onClick={() => navigate(`/jobs-management/${job.id}`)}
                                             >
-                                                <GearButton
+                                                <JobTitle compact={compactJobsList}>{job.title}</JobTitle>
+                                                {!compactJobsList && (
+                                                    <JobMeta>
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><MapPin size={14} /> {job.location}</span>
+                                                        <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Briefcase size={14} /> {job.required_years_experience}+ years</span>
+                                                        {job.vehicle_required && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Car size={14} /> Vehicle Required</span>}
+                                                    </JobMeta>
+                                                )}
+                                                <JobMenuWrapper
                                                     compact={compactJobsList}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        setOpenJobMenuId(openJobMenuId === job.id ? null : job.id);
-                                                    }}
-                                                    title="Job actions"
+                                                    ref={openJobMenuId === job.id ? jobMenuButtonRef : undefined}
                                                 >
-                                                    <Settings size={compactJobsList ? 12 : 14} />
-                                                </GearButton>
-                                                <JobMenuDropdown isOpen={openJobMenuId === job.id}>
+                                                    <GearButton
+                                                        compact={compactJobsList}
+                                                        isOpen={openJobMenuId === job.id}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            if (openJobMenuId === job.id) {
+                                                                setOpenJobMenuId(null);
+                                                            } else {
+                                                                const rect = e.currentTarget.getBoundingClientRect();
+                                                                setJobMenuAnchor({ top: rect.bottom + 4, left: rect.left });
+                                                                setOpenJobMenuId(job.id);
+                                                            }
+                                                        }}
+                                                        title="Job actions"
+                                                    >
+                                                        <Settings size={compactJobsList ? 12 : 14} />
+                                                    </GearButton>
+                                                </JobMenuWrapper>
+                                            </JobCard>
+                                            {openJobMenuId === job.id && jobMenuAnchor && createPortal(
+                                                <JobMenuDropdown
+                                                    ref={jobMenuDropdownRef}
+                                                    style={{ top: jobMenuAnchor.top, left: jobMenuAnchor.left }}
+                                                >
                                                     <JobMenuItem
                                                         onClick={(e) => {
                                                             e.stopPropagation();
@@ -1468,9 +1498,10 @@ const JobsManagement: React.FC = () => {
                                                     >
                                                         <Trash2 size={14} /> Delete
                                                     </JobMenuItem>
-                                                </JobMenuDropdown>
-                                            </JobMenuWrapper>
-                                        </JobCard>
+                                                </JobMenuDropdown>,
+                                                document.body
+                                            )}
+                                        </React.Fragment>
                                     ))
                                 )}
                             </JobsList>
