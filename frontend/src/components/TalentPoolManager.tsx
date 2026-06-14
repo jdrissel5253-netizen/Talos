@@ -3,7 +3,7 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import { config } from '../config';
 import { getAuthHeaders, handleUnauthorized } from '../utils/auth';
-import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2, ChevronDown, ChevronRight, LayoutGrid, LayoutList, Download } from 'lucide-react';
+import { FileText, CheckCircle, AlertCircle, XCircle, Star, Calendar, Car, ClipboardList, Mail, Smartphone, X, Trash2, ChevronDown, ChevronRight, LayoutGrid, LayoutList, Download, Eye } from 'lucide-react';
 import ResumePreviewModal from './ResumePreviewModal';
 import ResumeFileModal from './ResumeFileModal';
 import ContactRejectionModal from './ContactRejectionModal';
@@ -1465,6 +1465,9 @@ const TalentPoolManager: React.FC = () => {
         <CompactActions>
           <ActionIcon color="#a3a3a3" title="View Profile" onClick={() => navigate(`/candidates/${candidate.pipeline_id}`, { state: { from: '/talent-pool-manager' } })}>
             <FileText size={14} />
+          </ActionIcon>
+          <ActionIcon color="#a3a3a3" title="Quick Summary" onClick={() => handleViewResume(candidate)}>
+            <Eye size={14} />
           </ActionIcon>
           <ActionIcon color="#a3a3a3" title="Resume" onClick={() => {
             setResumeFileCandidate({ id: candidate.candidate_id, filename: candidate.filename });
