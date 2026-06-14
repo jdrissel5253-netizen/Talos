@@ -108,6 +108,26 @@ const CandidateName = styled.h2`
   line-height: 1.1;
 `;
 
+const NameRow = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+`;
+
+const NameInput = styled.input`
+  background: #111318;
+  border: 1px solid #2a3040;
+  color: #ffffff;
+  font-family: 'Sora', sans-serif;
+  font-size: 1.4rem;
+  font-weight: 700;
+  letter-spacing: -0.03em;
+  padding: 0.2rem 0.5rem;
+  outline: none;
+  width: 280px;
+  &:focus { border-color: #4ade80; }
+`;
+
 const JobBadge = styled.div`
   display: flex;
   align-items: center;
@@ -486,6 +506,7 @@ interface Profile {
   ai_summary: string;
   contacted_via: string | null;
   contacted_at: string | null;
+  full_name: string | null;
   filename: string;
   upload_date: string;
   applicant_email: string | null;
@@ -516,6 +537,9 @@ const CandidateProfile: React.FC = () => {
   const [emailEditing, setEmailEditing] = useState(false);
   const [emailDraft, setEmailDraft] = useState('');
   const [emailSaving, setEmailSaving] = useState(false);
+  const [nameEditing, setNameEditing] = useState(false);
+  const [nameDraft, setNameDraft] = useState('');
+  const [nameSaving, setNameSaving] = useState(false);
 
   useEffect(() => {
     fetch(`${appConfig.apiUrl}/api/auth/me`, { headers: getAuthHeaders() })
@@ -536,7 +560,26 @@ const CandidateProfile: React.FC = () => {
       .finally(() => setLoading(false));
   }, [pipelineId]);
 
-  const displayName = profile ? friendlyName(profile.filename) : '';
+  const displayName = profile ? (profile.full_name || friendlyName(profile.filename)) : '';
+
+  const handleNameSave = async () => {
+    if (!profile || nameSaving) return;
+    setNameSaving(true);
+    try {
+      const res = await fetch(`${appConfig.apiUrl}/api/pipeline/${profile.pipeline_id}/name`, {
+        method: 'PUT',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fullName: nameDraft.trim() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(p => p ? { ...p, full_name: data.data.full_name } : p);
+        setNameEditing(false);
+      }
+    } finally {
+      setNameSaving(false);
+    }
+  };
 
   const handleEmailSave = async () => {
     if (!profile || emailSaving) return;
@@ -657,7 +700,31 @@ const CandidateProfile: React.FC = () => {
               {/* ── Hero ── */}
               <Hero>
                 <HeroLeft>
-                  <CandidateName>{displayName}</CandidateName>
+                  {nameEditing ? (
+                    <NameRow>
+                      <NameInput
+                        autoFocus
+                        type="text"
+                        value={nameDraft}
+                        onChange={e => setNameDraft(e.target.value)}
+                        onKeyDown={e => { if (e.key === 'Enter') handleNameSave(); if (e.key === 'Escape') setNameEditing(false); }}
+                        placeholder={friendlyName(profile.filename)}
+                      />
+                      <IconBtn onClick={handleNameSave} disabled={nameSaving} title="Save">
+                        <Check size={14} color="#4ade80" />
+                      </IconBtn>
+                      <IconBtn onClick={() => setNameEditing(false)} title="Cancel">
+                        <X size={14} color="#f87171" />
+                      </IconBtn>
+                    </NameRow>
+                  ) : (
+                    <NameRow>
+                      <CandidateName>{displayName}</CandidateName>
+                      <IconBtn onClick={() => { setNameDraft(profile.full_name || ''); setNameEditing(true); }} title="Rename candidate">
+                        <Pencil size={12} />
+                      </IconBtn>
+                    </NameRow>
+                  )}
                   <JobBadge>
                     <Briefcase size={13} /> {profile.job_title}
                     {profile.job_city && <><MapPin size={11} style={{ marginLeft: '0.5rem' }} />{profile.job_city}</>}
