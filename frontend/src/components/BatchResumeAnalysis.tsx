@@ -723,8 +723,8 @@ const BatchResumeAnalysis: React.FC = () => {
       <MainContent>
         <MainCard>
           <Header>
-            <Title>Batch Resume Analyzer</Title>
-            <Subtitle>Upload multiple HVAC technician resumes for instant AI-powered analysis</Subtitle>
+            <Title>Resume Analyzer</Title>
+            <Subtitle>Upload one or more HVAC technician resumes for instant AI-powered analysis</Subtitle>
           </Header>
 
           {results.length === 0 ? (

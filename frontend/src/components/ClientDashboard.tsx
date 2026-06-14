@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import { Briefcase, Users, Star, CheckCircle, AlertCircle, UserCheck, ChevronRight, TrendingUp, MapPin, Clock, Upload, Eye, LayoutGrid, Files } from 'lucide-react';
+import { Briefcase, Users, Star, CheckCircle, AlertCircle, UserCheck, ChevronRight, TrendingUp, MapPin, Clock, Eye, LayoutGrid, Files } from 'lucide-react';
 import { getAuthHeaders } from '../utils/auth';
 import { config as appConfig } from '../config';
 
@@ -821,11 +821,8 @@ const ClientDashboard: React.FC = () => {
             <NavPill onClick={() => navigate('/talent-pool-manager')}>
               <Users size={13} /> Talent Pool
             </NavPill>
-            <NavPill onClick={() => navigate('/resume-analysis')}>
-              <Upload size={13} /> Upload Resume
-            </NavPill>
             <NavPill onClick={() => navigate('/batch-resume-analysis')}>
-              <Files size={13} /> Batch Upload
+              <Files size={13} /> Analyze Resumes
             </NavPill>
             <NavPillPrimary onClick={() => navigate('/jobs-management')}>
               <Eye size={13} /> View Pipeline
