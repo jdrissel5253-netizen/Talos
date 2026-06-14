@@ -1008,10 +1008,14 @@ const candidatePipelineService = {
         }));
     },
 
-    async getTalentPoolStats(userId = null) {
+    async getTalentPoolStats(userId = null, status = null) {
         const params = [];
-        const userFilter = userId ? `AND j.user_id = $1` : '';
+        let paramIndex = 1;
+        const userFilter = userId ? `AND j.user_id = $${paramIndex++}` : '';
         if (userId) params.push(userId);
+
+        const statusFilter = status ? `AND cp.pipeline_status = $${paramIndex++}` : '';
+        if (status) params.push(status);
 
         const result = await db.query(`
             WITH best_per_candidate AS (
@@ -1023,9 +1027,18 @@ const candidatePipelineService = {
                 WHERE j.deleted_at IS NULL ${userFilter}
                 ORDER BY COALESCE(c.applicant_email, c.filename), cp.tier_score DESC
             ),
+            best_per_candidate_status AS (
+                SELECT DISTINCT ON (COALESCE(c.applicant_email, c.filename))
+                    cp.candidate_id, cp.tier, cp.tier_score, cp.pipeline_status
+                FROM candidate_pipeline cp
+                JOIN candidates c ON cp.candidate_id = c.id
+                JOIN jobs j ON cp.job_id = j.id
+                WHERE j.deleted_at IS NULL ${userFilter} ${statusFilter}
+                ORDER BY COALESCE(c.applicant_email, c.filename), cp.tier_score DESC
+            ),
             tier_stats AS (
                 SELECT tier, COUNT(*) as count, AVG(tier_score) as avg_score
-                FROM best_per_candidate
+                FROM best_per_candidate_status
                 GROUP BY tier
             ),
             position_stats AS (
@@ -1043,7 +1056,7 @@ const candidatePipelineService = {
             ),
             total_stats AS (
                 SELECT COUNT(*) as total
-                FROM best_per_candidate
+                FROM best_per_candidate_status
             )
             SELECT
                 (SELECT total FROM total_stats) as total,

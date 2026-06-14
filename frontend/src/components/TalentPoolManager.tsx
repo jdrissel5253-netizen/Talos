@@ -1101,7 +1101,9 @@ const TalentPoolManager: React.FC = () => {
 
   const fetchStats = async () => {
     try {
-      const response = await fetch(`${config.apiUrl}/api/pipeline/talent-pool/stats`, { headers: getAuthHeaders() });
+      const params = new URLSearchParams();
+      if (statusFilter) params.append('status', statusFilter);
+      const response = await fetch(`${config.apiUrl}/api/pipeline/talent-pool/stats?${params.toString()}`, { headers: getAuthHeaders() });
       if (handleUnauthorized(response)) return;
       const data = await response.json();
 

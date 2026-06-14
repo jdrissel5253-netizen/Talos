@@ -103,8 +103,13 @@ router.get('/talent-pool', async (req, res) => {
  */
 router.get('/talent-pool/stats', async (req, res) => {
     try {
+        const { status } = req.query;
+        const validStatuses = ['new', 'approved', 'contacted', 'backup', 'rejected'];
         const userId = req.user.role === 'admin' ? null : req.user.userId;
-        const stats = await candidatePipelineService.getTalentPoolStats(userId);
+        const stats = await candidatePipelineService.getTalentPoolStats(
+            userId,
+            status ? sanitize.enumValue(status, validStatuses) : null
+        );
 
         res.json({
             status: 'success',
