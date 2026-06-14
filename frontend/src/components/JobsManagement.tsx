@@ -223,27 +223,27 @@ const JobMenuWrapper = styled.div<{ compact?: boolean }>`
 `;
 
 const GearButton = styled.button<{ compact?: boolean }>`
-    background: transparent;
-    border: 1px solid rgba(255, 255, 255, 0.12);
-    color: #888;
-    border-radius: 4px;
+    background: #1f1f1f;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #999;
+    border-radius: 5px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: all 0.15s ease;
     ${p => p.compact ? `
-        width: 20px;
-        height: 20px;
+        width: 22px;
+        height: 22px;
     ` : `
-        width: 24px;
-        height: 24px;
+        width: 26px;
+        height: 26px;
     `}
 
     &:hover {
-        background: rgba(255, 255, 255, 0.06);
-        border-color: rgba(255, 255, 255, 0.3);
-        color: #ccc;
+        background: #2a2a2a;
+        border-color: rgba(255, 255, 255, 0.2);
+        color: #e0e0e0;
     }
 `;
 
