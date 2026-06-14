@@ -72,6 +72,15 @@ interface TalentPoolStats {
   };
 }
 
+const STATUS_TABS: { key: string; label: string }[] = [
+  { key: 'new', label: 'Unreviewed' },
+  { key: '', label: 'All' },
+  { key: 'approved', label: 'Approved' },
+  { key: 'contacted', label: 'Contacted' },
+  { key: 'backup', label: 'Backup' },
+  { key: 'rejected', label: 'Rejected' },
+];
+
 const Container = styled.div`
   min-height: 100vh;
   background: #0a0a0a;
@@ -204,6 +213,42 @@ const FilterLabel = styled.label`
   color: #4ade80;
   text-transform: uppercase;
   letter-spacing: 0.07em;
+`;
+
+const StatusTabBar = styled.div`
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+`;
+
+const StatusTab = styled.button<{ active: boolean }>`
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.625rem 1.125rem;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  border: 1px solid ${p => p.active ? 'rgba(74, 222, 128, 0.5)' : 'rgba(255, 255, 255, 0.07)'};
+  background: ${p => p.active ? 'rgba(74, 222, 128, 0.08)' : '#0a0a0a'};
+  color: ${p => p.active ? '#4ade80' : '#a3a3a3'};
+
+  &:hover {
+    border-color: rgba(74, 222, 128, 0.4);
+    color: #4ade80;
+  }
+`;
+
+const StatusTabCount = styled.span<{ active: boolean }>`
+  background: ${p => p.active ? 'rgba(74, 222, 128, 0.18)' : 'rgba(255, 255, 255, 0.08)'};
+  color: ${p => p.active ? '#4ade80' : '#888'};
+  padding: 0.1rem 0.5rem;
+  border-radius: 10px;
+  font-size: 0.75rem;
+  font-weight: 700;
 `;
 
 const NavButton = styled.button`
@@ -951,7 +996,7 @@ const TalentPoolManager: React.FC = () => {
   // Filters
   const [tierFilter, setTierFilter] = useState<string>('');
   const [positionFilter, setPositionFilter] = useState<string>('');
-  const [statusFilter, setStatusFilter] = useState<string>('');
+  const [statusFilter, setStatusFilter] = useState<string>('new');
   const [minScore, setMinScore] = useState<string>('');
   const [maxScore, setMaxScore] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('score');
@@ -1254,10 +1299,9 @@ const TalentPoolManager: React.FC = () => {
       });
       const data = await res.json();
       if (data.status === 'success') {
-        setCandidates(prev => prev.map(c =>
-          selectedIds.has(c.pipeline_id) ? { ...c, pipeline_status: status } : c
-        ));
         setSelectedIds(new Set());
+        fetchTalentPool();
+        fetchStats();
       } else {
         setError('Failed to update statuses');
       }
@@ -1653,6 +1697,19 @@ const TalentPoolManager: React.FC = () => {
           </HeaderActions>
         </Header>
 
+        <StatusTabBar>
+          {STATUS_TABS.map(tab => {
+            const count = tab.key === '' ? (stats?.total ?? 0) : (stats?.statusBreakdown[tab.key] ?? 0);
+            const active = statusFilter === tab.key;
+            return (
+              <StatusTab key={tab.key || 'all'} active={active} onClick={() => setStatusFilter(tab.key)}>
+                {tab.label}
+                <StatusTabCount active={active}>{count}</StatusTabCount>
+              </StatusTab>
+            );
+          })}
+        </StatusTabBar>
+
         {stats && (
           <StatsGrid>
             <StatCard
@@ -1714,18 +1771,6 @@ const TalentPoolManager: React.FC = () => {
                 <option value="Administrative Assistant">Administrative Assistant</option>
                 <option value="Bookkeeper">Bookkeeper</option>
                 <option value="HVAC Installer">HVAC Installer</option>
-              </FilterSelect>
-            </FilterGroup>
-
-            <FilterGroup>
-              <FilterLabel>Status</FilterLabel>
-              <FilterSelect value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-                <option value="">All Statuses</option>
-                <option value="new">New</option>
-                <option value="contacted">Contacted</option>
-                <option value="approved">Approved</option>
-                <option value="backup">Backup</option>
-                <option value="rejected">Rejected</option>
               </FilterSelect>
             </FilterGroup>
 
@@ -1848,9 +1893,19 @@ const TalentPoolManager: React.FC = () => {
           <LoadingMessage>Loading talent pool...</LoadingMessage>
         ) : candidates.length === 0 ? (
           <EmptyState>
-            <EmptyIcon>📭</EmptyIcon>
-            <h3>No candidates found</h3>
-            <p>Try adjusting your filters or upload resumes to build your talent pool.</p>
+            {statusFilter === 'new' && !tierFilter && !positionFilter && !cityFilter && !minScore && !maxScore && !minExperienceFilter && !hasCertsFilter ? (
+              <>
+                <EmptyIcon>🎉</EmptyIcon>
+                <h3>You're all caught up!</h3>
+                <p>No unreviewed candidates right now — check the other tabs or upload more resumes.</p>
+              </>
+            ) : (
+              <>
+                <EmptyIcon>📭</EmptyIcon>
+                <h3>No candidates found</h3>
+                <p>Try adjusting your filters or upload resumes to build your talent pool.</p>
+              </>
+            )}
           </EmptyState>
         ) : (
           <CandidatesGrid>
