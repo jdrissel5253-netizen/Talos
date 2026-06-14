@@ -941,6 +941,50 @@ const ErrorMessage = styled.div`
   font-size: 0.9rem;
 `;
 
+const EvaluateBanner = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  background: rgba(96, 165, 250, 0.08);
+  color: #93c5fd;
+  border: 1px solid rgba(96, 165, 250, 0.25);
+  padding: 0.875rem 1rem;
+  border-radius: 6px;
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+`;
+
+const EvaluateBannerActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+`;
+
+const EvaluateViewBtn = styled.button`
+  background: rgba(96, 165, 250, 0.15);
+  color: #93c5fd;
+  border: 1px solid rgba(96, 165, 250, 0.35);
+  padding: 0.35rem 0.75rem;
+  border-radius: 5px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover { background: rgba(96, 165, 250, 0.25); }
+`;
+
+const EvaluateDismissBtn = styled.button`
+  background: transparent;
+  border: none;
+  color: #93c5fd;
+  font-size: 0.75rem;
+  cursor: pointer;
+  opacity: 0.7;
+  &:hover { opacity: 1; }
+`;
+
 const EmptyState = styled.div`
   text-align: center;
   padding: 4rem 2rem;
@@ -1018,10 +1062,21 @@ const TalentPoolManager: React.FC = () => {
   const [massActionLoading, setMassActionLoading] = useState(false);
   const [massStatusDropdownOpen, setMassStatusDropdownOpen] = useState(false);
 
+  // Evaluate for Job
+  const [jobsList, setJobsList] = useState<{ id: number; title: string; position_type: string }[]>([]);
+  const [evaluateJobDropdownOpen, setEvaluateJobDropdownOpen] = useState(false);
+  const [evaluateProgress, setEvaluateProgress] = useState<{ current: number; total: number; jobTitle: string } | null>(null);
+  const [evaluateResult, setEvaluateResult] = useState<{ succeeded: number; failed: number; jobId: number; jobTitle: string } | null>(null);
+
   useEffect(() => {
     fetch(`${config.apiUrl}/api/auth/me`, { headers: getAuthHeaders() })
       .then(r => r.json())
       .then(d => { if (d.status === 'success' && d.data.schedulingLink) setSchedulingLink(d.data.schedulingLink); })
+      .catch(() => {});
+
+    fetch(`${config.apiUrl}/api/jobs`, { headers: getAuthHeaders() })
+      .then(r => r.json())
+      .then(d => { if (d.status === 'success') setJobsList(d.data.jobs.map((j: any) => ({ id: j.id, title: j.title, position_type: j.position_type }))); })
       .catch(() => {});
   }, []);
 
@@ -1328,6 +1383,39 @@ const TalentPoolManager: React.FC = () => {
     } finally {
       setMassActionLoading(false);
     }
+  };
+
+  const handleEvaluateForJob = async (jobId: number, jobTitle: string) => {
+    if (selectedIds.size === 0) return;
+    if (!window.confirm(`Evaluate ${selectedIds.size} candidate${selectedIds.size > 1 ? 's' : ''} against "${jobTitle}"? This re-analyzes each resume and may take a minute.`)) return;
+
+    setEvaluateJobDropdownOpen(false);
+    setEvaluateResult(null);
+    setMassActionLoading(true);
+    const ids = Array.from(selectedIds);
+    let succeeded = 0;
+    let failed = 0;
+
+    for (let i = 0; i < ids.length; i++) {
+      setEvaluateProgress({ current: i + 1, total: ids.length, jobTitle });
+      try {
+        const res = await fetch(`${config.apiUrl}/api/pipeline/${ids[i]}/evaluate-for-job`, {
+          method: 'POST',
+          headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jobId }),
+        });
+        const data = await res.json();
+        if (data.status === 'success') succeeded++; else failed++;
+      } catch {
+        failed++;
+      }
+    }
+
+    setEvaluateProgress(null);
+    setEvaluateResult({ succeeded, failed, jobId, jobTitle });
+    setSelectedIds(new Set());
+    setMassActionLoading(false);
+    fetchStats();
   };
 
   const handleBulkExportCSV = () => {
@@ -1925,6 +2013,23 @@ const TalentPoolManager: React.FC = () => {
               </DropdownContent>
             </MassStatusWrapper>
 
+            <MassStatusWrapper>
+              <MassBtn
+                onClick={() => setEvaluateJobDropdownOpen(o => !o)}
+                disabled={massActionLoading || jobsList.length === 0}
+                title={jobsList.length === 0 ? 'No jobs available to evaluate against' : undefined}
+              >
+                <Target size={13} /> Evaluate for Job <ChevronDown size={12} />
+              </MassBtn>
+              <DropdownContent isOpen={evaluateJobDropdownOpen}>
+                {jobsList.map(job => (
+                  <DropdownItem key={job.id} onClick={() => handleEvaluateForJob(job.id, job.title)}>
+                    {job.title}
+                  </DropdownItem>
+                ))}
+              </DropdownContent>
+            </MassStatusWrapper>
+
             <MassBtn onClick={handleBulkExportCSV} disabled={massActionLoading}>
               <Download size={13} /> Export CSV
             </MassBtn>
@@ -1935,6 +2040,30 @@ const TalentPoolManager: React.FC = () => {
 
             <MassClearBtn onClick={() => setSelectedIds(new Set())}>✕ clear</MassClearBtn>
           </MassActionBar>
+        )}
+
+        {evaluateProgress && (
+          <EvaluateBanner>
+            <span>
+              <SpinIcon size={14} style={{ verticalAlign: 'middle', marginRight: '0.4rem' }} />
+              Evaluating candidate {evaluateProgress.current} of {evaluateProgress.total} for "{evaluateProgress.jobTitle}"…
+            </span>
+          </EvaluateBanner>
+        )}
+
+        {evaluateResult && (
+          <EvaluateBanner>
+            <span>
+              Evaluated {evaluateResult.succeeded} candidate{evaluateResult.succeeded !== 1 ? 's' : ''} for "{evaluateResult.jobTitle}"
+              {evaluateResult.failed > 0 ? ` (${evaluateResult.failed} failed)` : ''}.
+            </span>
+            <EvaluateBannerActions>
+              <EvaluateViewBtn onClick={() => navigate(`/jobs-management/${evaluateResult.jobId}`)}>
+                View in Jobs Management
+              </EvaluateViewBtn>
+              <EvaluateDismissBtn onClick={() => setEvaluateResult(null)}>✕ dismiss</EvaluateDismissBtn>
+            </EvaluateBannerActions>
+          </EvaluateBanner>
         )}
 
         {error && <ErrorMessage>{error}</ErrorMessage>}
