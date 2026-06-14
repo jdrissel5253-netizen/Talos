@@ -199,6 +199,11 @@ const driversLicenseMigration = [
     'ALTER TABLE jobs ADD COLUMN IF NOT EXISTS valid_through DATE',
 ];
 
+// Candidate full name (extracted from resume) for display
+const fullNameMigration = [
+    'ALTER TABLE candidates ADD COLUMN IF NOT EXISTS full_name VARCHAR(255)',
+];
+
 // Constraint fixes
 const constraintFixes = [
     `DO $$ BEGIN
@@ -325,6 +330,21 @@ async function runMigrations() {
             try {
                 await query(sql);
                 console.log('  ✓ drivers_license_required column added');
+            } catch (e) {
+                if (e.code === '42701') {
+                    console.log('  - Column already exists, skipping');
+                } else {
+                    console.error(`  ✗ Error: ${e.message}`);
+                }
+            }
+        }
+
+        // Run candidate full_name migration
+        console.log('\nAdding full_name column to candidates...');
+        for (const sql of fullNameMigration) {
+            try {
+                await query(sql);
+                console.log('  ✓ full_name column added');
             } catch (e) {
                 if (e.code === '42701') {
                     console.log('  - Column already exists, skipping');

@@ -3705,6 +3705,44 @@ Respond with ONLY a JSON object in this EXACT format (the "bestFitPosition" and 
 }
 
 /**
+ * Lightweight, cheap AI call that extracts just the candidate's full name
+ * from resume text. Used for backfilling existing candidates' display
+ * names without re-running (and potentially changing) their full analysis.
+ */
+async function extractCandidateNameOnly(resumeText) {
+   const prompt = `Look at the resume text below and find the candidate's full name (first and last name) as it appears at the top of the resume.
+
+Resume:
+${resumeText.slice(0, 2000)}
+
+Respond with ONLY a JSON object in this EXACT format:
+{
+  "candidateName": "<candidate's full first and last name, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
+}`;
+
+   const message = await retryWithBackoff(() =>
+      anthropic.messages.create({
+         model: "claude-sonnet-4-6",
+         max_tokens: 100,
+         temperature: 0,
+         messages: [{
+            role: "user",
+            content: prompt
+         }]
+      })
+   );
+
+   const responseText = message.content[0].text;
+   const jsonMatch = responseText.match(/\{[\s\S]*\}/);
+   if (!jsonMatch) {
+      return null;
+   }
+
+   const result = JSON.parse(jsonMatch[0]);
+   return (result.candidateName && String(result.candidateName).trim()) ? String(result.candidateName).trim() : null;
+}
+
+/**
  * Analyze resume using Claude AI with HVAC-specific criteria
  */
 async function analyzeResume(filePath, position = 'HVAC Technician', requiredYearsExperience = 2, flexibleOnTitle = true, jobLocation = null) {
@@ -3852,7 +3890,8 @@ Return your analysis in this EXACT JSON format:
   "weaknesses": ["<weakness 1 if any>", "<weakness 2 if any>"],
   "recommendations": ["<recommendation 1>", "<recommendation 2>"],
   "hiringRecommendation": "<STRONG_YES (90+) | YES (80-89) | MAYBE (70-79) | PROBABLY_NOT (50-69) | NO (<50)>",
-  "email": "<candidate's email address found in the resume, or null if not present>"
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }`;
       } else if (useWarehouseAssociateFramework) {
          // Use the detailed Warehouse Associate evaluation framework
@@ -3975,7 +4014,8 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
   "concerns": ["concern1", "concern2"],
   "recommendationSummary": "<2-3 sentence recommendation>",
   "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>",
-  "email": "<candidate's email address found in the resume, or null if not present>"
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }`;
 
       } else if (useBookkeeperFramework) {
@@ -4107,7 +4147,8 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
   "concerns": ["concern1", "concern2"],
   "recommendationSummary": "<2-3 sentence recommendation>",
   "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>",
-  "email": "<candidate's email address found in the resume, or null if not present>"
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }`;
 
       } else if (useApprenticeFramework) {
@@ -4228,7 +4269,8 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
   "concerns": ["concern1", "concern2"],
   "recommendationSummary": "<2-3 sentence recommendation>",
   "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>",
-  "email": "<candidate's email address found in the resume, or null if not present>"
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }`;
 
       } else if (useCustomerServiceRepFramework) {
@@ -4336,7 +4378,8 @@ REQUIRED JSON OUTPUT FORMAT:
   "matchingExperience": ["<job title 1 - duration>", "<job title 2 - duration>"],
   "scoringMatrixRow": "<exact row from matrix that was used>",
   "scoringReasoning": "<brief explanation of why this score was chosen>",
-  "email": "<candidate's email address found in the resume, or null if not present>"
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
 CRITICAL RULES:
@@ -4452,7 +4495,8 @@ REQUIRED JSON OUTPUT FORMAT:
   "matchingExperience": ["<job title 1 - duration>", "<job title 2 - duration>"],
   "scoringMatrixRow": "<exact row from matrix that was used>",
   "scoringReasoning": "<brief explanation of why this score was chosen>",
-  "email": "<candidate's email address found in the resume, or null if not present>"
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
 CRITICAL RULES:
@@ -4592,7 +4636,8 @@ Provide your evaluation in the following JSON format:
   "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
   "recommendations": ["<3-5 specific recommendations for improvement>"],
   "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>",
-  "email": "<candidate's email address found in the resume, or null if not present>"
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
 IMPORTANT: Your overallScore MUST align with the tier ranges (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair.`;
@@ -4714,7 +4759,8 @@ STEP 9: VALIDATE YOUR ANSWER
   "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
   "recommendations": ["<3-5 specific recommendations for improvement>"],
   "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>",
-  "email": "<candidate's email address found in the resume, or null if not present>"
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
 IMPORTANT: Your overallScore MUST align with the tier ranges specified in the framework (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair in your evaluation.`;
@@ -4838,7 +4884,8 @@ STEP 9: VALIDATE YOUR ANSWER
   "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
   "recommendations": ["<3-5 specific recommendations for improvement>"],
   "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>",
-  "email": "<candidate's email address found in the resume, or null if not present>"
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
 IMPORTANT: Your overallScore MUST align with the tier ranges specified in the framework (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair in your evaluation.`;
@@ -4956,7 +5003,8 @@ STEP 9: VALIDATE YOUR ANSWER
   "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
   "recommendations": ["<3-5 specific recommendations for improvement>"],
   "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>",
-  "email": "<candidate's email address found in the resume, or null if not present>"
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
 IMPORTANT: Your overallScore MUST align with the tier ranges specified in the framework (Green: 80-100, Yellow: 50-79, Red: 0-49). Be consistent and fair in your evaluation.`;
@@ -5116,7 +5164,8 @@ REQUIRED JSON OUTPUT FORMAT:
   "matchingExperience": ["<job title 1 - duration>", "<job title 2 - duration>"],
   "scoringMatrixRow": "<exact row from matrix that was used>",
   "scoringReasoning": "<brief explanation of why this score was chosen, including competency evaluation>",
-  "email": "<candidate's email address found in the resume, or null if not present>"
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
 CRITICAL RULES:
@@ -5169,7 +5218,8 @@ Please analyze this resume for the ${positionCriteria.title} position and provid
   "weaknesses": ["<top 3-5 weaknesses or gaps for this position>"],
   "recommendations": ["<3-5 specific recommendations for improvement>"],
   "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>",
-  "email": "<candidate's email address found in the resume, or null if not present>"
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
 Key skills and qualifications to look for in a ${positionCriteria.title}:
@@ -5212,6 +5262,8 @@ Provide thorough, honest, and actionable feedback specifically tailored to the $
       analysis.scoreOutOf10 = Math.round(analysis.overallScore / 10);
       // Prefer Claude's extracted email; fall back to regex result
       analysis.extractedEmail = analysis.email ? analysis.email.toLowerCase() : regexEmail;
+      // Normalize the extracted candidate name (empty/placeholder -> null)
+      analysis.candidateName = (analysis.candidateName && String(analysis.candidateName).trim()) ? String(analysis.candidateName).trim() : null;
 
       // Clean up the uploaded file after analysis
       await fs.unlink(filePath).catch(err => logger.error('Error deleting file', { error: err.message }));
@@ -5232,5 +5284,6 @@ Provide thorough, honest, and actionable feedback specifically tailored to the $
 module.exports = {
    analyzeResume,
    extractResumeText,
-   recommendBestFitPosition
+   recommendBestFitPosition,
+   extractCandidateNameOnly
 };

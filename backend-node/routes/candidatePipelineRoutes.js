@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const fs = require('fs');
 const db = require('../config/database');
-const { candidatePipelineService, sanitize } = require('../services/databaseService');
+const { candidatePipelineService, candidateService, sanitize } = require('../services/databaseService');
 const gmailService = require('../services/gmailService');
 const Anthropic = require('@anthropic-ai/sdk');
 const logger = require('../services/logger');
@@ -645,6 +645,9 @@ router.post('/:id/find-best-fit', async (req, res) => {
             toNum(analysis.presentationQuality?.score), toArr(analysis.presentationQuality?.strengths), toArr(analysis.presentationQuality?.improvements), analysis.presentationQuality?.feedback || '',
             toArr(analysis.strengths), toArr(analysis.weaknesses), toArr(analysis.recommendations), analysis.hiringRecommendation || 'MAYBE'
         ]);
+
+        // Update the candidate's display name if the AI found one on the resume
+        await candidateService.updateFullName(row.candidate_id, analysis.candidateName);
 
         // Update the pipeline entry with the new best-fit position and score
         const { rows: updatedRows } = await db.query(`

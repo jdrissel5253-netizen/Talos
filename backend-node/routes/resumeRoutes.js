@@ -254,6 +254,7 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
 
         // Save analysis to database
         await candidateService.updateEmailIfMissing(candidate.id, analysis.extractedEmail);
+        await candidateService.updateFullName(candidate.id, analysis.candidateName);
         await analysisService.create(candidate.id, analysis);
         await candidateService.updateStatus(candidate.id, 'completed');
 
@@ -359,6 +360,7 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
 
                 // Save analysis to database
                 await candidateService.updateEmailIfMissing(candidate.id, analysis.extractedEmail);
+                await candidateService.updateFullName(candidate.id, analysis.candidateName);
                 await analysisService.create(candidate.id, analysis);
 
                 // Update candidate status to completed

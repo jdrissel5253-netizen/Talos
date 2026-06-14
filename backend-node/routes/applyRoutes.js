@@ -209,6 +209,10 @@ async function processResumeInBackground(candidate, s3KeyOrPath, name, email, ph
             // Update candidate status to completed
             await candidateService.updateStatus(candidate.id, 'completed');
 
+            // Store the candidate's display name (prefer what they typed on the form,
+            // fall back to the name the AI extracted from the resume)
+            await candidateService.updateFullName(candidate.id, name || analysisResult?.candidateName);
+
             // Calculate tier and star rating using shared scoring service
             const score = analysisResult?.overallScore || 0;
             const tier = calculateTier(score);

@@ -52,6 +52,7 @@ interface CandidatePipeline {
     vehicle_status: string;
     ai_summary: string;
     filename: string;
+    full_name?: string | null;
     email?: string;
     overall_score: number;
     years_of_experience: number;
@@ -1057,8 +1058,8 @@ const JobsManagement: React.FC = () => {
         const candidate = candidates.find(c => c.id === candidatePipelineId);
         if (!candidate) return;
 
-        // Extract candidate name from filename
-        const candidateName = extractCandidateName(candidate.filename || 'Candidate');
+        // Use the AI-extracted name when available, fall back to the filename
+        const candidateName = candidate.full_name || extractCandidateName(candidate.filename || 'Candidate');
 
         // Set up modal state
         setSelectedCandidateForContact({
@@ -1130,7 +1131,7 @@ const JobsManagement: React.FC = () => {
         <CompactCandidateRow key={`compact-${candidate.id}`} compact={compactPage}>
             <CompactScore tier={candidate.tier}>{candidate.tier_score}</CompactScore>
             <div style={{ overflow: 'hidden' }}>
-                <CompactName>{candidate.filename?.replace('.pdf', '') || 'Unknown'}</CompactName>
+                <CompactName>{candidate.full_name || extractCandidateName(candidate.filename || 'Unknown')}</CompactName>
                 <CompactMeta>
                     <span><Calendar size={11} /> {candidate.years_of_experience}yr</span>
                     <span><FileText size={11} /> {candidate.certifications_found?.length || 0} certs</span>
@@ -1144,7 +1145,7 @@ const JobsManagement: React.FC = () => {
                 <Check size={13} />
             </ActionIcon>
             {schedulingLink && (
-                <ActionIcon color="#a78bfa" onClick={() => openSchedulingLink(candidate.filename?.replace('.pdf', '') || '')} title="Schedule Interview">
+                <ActionIcon color="#a78bfa" onClick={() => openSchedulingLink(candidate.full_name || extractCandidateName(candidate.filename || ''))} title="Schedule Interview">
                     <Calendar size={13} />
                 </ActionIcon>
             )}
@@ -1164,7 +1165,7 @@ const JobsManagement: React.FC = () => {
                             checked={selectedCandidates.has(candidate.id)}
                             onChange={() => toggleCandidateSelection(candidate.id)}
                         />
-                        {candidate.filename?.replace('.pdf', '') || 'Unknown'}
+                        {candidate.full_name || extractCandidateName(candidate.filename || 'Unknown')}
                         <StarRating>{getStars(candidate.star_rating)}</StarRating>
                         {candidate.give_them_a_chance && <Badge>Give Them a Chance</Badge>}
                     </CandidateName>
@@ -1214,7 +1215,7 @@ const JobsManagement: React.FC = () => {
                     </DropdownContent>
                 </MessageDropdown>
                 {schedulingLink && (
-                    <ActionIcon color="#a78bfa" onClick={() => openSchedulingLink(candidate.filename?.replace('.pdf', '') || '')} title="Schedule Interview">
+                    <ActionIcon color="#a78bfa" onClick={() => openSchedulingLink(candidate.full_name || extractCandidateName(candidate.filename || ''))} title="Schedule Interview">
                         <Calendar size={14} />
                     </ActionIcon>
                 )}

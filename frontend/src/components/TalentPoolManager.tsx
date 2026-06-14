@@ -23,6 +23,7 @@ interface Candidate {
   contacted_via: string | null;
   contacted_at: string | null;
   filename: string;
+  full_name?: string | null;
   file_path: string;
   candidate_status: string;
   uploaded_at: string;
@@ -1129,7 +1130,7 @@ const TalentPoolManager: React.FC = () => {
     const candidate = candidates.find(c => c.pipeline_id === candidatePipelineId);
     if (!candidate) return;
 
-    const candidateName = extractCandidateName(candidate.filename || 'Candidate');
+    const candidateName = candidate.full_name || extractCandidateName(candidate.filename || 'Candidate');
 
     setSelectedCandidateForContact({
       pipelineId: candidatePipelineId,
@@ -1271,7 +1272,7 @@ const TalentPoolManager: React.FC = () => {
     const selected = candidates.filter(c => selectedIds.has(c.pipeline_id));
     const headers = ['Name', 'Score', 'Tier', 'Status', 'Experience (yrs)', 'Position', 'Location', 'Certifications', 'Notes'];
     const rows = selected.map(c => [
-      extractCandidateName(c.filename || 'Unknown'),
+      c.full_name || extractCandidateName(c.filename || 'Unknown'),
       c.tier_score,
       c.tier,
       c.pipeline_status,
@@ -1341,7 +1342,7 @@ const TalentPoolManager: React.FC = () => {
         />
         <CandidateInfo>
           <CandidateName>
-            {candidate.filename?.replace('.pdf', '') || 'Unknown Candidate'}
+            {candidate.full_name || extractCandidateName(candidate.filename || 'Unknown Candidate')}
             <StarRating>{getStars(candidate.star_rating)}</StarRating>
             {candidate.give_them_a_chance && <Badge>High Potential</Badge>}
           </CandidateName>
@@ -1449,7 +1450,7 @@ const TalentPoolManager: React.FC = () => {
           <ActionIcon
             color="#a78bfa"
             onClick={() => {
-              const name = extractCandidateName(candidate.filename || 'Candidate');
+              const name = candidate.full_name || extractCandidateName(candidate.filename || 'Candidate');
               try {
                 const url = new URL(schedulingLink);
                 url.searchParams.set('name', name);
@@ -1518,7 +1519,7 @@ const TalentPoolManager: React.FC = () => {
 
         <CompactNameBlock>
           <CompactName>
-            {candidate.filename?.replace('.pdf', '') || 'Unknown'}
+            {candidate.full_name || extractCandidateName(candidate.filename || 'Unknown')}
             <span style={{ color: '#fbbf24', fontSize: '0.75rem' }}>{getStars(candidate.star_rating)}</span>
             {candidate.give_them_a_chance && (
               <Badge style={{ fontSize: '0.65rem', padding: '0.1rem 0.4rem' }}>HP</Badge>

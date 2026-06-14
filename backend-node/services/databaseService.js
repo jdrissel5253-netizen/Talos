@@ -269,6 +269,14 @@ const candidateService = {
             'UPDATE candidates SET applicant_email = $1 WHERE id = $2 AND applicant_email IS NULL',
             [email, id]
         );
+    },
+
+    async updateFullName(id, fullName) {
+        if (!fullName) return;
+        await db.query(
+            'UPDATE candidates SET full_name = $1 WHERE id = $2',
+            [fullName, id]
+        );
     }
 };
 
@@ -722,7 +730,7 @@ const candidatePipelineService = {
 
     async findByJobId(jobId, filters = {}) {
         let query = `
-            SELECT cp.*, c.filename, c.applicant_email as email, a.overall_score, a.score_out_of_10,
+            SELECT cp.*, c.filename, c.full_name, c.applicant_email as email, a.overall_score, a.score_out_of_10,
                    a.years_of_experience, a.certifications_found, a.hiring_recommendation
             FROM candidate_pipeline cp
             JOIN candidates c ON cp.candidate_id = c.id
@@ -941,6 +949,7 @@ const candidatePipelineService = {
                     cp.internal_notes,
                     cp.evaluated_position,
                     c.filename,
+                    c.full_name,
                     c.file_path,
                     c.applicant_email,
                     c.status as candidate_status,
@@ -1228,6 +1237,7 @@ const candidatePipelineService = {
                 cp.contacted_via,
                 cp.contacted_at,
                 c.filename,
+                c.full_name,
                 c.file_path,
                 c.upload_date,
                 c.applicant_email,

@@ -26,7 +26,8 @@ CREATE TABLE IF NOT EXISTS candidates (
     filename VARCHAR(255) NOT NULL,
     file_path VARCHAR(500),
     upload_date TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    status VARCHAR(50) DEFAULT 'pending' -- pending, analyzing, completed, error
+    status VARCHAR(50) DEFAULT 'pending', -- pending, analyzing, completed, error
+    full_name VARCHAR(255)
 );
 
 -- Resume analyses table
