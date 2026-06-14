@@ -176,7 +176,7 @@ const JobCard = styled.div<{ isActive: boolean; compact?: boolean }>`
     border: 1px solid ${props => props.isActive ? 'rgba(74, 222, 128, 0.3)' : 'rgba(255, 255, 255, 0.07)'};
     border-radius: 7px;
     padding: ${p => p.compact ? '0.5rem 0.75rem' : '0.875rem'};
-    padding-right: ${p => p.compact ? '2.5rem' : '0.875rem'};
+    padding-right: ${p => p.compact ? '4.2rem' : '0.875rem'};
     padding-bottom: ${p => p.compact ? '0.5rem' : '2rem'};
     margin-bottom: ${p => p.compact ? '0.35rem' : '0.625rem'};
     cursor: pointer;
@@ -210,8 +210,22 @@ const JobMeta = styled.div`
     gap: 0.2rem;
 `;
 
-const CardEditButton = styled.button<{ compact?: boolean }>`
+const CardActions = styled.div<{ compact?: boolean }>`
     position: absolute;
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    ${p => p.compact ? `
+        top: 50%;
+        right: 0.5rem;
+        transform: translateY(-50%);
+    ` : `
+        bottom: 0.5rem;
+        right: 0.5rem;
+    `}
+`;
+
+const CardEditButton = styled.button<{ compact?: boolean }>`
     background: transparent;
     border: 1px solid rgba(74, 222, 128, 0.2);
     color: #4ade80;
@@ -219,16 +233,12 @@ const CardEditButton = styled.button<{ compact?: boolean }>`
     border-radius: 4px;
     cursor: pointer;
     font-family: inherit;
+    line-height: 1;
     transition: all 0.15s ease;
     ${p => p.compact ? `
-        top: 50%;
-        right: 0.5rem;
-        transform: translateY(-50%);
         font-size: 0.625rem;
         padding: 0.1rem 0.4rem;
     ` : `
-        bottom: 0.5rem;
-        right: 0.5rem;
         font-size: 0.675rem;
         padding: 0.18rem 0.5rem;
     `}
@@ -236,6 +246,37 @@ const CardEditButton = styled.button<{ compact?: boolean }>`
     &:hover {
         background: rgba(74, 222, 128, 0.08);
         border-color: rgba(74, 222, 128, 0.5);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: default;
+    }
+`;
+
+const CardDeleteButton = styled.button<{ compact?: boolean }>`
+    background: transparent;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    font-weight: 600;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    transition: all 0.15s ease;
+    ${p => p.compact ? `
+        font-size: 0.625rem;
+        padding: 0.1rem 0.3rem;
+    ` : `
+        font-size: 0.675rem;
+        padding: 0.18rem 0.4rem;
+    `}
+
+    &:hover {
+        background: rgba(239, 68, 68, 0.08);
+        border-color: rgba(239, 68, 68, 0.5);
     }
 `;
 
@@ -937,10 +978,12 @@ const JobsManagement: React.FC = () => {
                 alert('Failed to delete job. Please try again.');
                 return;
             }
-            // Remove from list and clear selection immediately — don't wait for reload
+            // Remove from list immediately — don't wait for reload
             setJobs(prev => prev.filter(j => j.id !== job.id));
-            setSelectedJob(null);
-            navigate('/jobs-management', { replace: true });
+            if (selectedJob?.id === job.id) {
+                setSelectedJob(null);
+                navigate('/jobs-management', { replace: true });
+            }
         } catch {
             alert('Failed to delete job. Please try again.');
         }
@@ -1332,16 +1375,28 @@ const JobsManagement: React.FC = () => {
                                                     {job.vehicle_required && <span style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><Car size={14} /> Vehicle Required</span>}
                                                 </JobMeta>
                                             )}
-                                            <CardEditButton
-                                                compact={compactJobsList}
-                                                onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    openEditForm(job);
-                                                }}
-                                                disabled={loadingEditJob === job.id}
-                                            >
-                                                {loadingEditJob === job.id ? '...' : 'Edit'}
-                                            </CardEditButton>
+                                            <CardActions compact={compactJobsList}>
+                                                <CardEditButton
+                                                    compact={compactJobsList}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        openEditForm(job);
+                                                    }}
+                                                    disabled={loadingEditJob === job.id}
+                                                >
+                                                    {loadingEditJob === job.id ? '...' : 'Edit'}
+                                                </CardEditButton>
+                                                <CardDeleteButton
+                                                    compact={compactJobsList}
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        deleteJob(job);
+                                                    }}
+                                                    title="Delete job"
+                                                >
+                                                    <X size={compactJobsList ? 11 : 12} />
+                                                </CardDeleteButton>
+                                            </CardActions>
                                         </JobCard>
                                     ))
                                 )}
