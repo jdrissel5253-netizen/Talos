@@ -322,13 +322,27 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
             });
         }
 
-        // Get the position from the request (defaults to "HVAC Technician" if not provided)
-        const positionValue = req.body.position || 'hvac-technician';
-        const position = mapPositionValue(positionValue);
-        const requiredYearsExperience = parseFloat(req.body.requiredYearsExperience) || 2;
-        const flexibleOnTitle = req.body.flexibleOnTitle !== 'false'; // Default to true
-
         const userId = req.user.userId;
+        const jobId = req.body.job_id ? sanitize.positiveInt(req.body.job_id) : null;
+
+        // If a specific job is selected, pull its details for the analysis
+        let position, requiredYearsExperience, flexibleOnTitle, jobLocation, targetJob;
+        if (jobId) {
+            targetJob = await jobService.findById(jobId);
+            if (!targetJob) {
+                return res.status(404).json({ status: 'error', message: 'Selected job not found' });
+            }
+            position = targetJob.title;
+            requiredYearsExperience = parseFloat(targetJob.required_years_experience) || 2;
+            flexibleOnTitle = targetJob.flexible_on_title !== false;
+            jobLocation = targetJob.city || targetJob.location || null;
+        } else {
+            const positionValue = req.body.position || 'hvac-technician';
+            position = mapPositionValue(positionValue);
+            requiredYearsExperience = parseFloat(req.body.requiredYearsExperience) || 2;
+            flexibleOnTitle = req.body.flexibleOnTitle !== 'false'; // Default to true
+            jobLocation = null;
+        }
 
         // Create a batch record
         const batchName = `Batch ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
@@ -353,7 +367,7 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
                 const tempPath = await downloadResumeToTemp(s3Key);
                 let analysis;
                 try {
-                    analysis = await analyzeResume(tempPath, position, requiredYearsExperience, flexibleOnTitle);
+                    analysis = await analyzeResume(tempPath, position, requiredYearsExperience, flexibleOnTitle, jobLocation);
                 } finally {
                     try { fs.unlinkSync(tempPath); } catch (_) {}
                 }
@@ -366,8 +380,34 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
                 // Update candidate status to completed
                 await candidateService.updateStatus(candidate.id, 'completed');
 
-                // Automatically add to General Talent Pool
-                await addCandidateToTalentPool(candidate.id, analysis, position, userId);
+                if (jobId && targetJob) {
+                    // Add directly to the selected job's pipeline
+                    const score = Number(analysis.overallScore) || 0;
+                    const tier = calculateTier(score);
+                    const star_rating = calculateStarRating(score);
+                    await candidatePipelineService.addToJob(candidate.id, jobId, {
+                        tier,
+                        tier_score: Math.round(score),
+                        star_rating: Math.round(star_rating * 10) / 10,
+                        give_them_a_chance: determineGiveThemAChance({
+                            score,
+                            yearsOfExperience: analysis.experience?.yearsOfExperience,
+                            requiredYears: targetJob.required_years_experience,
+                            certificationsScore: analysis.certifications?.score,
+                            technicalSkillsScore: analysis.technicalSkills?.score,
+                            presentationScore: analysis.presentationQuality?.score,
+                            summary: analysis.summary
+                        }),
+                        vehicle_status: 'unknown',
+                        ai_summary: `Score: ${score}/100. ${analysis.hiringRecommendation || ''}. ${analysis.summary || ''}`.trim(),
+                        internal_notes: 'Source: Batch Resume Upload',
+                        tags: ['batch-upload'],
+                        evaluated_position: position
+                    });
+                } else {
+                    // Automatically add to General Talent Pool
+                    await addCandidateToTalentPool(candidate.id, analysis, position, userId);
+                }
 
                 results.push({
                     id: candidate.id,
@@ -402,6 +442,8 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
             message: `Analyzed ${results.filter(r => r.status === 'success').length} out of ${req.files.length} resumes`,
             data: {
                 batchId: batch.id,
+                jobId: jobId || null,
+                jobTitle: targetJob?.title || null,
                 results: results,
                 totalAnalyzed: results.filter(r => r.status === 'success').length,
                 totalFiles: req.files.length,
