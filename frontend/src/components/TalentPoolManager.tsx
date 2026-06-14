@@ -74,6 +74,7 @@ interface TalentPoolStats {
 
 const STATUS_TABS: { key: string; label: string }[] = [
   { key: 'new', label: 'Unreviewed' },
+  { key: '', label: 'All' },
   { key: 'approved', label: 'Approved' },
   { key: 'contacted', label: 'Contacted' },
   { key: 'backup', label: 'Backup' },
@@ -1700,7 +1701,9 @@ const TalentPoolManager: React.FC = () => {
 
         <StatusTabBar>
           {STATUS_TABS.map(tab => {
-            const count = tab.key === '' ? (stats?.total ?? 0) : (stats?.statusBreakdown[tab.key] ?? 0);
+            const count = tab.key === ''
+              ? Object.values(stats?.statusBreakdown ?? {}).reduce((sum, c) => sum + c, 0)
+              : (stats?.statusBreakdown[tab.key] ?? 0);
             const active = statusFilter === tab.key;
             return (
               <StatusTab key={tab.key || 'all'} active={active} onClick={() => setStatusFilter(tab.key)}>
