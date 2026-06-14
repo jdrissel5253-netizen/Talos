@@ -152,8 +152,7 @@ const Footer: React.FC = () => {
             <FooterLink to="/candidate-messages">Candidate Message Generator</FooterLink>
             <FooterLink to="/talent-pool-manager">Personalized Candidate Talent Pool</FooterLink>
             <FooterLink to="/hvac-insights">HVAC Hiring Insights (nationwide)</FooterLink>
-            <FooterLink to="/resume-analysis">Resume Analysis</FooterLink>
-            <FooterLink to="/batch-resume-analysis">Batch Resume Analysis</FooterLink>
+            <FooterLink to="/batch-resume-analysis">Resume Analyzer</FooterLink>
             <FooterLink to="/jobs-management">Jobs Management</FooterLink>
           </FooterSection>
 

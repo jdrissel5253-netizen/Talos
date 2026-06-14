@@ -1051,7 +1051,7 @@ const ClientDashboard: React.FC = () => {
                   {topCandidates.length === 0 ? (
                     <EmptyCell>
                       No candidates yet.
-                      <EmptyActionBtn onClick={() => navigate('/resume-analysis')}>
+                      <EmptyActionBtn onClick={() => navigate('/batch-resume-analysis')}>
                         Upload Resumes
                       </EmptyActionBtn>
                     </EmptyCell>

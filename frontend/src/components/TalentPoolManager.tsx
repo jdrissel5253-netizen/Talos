@@ -1640,7 +1640,7 @@ const TalentPoolManager: React.FC = () => {
             <NavButton onClick={() => navigate('/jobs-management')}>
               ← My Jobs
             </NavButton>
-            <NavButton onClick={() => navigate('/resume-analysis')}>
+            <NavButton onClick={() => navigate('/batch-resume-analysis')}>
               Resume Analyzer
             </NavButton>
             <GoogleConnectButton
