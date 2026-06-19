@@ -5238,7 +5238,7 @@ Provide thorough, honest, and actionable feedback specifically tailored to the $
       const message = await retryWithBackoff(() =>
          anthropic.messages.create({
             model: "claude-sonnet-4-6",
-            max_tokens: 4096,
+            max_tokens: 8192,
             temperature: 0,  // Set to 0 for deterministic, consistent grading
             messages: [{
                role: "user",
@@ -5256,7 +5256,22 @@ Provide thorough, honest, and actionable feedback specifically tailored to the $
          throw new Error('Failed to parse AI response');
       }
 
-      const analysis = JSON.parse(jsonMatch[0]);
+      let analysis;
+      try {
+         analysis = JSON.parse(jsonMatch[0]);
+      } catch (parseErr) {
+         // Strip control characters (tabs, null bytes, etc.) that can break JSON
+         const cleaned = jsonMatch[0].replace(/[\x00-\x08\x0b\x0c\x0e-\x1f\x7f]/g, '');
+         try {
+            analysis = JSON.parse(cleaned);
+         } catch {
+            logger.error('JSON parse failed after cleanup', {
+               parseError: parseErr.message,
+               responsePreview: responseText.substring(0, 300)
+            });
+            throw new Error(`Failed to parse AI response: ${parseErr.message}`);
+         }
+      }
 
       // Convert overallScore (0-100) to scoreOutOf10
       analysis.scoreOutOf10 = Math.round(analysis.overallScore / 10);
