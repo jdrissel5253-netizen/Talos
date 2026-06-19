@@ -538,7 +538,9 @@ const BatchResumeAnalysis: React.FC = () => {
   const [selectedPosition, setSelectedPosition] = useState('HVAC Service Technician');
   const [requiredYearsExperience, setRequiredYearsExperience] = useState<number>(2);
   const [flexibleOnTitle, setFlexibleOnTitle] = useState<boolean>(true);
+  const [jobLocationInput, setJobLocationInput] = useState<string>('');
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const pollStartRef = useRef<number>(0);
 
   useEffect(() => {
     return () => {
@@ -600,10 +602,20 @@ const BatchResumeAnalysis: React.FC = () => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const POLL_TIMEOUT_MS = 15 * 60 * 1000; // 15 minutes
+
   const pollBatchStatus = (batchId: number, total: number) => {
     if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    pollStartRef.current = Date.now();
 
     pollIntervalRef.current = setInterval(async () => {
+      if (Date.now() - pollStartRef.current > POLL_TIMEOUT_MS) {
+        if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+        setIsAnalyzing(false);
+        alert('Analysis is taking longer than expected. Please check back in a few minutes — results may still appear in the talent pool or job pipeline.');
+        return;
+      }
+
       try {
         const resp = await fetch(`${config.apiUrl}/api/resume/batch-status/${batchId}`, {
           headers: getAuthHeaders(),
@@ -611,7 +623,7 @@ const BatchResumeAnalysis: React.FC = () => {
         if (!resp.ok) return;
 
         const data = await resp.json();
-        const { completed, analyzing } = data.data;
+        const { completed } = data.data;
         setAnalysisProgress({ current: completed, total });
 
         if (data.status === 'complete') {
@@ -641,6 +653,7 @@ const BatchResumeAnalysis: React.FC = () => {
       formData.append('position', selectedPosition);
       formData.append('requiredYearsExperience', requiredYearsExperience.toString());
       formData.append('flexibleOnTitle', flexibleOnTitle.toString());
+      if (jobLocationInput.length === 5) formData.append('jobLocation', jobLocationInput);
     }
 
     try {
@@ -681,6 +694,7 @@ const BatchResumeAnalysis: React.FC = () => {
     setViewingResume(null);
     setIsAnalyzing(false);
     setAnalysisProgress({ current: 0, total: 0 });
+    setJobLocationInput('');
   };
 
   const toggleCandidate = (id: number) => {
@@ -798,6 +812,7 @@ const BatchResumeAnalysis: React.FC = () => {
                     >
                       <option value="Lead HVAC Technician">Lead HVAC Technician</option>
                       <option value="HVAC Service Technician">HVAC Service Technician</option>
+                      <option value="Preventative Maintenance Technician">Preventative Maintenance Technician</option>
                       <option value="HVAC Dispatcher">HVAC Dispatcher</option>
                       <option value="Administrative Assistant">Administrative Assistant</option>
                       <option value="Customer Service Representative">Customer Service Representative</option>
@@ -819,6 +834,7 @@ const BatchResumeAnalysis: React.FC = () => {
                       value={requiredYearsExperience}
                       onChange={(e) => setRequiredYearsExperience(Number(e.target.value))}
                     >
+                      <option value="0">No experience required</option>
                       <option value="0.5">0.5 years</option>
                       <option value="1">1 year</option>
                       <option value="1.5">1.5 years</option>
@@ -841,7 +857,29 @@ const BatchResumeAnalysis: React.FC = () => {
                       <option value="10">10 years</option>
                     </PositionSelect>
 
-                    {(selectedPosition === 'Lead HVAC Technician' || selectedPosition === 'HVAC Dispatcher' || selectedPosition === 'Administrative Assistant' || selectedPosition === 'Customer Service Representative') && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '1.25rem' }}>
+                      <MapPin size={15} style={{ color: '#4ade80', flexShrink: 0 }} />
+                      <input
+                        type="text"
+                        inputMode="numeric"
+                        placeholder="Job zip code (e.g. 77001)"
+                        maxLength={5}
+                        value={jobLocationInput}
+                        onChange={e => setJobLocationInput(e.target.value.replace(/\D/g, ''))}
+                        style={{
+                          flex: 1,
+                          padding: '0.55rem 0.75rem',
+                          background: '#1a1a1a',
+                          border: '1px solid #444',
+                          borderRadius: '6px',
+                          color: '#e0e0e0',
+                          fontSize: '0.875rem',
+                          outline: 'none',
+                        }}
+                      />
+                    </div>
+
+                    {(selectedPosition === 'Lead HVAC Technician' || selectedPosition === 'HVAC Dispatcher' || selectedPosition === 'Administrative Assistant' || selectedPosition === 'Customer Service Representative' || selectedPosition === 'Preventative Maintenance Technician') && (
                       <div style={{ marginTop: '1.5rem' }}>
                         <label style={{
                           display: 'flex',
