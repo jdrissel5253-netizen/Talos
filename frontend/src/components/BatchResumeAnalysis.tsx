@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import styled from 'styled-components';
 import { MapPin, Briefcase, FileText } from 'lucide-react';
 import { config } from '../config';
@@ -538,6 +538,13 @@ const BatchResumeAnalysis: React.FC = () => {
   const [selectedPosition, setSelectedPosition] = useState('HVAC Service Technician');
   const [requiredYearsExperience, setRequiredYearsExperience] = useState<number>(2);
   const [flexibleOnTitle, setFlexibleOnTitle] = useState<boolean>(true);
+  const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+    };
+  }, []);
 
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [jobs, setJobs] = useState<Job[]>([]);
@@ -593,6 +600,31 @@ const BatchResumeAnalysis: React.FC = () => {
     setSelectedFiles(prev => prev.filter((_, i) => i !== index));
   };
 
+  const pollBatchStatus = (batchId: number, total: number) => {
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+
+    pollIntervalRef.current = setInterval(async () => {
+      try {
+        const resp = await fetch(`${config.apiUrl}/api/resume/batch-status/${batchId}`, {
+          headers: getAuthHeaders(),
+        });
+        if (!resp.ok) return;
+
+        const data = await resp.json();
+        const { completed, analyzing } = data.data;
+        setAnalysisProgress({ current: completed, total });
+
+        if (data.status === 'complete') {
+          if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
+          setResults(data.data.results);
+          setIsAnalyzing(false);
+        }
+      } catch (err) {
+        console.error('Polling error:', err);
+      }
+    }, 3000);
+  };
+
   const handleAnalyze = async () => {
     if (selectedFiles.length === 0) return;
 
@@ -620,37 +652,35 @@ const BatchResumeAnalysis: React.FC = () => {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => null);
-        const msg = errorData?.message || `Server error (${response.status})`;
-        alert('Error analyzing resumes: ' + msg);
+        alert('Error starting analysis: ' + (errorData?.message || `Server error (${response.status})`));
+        setIsAnalyzing(false);
         return;
       }
 
       const data = await response.json();
-
-      if (data.status === 'success') {
-        setResults(data.data.results);
+      if (data.status === 'processing') {
+        pollBatchStatus(data.data.batchId, data.data.totalFiles);
       } else {
-        alert('Error analyzing resumes: ' + data.message);
+        alert('Unexpected response from server');
+        setIsAnalyzing(false);
       }
     } catch (error) {
       console.error('Error:', error);
-      alert(
-        'The request timed out — this usually happens with 4+ resumes. ' +
-        'Your resumes may still have been processed. ' +
-        'Check the Talent Pool in a minute to confirm, then try a smaller batch.'
-      );
-    } finally {
+      alert('Failed to upload resumes. Please check your connection and try again.');
       setIsAnalyzing(false);
     }
   };
 
   const handleNewAnalysis = () => {
+    if (pollIntervalRef.current) clearInterval(pollIntervalRef.current);
     setSelectedFiles([]);
     setResults([]);
     setExpandedCandidates(new Set());
     setSelectedJobId(null);
     setAddedCandidates({});
     setViewingResume(null);
+    setIsAnalyzing(false);
+    setAnalysisProgress({ current: 0, total: 0 });
   };
 
   const toggleCandidate = (id: number) => {

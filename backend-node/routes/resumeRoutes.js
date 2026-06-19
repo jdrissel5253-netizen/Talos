@@ -312,14 +312,66 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
     }
 });
 
-// Upload and analyze multiple resumes
-router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
+// Process a single resume: AI analysis + DB save + pipeline placement
+async function processOneResume(candidateId, s3Key, filename, position, requiredYearsExperience, flexibleOnTitle, userId, jobId, targetJob, jobLocation) {
+    const tempPath = await downloadResumeToTemp(s3Key);
+    let analysis;
+    try {
+        analysis = await analyzeResume(tempPath, position, requiredYearsExperience, flexibleOnTitle, jobLocation);
+    } finally {
+        try { fs.unlinkSync(tempPath); } catch (_) {}
+    }
+    await candidateService.updateEmailIfMissing(candidateId, analysis.extractedEmail);
+    await candidateService.updateFullName(candidateId, analysis.candidateName);
+    await analysisService.create(candidateId, analysis);
+    await candidateService.updateStatus(candidateId, 'completed');
+
+    if (jobId && targetJob) {
+        const score = Number(analysis.overallScore) || 0;
+        const tier = calculateTier(score);
+        const star_rating = calculateStarRating(score);
+        await candidatePipelineService.addToJob(candidateId, jobId, {
+            tier,
+            tier_score: Math.round(score),
+            star_rating: Math.round(star_rating * 10) / 10,
+            give_them_a_chance: determineGiveThemAChance({
+                score,
+                yearsOfExperience: analysis.experience?.yearsOfExperience,
+                requiredYears: targetJob.required_years_experience,
+                certificationsScore: analysis.certifications?.score,
+                technicalSkillsScore: analysis.technicalSkills?.score,
+                presentationScore: analysis.presentationQuality?.score,
+                summary: analysis.summary
+            }),
+            vehicle_status: 'unknown',
+            ai_summary: `Score: ${score}/100. ${analysis.hiringRecommendation || ''}. ${analysis.summary || ''}`.trim(),
+            internal_notes: 'Source: Batch Resume Upload',
+            tags: ['batch-upload'],
+            evaluated_position: position
+        });
+    } else {
+        await addCandidateToTalentPool(candidateId, analysis, position, userId);
+    }
+    logger.info('Resume processed', { candidateId, filename, position });
+}
+
+// Background processor — runs after response is sent
+async function processBatchInBackground(fileItems, position, requiredYearsExperience, flexibleOnTitle, userId, jobId, targetJob, jobLocation) {
+    for (const { candidateId, s3Key, filename } of fileItems) {
+        try {
+            await processOneResume(candidateId, s3Key, filename, position, requiredYearsExperience, flexibleOnTitle, userId, jobId, targetJob, jobLocation);
+        } catch (error) {
+            logger.error('Error processing resume in background', { candidateId, filename, error: error.message });
+            try { await candidateService.updateStatus(candidateId, 'error'); } catch (_) {}
+        }
+    }
+}
+
+// Upload resumes and start async processing — responds immediately with batchId
+router.post('/upload-batch', upload.array('resumes', 20), async (req, res) => {
     try {
         if (!req.files || req.files.length === 0) {
-            return res.status(400).json({
-                status: 'error',
-                message: 'No resume files uploaded'
-            });
+            return res.status(400).json({ status: 'error', message: 'No resume files uploaded' });
         }
 
         const userId = req.user.userId;
@@ -344,119 +396,94 @@ router.post('/upload-batch', upload.array('resumes', 10), async (req, res) => {
             jobLocation = null;
         }
 
-        // Create a batch record
         const batchName = `Batch ${new Date().toLocaleDateString()} ${new Date().toLocaleTimeString()}`;
         const batch = await batchService.create(userId, batchName, req.files.length);
 
-        // Analyze all resumes and save to database
-        const results = [];
-        const errors = [];
-
-        for (let i = 0; i < req.files.length; i++) {
-            const file = req.files[i];
-            let candidate = null;
-
-            try {
-                logger.info('Analyzing resume', { index: i + 1, total: req.files.length, filename: file.originalname, position });
-
-                // Upload to S3 and create candidate record
-                const s3Key = await uploadResume(file.buffer, file.originalname);
-                candidate = await candidateService.create(batch.id, file.originalname, s3Key);
-
-                // Download to temp for analysis, then clean up
-                const tempPath = await downloadResumeToTemp(s3Key);
-                let analysis;
-                try {
-                    analysis = await analyzeResume(tempPath, position, requiredYearsExperience, flexibleOnTitle, jobLocation);
-                } finally {
-                    try { fs.unlinkSync(tempPath); } catch (_) {}
-                }
-
-                // Save analysis to database
-                await candidateService.updateEmailIfMissing(candidate.id, analysis.extractedEmail);
-                await candidateService.updateFullName(candidate.id, analysis.candidateName);
-                await analysisService.create(candidate.id, analysis);
-
-                // Update candidate status to completed
-                await candidateService.updateStatus(candidate.id, 'completed');
-
-                if (jobId && targetJob) {
-                    // Add directly to the selected job's pipeline
-                    const score = Number(analysis.overallScore) || 0;
-                    const tier = calculateTier(score);
-                    const star_rating = calculateStarRating(score);
-                    await candidatePipelineService.addToJob(candidate.id, jobId, {
-                        tier,
-                        tier_score: Math.round(score),
-                        star_rating: Math.round(star_rating * 10) / 10,
-                        give_them_a_chance: determineGiveThemAChance({
-                            score,
-                            yearsOfExperience: analysis.experience?.yearsOfExperience,
-                            requiredYears: targetJob.required_years_experience,
-                            certificationsScore: analysis.certifications?.score,
-                            technicalSkillsScore: analysis.technicalSkills?.score,
-                            presentationScore: analysis.presentationQuality?.score,
-                            summary: analysis.summary
-                        }),
-                        vehicle_status: 'unknown',
-                        ai_summary: `Score: ${score}/100. ${analysis.hiringRecommendation || ''}. ${analysis.summary || ''}`.trim(),
-                        internal_notes: 'Source: Batch Resume Upload',
-                        tags: ['batch-upload'],
-                        evaluated_position: position
-                    });
-                } else {
-                    // Automatically add to General Talent Pool
-                    await addCandidateToTalentPool(candidate.id, analysis, position, userId);
-                }
-
-                results.push({
-                    id: candidate.id,
-                    filename: file.originalname,
-                    analysis: analysis,
-                    status: 'success'
-                });
-            } catch (error) {
-                logger.error('Error analyzing resume in batch', { filename: file.originalname, error: error.message });
-
-                // Update candidate status to error if it was created
-                if (candidate) {
-                    await candidateService.updateStatus(candidate.id, 'error');
-                }
-
-                errors.push({
-                    filename: file.originalname,
-                    error: 'Processing failed'
-                });
-
-                results.push({
-                    id: candidate?.id || i,
-                    filename: file.originalname,
-                    status: 'error',
-                    error: 'Processing failed'
-                });
-            }
+        // Upload all files to S3 and create candidate records (fast, no AI yet)
+        const fileItems = [];
+        for (const file of req.files) {
+            const s3Key = await uploadResume(file.buffer, file.originalname);
+            const candidate = await candidateService.create(batch.id, file.originalname, s3Key);
+            fileItems.push({ candidateId: candidate.id, s3Key, filename: file.originalname });
         }
 
+        // Respond immediately — client will poll for results
         res.json({
-            status: 'success',
-            message: `Analyzed ${results.filter(r => r.status === 'success').length} out of ${req.files.length} resumes`,
-            data: {
-                batchId: batch.id,
-                jobId: jobId || null,
-                jobTitle: targetJob?.title || null,
-                results: results,
-                totalAnalyzed: results.filter(r => r.status === 'success').length,
-                totalFiles: req.files.length,
-                errors: errors
-            }
+            status: 'processing',
+            message: `Processing ${req.files.length} resumes`,
+            data: { batchId: batch.id, totalFiles: req.files.length }
         });
 
+        // Fire background processing without awaiting
+        processBatchInBackground(fileItems, position, requiredYearsExperience, flexibleOnTitle, userId, jobId, targetJob, jobLocation)
+            .catch(err => logger.error('Unhandled batch processing error', { batchId: batch.id, error: err.message }));
+
     } catch (error) {
-        logger.error('Batch resume analysis error', { error: error.message, stack: error.stack });
-        res.status(500).json({
-            status: 'error',
-            message: 'Failed to analyze resumes'
+        logger.error('Batch upload error', { error: error.message, stack: error.stack });
+        if (!res.headersSent) {
+            res.status(500).json({ status: 'error', message: 'Failed to start batch analysis' });
+        }
+    }
+});
+
+// Poll for batch analysis progress and results
+router.get('/batch-status/:batchId', async (req, res) => {
+    try {
+        const batchId = sanitize.positiveInt(req.params.batchId);
+        if (!batchId) return res.status(400).json({ status: 'error', message: 'Invalid batch ID' });
+
+        const batch = await batchService.findById(batchId);
+        if (!batch || batch.user_id !== req.user.userId) {
+            return res.status(404).json({ status: 'error', message: 'Batch not found' });
+        }
+
+        const rows = await batchService.findByIdWithAnalysis(batchId);
+        const total = rows.length;
+        const completed = rows.filter(r => r.status === 'completed').length;
+        const failed = rows.filter(r => r.status === 'error').length;
+        const analyzing = rows.filter(r => r.status === 'analyzing').length;
+        const isDone = analyzing === 0 && total > 0;
+
+        const results = isDone ? rows.map(r => ({
+            id: r.id,
+            filename: r.filename,
+            status: r.status === 'completed' ? 'success' : 'error',
+            analysis: r.status === 'completed' ? {
+                overallScore: r.overall_score,
+                scoreOutOf10: r.score_out_of_10,
+                summary: r.summary,
+                hiringRecommendation: r.hiring_recommendation,
+                strengths: r.strengths || [],
+                weaknesses: r.weaknesses || [],
+                recommendations: r.recommendations || [],
+                technicalSkills: {
+                    score: r.technical_skills_score,
+                    found: r.technical_skills_found || [],
+                },
+                certifications: {
+                    score: r.certifications_score,
+                    found: r.certifications_found || [],
+                },
+                experience: {
+                    score: r.experience_score,
+                    yearsOfExperience: r.years_of_experience,
+                    feedback: r.experience_feedback,
+                },
+                presentationQuality: {
+                    score: r.presentation_score,
+                    feedback: r.presentation_feedback,
+                },
+            } : undefined,
+            error: r.status === 'error' ? 'Processing failed' : undefined,
+        })) : [];
+
+        res.json({
+            status: isDone ? 'complete' : 'processing',
+            data: { batchId, total, completed, failed, analyzing, results }
         });
+    } catch (error) {
+        logger.error('Batch status error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to get batch status' });
     }
 });
 

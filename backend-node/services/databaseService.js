@@ -210,6 +210,31 @@ const batchService = {
     async findById(id) {
         const result = await db.query('SELECT * FROM batches WHERE id = $1', [id]);
         return result.rows[0];
+    },
+
+    async findByIdWithAnalysis(batchId) {
+        const result = await db.query(
+            `SELECT c.id, c.filename, c.status,
+                    a.overall_score, a.score_out_of_10, a.summary, a.hiring_recommendation,
+                    a.strengths, a.weaknesses, a.recommendations,
+                    a.technical_skills_score, a.technical_skills_found,
+                    a.certifications_score, a.certifications_found,
+                    a.experience_score, a.years_of_experience, a.experience_feedback,
+                    a.presentation_score, a.presentation_feedback
+             FROM candidates c
+             LEFT JOIN analyses a ON c.id = a.candidate_id
+             WHERE c.batch_id = $1
+             ORDER BY a.overall_score DESC NULLS LAST`,
+            [batchId]
+        );
+        return result.rows.map(row => ({
+            ...row,
+            strengths: fromJSON(row.strengths),
+            weaknesses: fromJSON(row.weaknesses),
+            recommendations: fromJSON(row.recommendations),
+            technical_skills_found: fromJSON(row.technical_skills_found),
+            certifications_found: fromJSON(row.certifications_found),
+        }));
     }
 };
 
