@@ -3609,6 +3609,8 @@ ${generateUnifiedScoringRubric(requiredYears, false)}
  * Extract resume text from a PDF or Word document on disk.
  * Throws an EMPTY_RESUME error if no usable text is found.
  */
+const RESUME_TEXT_CHAR_LIMIT = 12000;
+
 async function extractResumeText(filePath) {
    const ext = path.extname(filePath).toLowerCase();
 
@@ -3619,7 +3621,7 @@ async function extractResumeText(filePath) {
          err.code = 'EMPTY_RESUME';
          throw err;
       }
-      return resumeText;
+      return resumeText.length > RESUME_TEXT_CHAR_LIMIT ? resumeText.slice(0, RESUME_TEXT_CHAR_LIMIT) : resumeText;
    } else if (ext === '.docx' || ext === '.doc') {
       const result = await mammoth.extractRawText({ path: filePath });
       const resumeText = result.value;
@@ -3628,7 +3630,7 @@ async function extractResumeText(filePath) {
          err.code = 'EMPTY_RESUME';
          throw err;
       }
-      return resumeText;
+      return resumeText.length > RESUME_TEXT_CHAR_LIMIT ? resumeText.slice(0, RESUME_TEXT_CHAR_LIMIT) : resumeText;
    } else {
       throw new Error('Unsupported file type. Please upload a PDF or Word document (.docx).');
    }
@@ -5246,6 +5248,12 @@ Provide thorough, honest, and actionable feedback specifically tailored to the $
             }]
          })
       );
+
+      // If the response was cut off mid-output, the JSON will be incomplete — fail fast with a clear error
+      if (message.stop_reason === 'max_tokens') {
+         logger.error('Claude response truncated at max_tokens', { position, filename: filePath });
+         throw new Error('AI response was truncated. The resume may be too long or complex to analyze.');
+      }
 
       // Parse the response
       const responseText = message.content[0].text;

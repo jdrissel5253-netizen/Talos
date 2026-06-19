@@ -224,15 +224,17 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
                 return res.status(404).json({ status: 'error', message: 'Selected job not found' });
             }
             position = targetJob.title;
-            requiredYearsExperience = parseFloat(targetJob.required_years_experience) || 2;
+            const _parsedJobYears = parseFloat(targetJob.required_years_experience);
+            requiredYearsExperience = isNaN(_parsedJobYears) ? 2 : _parsedJobYears;
             flexibleOnTitle = targetJob.flexible_on_title !== false;
             jobLocation = targetJob.city || targetJob.location || null;
         } else {
             const positionValue = req.body.position || 'hvac-technician';
             position = mapPositionValue(positionValue);
-            requiredYearsExperience = parseFloat(req.body.requiredYearsExperience) || 2;
-            flexibleOnTitle = req.body.flexibleOnTitle !== 'false';
-            jobLocation = null;
+            const _parsedYears = parseFloat(req.body.requiredYearsExperience);
+            requiredYearsExperience = isNaN(_parsedYears) ? 2 : _parsedYears;
+            flexibleOnTitle = req.body.flexibleOnTitle !== 'false'; // Default to true
+            jobLocation = req.body.jobLocation || null;
         }
 
         // Create a batch record for tracking
@@ -385,13 +387,15 @@ router.post('/upload-batch', upload.array('resumes', 20), async (req, res) => {
                 return res.status(404).json({ status: 'error', message: 'Selected job not found' });
             }
             position = targetJob.title;
-            requiredYearsExperience = parseFloat(targetJob.required_years_experience) || 2;
+            const _parsedJobYears = parseFloat(targetJob.required_years_experience);
+            requiredYearsExperience = isNaN(_parsedJobYears) ? 2 : _parsedJobYears;
             flexibleOnTitle = targetJob.flexible_on_title !== false;
             jobLocation = targetJob.city || targetJob.location || null;
         } else {
             const positionValue = req.body.position || 'hvac-technician';
             position = mapPositionValue(positionValue);
-            requiredYearsExperience = parseFloat(req.body.requiredYearsExperience) || 2;
+            const _parsedYears = parseFloat(req.body.requiredYearsExperience);
+            requiredYearsExperience = isNaN(_parsedYears) ? 2 : _parsedYears;
             flexibleOnTitle = req.body.flexibleOnTitle !== 'false'; // Default to true
             jobLocation = null;
         }
