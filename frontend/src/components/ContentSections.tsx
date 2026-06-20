@@ -466,16 +466,12 @@ const ContentSections: React.FC = () => {
 
   const faqs = [
     {
-      q: 'How does Talos integrate with existing job boards?',
-      a: 'Talos connects with top job boards through our API integrations, automatically posting your job descriptions and managing applications from a single dashboard.',
+      q: 'How do candidates apply to my job postings?',
+      a: 'Every job you create on Talos gets its own public listing page where candidates can apply and upload their resume directly. You can also bulk-upload resumes you’ve already collected from referrals or other sourcing — either way, every resume flows straight into the same AI scoring and pipeline.',
     },
     {
       q: 'What makes Talos different from other hiring platforms?',
       a: 'Talos is specifically designed for HVAC companies, with AI that understands technical skills, certifications, and industry-specific requirements. Our candidate ranking system is trained on successful HVAC hires.',
-    },
-    {
-      q: 'How accurate is the AI candidate ranking system?',
-      a: 'Our AI ranking system considers technical skills, experience, certifications, and cultural fit indicators — achieving over 90% alignment with hiring manager preferences on shortlisted candidates.',
     },
     {
       q: 'Can I customize job descriptions for different positions?',
@@ -495,21 +491,21 @@ const ContentSections: React.FC = () => {
       <StatsStrip>
         <StatsGrid>
           <StatItem>
-            <StatNum>85%</StatNum>
-            <StatTitle>Faster</StatTitle>
-            <StatDesc>Time from posting to qualified shortlist</StatDesc>
+            <StatNum>20</StatNum>
+            <StatTitle>Per Batch</StatTitle>
+            <StatDesc>Upload and score up to 20 resumes in a single batch</StatDesc>
           </StatItem>
           <StatDivider />
           <StatItem>
-            <StatNum>10x</StatNum>
-            <StatTitle>More Reach</StatTitle>
-            <StatDesc>Candidates reached via multi-platform posting</StatDesc>
+            <StatNum>24/7</StatNum>
+            <StatTitle>Always On</StatTitle>
+            <StatDesc>New applications are analyzed automatically, day or night</StatDesc>
           </StatItem>
           <StatDivider />
           <StatItem>
-            <StatNum>90%</StatNum>
-            <StatTitle>Accuracy</StatTitle>
-            <StatDesc>AI ranking matches hiring manager preferences</StatDesc>
+            <StatNum>12+</StatNum>
+            <StatTitle>Frameworks</StatTitle>
+            <StatDesc>Dedicated AI scoring criteria built for each HVAC role you hire for</StatDesc>
           </StatItem>
         </StatsGrid>
       </StatsStrip>

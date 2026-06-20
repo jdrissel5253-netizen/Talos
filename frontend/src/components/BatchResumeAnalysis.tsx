@@ -6,6 +6,24 @@ import { getAuthHeaders } from '../utils/auth';
 import { useNavigate } from 'react-router-dom';
 import ResumeFileModal from './ResumeFileModal';
 
+// Positions whose backend scoring framework (resumeAnalyzer.js) reads flexibleOnTitle.
+// HVAC Service Technician and Maintenance Technician are intentionally excluded —
+// their frameworks don't accept a flexibleOnTitle parameter.
+const FLEXIBLE_TITLE_POSITIONS = new Set([
+  'Lead HVAC Technician',
+  'HVAC Dispatcher',
+  'Administrative Assistant',
+  'Customer Service Representative',
+  'Preventative Maintenance Technician',
+  'HVAC Installer',
+  'Lead HVAC Installer',
+  'Warehouse Associate',
+  'Bookkeeper',
+  'HVAC Sales Representative',
+  'Apprentice',
+  'HVAC Service Manager',
+]);
+
 /* ── Layout ── */
 const Container = styled.div`
   min-height: 100vh;
@@ -879,7 +897,7 @@ const BatchResumeAnalysis: React.FC = () => {
                       />
                     </div>
 
-                    {(selectedPosition === 'Lead HVAC Technician' || selectedPosition === 'HVAC Dispatcher' || selectedPosition === 'Administrative Assistant' || selectedPosition === 'Customer Service Representative' || selectedPosition === 'Preventative Maintenance Technician') && (
+                    {FLEXIBLE_TITLE_POSITIONS.has(selectedPosition) && (
                       <div style={{ marginTop: '1.5rem' }}>
                         <label style={{
                           display: 'flex',
@@ -939,7 +957,7 @@ const BatchResumeAnalysis: React.FC = () => {
                     ? `${selectedFiles.length} file${selectedFiles.length > 1 ? 's' : ''} selected`
                     : 'Drop resumes here or click to browse'}
                 </UploadText>
-                <UploadHint>Upload up to 4 PDF files at a time (5MB each) — larger batches may time out</UploadHint>
+                <UploadHint>Upload up to 20 PDF files at a time (5MB each)</UploadHint>
                 <FileInput
                   id="fileInput"
                   type="file"
@@ -965,7 +983,7 @@ const BatchResumeAnalysis: React.FC = () => {
                 )}
               </UploadSection>
 
-              {selectedFiles.length > 4 && !isAnalyzing && (
+              {selectedFiles.length > 20 && !isAnalyzing && (
                 <div style={{
                   margin: '0.75rem 0',
                   padding: '0.75rem 1rem',
@@ -975,12 +993,12 @@ const BatchResumeAnalysis: React.FC = () => {
                   color: '#fbbf24',
                   fontSize: '0.875rem'
                 }}>
-                  ⚠️ {selectedFiles.length} files selected — batches over 4 resumes may time out. Consider splitting into smaller groups.
+                  ⚠️ {selectedFiles.length} files selected — please remove {selectedFiles.length - 20} to stay under the 20-resume batch limit.
                 </div>
               )}
 
               {selectedFiles.length > 0 && !isAnalyzing && (
-                <BrowseButton onClick={handleAnalyze}>
+                <BrowseButton onClick={handleAnalyze} disabled={selectedFiles.length > 20}>
                   Analyze {selectedFiles.length} Resume{selectedFiles.length > 1 ? 's' : ''} with AI
                 </BrowseButton>
               )}

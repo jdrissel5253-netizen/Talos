@@ -3293,6 +3293,190 @@ ${generateUnifiedScoringRubric(requiredYears, true)}
 }
 
 /**
+ * Get HVAC Service Manager tiered evaluation criteria with transferable skills
+ */
+function getServiceManagerCriteria(requiredYears, flexibleOnTitle = true) {
+   const flexibilityPenalty = flexibleOnTitle ? 0 : 9;
+
+   return {
+      framework: `
+HVAC SERVICE MANAGER RESUME EVALUATION FRAMEWORK
+Job Requirement: ${requiredYears} years of Service Manager or equivalent leadership/supervisory HVAC experience
+Flexibility on Role Title: ${flexibleOnTitle ? 'YES - Accept equivalent leadership/supervisory HVAC roles with transferable skills' : 'NO - Strict title matching, equivalent roles score 9 points lower'}
+
+=== CRITICAL EVALUATION PHILOSOPHY ===
+
+This is a HIGH-LEVEL leadership position. Evaluate candidates based on LEADERSHIP, OPERATIONAL MANAGEMENT, and TECHNICAL CREDIBILITY combined — not just years spent as a technician.
+
+The scoring system should:
+✓ Recognize direct HVAC Service Manager experience
+✓ Recognize functionally equivalent leadership/supervisory HVAC roles
+✓ Use binary hard requirements and semantic reasoning about transferable skills
+✓ Properly evaluate candidates even if their title is not "Service Manager"
+✓ PRIORITIZE leadership and operational/project management experience over pure technical experience
+
+IMPORTANT WEIGHTING RULE: A candidate with strong leadership and operational/project management experience should ALWAYS score higher than a candidate with comparable (or even greater) years as a pure technician who has never led a team. Raw technician experience without leadership or operational responsibility is NOT sufficient for a strong score in this role, no matter how many years it spans.
+
+=== HARD REQUIREMENTS (BINARY FILTERS) ===
+
+If the job post requires minimum years of experience, the candidate must meet the requirement with either:
+1. Direct HVAC Service Manager experience, OR
+2. High-level HVAC Technician experience PLUS supervisory duties, OR
+3. Lead or Senior HVAC Technician experience WITH team oversight responsibilities
+
+Check if the job posting requires:
+- Minimum years of HVAC experience (field, service, or supervisory — check against Service Manager + equivalents)
+- Leadership/management background
+- Valid driver's license (if listed as required)
+- EPA 608 certification (if explicitly required)
+
+Count years across ALL qualifying roles, not just the formal "Service Manager" title. If a hard requirement is explicitly listed and the candidate does NOT meet it → fail the hard requirement filter and score in the RED tier (0-49).
+
+=== TRANSFERABLE SKILLS & ROLE EQUIVALENCY ===
+
+ACCEPTABLE EQUIVALENT JOB TITLES (Strong Equivalents — automatically count as relevant experience):
+- HVAC Service Manager (direct match)
+- HVAC Field Supervisor
+- Lead HVAC Technician
+- Senior HVAC Technician
+- HVAC Team Lead
+- HVAC Operations Manager (service-focused)
+- HVAC Service Supervisor
+- HVAC Field Manager
+- HVAC Project Manager
+
+CONDITIONAL EQUIVALENTS (Require skill confirmation — qualify only if the resume shows HVAC + leadership competencies from the Core Competency Categories below):
+- HVAC Installer Lead
+- General Manager (HVAC company)
+- Facilities Maintenance Supervisor (if HVAC-heavy)
+- Building Engineer Lead (if HVAC responsibilities dominate)
+- Home Services Service Manager (with HVAC crossover)
+
+Treat these roles as relevant unless the job content contradicts it. Use semantic reasoning — a title alone doesn't disqualify or qualify a candidate; look at what they actually did.
+
+=== CORE COMPETENCY CATEGORIES ===
+
+Evaluate the candidate across these THREE categories. Strong Service Manager candidates generally show evidence in 2 or more.
+
+A. LEADERSHIP & TEAM MANAGEMENT
+   - Supervising technicians
+   - Coaching, training, mentoring
+   - Conducting ride-alongs or performance reviews
+   - Team scheduling or dispatch oversight
+
+B. CUSTOMER COMMUNICATION & SERVICE QUALITY
+   - Resolving escalated customer issues
+   - Communicating estimates or recommendations
+   - Managing customer satisfaction and service standards
+
+C. OPERATIONAL & ADMINISTRATIVE OVERSIGHT
+   - Managing workflows or service schedules
+   - Approving work orders/invoices
+   - Inventory and parts management
+   - KPI tracking, budgeting, or reporting
+
+Score candidates HIGHER when these competencies appear anywhere in the resume, even if listed under a different job title.
+
+Example: An "HVAC Service Technician" with no formal "manager" title who demonstrates:
+- Supervising a 3-person service crew (Category A)
+- Handling escalated customer complaints directly (Category B)
+- Managing the service schedule and approving invoices (Category C)
+→ This candidate has 3/3 competencies and should score in the REQUIRED EXPERIENCE tier (with flexibility ON), even without the "Service Manager" title.
+
+Conversely: A "Lead HVAC Technician" with 10+ years who shows ONLY advanced technical/diagnostic work and NO leadership, customer escalation handling, or operational oversight should score LOWER than a candidate with fewer years but clear evidence across 2-3 of these categories. Technical skill alone does not make a strong Service Manager candidate.
+
+=== EXPERIENCE TIER DEFINITIONS ===
+
+=== REQUIRED EXPERIENCE TIER ===
+
+${flexibleOnTitle ?
+            `FLEXIBILITY MODE: ON (flexibleOnTitle = true)
+
+Accept candidates with ${requiredYears}+ years in ANY of the following:
+✓ HVAC Service Manager (direct match)
+✓ HVAC Field Supervisor, HVAC Service Supervisor, HVAC Field Manager
+✓ Lead or Senior HVAC Technician WITH demonstrated leadership + operational competencies (2+ categories)
+✓ HVAC Operations Manager or HVAC Project Manager (service-focused)
+✓ Any Conditional Equivalent demonstrating 2+ core competency categories
+
+KEY POINT: Evaluate based on COMPETENCIES and RESPONSIBILITIES, not strict title matching. Leadership + operational/project management experience should be weighted MOST heavily.
+Examples that QUALIFY for Required tier:
+- Lead Technician with 5+ years who supervises a crew, handles escalations, and manages schedules/invoicing
+- General Manager (HVAC company) with 5+ years of hands-on HVAC leadership and operational oversight
+- HVAC Installer Lead with 5+ years who manages crews, customer issues, and job-site operations` :
+            `FLEXIBILITY MODE: OFF (flexibleOnTitle = false)
+
+Only these titles qualify for Required Experience tier:
+✓ HVAC Service Manager (direct match)
+✓ HVAC Field Supervisor, HVAC Service Supervisor, HVAC Field Manager (explicit supervisory title)
+
+The following roles will DROP to "Close to Required" tier AND receive -${flexibilityPenalty} point penalty:
+- Lead/Senior HVAC Technician (with leadership competencies but no Manager/Supervisor title) → Drops to Close tier, -9 points
+- General Manager, HVAC Installer Lead, or other Conditional Equivalents → Drops to Close tier, -9 points
+
+Example: A Lead Technician with leadership duties who would normally score 79 (high Close tier) will drop to 70 (low Yellow tier).`}
+
+=== CLOSE TO REQUIRED EXPERIENCE (50-95% of required) ===
+
+- ${requiredYears * 0.5} to ${requiredYears * 0.95} years in Service Manager/supervisory HVAC roles, OR
+- ${requiredYears}+ years as Lead/Senior Technician WITHOUT clear leadership/operational responsibilities (when flexibility is OFF), OR
+- Candidates with 1-2 strong competencies but slightly less than required experience
+
+${!flexibleOnTitle ? `\nIMPORTANT: When flexibility is OFF, equivalent-title candidates with ${requiredYears}+ years fall into this tier with -${flexibilityPenalty} point penalty.` : ''}
+
+=== NOT CLOSE TO REQUIRED (Less than 50% of required) ===
+
+- Less than ${requiredYears * 0.5} years of relevant leadership/supervisory HVAC experience
+- May have solid HVAC technical experience but lacks leadership/operational competencies entirely
+- Technicians without any demonstrated supervisory or operational responsibility
+
+=== CRITICAL EVALUATION RULES ===
+
+RESUME QUALITY DEFINITIONS:
+- GOOD RESUME: Proper formatting, no typos, proper punctuation/grammar, substantive bullets describing leadership and operational accomplishments
+- MID RESUME: Professional formatting with few grammatical errors, but missing key elements or has limited detail
+- POOR RESUME: Multiple punctuation errors + typos, numerous formatting issues, AND lacks substantive content
+
+CERTIFICATIONS:
+- EPA 608 Universal (valuable, but secondary to leadership/operational credentials for this role)
+- NATE certifications
+- State/local licenses
+- Manufacturer certifications (Carrier, Trane, Lennox, etc.)
+- OSHA safety certifications
+- Having certifications listed ALWAYS scores higher than not having them listed, but should never outweigh a clear leadership/operational gap
+
+WORK GAPS:
+- NO WORK GAP: Under 6 months of unemployment (continuous employment OR overlapping jobs OR gaps less than 6 months)
+- SMALL WORK GAP: 6 months to 1 year of unemployment with no job listed
+- LARGE WORK GAP: Over 1 year of unemployment with no job listed
+- IMPORTANT: Overlapping jobs (multiple jobs at once) is NOT a work gap - it's actually POSITIVE and shows work ethic
+- Career transitions FROM other industries INTO HVAC should NOT be penalized
+- Only count actual unemployment periods (gaps between all jobs) as work gaps
+
+JOB STABILITY (JOB HOPPINESS):
+- JOB HOPPY: Frequent job changes (significant negative factor — stability matters more at the management level)
+- NOT JOB HOPPY: Stable employment history with reasonable tenure at companies
+- IMPORTANT: Do NOT penalize for pre-HVAC job changes or career transitions into HVAC
+
+LOCATION/DISTANCE:
+- WITHIN 30 MILES: Minimal impact on score
+- 30-50 MILES: Moderate negative impact
+- OVER 50 MILES: Major negative impact (most will fall into red tier)
+- IMPORTANT: Use reasoning - don't severely punish 33 miles vs 30 miles. Be flexible around boundaries.
+
+${generateUnifiedScoringRubric(requiredYears, true)}
+
+`,
+      scoring: {
+         greenTier: { min: 80, max: 100 },
+         yellowTier: { min: 50, max: 79 },
+         redTier: { min: 0, max: 49 }
+      },
+      flexibilityPenalty: flexibilityPenalty
+   };
+}
+
+/**
  * Get Administrative Assistant tiered evaluation criteria
  */
 function getAdminAssistantCriteria(requiredYears, flexibleOnTitle = true) {
@@ -3758,7 +3942,7 @@ async function analyzeResume(filePath, position = 'HVAC Technician', requiredYea
 
       const jobLocationLine = jobLocation ? `Job Location: ${jobLocation}\n\n` : '';
 
-      // Check if we're using the tiered framework for HVAC Service Technician, Lead HVAC Technician, Dispatcher, Administrative Assistant, Customer Service Rep, Apprentice, Bookkeeper, Warehouse Associate, or Sales Rep
+      // Check if we're using the tiered framework for HVAC Service Technician, Lead HVAC Technician, Dispatcher, Administrative Assistant, Customer Service Rep, Apprentice, Bookkeeper, Warehouse Associate, Sales Rep, or Service Manager
       const useServiceTechFramework = position === 'HVAC Service Technician';
       const usePMTechFramework = position === 'Preventative Maintenance Technician';
       const useInstallerFramework = position === 'HVAC Installer' || position === 'Lead HVAC Installer';
@@ -3770,6 +3954,7 @@ async function analyzeResume(filePath, position = 'HVAC Technician', requiredYea
       const useBookkeeperFramework = position === 'Bookkeeper';
       const useWarehouseAssociateFramework = position === 'Warehouse Associate';
       const useSalesRepFramework = position === 'HVAC Sales Representative';
+      const useServiceManagerFramework = position === 'HVAC Service Manager';
 
       let prompt;
 
@@ -5176,6 +5361,160 @@ CRITICAL RULES:
 - Be consistent: same candidate profile = same score
 - Evaluate based on COMPETENCIES and TRANSFERABLE SKILLS, not just exact job title
 - Apply flexibility penalty correctly (-9 points when flexibility is OFF and candidate lacks Lead/Senior title)
+- ALWAYS provide complete JSON response`;
+
+      } else if (useServiceManagerFramework) {
+         // Use the detailed Service Manager evaluation framework with transferable skills
+         const serviceManagerCriteria = getServiceManagerCriteria(requiredYearsExperience, flexibleOnTitle);
+
+         prompt = `You are an expert HVAC industry recruiter specializing in Service Manager evaluation. You will use the detailed tiered evaluation framework below to analyze resumes with precision and consistency.
+
+${serviceManagerCriteria.framework}
+
+${jobLocationLine}Resume Content:
+${resumeText}
+
+CRITICAL STEP-BY-STEP PARSING INSTRUCTIONS (FOLLOW EXACTLY):
+
+STEP 1: IDENTIFY ALL RELEVANT SERVICE MANAGER / LEADERSHIP HVAC EXPERIENCE
+   a) List EVERY Service Manager, supervisory, or equivalent leadership HVAC role with start/end dates
+   b) Include these STRONG EQUIVALENTS automatically:
+      - HVAC Service Manager (direct match)
+      - HVAC Field Supervisor
+      - Lead HVAC Technician
+      - Senior HVAC Technician
+      - HVAC Team Lead
+      - HVAC Operations Manager (service-focused)
+      - HVAC Service Supervisor
+      - HVAC Field Manager
+      - HVAC Project Manager
+   c) ${flexibleOnTitle ?
+               'FLEXIBILITY IS ON: Also accept HVAC Installer Lead, General Manager (HVAC company), Facilities Maintenance Supervisor (if HVAC-heavy), Building Engineer Lead (if HVAC-dominant), or Home Services Service Manager (with HVAC crossover) IF they demonstrate 2+ core competency categories.' :
+               'FLEXIBILITY IS OFF: Only accept titles with "Manager," "Supervisor," or "Field Manager" in the title. Lead/Senior Technicians and other Conditional Equivalents drop to Close tier and get -9 point penalty.'}
+   d) Calculate duration of EACH position in years and months
+   e) SUM all durations to get TOTAL relevant Service Manager/leadership experience
+
+STEP 2: EVALUATE THE 3 CORE COMPETENCY CATEGORIES
+   Analyze the resume for evidence in these categories (strong candidates show 2+):
+
+   A. LEADERSHIP & TEAM MANAGEMENT
+      - Supervising technicians
+      - Coaching, training, mentoring
+      - Conducting ride-alongs or performance reviews
+      - Team scheduling or dispatch oversight
+
+   B. CUSTOMER COMMUNICATION & SERVICE QUALITY
+      - Resolving escalated customer issues
+      - Communicating estimates or recommendations
+      - Managing customer satisfaction and service standards
+
+   C. OPERATIONAL & ADMINISTRATIVE OVERSIGHT
+      - Managing workflows or service schedules
+      - Approving work orders/invoices
+      - Inventory and parts management
+      - KPI tracking, budgeting, or reporting
+
+   Rate each category as: STRONG / MODERATE / WEAK
+
+STEP 3: APPLY THE LEADERSHIP-FIRST WEIGHTING RULE
+   a) A candidate with strong Leadership (A) AND Operational Oversight (C) evidence should be weighted MOST favorably, even with fewer years than a pure technician
+   b) A candidate who is purely a technician (strong technical skills but WEAK across A, B, and C) must score LOWER than a candidate with comparable years who shows leadership + operational competency
+   c) Do NOT let raw years of technician experience substitute for missing leadership/operational evidence
+
+STEP 4: CLASSIFY EXPERIENCE TIER (CRITICAL - DO THE MATH BEFORE CLASSIFYING)
+   First write: "Total years = ___, Required = ${requiredYearsExperience} yrs, Close minimum = ${requiredYearsExperience * 0.5} yrs"
+   a) If TOTAL years >= ${requiredYearsExperience} in a Service Manager/leadership role (or equivalent with 2+ competencies): "REQUIRED EXPERIENCE" tier
+   b) ${!flexibleOnTitle ?
+               `If flexibility is OFF and candidate has ${requiredYearsExperience}+ years as Lead/Senior Technician or other equivalent (without Manager/Supervisor title): "CLOSE TO REQUIRED" tier with -9 penalty` :
+               ''}
+   c) If TOTAL years >= ${requiredYearsExperience * 0.5} AND TOTAL years < ${requiredYearsExperience}: "CLOSE TO REQUIRED" tier
+   d) If TOTAL years < ${requiredYearsExperience * 0.5}: "NOT CLOSE TO REQUIRED" tier
+
+STEP 5: ASSESS RESUME QUALITY
+   a) GOOD RESUME = Professional formatting + No major typos + No grammar errors + Substantive bullets describing leadership/operational accomplishments
+   b) MID RESUME = Professional formatting BUT missing key elements or limited detail
+   c) POOR RESUME = Multiple errors AND poor formatting AND lacks substantive content
+
+STEP 6: CHECK FOR CERTIFICATIONS
+   a) Search entire resume for: EPA 608 Universal, NATE, state/local licenses, manufacturer certs (Carrier, Trane, Lennox), OSHA
+   b) Mark as "Certifications Listed" if ANY relevant certs found
+   c) Mark as "Certifications NOT Listed" if zero found
+   d) Remember: certifications are secondary to leadership/operational evidence for this role
+
+STEP 7: CHECK FOR WORK GAPS
+   a) List ALL employment periods
+   b) Calculate gaps between jobs (unemployment periods with NO job listed)
+   c) NO WORK GAP = Gaps under 6 months OR overlapping jobs
+   d) SMALL WORK GAP = 6 months to 1 year
+   e) LARGE WORK GAP = Over 1 year
+   f) Do NOT penalize career transitions INTO HVAC
+
+STEP 8: ASSESS JOB STABILITY
+   a) Count number of HVAC employers
+   b) Calculate average tenure
+   c) NOT JOB HOPPY = Long tenures (2+ years per employer)
+   d) JOB HOPPY = Many employers with short tenures (under 1 year each)
+   e) Do NOT penalize pre-HVAC job changes
+
+STEP 9: CALCULATE DISTANCE
+   a) Use candidate location if provided
+   b) Classify as: WITHIN 30 MILES / 30-50 MILES / OVER 50 MILES
+   c) Be flexible around boundaries (32 miles ≈ 30 miles)
+
+STEP 10: APPLY SCORING MATRIX
+   a) Find the exact matching row based on:
+      - Experience Tier (REQUIRED / CLOSE TO REQUIRED / NOT CLOSE TO REQUIRED)
+      - Resume Quality (GOOD / MID / POOR)
+      - Certifications (LISTED / NOT LISTED)
+      - Work Gap (NO / SMALL / LARGE)
+      - Job Stability (NOT JOB HOPPY / JOB HOPPY)
+      - Distance (WITHIN 30 MILES / 30-50 MILES / OVER 50 MILES)
+   b) ${!flexibleOnTitle ?
+               'Apply -9 point penalty if candidate lacks a Manager/Supervisor title but would otherwise qualify for Required tier' :
+               'No flexibility penalty - evaluate based on competencies'}
+   c) Use the MIDDLE of the score range for that row
+   d) Adjust within range based on competency strength from Step 2-3 (more leadership/operational evidence = higher in range; pure technical with no leadership = lower in range)
+
+STEP 11: VALIDATE YOUR ANSWER
+   a) Double-check experience tier matches total Service Manager/leadership years
+   b) Verify score matches rubric for the combination of factors
+   c) Ensure penalty was applied correctly if flexibility is OFF
+   d) Confirm the leadership-first weighting rule (Step 3) was actually applied — a strong pure technician should NOT outscore a candidate with leadership + operational evidence
+
+REQUIRED JSON OUTPUT FORMAT:
+{
+  "overallScore": <number 1-100>,
+  "tier": "<green|yellow|red>",
+  "experienceTier": "<REQUIRED EXPERIENCE|CLOSE TO REQUIRED|NOT CLOSE TO REQUIRED>",
+  "totalRelevantYears": <number>,
+  "resumeQuality": "<GOOD RESUME|MID RESUME|POOR RESUME>",
+  "certificationsListed": <boolean>,
+  "workGap": "<NO WORK GAP|SMALL WORK GAP|LARGE WORK GAP>",
+  "jobStability": "<NOT JOB HOPPY|JOB HOPPY>",
+  "distance": "<WITHIN 30 MILES|30-50 MILES|OVER 50 MILES|UNKNOWN>",
+  "flexibilityPenaltyApplied": <boolean>,
+  "coreCompetencies": {
+    "leadershipTeamManagement": "<Strong|Moderate|Weak>",
+    "customerCommunicationServiceQuality": "<Strong|Moderate|Weak>",
+    "operationalAdministrativeOversight": "<Strong|Moderate|Weak>"
+  },
+  "keyStrengths": ["<strength 1>", "<strength 2>", "<strength 3>"],
+  "concerns": ["<concern 1>", "<concern 2>"],
+  "recommendationSummary": "<2-3 sentence summary>",
+  "matchingExperience": ["<job title 1 - duration>", "<job title 2 - duration>"],
+  "scoringMatrixRow": "<exact row from matrix that was used>",
+  "scoringReasoning": "<brief explanation of why this score was chosen, including competency evaluation and how the leadership-first weighting rule was applied>",
+  "email": "<candidate's email address found in the resume, or null if not present>",
+  "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
+}
+
+CRITICAL RULES:
+- ALWAYS use the scoring matrix - never guess scores
+- The score MUST fall within the range specified by the matching matrix row
+- Be consistent: same candidate profile = same score
+- Evaluate based on COMPETENCIES and TRANSFERABLE SKILLS, not just exact job title
+- Leadership and operational/project management experience is the PRIMARY differentiator for this role — weight it above pure technical experience
+- Apply flexibility penalty correctly (-9 points when flexibility is OFF and candidate lacks a Manager/Supervisor title)
 - ALWAYS provide complete JSON response`;
 
       } else {
