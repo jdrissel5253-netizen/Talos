@@ -467,15 +467,15 @@ const ContentSections: React.FC = () => {
   const faqs = [
     {
       q: 'How do candidates apply to my job postings?',
-      a: 'Every job you create on Talos gets its own public listing page where candidates can apply and upload their resume directly. You can also bulk-upload resumes you’ve already collected from referrals or other sourcing — either way, every resume flows straight into the same AI scoring and pipeline.',
+      a: 'Every job you post on Talos gets its own public listing page with a shareable link — post it to social media, your website, or anywhere else, and candidates can apply and upload their resume (PDF or Word) directly, no third-party job board required. Already have resumes from referrals or other sourcing? Bulk-upload up to 20 at once. Either way, every resume is automatically scored against that specific job and dropped straight into your pipeline — nothing sits in an inbox waiting to be triaged.',
     },
     {
       q: 'What makes Talos different from other hiring platforms?',
-      a: 'Talos is specifically designed for HVAC companies, with AI that understands technical skills, certifications, and industry-specific requirements. Our candidate ranking system is trained on successful HVAC hires.',
+      a: 'Most hiring platforms treat every job the same way. Talos is built specifically for HVAC companies, with dedicated evaluation criteria for the actual roles you hire for — Service Technicians, Installers, Dispatchers, Service Managers, and more. It understands that a "Lead Installer" or "Senior HVAC Technician" can be just as qualified as someone with the exact title you posted, instead of just keyword-matching job titles.',
     },
     {
       q: 'Can I customize job descriptions for different positions?',
-      a: 'Yes. Our Job Description Generator creates tailored descriptions for various HVAC roles including technicians, installers, service managers, and office support — all optimized for your local market.',
+      a: 'Yes. Fill in the basics — title, pay range, schedule, certifications, and key responsibilities — and Talos writes a complete job description for you in seconds, with a role overview, responsibilities, required and preferred qualifications, and benefits, all in straightforward language written for tradespeople rather than corporate jargon. You can edit or regenerate it anytime before publishing, for any role Talos supports.',
     },
     {
       q: 'What kind of support do you provide during onboarding?',
