@@ -491,9 +491,9 @@ const ContentSections: React.FC = () => {
       <StatsStrip>
         <StatsGrid>
           <StatItem>
-            <StatNum>20</StatNum>
-            <StatTitle>Per Batch</StatTitle>
-            <StatDesc>Upload and score up to 20 resumes in a single batch</StatDesc>
+            <StatNum>1</StatNum>
+            <StatTitle>Shareable Link</StatTitle>
+            <StatDesc>Every job gets its own public application page — no job board needed</StatDesc>
           </StatItem>
           <StatDivider />
           <StatItem>
@@ -503,9 +503,9 @@ const ContentSections: React.FC = () => {
           </StatItem>
           <StatDivider />
           <StatItem>
-            <StatNum>12+</StatNum>
-            <StatTitle>Frameworks</StatTitle>
-            <StatDesc>Dedicated AI scoring criteria built for each HVAC role you hire for</StatDesc>
+            <StatNum>0</StatNum>
+            <StatTitle>Manual Entry</StatTitle>
+            <StatDesc>Resumes go straight from application into your pipeline — nothing to retype or re-upload</StatDesc>
           </StatItem>
         </StatsGrid>
       </StatsStrip>
