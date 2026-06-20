@@ -492,8 +492,8 @@ const ContentSections: React.FC = () => {
         <StatsGrid>
           <StatItem>
             <StatNum>1</StatNum>
-            <StatTitle>Shareable Link</StatTitle>
-            <StatDesc>Every job gets its own public application page — no job board needed</StatDesc>
+            <StatTitle>Click</StatTitle>
+            <StatDesc>Post once and your job listing goes out across multiple top job boards</StatDesc>
           </StatItem>
           <StatDivider />
           <StatItem>
