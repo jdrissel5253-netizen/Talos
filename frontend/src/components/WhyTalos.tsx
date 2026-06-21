@@ -707,7 +707,7 @@ const WhyTalos: React.FC = () => {
                   your fleet sits short-staffed and revenue walks out the door.
                 </ProblemText>
                 <PullQuoteCard>
-                  "Reliable technicians mean repeat clients. Repeat clients mean more money.
+                  "Reliable technicians earn repeat clients, and repeat clients drive revenue.
                   Talos closes that loop."
                 </PullQuoteCard>
                 <ProblemText>
