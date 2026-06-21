@@ -575,7 +575,7 @@ const COMPARISON_ROWS = [
   {
     category: 'Candidate Ranking',
     generic: 'Gut feeling, seniority bias',
-    talos: '11 role-specific frameworks with industry benchmarks',
+    talos: 'Multiple role-specific frameworks with industry benchmarks',
   },
   {
     category: 'Certifications',
