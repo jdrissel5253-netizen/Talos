@@ -82,20 +82,6 @@ const HeroLeft = styled.div`
   animation: ${fadeUp} 0.7s ease 0.1s both;
 `;
 
-const EyebrowTag = styled.div`
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: #4ade80;
-  border: 1px solid rgba(74,222,128,0.25);
-  padding: 0.3rem 0.75rem;
-  margin-bottom: 2rem;
-`;
-
 const HeroHeadline = styled.h1`
   font-family: 'DM Serif Display', serif;
   font-size: clamp(3rem, 5.5vw, 5rem);
@@ -640,7 +626,7 @@ const FEATURES = [
 const STATS = [
   { num: '3', unit: ' clicks', label: 'from posting a job to a scheduled interview', tag: 'Start to finish' },
   { num: '$0', unit: '', label: 'in staffing agency fees — ever', tag: 'No agencies' },
-  { num: '11', unit: ' roles', label: 'with dedicated scoring built for HVAC hiring', tag: 'HVAC-specific' },
+  { num: '1', unit: ' link', label: 'posts your job everywhere candidates are looking — job boards included', tag: 'Built-in reach' },
 ];
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -658,7 +644,6 @@ const WhyTalos: React.FC = () => {
           {/* ── Hero ── */}
           <Hero>
             <HeroLeft>
-              <EyebrowTag>AI-Powered HVAC Recruiting</EyebrowTag>
               <HeroHeadline>
                 Stop losing great<br />
                 techs to <em>slow</em><br />
