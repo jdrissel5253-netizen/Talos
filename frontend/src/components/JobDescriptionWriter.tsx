@@ -388,24 +388,10 @@ const ProcessSection = styled.section`
   z-index: 1;
   padding: 7rem 0;
   border-bottom: 1px solid #232830;
-  display: grid;
-  grid-template-columns: 1fr 1.4fr;
-  gap: 6rem;
-  align-items: start;
-
-  @media (max-width: 900px) {
-    grid-template-columns: 1fr;
-    gap: 3rem;
-  }
 `;
 
 const ProcessLeft = styled.div`
-  position: sticky;
-  top: 4rem;
-
-  @media (max-width: 900px) {
-    position: static;
-  }
+  max-width: 28rem;
 `;
 
 const ProcessEyebrow = styled.div`
@@ -436,81 +422,6 @@ const ProcessSubtext = styled.p`
   font-size: 0.9rem;
   font-weight: 300;
   line-height: 1.85;
-  color: #8a9ab0;
-`;
-
-const Timeline = styled.div`
-  display: flex;
-  flex-direction: column;
-`;
-
-const TimelineItem = styled.div`
-  display: grid;
-  grid-template-columns: 48px 1fr;
-  gap: 2rem;
-  padding-bottom: 3rem;
-  position: relative;
-
-  &:last-child { padding-bottom: 0; }
-
-  &:not(:last-child)::after {
-    content: '';
-    position: absolute;
-    left: 23px;
-    top: 48px;
-    bottom: 0;
-    width: 1px;
-    background: linear-gradient(to bottom, #232830, transparent);
-  }
-`;
-
-const TimelineNode = styled.div`
-  width: 48px;
-  height: 48px;
-  border: 1px solid #232830;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  position: relative;
-  z-index: 1;
-  background: #111318;
-  transition: border-color 0.2s ease;
-
-  ${TimelineItem}:hover & {
-    border-color: rgba(74,222,128,0.4);
-  }
-`;
-
-const TimelineNodeNum = styled.span`
-  font-family: 'DM Serif Display', serif;
-  font-style: italic;
-  font-size: 1rem;
-  color: rgba(74,222,128,0.25);
-  transition: color 0.2s ease;
-
-  ${TimelineItem}:hover & {
-    color: #4ade80;
-  }
-`;
-
-const TimelineContent = styled.div`
-  padding-top: 0.75rem;
-`;
-
-const TimelineTitle = styled.h3`
-  font-family: 'DM Serif Display', serif;
-  font-size: 1.15rem;
-  font-weight: 400;
-  color: #ffffff;
-  margin-bottom: 0.6rem;
-  letter-spacing: -0.01em;
-`;
-
-const TimelineDesc = styled.p`
-  font-size: 0.875rem;
-  font-weight: 300;
-  line-height: 1.8;
   color: #8a9ab0;
 `;
 
@@ -681,29 +592,6 @@ const CTAButton = styled.button`
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
-const PROCESS_STEPS = [
-  {
-    num: '01',
-    title: 'Enter your job details',
-    desc: "Tell Talos what you're hiring for. That's all it needs.",
-  },
-  {
-    num: '02',
-    title: 'Get a complete job description',
-    desc: 'A polished, HVAC-specific posting is ready — written for the kind of candidate you actually want to hire.',
-  },
-  {
-    num: '03',
-    title: 'Make it yours',
-    desc: 'Use it as written, or put your own spin on it. Add company culture, tweak the tone, or copy it straight to your job board.',
-  },
-  {
-    num: '04',
-    title: 'Post and start receiving applications',
-    desc: 'Publish and let the candidates come to you.',
-  },
-];
-
 const WHY_ITEMS = [
   {
     num: '01',
@@ -860,20 +748,6 @@ const JobDescriptionWriter: React.FC = () => {
                 Enter what you need, and Talos handles the rest.
               </ProcessSubtext>
             </ProcessLeft>
-
-            <Timeline>
-              {PROCESS_STEPS.map((step, i) => (
-                <TimelineItem key={i}>
-                  <TimelineNode>
-                    <TimelineNodeNum>{step.num}</TimelineNodeNum>
-                  </TimelineNode>
-                  <TimelineContent>
-                    <TimelineTitle>{step.title}</TimelineTitle>
-                    <TimelineDesc>{step.desc}</TimelineDesc>
-                  </TimelineContent>
-                </TimelineItem>
-              ))}
-            </Timeline>
           </ProcessSection>
         </Wrapper>
 
