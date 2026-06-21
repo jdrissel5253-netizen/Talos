@@ -754,8 +754,8 @@ const WhyTalosDifferent: React.FC = () => {
               </div>
               <div>
                 <ClosingBody>
-                  A live walkthrough takes 20 minutes. You'll see the AI score
-                  a real resume, generate a job description for one of your open
+                  A live walkthrough takes 20 minutes. You'll see how a resume is
+                  scored, generate a job description for one of your open
                   roles, and get a full picture of what your pipeline would look
                   like inside Talos — with no commitment required.
                 </ClosingBody>
