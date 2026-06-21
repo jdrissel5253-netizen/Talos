@@ -388,10 +388,13 @@ const ProcessSection = styled.section`
   z-index: 1;
   padding: 7rem 0;
   border-bottom: 1px solid #232830;
+  display: flex;
+  justify-content: center;
+  text-align: center;
 `;
 
 const ProcessLeft = styled.div`
-  max-width: 28rem;
+  max-width: 38rem;
 `;
 
 const ProcessEyebrow = styled.div`
