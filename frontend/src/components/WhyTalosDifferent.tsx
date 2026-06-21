@@ -584,7 +584,7 @@ const COMPARISON_ROWS = [
   },
   {
     category: 'Distance & Location',
-    generic: 'Not factored in',
+    generic: 'Considered informally, if at all',
     talos: 'Scored against job location, commute risk weighted',
   },
   {
