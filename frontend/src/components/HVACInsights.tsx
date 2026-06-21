@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import { BarChart3, TrendingUp, Trophy, Thermometer, Building2, Briefcase, ArrowUpRight } from 'lucide-react';
+import { Briefcase, Lightbulb, Users, Newspaper, Globe, RefreshCw, ArrowUpRight } from 'lucide-react';
 import DemoModal from './DemoModal';
 
 const FontImport = createGlobalStyle`
@@ -502,12 +502,12 @@ const TICKER_ITEMS = [
 ];
 
 const INSIGHTS = [
-  { icon: <BarChart3 size={18} />, category: 'Market Data',   headline: 'Regional Salary Benchmarks',  body: 'Current salary ranges for HVAC positions by region, helping you stay competitive in your local market and attract top-tier technicians.' },
-  { icon: <TrendingUp size={18} />, category: 'Demand',       headline: 'Demand Forecasting',          body: 'Seasonal hiring trends and predicted demand spikes to help you plan your recruitment strategy months ahead.' },
-  { icon: <Trophy size={18} />,     category: 'Workforce',    headline: 'Skills in High Demand',       body: 'Most sought-after certifications and technical skills in the current HVAC job market.' },
-  { icon: <Thermometer size={18} />,category: 'Seasonal',     headline: 'Seasonal Trends',             body: 'How weather patterns and regional demands shift hiring needs across different markets throughout the year.' },
-  { icon: <Building2 size={18} />,  category: 'Growth',       headline: 'Industry Growth Data',        body: 'Market expansion trends, new construction impacts, and commercial vs. residential demand analysis.' },
-  { icon: <Briefcase size={18} />,  category: 'Intelligence', headline: 'Competitor Analysis',         body: 'Anonymous insights into hiring practices and compensation trends among HVAC companies in your region.' },
+  { icon: <Lightbulb size={18} />,  category: 'Knowledge Hub',   headline: 'Knowledge That Compounds',       body: 'Every hire adds to what you know — about your market, your roles, and what a great fit actually looks like. Six months in, you\'re hiring with instinct you didn\'t have on day one.' },
+  { icon: <Users size={18} />,      category: 'Team Knowledge',  headline: 'Institutional Memory, Built In', body: 'What you learn doesn\'t live in one person\'s head. It\'s in your pipeline, your notes, your history — so your whole team gets sharper, not just whoever\'s been here longest.' },
+  { icon: <Briefcase size={18} />,  category: 'Always Learning', headline: 'Talos Gets Smarter With You',    body: 'Every job posted and every candidate reviewed makes the next one easier to evaluate.' },
+  { icon: <Newspaper size={18} />,  category: 'Industry News',   headline: 'Industry News, Curated',         body: 'We track the HVAC hiring and labor market stories that actually matter, so you don\'t have to hunt across a dozen trade sites.' },
+  { icon: <Globe size={18} />,      category: 'Labor Market',    headline: 'The Stories Shaping HVAC Hiring',body: 'Labor shortages, refrigerant regulations, wage data, apprenticeship pipelines — the trends reshaping how HVAC companies hire, all in one feed.' },
+  { icon: <RefreshCw size={18} />,  category: 'Always Fresh',    headline: 'Always Something New',           body: 'The Dispatches feed below grows continually, so there\'s always something fresh worth a read.' },
 ];
 
 const NEWS = [
@@ -573,7 +573,7 @@ const HVACInsights: React.FC = () => {
           {/* ── Top rule ── */}
           <TopRule>
             <TopLabel>Talos &mdash; HVAC Intelligence</TopLabel>
-            <TopMeta>Market Data &bull; Salary Benchmarks &bull; Industry News</TopMeta>
+            <TopMeta>Industry News &bull; Hiring Trends &bull; Always Learning</TopMeta>
           </TopRule>
 
           {/* ── Hero ── */}
@@ -583,7 +583,7 @@ const HVACInsights: React.FC = () => {
               The HVAC <em>Intelligence</em>
             </HeroTitle>
             <HeroSub>
-              All the hiring news and market data fit to read — delivered to recruiters who demand precision.
+              Industry news, hiring trends, and the kind of know-how that builds up the more you use Talos — delivered to recruiters who demand precision.
             </HeroSub>
             <MidRule>
               <MidRuleOrb />
@@ -593,9 +593,9 @@ const HVACInsights: React.FC = () => {
           {/* ── Market Insights ── */}
           <SectionBlock>
             <SectionHeader>
-              <SectionTitle>Market Insights</SectionTitle>
+              <SectionTitle>The Knowledge Hub</SectionTitle>
               <SectionRule />
-              <SectionCount>Six data categories</SectionCount>
+              <SectionCount>Always learning</SectionCount>
             </SectionHeader>
             <CardGrid>
               {INSIGHTS.map((item, i) => (

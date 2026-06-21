@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import { Target, BarChart3, MapPin, Wrench, ScrollText, CircleDollarSign, Home, Calendar, Lock, RefreshCw, FileText, TrendingUp, Bell, ChevronRight } from 'lucide-react';
+import { BarChart3, CircleDollarSign, Calendar, Lock, RefreshCw, FileText, TrendingUp, Bell, ChevronRight } from 'lucide-react';
 import DemoModal from './DemoModal';
 
 const FontImport = createGlobalStyle`
@@ -467,6 +467,15 @@ const ItemDesc = styled.p`
   line-height: 1.75;
 `;
 
+const NarrativeBody = styled.p`
+  max-width: 640px;
+  font-size: 1.1rem;
+  font-weight: 300;
+  color: #8a9ab0;
+  line-height: 1.85;
+  animation: ${fadeUp} 0.7s ease 0.45s both;
+`;
+
 // ─── pull quote ───────────────────────────────────────────────────────────────
 
 const PullQuote = styled.blockquote`
@@ -595,15 +604,6 @@ const MOCK_POOL = [
   { name: 'J. Hartmann',  role: 'HVAC Service Technician', tier: 'Red',    color: '#f87171', bg: 'rgba(248,113,113,0.08)' },
 ];
 
-const FILTERS = [
-  { icon: <Target size={18} />,    name: 'Ranked by Fit',    desc: 'Your strongest candidates surface first — no digging required.' },
-  { icon: <Wrench size={18} />,    name: 'Role Type',        desc: 'Filter by the specific HVAC role you\'re actively hiring for.' },
-  { icon: <MapPin size={18} />,    name: 'Location',         desc: 'Find candidates within a practical commute of your job site.' },
-  { icon: <BarChart3 size={18} />, name: 'Experience Level', desc: 'Browse by minimum years in the trade.' },
-  { icon: <ScrollText size={18} />,name: 'Certifications',   desc: 'Filter for candidates who hold relevant industry credentials.' },
-  { icon: <Home size={18} />,      name: 'HVAC Specialty',   desc: 'Residential, commercial, refrigeration, and more.' },
-];
-
 const FEATURES = [
   { icon: <Lock size={18} />,       name: 'Private & Yours',     desc: 'Your candidate pool is completely separate from other companies\' data. Nobody else sees who\'s in your pipeline.' },
   { icon: <RefreshCw size={18} />,  name: 'Always Current',      desc: 'New applicants flow in and stay organized automatically. Your pool grows every time someone applies.' },
@@ -716,20 +716,13 @@ const TalentPool: React.FC = () => {
           {/* ── Filters ── */}
           <SectionBlock>
             <SectionHeader>
-              <SectionTitle>Six ways to filter</SectionTitle>
+              <SectionTitle>Built around how you actually hire</SectionTitle>
               <SectionRule />
-              <SectionCount>Find who you need</SectionCount>
+              <SectionCount>No spreadsheets. No guesswork.</SectionCount>
             </SectionHeader>
-            <ItemGrid cols={2}>
-              {FILTERS.map((f, i) => (
-                <ItemCard key={i} delay={0.4 + i * 0.05}>
-                  <ItemNum>{String(i + 1).padStart(2, '0')}</ItemNum>
-                  <ItemIcon>{f.icon}</ItemIcon>
-                  <ItemName>{f.name}</ItemName>
-                  <ItemDesc>{f.desc}</ItemDesc>
-                </ItemCard>
-              ))}
-            </ItemGrid>
+            <NarrativeBody>
+              Your talent pool isn't just a list — it's organized the moment candidates apply. The right fit rises to the top, narrowed by the trade, location, and experience you care about, with certifications visible at a glance. You spend your time talking to candidates, not sorting them.
+            </NarrativeBody>
           </SectionBlock>
 
           {/* ── Pull quote ── */}
