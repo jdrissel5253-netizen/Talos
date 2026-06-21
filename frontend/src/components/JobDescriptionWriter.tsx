@@ -397,15 +397,6 @@ const ProcessLeft = styled.div`
   max-width: 38rem;
 `;
 
-const ProcessEyebrow = styled.div`
-  font-size: 0.62rem;
-  font-weight: 600;
-  letter-spacing: 0.2em;
-  text-transform: uppercase;
-  color: #6e7d8e;
-  margin-bottom: 1.25rem;
-`;
-
 const ProcessTitle = styled.h2`
   font-family: 'DM Serif Display', serif;
   font-size: clamp(2rem, 3.5vw, 2.8rem);
@@ -741,7 +732,6 @@ const JobDescriptionWriter: React.FC = () => {
           {/* ── Process ── */}
           <ProcessSection>
             <ProcessLeft>
-              <ProcessEyebrow>How it works</ProcessEyebrow>
               <ProcessTitle>
                 From details<br />
                 to <em>done.</em>
