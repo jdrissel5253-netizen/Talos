@@ -467,7 +467,7 @@ const ContentSections: React.FC = () => {
   const faqs = [
     {
       q: 'How do candidates apply to my job postings?',
-      a: 'Every job you post on Talos gets its own public listing page with a shareable link — post it to social media, your website, or anywhere else, and candidates can apply and upload their resume (PDF or Word) directly, no third-party job board required. Already have resumes from referrals or other sourcing? Bulk-upload up to 20 at once. Either way, every resume is automatically scored against that specific job and dropped straight into your pipeline — nothing sits in an inbox waiting to be triaged.',
+      a: 'Every job you post on Talos gets its own public listing page with a shareable link, and we also post it out to multiple top job boards for you — so you’re not limited to just one source of candidates. However someone finds the listing, they apply and upload their resume (PDF or Word) directly. Already have resumes from referrals or other sourcing? Bulk-upload up to 20 at once. Either way, every resume is automatically scored against that specific job and dropped straight into your pipeline — nothing sits in an inbox waiting to be triaged.',
     },
     {
       q: 'What makes Talos different from other hiring platforms?',
