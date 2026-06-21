@@ -831,7 +831,7 @@ const JobDescriptionWriter: React.FC = () => {
           {/* ── Roles ── */}
           <RolesSection>
             <SectionHeader>
-              <SectionTitle>15+ HVAC roles covered</SectionTitle>
+              <SectionTitle>14+ HVAC roles covered</SectionTitle>
               <SectionRule />
               <SectionCount>out of the box</SectionCount>
             </SectionHeader>
