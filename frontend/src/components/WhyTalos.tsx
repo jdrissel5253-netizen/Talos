@@ -702,9 +702,9 @@ const WhyTalos: React.FC = () => {
               </div>
               <ProblemRight>
                 <ProblemText>
-                  The average HVAC company spends 40+ hours per hire between posting jobs,
-                  sifting through unqualified resumes, scheduling interviews, and following up —
-                  all while their fleet sits short-staffed and revenue walks out the door.
+                  Between posting jobs, sifting through unqualified resumes, scheduling interviews,
+                  and following up, hiring a technician eats up hours you don't have — all while
+                  your fleet sits short-staffed and revenue walks out the door.
                 </ProblemText>
                 <PullQuoteCard>
                   "Reliable technicians mean repeat clients. Repeat clients mean more money.
