@@ -837,7 +837,7 @@ const JobDescriptionWriter: React.FC = () => {
             </SectionHeader>
             <RolesSubtext>
               Every common HVAC position has a dedicated template —
-              <span> from service tech to field supervisor.</span>
+              <span> from service tech to service manager.</span>
             </RolesSubtext>
             <RolesTagWrap>
               {FEATURED_ROLES.map((role, i) => (
