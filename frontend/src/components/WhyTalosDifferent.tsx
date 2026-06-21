@@ -570,7 +570,7 @@ const COMPARISON_ROWS = [
   {
     category: 'Resume Screening',
     generic: 'Manual review, hours per posting',
-    talos: 'Every applicant scored 0–100 against criteria built for your trade',
+    talos: 'Every applicant scored against criteria built for your trade',
   },
   {
     category: 'Candidate Ranking',
