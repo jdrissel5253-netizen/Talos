@@ -602,8 +602,8 @@ const COMPARISON_ROWS = [
 const AI_ITEMS = [
   {
     num: '01',
-    title: 'Eleven Role-Specific Scoring Frameworks',
-    desc: 'From HVAC Installer to Dispatcher to Bookkeeper — each role has its own scoring formula built on the skills, certifications, and experience patterns that actually predict success in that position.',
+    title: 'Multiple Role-Specific Scoring Frameworks',
+    desc: 'From HVAC Installer to Dispatcher to Bookkeeper — each role is evaluated against its own criteria, not a one-size-fits-all resume scan.',
   },
   {
     num: '02',
@@ -617,7 +617,7 @@ const AI_ITEMS = [
   },
   {
     num: '04',
-    title: 'AI Job Description Generation',
+    title: 'Automated Job Description Generation',
     desc: 'Talos generates job descriptions that attract the right candidates from the start. Written to rank for the searches real technicians make, with language that filters out poor fits before they apply.',
   },
 ];
@@ -656,7 +656,7 @@ const WhyTalosDifferent: React.FC = () => {
               </HeroDesc>
               <HeroMeta>
                 <MetaLine>Built exclusively for HVAC</MetaLine>
-                <MetaLine>11 role-specific scoring frameworks</MetaLine>
+                <MetaLine>Multiple role-specific scoring frameworks</MetaLine>
                 <MetaLine>No staffing agency fees</MetaLine>
                 <HeroCTA onClick={() => setIsDemoModalOpen(true)}>
                   See the Difference
