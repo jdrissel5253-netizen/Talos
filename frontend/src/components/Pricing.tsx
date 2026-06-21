@@ -722,7 +722,7 @@ const Pricing: React.FC = () => {
               spending on hiring.
             </HeroTitle>
             <HeroSub>
-              Most HVAC companies don't track their hiring costs — they just feel the pain. This page breaks down what that pain actually costs, section by section, with real numbers. By the time you get to the bottom, the question won't be whether you can afford Talos. It'll be how long you've been unable to afford not having it.
+              Hiring an HVAC technician costs more than most owners realize. This page breaks down where every dollar goes — section by section, with real numbers. By the time you reach the bottom, the math speaks for itself.
             </HeroSub>
           </HeroSection>
 
