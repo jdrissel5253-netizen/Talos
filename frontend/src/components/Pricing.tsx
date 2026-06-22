@@ -829,12 +829,12 @@ const Pricing: React.FC = () => {
               <em>empty</em> while you hire
             </ChapterTitle>
             <ChapterRange>
-              <ChapterRangeNum>6 – 12 weeks</ChapterRangeNum>
+              <ChapterRangeNum>3 – 8 weeks</ChapterRangeNum>
               <ChapterRangeLabel>from "we need to hire" to first day</ChapterRangeLabel>
             </ChapterRange>
 
             <ChapterBody>
-              Industry estimates for skilled trades time-to-fill vary widely — roughly <strong>3 to 8 weeks</strong> depending on the source. For HVAC specifically — where the candidate pool is smaller and certifications matter — it regularly runs 6 to 12 weeks from the moment you decide to hire to the moment someone shows up for their first day.
+              Industry estimates for skilled trades time-to-fill vary by source, but for HVAC specifically — where the candidate pool is smaller and certifications matter — it typically runs <strong>3 to 8 weeks</strong> from the moment you decide to hire to the moment someone shows up for their first day.
             </ChapterBody>
 
             <ChapterBody>
@@ -842,7 +842,7 @@ const Pricing: React.FC = () => {
             </ChapterBody>
 
             <CalcCard>
-              <CalcCardLabel>Revenue cost of an open technician seat (8-week average)</CalcCardLabel>
+              <CalcCardLabel>Revenue cost of an open technician seat (8-week, high end)</CalcCardLabel>
               <CalcRow><CalcRowLabel>Technician annual revenue contribution</CalcRowLabel><CalcRowValue>~$200,000 / yr</CalcRowValue></CalcRow>
               <CalcRow><CalcRowLabel>Weekly revenue gap</CalcRowLabel><CalcRowValue>$3,846 / week</CalcRowValue></CalcRow>
               <CalcRow><CalcRowLabel>8-week hiring timeline</CalcRowLabel><CalcRowValue>× 8 weeks</CalcRowValue></CalcRow>
@@ -855,27 +855,27 @@ const Pricing: React.FC = () => {
 
             <TimelineWrap>
               <TimelineRow>
-                <TimelinePhase>Weeks 1–2</TimelinePhase>
-                <TimelineBar><TimelineFill pct={20} color="#4ade80" /></TimelineBar>
+                <TimelinePhase>Week 1</TimelinePhase>
+                <TimelineBar><TimelineFill pct={15} color="#4ade80" /></TimelineBar>
                 <TimelineDuration>Write &amp; post job description</TimelineDuration>
               </TimelineRow>
               <TimelineRow>
-                <TimelinePhase>Weeks 2–4</TimelinePhase>
-                <TimelineBar><TimelineFill pct={45} color="#4ade80" /></TimelineBar>
+                <TimelinePhase>Weeks 1–2</TimelinePhase>
+                <TimelineBar><TimelineFill pct={25} color="#4ade80" /></TimelineBar>
                 <TimelineDuration>Applications come in, initial screening</TimelineDuration>
               </TimelineRow>
               <TimelineRow>
-                <TimelinePhase>Weeks 3–5</TimelinePhase>
-                <TimelineBar><TimelineFill pct={60} color="#fbbf24" /></TimelineBar>
+                <TimelinePhase>Weeks 2–3</TimelinePhase>
+                <TimelineBar><TimelineFill pct={40} color="#fbbf24" /></TimelineBar>
                 <TimelineDuration>Phone screens &amp; scheduling</TimelineDuration>
               </TimelineRow>
               <TimelineRow>
-                <TimelinePhase>Weeks 5–7</TimelinePhase>
-                <TimelineBar><TimelineFill pct={80} color="#fbbf24" /></TimelineBar>
+                <TimelinePhase>Weeks 3–5</TimelinePhase>
+                <TimelineBar><TimelineFill pct={65} color="#fbbf24" /></TimelineBar>
                 <TimelineDuration>In-person interviews, references, offer</TimelineDuration>
               </TimelineRow>
               <TimelineRow>
-                <TimelinePhase>Weeks 7–10</TimelinePhase>
+                <TimelinePhase>Weeks 5–8</TimelinePhase>
                 <TimelineBar><TimelineFill pct={100} color="#ef4444" /></TimelineBar>
                 <TimelineDuration>Background check, notice period, start date</TimelineDuration>
               </TimelineRow>
@@ -888,14 +888,14 @@ const Pricing: React.FC = () => {
             <BulletList>
               <BulletItem><strong>The best candidates are off the market in 7–10 days.</strong> By the time most companies finish their initial review, the A-tier applicants are already placed.</BulletItem>
               <BulletItem><strong>Most technicians need to give two weeks notice.</strong> Even after you make an offer, you're waiting. Some are locked into a full month at their current employer.</BulletItem>
-              <BulletItem><strong>A re-hire resets the clock entirely.</strong> If your first choice declines or backs out, you restart from week three or four — not week one.</BulletItem>
-              <BulletItem><strong>Existing staff absorbs the gap.</strong> 6–10 weeks of overtime and overextension increases the risk that a second technician burns out or leaves while you're still trying to fill the first seat.</BulletItem>
+              <BulletItem><strong>A re-hire resets the clock entirely.</strong> If your first choice declines or backs out, you're starting the interview pipeline over — not just delayed by a few days.</BulletItem>
+              <BulletItem><strong>Existing staff absorbs the gap.</strong> 3–8 weeks of overtime and overextension increases the risk that a second technician burns out or leaves while you're still trying to fill the first seat.</BulletItem>
             </BulletList>
 
             <TalosCard>
               <TalosCardLabel>What Talos does instead</TalosCardLabel>
               <TalosCardText>
-                Talos compresses weeks 2 through 4 into hours. <strong>Applications are scored and ranked in real time</strong> — the moment someone submits, they're evaluated and placed in your pipeline. You're interviewing your top three candidates by day two, not week four. The role gets filled in days, not months.
+                Talos compresses weeks 1 through 2 into hours. <strong>Applications are scored and ranked in real time</strong> — the moment someone submits, they're evaluated and placed in your pipeline. You're interviewing your top three candidates by day two, not week two. The role gets filled in days, not months.
               </TalosCardText>
             </TalosCard>
           </ChapterWrap>
