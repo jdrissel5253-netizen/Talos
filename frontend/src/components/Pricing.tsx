@@ -834,7 +834,7 @@ const Pricing: React.FC = () => {
             </ChapterRange>
 
             <ChapterBody>
-              The industry average time-to-fill for skilled trades positions is <strong>42 days</strong>. For HVAC specifically — where the candidate pool is smaller and certifications matter — it regularly runs 6 to 12 weeks from the moment you decide to hire to the moment someone shows up for their first day.
+              Industry estimates for skilled trades time-to-fill vary widely — roughly <strong>3 to 8 weeks</strong> depending on the source. For HVAC specifically — where the candidate pool is smaller and certifications matter — it regularly runs 6 to 12 weeks from the moment you decide to hire to the moment someone shows up for their first day.
             </ChapterBody>
 
             <ChapterBody>
