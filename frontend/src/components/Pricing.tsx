@@ -911,23 +911,23 @@ const Pricing: React.FC = () => {
               What happens when gut feeling<br />picks the <em>wrong technician</em>
             </ChapterTitle>
             <ChapterRange>
-              <ChapterRangeNum>$18,000 – $120,000</ChapterRangeNum>
+              <ChapterRangeNum>$15,000 – $60,000</ChapterRangeNum>
               <ChapterRangeLabel>cost of one bad hire</ChapterRangeLabel>
             </ChapterRange>
 
             <ChapterBody>
-              The HVAC industry has an annual turnover rate of <strong>35–40%</strong>. That means roughly one in three technicians you hire this year will be gone by next year. Some will leave for a competitor. Some won't make it through training. Some will stay just long enough to cost you customers before they go.
+              The HVAC industry has an annual technician turnover rate of roughly <strong>18–20%</strong>. That means about one in five technicians you hire this year will be gone by next year. Some will leave for a competitor. Some won't make it through training. Some will stay just long enough to cost you customers before they go.
             </ChapterBody>
 
             <ChapterBody>
-              The Society for Human Resource Management (SHRM) estimates that a bad hire costs <strong>50–200% of the position's annual salary</strong>. The U.S. Department of Labor puts the floor at 30%. Most HVAC owners instinctively know the damage is significant — they just haven't added it up.
+              The Society for Human Resource Management (SHRM) estimates that replacing an employee costs <strong>50% to 200% of their annual salary</strong> — the lower end for hourly and entry-level roles, climbing toward 200% for senior and executive positions. For a $60,000 HVAC technician, that points to something closer to the 50–100% range. Most HVAC owners instinctively know the damage is significant — they just haven't added it up.
             </ChapterBody>
 
             <StatCallout>
               <StatCalloutNum>$<span>30K</span></StatCalloutNum>
               <StatCalloutText>
                 <strong>Conservative cost of a bad hire on a $60,000 technician.</strong><br />
-                SHRM's 50% estimate. The full range goes to $120,000 at the high end — more than the person ever earned working for you.
+                SHRM's 50% estimate for hourly/technical roles. Layer in retraining, callbacks, and a second hiring cycle, and the full cost can climb toward $60,000 — the breakdown below shows where it comes from.
               </StatCalloutText>
             </StatCallout>
 
