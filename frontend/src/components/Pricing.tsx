@@ -1048,10 +1048,10 @@ const Pricing: React.FC = () => {
             </ChapterBody>
 
             <StatCallout>
-              <StatCalloutNum>25<span>%</span></StatCalloutNum>
+              <StatCalloutNum>15<span>–25%</span></StatCalloutNum>
               <StatCalloutText>
                 <strong>The agency's cut of your new hire's first-year salary.</strong><br />
-                On a $60,000 technician, that's $15,000 — before training, before benefits, before their first service call.
+                On a $60,000 technician, that's $9,000 to $15,000 — before training, before benefits, before their first service call.
               </StatCalloutText>
             </StatCallout>
 
