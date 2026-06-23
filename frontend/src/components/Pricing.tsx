@@ -997,12 +997,12 @@ const Pricing: React.FC = () => {
               Getting your posting seen —<br />and <em>following up</em> on it
             </ChapterTitle>
             <ChapterRange>
-              <ChapterRangeNum>$500 – $3,000+</ChapterRangeNum>
+              <ChapterRangeNum>$1,000 – $5,000+</ChapterRangeNum>
               <ChapterRangeLabel>per hire in ad spend + time</ChapterRangeLabel>
             </ChapterRange>
 
             <ChapterBody>
-              Indeed's free listings get buried within 24 hours in competitive markets. Sponsored posts are pay-per-click — and in HVAC, where multiple companies are competing for the same pool of candidates, cost-per-click ranges from <strong>$5 to $15 in most metro markets</strong>. To generate 50 qualified applicants at a typical 5% application rate, you need 1,000 clicks. At $10 CPC, that's $10,000 in ad spend for one role.
+              Indeed's free listings get buried within 24 hours in competitive markets. Sponsored posts are pay-per-click — and in HVAC, where multiple companies are competing for the same pool of candidates, cost-per-click typically runs <strong>$1 to $5 in competitive metro markets</strong>. To generate 50 applicants at a typical 5% application rate, you need 1,000 clicks. At $3 CPC, that's $3,000 in ad spend for one role — and it climbs higher in the most competitive metros.
             </ChapterBody>
 
             <ChapterBody>
@@ -1010,9 +1010,9 @@ const Pricing: React.FC = () => {
             </ChapterBody>
 
             <BulletList>
-              <BulletItem><strong>Indeed sponsored: $5–$15 per click.</strong> You pay for every click, whether the person applies or not. A 5% application rate is considered good.</BulletItem>
+              <BulletItem><strong>Indeed sponsored: $1–$5 per click.</strong> You pay for every click, whether the person applies or not. A 5% application rate is considered good.</BulletItem>
               <BulletItem><strong>ZipRecruiter, LinkedIn, and niche boards add up.</strong> Posting everywhere manually doubles the admin work and cost with limited incremental return.</BulletItem>
-              <BulletItem><strong>Once you have candidates, you still need to reach them.</strong> Industry data shows it takes 4–8 touchpoints to successfully schedule a single interview with a passive candidate.</BulletItem>
+              <BulletItem><strong>Once you have candidates, you still need to reach them.</strong> Passive candidates rarely respond to a single message — recruiting research on passive-candidate outreach puts the number of follow-up touches needed anywhere from several to over a dozen before they'll agree to an interview.</BulletItem>
               <BulletItem><strong>Outreach messages are written from scratch, every time.</strong> Most owners default to one-line texts and wonder why their response rate is low. Good outreach takes time to write and personalize.</BulletItem>
             </BulletList>
 
@@ -1035,7 +1035,7 @@ const Pricing: React.FC = () => {
               What you pay when someone else<br />finds your <em>technician</em>
             </ChapterTitle>
             <ChapterRange>
-              <ChapterRangeNum>$8,000 – $18,750</ChapterRangeNum>
+              <ChapterRangeNum>$5,700 – $23,750</ChapterRangeNum>
               <ChapterRangeLabel>per placement</ChapterRangeLabel>
             </ChapterRange>
 
@@ -1044,7 +1044,7 @@ const Pricing: React.FC = () => {
             </ChapterBody>
 
             <ChapterBody>
-              The standard model is a <strong>placement fee of 15–25% of the hired candidate's first-year salary</strong>. That's not per hour. That's not a monthly retainer. That's a one-time check you write per hire. For a senior service technician at $65,000, you're looking at $9,750 to $16,250 for a single placement — before the person has set foot in your truck.
+              The standard model is a <strong>placement fee of 15–25% of the hired candidate's first-year salary</strong>. That's not per hour. That's not a monthly retainer. That's a one-time check you write per hire. For an experienced service technician at $65,000, you're looking at $9,750 to $16,250 for a single placement — before the person has set foot in your truck.
             </ChapterBody>
 
             <StatCallout>
@@ -1077,8 +1077,8 @@ const Pricing: React.FC = () => {
               </FeeTableRow>
               <FeeTableRow>
                 <FeeTableCell>Lead / Senior Technician</FeeTableCell>
-                <FeeTableCell>$65,000 – $80,000</FeeTableCell>
-                <FeeTableCell accent>$9,750 – $20,000</FeeTableCell>
+                <FeeTableCell>$70,000 – $90,000</FeeTableCell>
+                <FeeTableCell accent>$10,500 – $22,500</FeeTableCell>
               </FeeTableRow>
               <FeeTableRow>
                 <FeeTableCell>HVAC Installer</FeeTableCell>
@@ -1087,18 +1087,18 @@ const Pricing: React.FC = () => {
               </FeeTableRow>
               <FeeTableRow>
                 <FeeTableCell>Service Manager</FeeTableCell>
-                <FeeTableCell>$70,000 – $90,000</FeeTableCell>
-                <FeeTableCell accent>$10,500 – $22,500</FeeTableCell>
+                <FeeTableCell>$75,000 – $95,000</FeeTableCell>
+                <FeeTableCell accent>$11,250 – $23,750</FeeTableCell>
               </FeeTableRow>
             </FeeTable>
 
             <ChapterBody>
-              Most HVAC companies hire <strong>two to five technicians per year</strong> — a mix of growth hiring and backfill from turnover. At that pace, agency fees alone can run $25,000–$75,000 annually. That's before you account for the hidden costs most owners don't factor in.
+              A small-to-midsize HVAC company might hire somewhere in the range of <strong>two to five technicians per year</strong> — a mix of growth hiring and backfill from turnover. At that pace, agency fees alone can run $25,000–$75,000 annually. That's before you account for the hidden costs most owners don't factor in.
             </ChapterBody>
 
             <BulletList>
               <BulletItem><strong>You don't control who you meet.</strong> The agency screens first. Candidates who might be perfect for your company but don't fit the agency's template never reach you.</BulletItem>
-              <BulletItem><strong>Guarantee periods are replacements, not refunds.</strong> The standard 90-day guarantee means if the hire leaves or doesn't work out, you get a free replacement search — not your money back. You still lost 90 days.</BulletItem>
+              <BulletItem><strong>Guarantee periods are replacements, not refunds.</strong> Most agencies offer a 60- to 90-day guarantee — if the hire leaves or doesn't work out, you get a free replacement search, not your money back. You still lost the time it took to get there.</BulletItem>
               <BulletItem><strong>Urgency costs more.</strong> If you need someone in two weeks instead of six, some agencies charge a rush fee or bump the percentage.</BulletItem>
               <BulletItem><strong>The agency is optimizing for placement speed, not fit.</strong> Their incentive is to place someone and collect the fee — not to find the best long-term hire for your company.</BulletItem>
             </BulletList>
@@ -1129,7 +1129,7 @@ const Pricing: React.FC = () => {
                 The true cost of hiring one HVAC technician without a system
               </TotalHeadline>
               <TotalBody>
-                Agency fees, screening time, ad spend, outreach, and the risk of a bad hire — hiring a single technician the traditional way routinely costs $15,000 to $50,000 in direct and indirect expenses. And that number resets every time someone leaves. With a 35–40% annual turnover rate, most HVAC companies are paying this cost multiple times per year.
+                Agency fees, screening time, ad spend, outreach, and the risk of a bad hire — hiring a single technician the traditional way routinely costs $15,000 to $50,000 in direct and indirect expenses. And that number resets every time someone leaves. With an 18–20% annual turnover rate, most HVAC companies are paying this cost multiple times per year.
               </TotalBody>
             </TotalLeft>
             <TotalFigure>
