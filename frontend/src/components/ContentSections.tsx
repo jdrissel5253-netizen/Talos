@@ -503,9 +503,9 @@ const ContentSections: React.FC = () => {
           </StatItem>
           <StatDivider />
           <StatItem>
-            <StatNum>0</StatNum>
-            <StatTitle>Manual Entry</StatTitle>
-            <StatDesc>Resumes go straight from application into your pipeline — nothing to retype or re-upload</StatDesc>
+            <StatNum>20</StatNum>
+            <StatTitle>Resumes at Once</StatTitle>
+            <StatDesc>Already have a stack of resumes? Batch-upload and score up to 20 in a single pass</StatDesc>
           </StatItem>
         </StatsGrid>
       </StatsStrip>
