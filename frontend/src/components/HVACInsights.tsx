@@ -583,7 +583,7 @@ const HVACInsights: React.FC = () => {
               The HVAC <em>Intelligence</em>
             </HeroTitle>
             <HeroSub>
-              Industry news, hiring trends, and the kind of know-how that builds up the more you use Talos — delivered to recruiters who demand precision.
+              Industry news, hiring trends, and the kind of know-how that builds up the more you use Talos — delivered to HVAC professionals who demand precision.
             </HeroSub>
             <MidRule>
               <MidRuleOrb />
@@ -613,7 +613,7 @@ const HVACInsights: React.FC = () => {
           {/* ── Pull quote ── */}
           <PullQuote>
             <PullQuoteText>
-              480,000 skilled trade jobs unfilled. The operators who move first win the talent.
+              Hundreds of thousands of skilled trade jobs sit unfilled nationwide. The operators who move first win the talent.
             </PullQuoteText>
             <PullQuoteAttr>Talos HVAC Intelligence</PullQuoteAttr>
           </PullQuote>
