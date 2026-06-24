@@ -274,6 +274,23 @@ const RangeInput = styled.input`
     &::placeholder { color: #444; }
 `;
 
+const LocationSearchInput = styled.input`
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(74,222,128,0.15);
+    border-radius: 5px;
+    color: #ccc;
+    font-size: 0.8rem;
+    padding: 0.45rem 0.6rem;
+    width: 100%;
+    font-family: 'Sora', sans-serif;
+    outline: none;
+    transition: border-color 0.15s;
+    margin-top: 0.35rem;
+
+    &:focus { border-color: rgba(74,222,128,0.45); }
+    &::placeholder { color: #444; }
+`;
+
 const RangeSep = styled.span`
     color: #444;
     font-size: 0.75rem;
@@ -341,123 +358,109 @@ const MobileFilters = styled.div<{ $open: boolean }>`
 const JobCard = styled(Link)<{ $index: number }>`
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 1rem;
-    background: rgba(255,255,255,0.025);
-    border: 1px solid rgba(74,222,128,0.1);
-    border-radius: 9px;
-    padding: 1.25rem 1.5rem;
-    margin-bottom: 0.65rem;
+    gap: 1.4rem;
+    background: rgba(255,255,255,0.018);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 6px;
+    padding: 1.15rem 1.4rem;
+    margin-bottom: 0.6rem;
     text-decoration: none;
     position: relative;
-    overflow: hidden;
-    transition: border-color 0.2s, background 0.2s, transform 0.15s, box-shadow 0.2s;
-    backdrop-filter: blur(6px);
+    transition: border-color 0.2s, background 0.2s;
     animation: ${fadeUp} 0.4s ${({ $index }) => 0.15 + $index * 0.04}s ease both;
 
-    &::before {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(90deg, rgba(74,222,128,0.03), transparent);
-        opacity: 0;
-        transition: opacity 0.2s;
+    &:hover {
+        border-color: rgba(255,255,255,0.16);
+        background: rgba(255,255,255,0.032);
     }
 
-    &:hover {
-        border-color: rgba(74,222,128,0.45);
-        background: rgba(74,222,128,0.035);
-        transform: translateX(3px);
-        box-shadow: 0 4px 24px rgba(74,222,128,0.08);
-        &::before { opacity: 1; }
+    @media (max-width: 640px) {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.7rem;
+        padding: 1rem 1.1rem;
     }
 `;
 
-const CardMain = styled.div`
+const CardAccent = styled.div`
+    align-self: stretch;
+    width: 3px;
+    flex-shrink: 0;
+    border-radius: 2px;
+    background: rgba(74,222,128,0.4);
+    transition: background 0.2s;
+
+    ${JobCard}:hover & {
+        background: #4ade80;
+    }
+
+    @media (max-width: 640px) {
+        align-self: auto;
+        width: 100%;
+        height: 3px;
+    }
+`;
+
+const CardBody = styled.div`
     flex: 1;
     min-width: 0;
     display: flex;
-    align-items: center;
-    gap: 1.25rem;
-    flex-wrap: wrap;
+    flex-direction: column;
+    gap: 0.32rem;
 `;
 
-const CardTitles = styled.div`
-    min-width: 180px;
+const CardEyebrow = styled.div`
+    font-size: 0.68rem;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: rgba(74,222,128,0.6);
 `;
 
 const JobTitle = styled.div`
     font-family: 'Rajdhani', sans-serif;
-    font-size: 1.25rem;
+    font-size: 1.2rem;
     font-weight: 700;
     color: #f0f0f0;
-    letter-spacing: 0.03em;
-    text-transform: uppercase;
-    line-height: 1.15;
-`;
-
-const CompanyName = styled.div`
-    font-size: 0.82rem;
-    color: #4ade80;
-    font-weight: 500;
-    opacity: 0.85;
-    margin-top: 0.2rem;
-`;
-
-const PostedDate = styled.div`
-    font-size: 0.72rem;
-    color: #555;
-    margin-top: 0.2rem;
     letter-spacing: 0.02em;
+    text-transform: uppercase;
+    line-height: 1.2;
 `;
 
-const TagRow = styled.div`
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.35rem;
-    align-items: center;
-`;
-
-const Tag = styled.span<{ $type?: 'salary' | 'type' | 'location' | 'remote' | 'category' }>`
+const CardMeta = styled.div`
     font-size: 0.78rem;
-    font-weight: 500;
-    letter-spacing: 0.03em;
-    padding: 0.25rem 0.65rem;
-    border-radius: 4px;
-    text-transform: capitalize;
-    white-space: nowrap;
+    color: #777;
+    letter-spacing: 0.01em;
+`;
 
-    ${({ $type }) => $type === 'salary' && `
-        background: rgba(74,222,128,0.08);
-        color: #4ade80;
-        border: 1px solid rgba(74,222,128,0.18);
-    `}
-    ${({ $type }) => $type === 'type' && `
-        background: rgba(96,165,250,0.07);
-        color: #60a5fa;
-        border: 1px solid rgba(96,165,250,0.12);
-    `}
-    ${({ $type }) => ($type === 'location' || $type === 'remote') && `
-        background: rgba(255,255,255,0.035);
-        color: #777;
-        border: 1px solid rgba(255,255,255,0.06);
-    `}
-    ${({ $type }) => $type === 'category' && `
-        background: rgba(251,191,36,0.08);
-        color: #fbbf24;
-        border: 1px solid rgba(251,191,36,0.18);
-    `}
+const CardPay = styled.div`
+    flex-shrink: 0;
+    font-size: 0.98rem;
+    font-weight: 700;
+    color: #4ade80;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+    text-align: right;
+
+    @media (max-width: 640px) {
+        text-align: left;
+        font-size: 1.05rem;
+    }
 `;
 
 const ArrowWrap = styled.div`
     flex-shrink: 0;
-    color: rgba(74,222,128,0.4);
+    color: rgba(255,255,255,0.25);
     font-size: 1rem;
     transition: color 0.2s, transform 0.2s;
 
     ${JobCard}:hover & {
         color: #4ade80;
         transform: translateX(3px);
+    }
+
+    @media (max-width: 640px) {
+        display: none;
     }
 `;
 
@@ -588,7 +591,8 @@ const PublicJobList: React.FC = () => {
 
     // Filter state
     const [selCategories, setSelCategories] = useState<string[]>([]);
-    const [selLocations, setSelLocations]   = useState<string[]>([]);
+    const [allLocationsOnly, setAllLocationsOnly] = useState(false);
+    const [locationSearch, setLocationSearch] = useState('');
     const [selJobTypes,  setSelJobTypes]    = useState<string[]>([]);
     const [selWorkTypes, setSelWorkTypes]   = useState<string[]>([]);
     const [selExpBuckets, setSelExpBuckets] = useState<string[]>([]);
@@ -622,7 +626,12 @@ const PublicJobList: React.FC = () => {
     const filtered = useMemo(() => {
         return jobs.filter(job => {
             if (selCategories.length && !selCategories.includes(getCategory(job.title))) return false;
-            if (selLocations.length && !selLocations.includes(job.location)) return false;
+            if (allLocationsOnly || locationSearch.trim()) {
+                const matchesAllLocations = allLocationsOnly && job.location === 'All Locations';
+                const matchesSearch = !!locationSearch.trim() &&
+                    !!job.location?.toLowerCase().includes(locationSearch.trim().toLowerCase());
+                if (!matchesAllLocations && !matchesSearch) return false;
+            }
             if (selJobTypes.length  && !selJobTypes.includes(job.job_type))  return false;
             if (selWorkTypes.length && !selWorkTypes.includes(job.job_location_type)) return false;
 
@@ -639,13 +648,13 @@ const PublicJobList: React.FC = () => {
 
             return true;
         });
-    }, [jobs, selCategories, selLocations, selJobTypes, selWorkTypes, selExpBuckets, payMin, payMax]);
+    }, [jobs, selCategories, allLocationsOnly, locationSearch, selJobTypes, selWorkTypes, selExpBuckets, payMin, payMax]);
 
-    const hasFilters = selCategories.length || selLocations.length || selJobTypes.length ||
+    const hasFilters = selCategories.length || allLocationsOnly || locationSearch.trim() || selJobTypes.length ||
         selWorkTypes.length || selExpBuckets.length || payMin || payMax;
 
     function clearAll() {
-        setSelCategories([]); setSelLocations([]); setSelJobTypes([]); setSelWorkTypes([]);
+        setSelCategories([]); setAllLocationsOnly(false); setLocationSearch(''); setSelJobTypes([]); setSelWorkTypes([]);
         setSelExpBuckets([]); setPayMin(''); setPayMax('');
     }
 
@@ -683,15 +692,21 @@ const PublicJobList: React.FC = () => {
                 <FilterDivider />
                 <FilterSection>
                     <FilterLabel>Location</FilterLabel>
-                    {locations.map(loc => (
-                        <CheckRow key={loc}>
+                    {locations.includes('All Locations') && (
+                        <CheckRow>
                             <input type="checkbox"
-                                checked={selLocations.includes(loc)}
-                                onChange={() => toggle(selLocations, loc, setSelLocations)}
+                                checked={allLocationsOnly}
+                                onChange={() => setAllLocationsOnly(v => !v)}
                             />
-                            {loc}
+                            All Locations
                         </CheckRow>
-                    ))}
+                    )}
+                    <LocationSearchInput
+                        type="text"
+                        placeholder="Search city or state..."
+                        value={locationSearch}
+                        onChange={e => setLocationSearch(e.target.value)}
+                    />
                 </FilterSection>
                 </>
             )}
@@ -806,7 +821,7 @@ const PublicJobList: React.FC = () => {
                                 {filtered.length} {filtered.length === 1 ? 'position' : 'positions'} found
                             </ResultCount>
                             <MobileFilterToggle onClick={() => setMobileFilters(v => !v)}>
-                                ⚙ Filters {hasFilters ? `(${[selLocations, selJobTypes, selWorkTypes, selExpBuckets].flat().length + (payMin ? 1 : 0) + (payMax ? 1 : 0)})` : ''}
+                                ⚙ Filters {hasFilters ? `(${[selJobTypes, selWorkTypes, selExpBuckets].flat().length + (allLocationsOnly ? 1 : 0) + (locationSearch.trim() ? 1 : 0) + (payMin ? 1 : 0) + (payMax ? 1 : 0)})` : ''}
                             </MobileFilterToggle>
                         </ListMeta>
 
@@ -829,22 +844,22 @@ const PublicJobList: React.FC = () => {
                             filtered.map((job, i) => {
                                 const salary = formatSalary(job);
                                 const jobType = formatJobType(job.job_type);
+                                const eyebrow = [getCategory(job.title), jobType, job.job_location_type]
+                                    .filter(Boolean).join('   ·   ');
+                                const meta = [
+                                    job.company_name || 'Company',
+                                    job.location,
+                                    job.created_at ? formatPostedDate(job.created_at) : null,
+                                ].filter(Boolean).join('   ·   ');
                                 return (
                                     <JobCard key={job.id} to={`/jobs/${job.id}`} $index={i}>
-                                        <CardMain>
-                                            <CardTitles>
-                                                <JobTitle>{job.title}</JobTitle>
-                                                <CompanyName>{job.company_name || 'Company'}</CompanyName>
-                                                {job.created_at && <PostedDate>{formatPostedDate(job.created_at)}</PostedDate>}
-                                            </CardTitles>
-                                            <TagRow>
-                                                <Tag $type="category">{getCategory(job.title)}</Tag>
-                                                {job.location && <Tag $type="location">📍 {job.location}</Tag>}
-                                                <Tag $type="type">{jobType}</Tag>
-                                                {salary && <Tag $type="salary">{salary}</Tag>}
-                                                {job.job_location_type && <Tag $type="remote">{job.job_location_type}</Tag>}
-                                            </TagRow>
-                                        </CardMain>
+                                        <CardAccent />
+                                        <CardBody>
+                                            <CardEyebrow>{eyebrow}</CardEyebrow>
+                                            <JobTitle>{job.title}</JobTitle>
+                                            <CardMeta>{meta}</CardMeta>
+                                        </CardBody>
+                                        {salary && <CardPay>{salary}</CardPay>}
                                         <ArrowWrap>→</ArrowWrap>
                                     </JobCard>
                                 );
