@@ -512,28 +512,28 @@ const INSIGHTS = [
 
 const NEWS = [
   {
-    date: 'Sep 26, 2025', category: 'Workforce', source: 'Contracting Business',
-    headline: 'Navigating the HVAC Labor Shortage: How Technology and Talent Development Drive Growth',
-    excerpt: 'Over 480,000 skilled trade jobs remain unfilled in the U.S. With demand projected to grow 6% through 2032, contractors are turning to technology and aggressive recruitment to close the gap.',
-    url: 'https://www.contractingbusiness.com/contracting-business-success/article/55308154/navigating-the-hvac-labor-shortage-how-technology-and-talent-development-drive-growth',
+    date: 'Jun 9, 2026', category: 'Training', source: 'ACHR News',
+    headline: 'HVAC Workforce Crisis Expands Beyond Technicians to Instructor Shortages',
+    excerpt: 'With roughly 40,000 HVAC job openings projected annually over the next decade and nearly 40% of the skilled trades workforce eligible to retire, the industry is short on something less visible than techs: the experienced instructors needed to train the next generation.',
+    url: 'https://www.achrnews.com/articles/166295-hvac-workforce-crisis-expands-beyond-technicians-to-instructor-shortages',
   },
   {
-    date: 'Apr 18, 2024', category: 'Regulation', source: 'Contracting Business',
-    headline: 'Keeping Their Cool: How Refrigerant Service Will Impact HVAC',
-    excerpt: 'With the AIM Act driving a phase-down of HFC refrigerants and A2L refrigerants entering the market, technicians must understand new handling and certification requirements.',
-    url: 'https://www.contractingbusiness.com/refrigeration/article/21284959/how-refrigerant-service-will-impact-hvac-service',
+    date: 'May 26, 2026', category: 'Regulation', source: 'NAHB',
+    headline: 'EPA Finalizes Refrigerant Rule Update to Allow Older HVAC Unit Installation',
+    excerpt: "The EPA finalized a rule permitting continued installation of R-410A equipment in new homes through July 27, 2026, easing the industry's transition to lower-GWP A2L refrigerants required under the AIM Act.",
+    url: 'https://www.nahb.org/blog/2026/05/epa-hvac-refrigerants-r-410a-final-rule',
   },
   {
-    date: 'Feb 7, 2025', category: 'Growth', source: 'IEA',
-    headline: 'Is a Turnaround in Sight for Heat Pump Markets?',
-    excerpt: 'After a soft patch in early 2024, heat pump markets showed recovery signs. The IEA projects global installer demand to quadruple by 2030, with qualified installer shortages already an active bottleneck.',
-    url: 'https://www.iea.org/commentaries/is-a-turnaround-in-sight-for-heat-pump-markets',
+    date: 'May 13, 2026', category: 'Hiring', source: 'Contracting Business',
+    headline: 'The New Rules of HVAC Hiring',
+    excerpt: 'With nearly 200,000 HVAC job openings projected by 2030, the winning playbook now centers on fast candidate response, dedicated hiring staff, and sharp command of local pay benchmarks.',
+    url: 'https://www.contractingbusiness.com/columns/the-first-word/blog/55371857/the-new-rules-of-hvac-hiring',
   },
   {
-    date: 'May 2024', category: 'Salary', source: 'Bureau of Labor Statistics',
-    headline: 'HVAC Mechanics & Installers: Occupational Outlook & Wage Data',
-    excerpt: 'The BLS reports a median annual wage of $59,810 for HVAC technicians, with the top 10% earning over $91,020. Employment is projected to grow 8% through 2034.',
-    url: 'https://www.bls.gov/ooh/installation-maintenance-and-repair/heating-air-conditioning-and-refrigeration-mechanics-and-installers.htm',
+    date: 'Apr 30, 2026', category: 'Risk', source: 'ACHR News',
+    headline: '35% of Commercial Contractors Cite Labor Concerns as Top Risk in 2026',
+    excerpt: "ServiceTitan's 2026 industry survey of over 1,000 commercial contracting leaders found rising labor costs and the skilled labor shortage are the single biggest threat to profitability this year, cited by 35% of respondents.",
+    url: 'https://www.achrnews.com/articles/166137-35-of-commercial-contractors-cite-labor-concerns-as-top-risk-in-2026',
   },
   {
     date: 'Feb 9, 2026', category: 'Technology', source: 'Contracting Business',
@@ -542,10 +542,10 @@ const NEWS = [
     url: 'https://www.contractingbusiness.com/residential-hvac/article/55343258/smart-hvacr-systems-and-the-evolving-role-and-training-of-the-technician',
   },
   {
-    date: 'Mar 14, 2024', category: 'Training', source: 'Construction Dive',
-    headline: 'HVAC Pre-Apprenticeship Program Aims to Improve Skilled Worker Pipeline',
-    excerpt: 'A new program gives high school seniors hands-on training, DOL-registered apprenticeship hours, and a path to EPA 608 and OSHA-10 certifications before graduation.',
-    url: 'https://www.constructiondive.com/news/hvac-pre-apprenticeship-program-improve-skilled-workers-pipeline/710355/',
+    date: 'Sep 26, 2025', category: 'Workforce', source: 'Contracting Business',
+    headline: 'Navigating the HVAC Labor Shortage: How Technology and Talent Development Drive Growth',
+    excerpt: 'Over 480,000 skilled trade jobs remain unfilled in the U.S. With demand projected to grow 6% through 2032, contractors are turning to technology and aggressive recruitment to close the gap.',
+    url: 'https://www.contractingbusiness.com/contracting-business-success/article/55308154/navigating-the-hvac-labor-shortage-how-technology-and-talent-development-drive-growth',
   },
 ];
 
