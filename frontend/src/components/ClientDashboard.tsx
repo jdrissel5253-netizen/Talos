@@ -769,6 +769,7 @@ const ClientDashboard: React.FC = () => {
   const [stats, setStats]             = useState<Stats | null>(null);
   const [topCandidates, setTopCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading]         = useState(true);
+  const [copied, setCopied]           = useState(false);
 
   useEffect(() => {
     // Clear stale state immediately so a previous user's data never shows
@@ -794,6 +795,19 @@ const ClientDashboard: React.FC = () => {
   const needsAttention = activeJobs
     .filter(j => j.new_candidate_count > 0)
     .sort((a, b) => b.new_candidate_count - a.new_candidate_count);
+
+  const hasJobs = activeJobs.length > 0;
+  const hasCandidates = (stats?.total ?? 0) > 0;
+  const onboardingDone = hasJobs && hasCandidates;
+  const firstJob = activeJobs[0];
+
+  const copyPublicLink = () => {
+    if (!firstJob) return;
+    navigator.clipboard.writeText(`${window.location.origin}/jobs/${firstJob.id}`).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
   const statusTotal = stats
     ? Object.values(stats.statusBreakdown).reduce((sum, v) => sum + v, 0)
     : 0;
@@ -940,8 +954,8 @@ const ClientDashboard: React.FC = () => {
                 </SectionWrap>
               )}
 
-              {/* ── Get Started (new users only) ── */}
-              {!loading && activeJobs.length === 0 && (
+              {/* ── Get Started (shown until first candidate arrives) ── */}
+              {!loading && !onboardingDone && (
                 <GetStartedCard>
                   <GetStartedHeading>Welcome to Talos — let's get you set up</GetStartedHeading>
                   <GetStartedSub>Three steps to start receiving and ranking HVAC applicants.</GetStartedSub>
@@ -953,20 +967,31 @@ const ClientDashboard: React.FC = () => {
                         <StepDesc>You're in. Your company profile is ready.</StepDesc>
                       </StepText>
                     </StepRow>
-                    <StepRow state="active">
-                      <StepIcon state="active">2</StepIcon>
+                    <StepRow state={hasJobs ? 'done' : 'active'}>
+                      <StepIcon state={hasJobs ? 'done' : 'active'}>{hasJobs ? '✓' : '2'}</StepIcon>
                       <StepText>
-                        <StepTitle state="active">Create your first job posting</StepTitle>
+                        <StepTitle state={hasJobs ? 'done' : 'active'}>Create your first job posting</StepTitle>
                         <StepDesc>Set up a position — Talos generates a public application link automatically.</StepDesc>
                       </StepText>
-                      <StepBtn onClick={() => navigate('/jobs-management?new=true')}>Create Job →</StepBtn>
+                      {!hasJobs && (
+                        <StepBtn onClick={() => navigate('/jobs-management?new=true')}>Create Job →</StepBtn>
+                      )}
                     </StepRow>
-                    <StepRow state="locked">
-                      <StepIcon state="locked">3</StepIcon>
+                    <StepRow state={hasJobs ? 'active' : 'locked'}>
+                      <StepIcon state={hasJobs ? 'active' : 'locked'}>3</StepIcon>
                       <StepText>
-                        <StepTitle state="locked">Share your link &amp; review applicants</StepTitle>
-                        <StepDesc>Create a job first — your shareable application link will appear at the top of the job detail panel.</StepDesc>
+                        <StepTitle state={hasJobs ? 'active' : 'locked'}>Share your link &amp; start reviewing applicants</StepTitle>
+                        <StepDesc>
+                          {hasJobs
+                            ? 'Copy your public application link and share it with candidates. Talos scores each resume automatically.'
+                            : 'Create a job first — your shareable application link will be generated automatically.'}
+                        </StepDesc>
                       </StepText>
+                      {hasJobs && (
+                        <StepBtn onClick={copyPublicLink}>
+                          {copied ? 'Copied!' : 'Copy Link'}
+                        </StepBtn>
+                      )}
                     </StepRow>
                   </StepList>
                 </GetStartedCard>
