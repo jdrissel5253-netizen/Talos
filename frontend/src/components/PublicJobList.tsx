@@ -359,7 +359,7 @@ const JobCard = styled(Link)<{ $index: number }>`
     display: flex;
     align-items: center;
     gap: 1.4rem;
-    background: rgba(255,255,255,0.018);
+    background: #141414;
     border: 1px solid rgba(255,255,255,0.07);
     border-radius: 6px;
     padding: 1.15rem 1.4rem;
@@ -371,7 +371,7 @@ const JobCard = styled(Link)<{ $index: number }>`
 
     &:hover {
         border-color: rgba(255,255,255,0.16);
-        background: rgba(255,255,255,0.032);
+        background: #1c1c1c;
     }
 
     @media (max-width: 640px) {
