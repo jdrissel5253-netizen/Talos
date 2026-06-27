@@ -9,13 +9,11 @@ const { candidateService } = require('../services/databaseService');
 const { calculateTier, calculateStarRating, determineGiveThemAChance } = require('../services/scoringService');
 const { downloadResumeToTemp, isS3Key } = require('../config/s3');
 
-const USE_POSTGRES = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV === 'production';
 const toNum = (v) => { const n = Number(v); return isNaN(n) ? 0 : n; };
 const toArr = (v) => {
-    if (!v) return USE_POSTGRES ? [] : '[]';
+    if (!v) return [];
     if (typeof v === 'string' && v.startsWith('[')) { try { v = JSON.parse(v); } catch (_) {} }
-    if (USE_POSTGRES) return Array.isArray(v) ? v.map(String) : [String(v)];
-    return JSON.stringify(Array.isArray(v) ? v : [v]);
+    return Array.isArray(v) ? v.map(String) : [String(v)];
 };
 
 /**
