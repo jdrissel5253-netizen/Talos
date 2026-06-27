@@ -476,7 +476,7 @@ const NoteTextarea = styled.textarea`
   padding: 0.65rem 0.8rem;
   outline: none;
   resize: vertical;
-  min-height: 80px;
+  min-height: 140px;
   width: 100%;
   line-height: 1.5;
   &:focus { border-color: #4ade80; }
