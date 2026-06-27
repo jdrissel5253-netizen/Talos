@@ -212,6 +212,7 @@ const jobRoutes = require('./routes/jobRoutes');
 const jobFeedRoutes = require('./routes/jobFeedRoutes');
 const candidatePipelineRoutes = require('./routes/candidatePipelineRoutes');
 const applyRoutes = require('./routes/applyRoutes');
+const indeedRoutes = require('./routes/indeedRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 // Root route
@@ -235,6 +236,7 @@ app.use('/api/pipeline', authenticateToken, candidatePipelineRoutes);
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/auth/google', authLimiter, googleAuthRoutes);
 app.use('/api/apply', publicApplyLimiter, applyRoutes);
+app.use('/api/indeed', publicApplyLimiter, indeedRoutes);
 app.use('/api/admin', authenticateToken, requireAdmin, adminRoutes);
 app.get('/api/health', async (req, res) => {
     let dbStatus = 'unknown';

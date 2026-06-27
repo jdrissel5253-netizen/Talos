@@ -348,3 +348,4 @@ async function addToGeneralTalentPool(candidateId, name, email, phone, score, ti
 }
 
 module.exports = router;
+module.exports.processResumeInBackground = processResumeInBackground;
