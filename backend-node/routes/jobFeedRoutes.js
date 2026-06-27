@@ -6,6 +6,31 @@ const logger = require('../services/logger');
 // Public base URL for job links
 const BASE_URL = process.env.BASE_URL || 'https://gotalos.io';
 
+// Indeed Apply API token — set this once received from Indeed partner portal
+const INDEED_API_TOKEN = process.env.INDEED_API_TOKEN || '';
+
+/**
+ * Build URL-encoded Indeed Apply parameter string for the XML feed.
+ * indeed-apply-postUrl points to the Step 5 webhook endpoint (/api/indeed/apply).
+ */
+function buildIndeedApplyData(job) {
+    const jobUrl = `${BASE_URL}/jobs/${job.id}`;
+    const location = [job.city, job.state].filter(Boolean).join(', ') || job.location || '';
+    const params = [
+        ['indeed-apply-apiToken',      INDEED_API_TOKEN],
+        ['indeed-apply-jobId',         String(job.id)],
+        ['indeed-apply-jobTitle',      (job.title || '').slice(0, 50)],
+        ['indeed-apply-jobCompanyName',(job.company_name || '').slice(0, 50)],
+        ['indeed-apply-jobLocation',   location.slice(0, 50)],
+        ['indeed-apply-postUrl',       `${BASE_URL}/api/indeed/apply`],
+        ['indeed-apply-jobUrl',        jobUrl],
+        ['indeed-apply-resume',        'required'],
+        ['indeed-apply-phone',         'optional'],
+        ['indeed-apply-coverletter',   'optional'],
+    ];
+    return params.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+}
+
 /**
  * Escape XML special characters
  */
@@ -85,6 +110,10 @@ router.get('/feed.xml', async (req, res) => {
             const salary = formatSalary(job);
             const jobType = mapJobType(job.job_type);
 
+            const indeedApplyBlock = INDEED_API_TOKEN
+                ? `\n    <indeed-apply-data><![CDATA[${buildIndeedApplyData(job)}]]></indeed-apply-data>`
+                : '';
+
             xml += `  <job>
     <title>${escapeXml(job.title)}</title>
     <date>${formatDate(job.created_at)}</date>
@@ -96,7 +125,7 @@ router.get('/feed.xml', async (req, res) => {
     <description><![CDATA[${job.description || job.ai_generated_description || ''}]]></description>
     <salary>${escapeXml(salary)}</salary>
     <jobtype>${escapeXml(jobType)}</jobtype>
-    ${job.valid_through ? `<validthrough>${formatDate(job.valid_through)}</validthrough>` : ''}
+    ${job.valid_through ? `<validthrough>${formatDate(job.valid_through)}</validthrough>` : ''}${indeedApplyBlock}
   </job>
 `;
         }
