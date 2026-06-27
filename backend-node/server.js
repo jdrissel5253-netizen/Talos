@@ -45,64 +45,59 @@ if (!fs.existsSync(uploadsDir)) {
 
 // Verify database connection on startup
 const db = require('./config/database');
-const USE_POSTGRES = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV === 'production';
 (async () => {
     try {
-        if (USE_POSTGRES) {
-            // Verify core tables exist (schema managed by run-all-migrations.js)
-            const result = await db.query(`
-                SELECT table_name FROM information_schema.tables
-                WHERE table_schema = 'public'
-                AND table_name IN ('users', 'jobs', 'candidates', 'analyses', 'candidate_pipeline', 'communication_log')
-            `);
-            const tables = result.rows.map(r => r.table_name);
-            logger.info('Database connected', { tables: tables.join(', ') });
-            if (tables.length < 6) {
-                logger.warn('Some tables are missing. Run: node database/migrations/run-all-migrations.js');
-            }
-            // Auto-create tables that may not exist yet
-            await db.query(`
-                CREATE TABLE IF NOT EXISTS system_settings (
-                    key VARCHAR(255) PRIMARY KEY,
-                    value TEXT,
-                    updated_at TIMESTAMPTZ DEFAULT NOW()
-                )
-            `);
-            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255)`);
-            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_expires TIMESTAMPTZ`);
-            await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS scheduling_link VARCHAR(500)`);
-            await db.query(`ALTER TABLE jobs ADD COLUMN IF NOT EXISTS job_label VARCHAR(100)`);
-            await db.query(`ALTER TABLE jobs ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL`);
-            await db.query(`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS applicant_email VARCHAR(255)`);
-            await db.query(`CREATE INDEX IF NOT EXISTS idx_candidates_applicant_email ON candidates(applicant_email)`);
-            await db.query(`ALTER TABLE candidate_pipeline ADD COLUMN IF NOT EXISTS internal_notes TEXT`);
-            await db.query(`
-                CREATE TABLE IF NOT EXISTS demo_requests (
-                    id SERIAL PRIMARY KEY,
-                    first_name VARCHAR(100),
-                    last_name VARCHAR(100),
-                    email VARCHAR(255) NOT NULL,
-                    company VARCHAR(255),
-                    phone VARCHAR(50),
-                    company_size VARCHAR(50),
-                    current_challenges TEXT,
-                    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-                )
-            `);
-        } else {
-            // SQLite — apply schema directly for local dev
-            const fs_schema = require('fs');
-            const path_schema = require('path');
-            const schemaPath = path_schema.join(__dirname, 'database', 'schema-jobs-talent-pool.sql');
-            if (fs_schema.existsSync(schemaPath)) {
-                const schema = fs_schema.readFileSync(schemaPath, 'utf8');
-                const statements = schema.split(';').filter(s => s.trim());
-                for (const stmt of statements) {
-                    try { await db.query(stmt); } catch (e) { /* table exists */ }
-                }
-            }
-            logger.info('SQLite database schema verified');
+        // Verify core tables exist (schema managed by run-all-migrations.js)
+        const result = await db.query(`
+            SELECT table_name FROM information_schema.tables
+            WHERE table_schema = 'public'
+            AND table_name IN ('users', 'jobs', 'candidates', 'analyses', 'candidate_pipeline', 'communication_log')
+        `);
+        const tables = result.rows.map(r => r.table_name);
+        logger.info('Database connected', { tables: tables.join(', ') });
+        if (tables.length < 6) {
+            logger.warn('Some tables are missing. Run: node database/migrations/run-all-migrations.js');
         }
+        // Auto-create tables that may not exist yet
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS system_settings (
+                key VARCHAR(255) PRIMARY KEY,
+                value TEXT,
+                updated_at TIMESTAMPTZ DEFAULT NOW()
+            )
+        `);
+        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_token VARCHAR(255)`);
+        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS password_reset_expires TIMESTAMPTZ`);
+        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS scheduling_link VARCHAR(500)`);
+        await db.query(`ALTER TABLE jobs ADD COLUMN IF NOT EXISTS job_label VARCHAR(100)`);
+        await db.query(`ALTER TABLE jobs ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL`);
+        await db.query(`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS applicant_email VARCHAR(255)`);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_candidates_applicant_email ON candidates(applicant_email)`);
+        await db.query(`ALTER TABLE candidate_pipeline ADD COLUMN IF NOT EXISTS internal_notes TEXT`);
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS interview_notes (
+                id SERIAL PRIMARY KEY,
+                candidate_pipeline_id INTEGER NOT NULL REFERENCES candidate_pipeline(id) ON DELETE CASCADE,
+                user_id INTEGER REFERENCES users(id) ON DELETE SET NULL,
+                note TEXT NOT NULL,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+                updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        `);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_interview_notes_pipeline_id ON interview_notes(candidate_pipeline_id)`);
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS demo_requests (
+                id SERIAL PRIMARY KEY,
+                first_name VARCHAR(100),
+                last_name VARCHAR(100),
+                email VARCHAR(255) NOT NULL,
+                company VARCHAR(255),
+                phone VARCHAR(50),
+                company_size VARCHAR(50),
+                current_challenges TEXT,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        `);
     } catch (err) {
         logger.error('Database startup warning', { error: err.message });
     }

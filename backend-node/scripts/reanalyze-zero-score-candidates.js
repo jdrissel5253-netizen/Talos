@@ -24,16 +24,14 @@ const { downloadResumeToTemp, isS3Key } = require('../config/s3');
 const db = require('../config/database');
 const logger = require('../services/logger');
 
-// Mirror the same helpers as databaseService so array params work for both PG and SQLite
-const USE_POSTGRES = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV === 'production';
+// Mirror the same helpers as databaseService for array params
 const toNum = (v) => { const n = Number(v); return isNaN(n) ? 0 : n; };
 const toArr = (v) => {
-    if (!v) return USE_POSTGRES ? [] : '[]';
+    if (!v) return [];
     if (typeof v === 'string' && v.startsWith('[')) {
         try { v = JSON.parse(v); } catch (_) {}
     }
-    if (USE_POSTGRES) return Array.isArray(v) ? v.map(String) : [String(v)];
-    return JSON.stringify(Array.isArray(v) ? v : [v]);
+    return Array.isArray(v) ? v.map(String) : [String(v)];
 };
 
 const DRY_RUN = process.argv.includes('--dry-run');

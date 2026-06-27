@@ -25,13 +25,12 @@ async function assertPipelineOwner(pipelineId, user) {
     }
 }
 
-// Mirror databaseService's array/number helpers so analyses upserts work for both PG and SQLite
-const USE_POSTGRES_DB = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV === 'production';
+// Mirror databaseService's array/number helpers so analyses upserts work consistently
 const toNum = (v) => { const n = Number(v); return isNaN(n) ? 0 : n; };
 const toArr = (v) => {
-    if (!v) return USE_POSTGRES_DB ? [] : '[]';
-    if (Array.isArray(v)) return USE_POSTGRES_DB ? v.map(String) : JSON.stringify(v);
-    return USE_POSTGRES_DB ? [String(v)] : JSON.stringify([v]);
+    if (!v) return [];
+    if (Array.isArray(v)) return v.map(String);
+    return [String(v)];
 };
 
 /**
@@ -1071,6 +1070,98 @@ Best regards,
 The Hiring Team`;
     }
 }
+
+/**
+ * GET /api/pipeline/:id/interview-notes
+ * List timestamped interview notes for a candidate (most recent first)
+ */
+router.get('/:id/interview-notes', async (req, res) => {
+    try {
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+
+        await assertPipelineOwner(pipelineId, req.user);
+
+        const notes = await candidatePipelineService.getInterviewNotes(pipelineId);
+        res.json({ status: 'success', data: { notes } });
+    } catch (error) {
+        logger.error('Error fetching interview notes', { error: error.message });
+        const code = error.statusCode || 500;
+        res.status(code).json({ status: 'error', message: code === 500 ? 'Failed to fetch interview notes' : error.message });
+    }
+});
+
+/**
+ * POST /api/pipeline/:id/interview-notes
+ * Add a new interview note entry for a candidate
+ */
+router.post('/:id/interview-notes', async (req, res) => {
+    try {
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+
+        await assertPipelineOwner(pipelineId, req.user);
+
+        const note = sanitize.trimString(req.body.note ?? '', 5000);
+        if (!note) return res.status(400).json({ status: 'error', message: 'Note text is required' });
+
+        const created = await candidatePipelineService.addInterviewNote(pipelineId, req.user.userId, note);
+        res.json({ status: 'success', data: { note: { ...created, author_email: req.user.email } } });
+    } catch (error) {
+        logger.error('Error adding interview note', { error: error.message });
+        const code = error.statusCode || 500;
+        res.status(code).json({ status: 'error', message: code === 500 ? 'Failed to add interview note' : error.message });
+    }
+});
+
+/**
+ * PUT /api/pipeline/:id/interview-notes/:noteId
+ * Edit an existing interview note
+ */
+router.put('/:id/interview-notes/:noteId', async (req, res) => {
+    try {
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        const noteId = sanitize.positiveInt(req.params.noteId);
+        if (!pipelineId || !noteId) return res.status(400).json({ status: 'error', message: 'Invalid pipeline or note ID' });
+
+        await assertPipelineOwner(pipelineId, req.user);
+
+        const note = sanitize.trimString(req.body.note ?? '', 5000);
+        if (!note) return res.status(400).json({ status: 'error', message: 'Note text is required' });
+
+        const updated = await candidatePipelineService.updateInterviewNote(noteId, pipelineId, note);
+        if (!updated) return res.status(404).json({ status: 'error', message: 'Note not found' });
+
+        res.json({ status: 'success', data: { note: updated } });
+    } catch (error) {
+        logger.error('Error updating interview note', { error: error.message });
+        const code = error.statusCode || 500;
+        res.status(code).json({ status: 'error', message: code === 500 ? 'Failed to update interview note' : error.message });
+    }
+});
+
+/**
+ * DELETE /api/pipeline/:id/interview-notes/:noteId
+ * Remove an interview note
+ */
+router.delete('/:id/interview-notes/:noteId', async (req, res) => {
+    try {
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        const noteId = sanitize.positiveInt(req.params.noteId);
+        if (!pipelineId || !noteId) return res.status(400).json({ status: 'error', message: 'Invalid pipeline or note ID' });
+
+        await assertPipelineOwner(pipelineId, req.user);
+
+        const removed = await candidatePipelineService.deleteInterviewNote(noteId, pipelineId);
+        if (!removed) return res.status(404).json({ status: 'error', message: 'Note not found' });
+
+        res.json({ status: 'success' });
+    } catch (error) {
+        logger.error('Error deleting interview note', { error: error.message });
+        const code = error.statusCode || 500;
+        res.status(code).json({ status: 'error', message: code === 500 ? 'Failed to delete interview note' : error.message });
+    }
+});
 
 /**
  * GET /api/pipeline/:id/profile
