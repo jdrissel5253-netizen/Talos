@@ -1,12 +1,7 @@
 const db = require('../config/database');
 const logger = require('./logger');
 
-// Detect environment - must match database.js logic
-const USE_POSTGRES = process.env.USE_POSTGRES === 'true' || process.env.NODE_ENV === 'production';
-
-logger.info('Service layer DB mode', { mode: USE_POSTGRES ? 'POSTGRES' : 'SQLITE' });
-
-// Helper function to convert arrays to JSON for SQLite (or TEXT columns in PG)
+// Helper to JSON-encode arrays for TEXT columns
 const toJSON = (value) => {
     if (Array.isArray(value)) {
         return JSON.stringify(value);
@@ -18,7 +13,7 @@ const toJSON = (value) => {
 const toArray = (value) => {
     // Handle null/undefined
     if (value === null || value === undefined) {
-        return USE_POSTGRES ? [] : '[]';
+        return [];
     }
 
     // If it's a string that looks like JSON array, parse it first
@@ -28,22 +23,22 @@ const toArray = (value) => {
                 value = JSON.parse(value);
             } catch (e) {
                 // If parsing fails, wrap in array
-                return USE_POSTGRES ? [value] : JSON.stringify([value]);
+                return [value];
             }
         } else {
             // Single string value, wrap in array
-            return USE_POSTGRES ? [value] : JSON.stringify([value]);
+            return [value];
         }
     }
 
-    if (USE_POSTGRES && Array.isArray(value)) {
+    if (Array.isArray(value)) {
         // Ensure all elements are strings for TEXT[] columns
         return value.map(v => v === null || v === undefined ? '' : String(v));
     }
-    return toJSON(value); // SQLite needs JSON string
+    return toJSON(value);
 };
 
-// Helper function to parse JSON from SQLite
+// Helper function to parse JSON-encoded TEXT columns
 const fromJSON = (value) => {
     if (typeof value === 'string' && (value.startsWith('[') || value.startsWith('{'))) {
         try {
@@ -891,6 +886,44 @@ const candidatePipelineService = {
             [candidatePipelineId]
         );
         return result.rows;
+    },
+
+    async addInterviewNote(candidatePipelineId, userId, note) {
+        const result = await db.query(
+            `INSERT INTO interview_notes (candidate_pipeline_id, user_id, note)
+             VALUES ($1, $2, $3) RETURNING *`,
+            [candidatePipelineId, userId || null, note]
+        );
+        return result.rows[0];
+    },
+
+    async getInterviewNotes(candidatePipelineId) {
+        const result = await db.query(
+            `SELECT n.*, u.email as author_email
+             FROM interview_notes n
+             LEFT JOIN users u ON n.user_id = u.id
+             WHERE n.candidate_pipeline_id = $1
+             ORDER BY n.created_at DESC`,
+            [candidatePipelineId]
+        );
+        return result.rows;
+    },
+
+    async updateInterviewNote(noteId, candidatePipelineId, note) {
+        const result = await db.query(
+            `UPDATE interview_notes SET note = $1, updated_at = CURRENT_TIMESTAMP
+             WHERE id = $2 AND candidate_pipeline_id = $3 RETURNING *`,
+            [note, noteId, candidatePipelineId]
+        );
+        return result.rows[0] || null;
+    },
+
+    async deleteInterviewNote(noteId, candidatePipelineId) {
+        const result = await db.query(
+            `DELETE FROM interview_notes WHERE id = $1 AND candidate_pipeline_id = $2`,
+            [noteId, candidatePipelineId]
+        );
+        return result.rowCount > 0;
     },
 
     async getTalentPool(filters = {}) {

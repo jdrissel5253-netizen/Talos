@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import { ArrowLeft, User, Briefcase, Star, Shield, AlertTriangle, Award, Phone, Mail, MapPin, Calendar, Clock, FileText, Smartphone, XCircle, Pencil, Check, X } from 'lucide-react';
+import { ArrowLeft, User, Briefcase, Star, Shield, AlertTriangle, Award, Phone, Mail, MapPin, Calendar, Clock, FileText, Smartphone, XCircle, Pencil, Check, X, MessageSquare, Trash2, Plus } from 'lucide-react';
 import { getAuthHeaders } from '../utils/auth';
 import { config as appConfig } from '../config';
 import ResumeFileModal from './ResumeFileModal';
@@ -413,6 +413,114 @@ const IconBtn = styled.button`
   color: #6e7d8e;
   transition: color 0.15s;
   &:hover { color: #4ade80; }
+  &:disabled { opacity: 0.4; cursor: default; }
+`;
+
+// ─── interview notes ────────────────────────────────────────────────────────
+
+const NotesList = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+  margin-bottom: 1.25rem;
+`;
+
+const NoteItem = styled.div`
+  background: #14181f;
+  border: 1px solid #1e2330;
+  padding: 0.9rem 1.1rem;
+`;
+
+const NoteItemHeader = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+`;
+
+const NoteMeta = styled.span`
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.68rem;
+  color: #6e7d8e;
+  letter-spacing: 0.02em;
+`;
+
+const NoteActions = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-shrink: 0;
+`;
+
+const NoteText = styled.p`
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #c8d0dc;
+  white-space: pre-wrap;
+`;
+
+const EmptyNotesMsg = styled.p`
+  font-size: 0.8rem;
+  color: #6e7d8e;
+  font-style: italic;
+  margin-bottom: 1.25rem;
+`;
+
+const NoteTextarea = styled.textarea`
+  background: #111318;
+  border: 1px solid #2a3040;
+  color: #c8d0dc;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.85rem;
+  padding: 0.65rem 0.8rem;
+  outline: none;
+  resize: vertical;
+  min-height: 80px;
+  width: 100%;
+  line-height: 1.5;
+  &:focus { border-color: #4ade80; }
+`;
+
+const NoteFormActions = styled.div`
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+`;
+
+const SaveNoteBtn = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem;
+  background: rgba(74,222,128,0.08);
+  border: 1px solid rgba(74,222,128,0.3);
+  color: #4ade80;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.15s ease;
+
+  &:hover { background: rgba(74,222,128,0.15); }
+  &:disabled { opacity: 0.5; cursor: default; }
+`;
+
+const CancelNoteBtn = styled.button`
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid #2a3040;
+  color: #8a9ab0;
+  font-family: 'Sora', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  letter-spacing: 0.02em;
+  transition: all 0.15s ease;
+
+  &:hover { border-color: #f87171; color: #f87171; }
 `;
 
 // ─── action bar ───────────────────────────────────────────────────────────────
@@ -521,6 +629,14 @@ interface Profile {
   job_city: string;
 }
 
+interface InterviewNote {
+  id: number;
+  note: string;
+  author_email: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
 // ─── component ────────────────────────────────────────────────────────────────
 
 const CandidateProfile: React.FC = () => {
@@ -540,6 +656,12 @@ const CandidateProfile: React.FC = () => {
   const [nameEditing, setNameEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [nameSaving, setNameSaving] = useState(false);
+  const [interviewNotes, setInterviewNotes] = useState<InterviewNote[]>([]);
+  const [newNoteDraft, setNewNoteDraft] = useState('');
+  const [addingNote, setAddingNote] = useState(false);
+  const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+  const [editNoteDraft, setEditNoteDraft] = useState('');
+  const [noteSaving, setNoteSaving] = useState(false);
 
   useEffect(() => {
     fetch(`${appConfig.apiUrl}/api/auth/me`, { headers: getAuthHeaders() })
@@ -560,7 +682,63 @@ const CandidateProfile: React.FC = () => {
       .finally(() => setLoading(false));
   }, [pipelineId]);
 
+  useEffect(() => {
+    fetch(`${appConfig.apiUrl}/api/pipeline/${pipelineId}/interview-notes`, { headers: getAuthHeaders() })
+      .then(r => r.json())
+      .then(res => { if (res.status === 'success') setInterviewNotes(res.data.notes); })
+      .catch(() => {});
+  }, [pipelineId]);
+
   const displayName = profile ? (profile.full_name || friendlyName(profile.filename)) : '';
+
+  const handleAddNote = async () => {
+    const note = newNoteDraft.trim();
+    if (!note || !profile || addingNote) return;
+    setAddingNote(true);
+    try {
+      const res = await fetch(`${appConfig.apiUrl}/api/pipeline/${profile.pipeline_id}/interview-notes`, {
+        method: 'POST',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setInterviewNotes(prev => [data.data.note, ...prev]);
+        setNewNoteDraft('');
+      }
+    } finally {
+      setAddingNote(false);
+    }
+  };
+
+  const handleSaveEditNote = async (noteId: number) => {
+    const note = editNoteDraft.trim();
+    if (!note || !profile || noteSaving) return;
+    setNoteSaving(true);
+    try {
+      const res = await fetch(`${appConfig.apiUrl}/api/pipeline/${profile.pipeline_id}/interview-notes/${noteId}`, {
+        method: 'PUT',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ note }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setInterviewNotes(prev => prev.map(n => n.id === noteId ? data.data.note : n));
+        setEditingNoteId(null);
+      }
+    } finally {
+      setNoteSaving(false);
+    }
+  };
+
+  const handleDeleteNote = async (noteId: number) => {
+    if (!profile) return;
+    const res = await fetch(`${appConfig.apiUrl}/api/pipeline/${profile.pipeline_id}/interview-notes/${noteId}`, {
+      method: 'DELETE',
+      headers: getAuthHeaders(),
+    });
+    if (res.ok) setInterviewNotes(prev => prev.filter(n => n.id !== noteId));
+  };
 
   const handleNameSave = async () => {
     if (!profile || nameSaving) return;
@@ -788,6 +966,70 @@ const CandidateProfile: React.FC = () => {
                   <TierBadge tier={profile.tier}>{profile.tier.toUpperCase()} TIER</TierBadge>
                 </HeroRight>
               </Hero>
+
+              {/* ── Interview Notes ── */}
+              <Card>
+                <CardHeader>
+                  <MessageSquare size={13} color="#8a9ab0" />
+                  <CardTitle>Interview Notes</CardTitle>
+                </CardHeader>
+                <CardBody>
+                  {interviewNotes.length === 0 ? (
+                    <EmptyNotesMsg>No interview notes yet. Add one below.</EmptyNotesMsg>
+                  ) : (
+                    <NotesList>
+                      {interviewNotes.map(n => (
+                        <NoteItem key={n.id}>
+                          {editingNoteId === n.id ? (
+                            <>
+                              <NoteTextarea
+                                autoFocus
+                                value={editNoteDraft}
+                                onChange={e => setEditNoteDraft(e.target.value)}
+                              />
+                              <NoteFormActions>
+                                <CancelNoteBtn onClick={() => setEditingNoteId(null)}>Cancel</CancelNoteBtn>
+                                <SaveNoteBtn onClick={() => handleSaveEditNote(n.id)} disabled={noteSaving || !editNoteDraft.trim()}>
+                                  <Check size={13} /> Save
+                                </SaveNoteBtn>
+                              </NoteFormActions>
+                            </>
+                          ) : (
+                            <>
+                              <NoteItemHeader>
+                                <NoteMeta>
+                                  {n.author_email || 'Unknown'} · {new Date(n.created_at).toLocaleString()}
+                                  {n.updated_at !== n.created_at && ' (edited)'}
+                                </NoteMeta>
+                                <NoteActions>
+                                  <IconBtn onClick={() => { setEditingNoteId(n.id); setEditNoteDraft(n.note); }} title="Edit note">
+                                    <Pencil size={12} />
+                                  </IconBtn>
+                                  <IconBtn onClick={() => handleDeleteNote(n.id)} title="Delete note">
+                                    <Trash2 size={12} />
+                                  </IconBtn>
+                                </NoteActions>
+                              </NoteItemHeader>
+                              <NoteText>{n.note}</NoteText>
+                            </>
+                          )}
+                        </NoteItem>
+                      ))}
+                    </NotesList>
+                  )}
+
+                  <NoteTextarea
+                    placeholder="Add an interview note..."
+                    value={newNoteDraft}
+                    onChange={e => setNewNoteDraft(e.target.value)}
+                  />
+                  <NoteFormActions>
+                    <SaveNoteBtn onClick={handleAddNote} disabled={addingNote || !newNoteDraft.trim()}>
+                      <Plus size={13} /> Add Note
+                    </SaveNoteBtn>
+                  </NoteFormActions>
+                </CardBody>
+              </Card>
 
               {/* ── AI Summary ── */}
               {profile.ai_summary && (
