@@ -37,6 +37,7 @@ const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/TermsOfService'));
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const Pricing = lazy(() => import('./components/Pricing'));
+const BetaLanding = lazy(() => import('./components/BetaLanding'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!isLoggedIn()) return <Navigate to="/login" replace />;
@@ -154,6 +155,7 @@ function AppLayout() {
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/pricing" element={<Pricing />} />
+              <Route path="/beta" element={<BetaLanding />} />
 
               {/* Protected routes */}
               <Route path="/dashboard" element={<ProtectedRoute><ClientDashboard /></ProtectedRoute>} />

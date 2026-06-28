@@ -118,10 +118,10 @@ const sanitize = {
  * User operations
  */
 const userService = {
-    async create(email, passwordHash, companyName = null, role = 'user') {
+    async create(email, passwordHash, companyName = null, role = 'user', isBeta = false) {
         const result = await db.query(
-            'INSERT INTO users (email, password_hash, company_name, role) VALUES ($1, $2, $3, $4) RETURNING *',
-            [email, passwordHash, companyName, role]
+            'INSERT INTO users (email, password_hash, company_name, role, is_beta) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+            [email, passwordHash, companyName, role, isBeta]
         );
         return result.rows[0];
     },

@@ -19,6 +19,7 @@ router.post('/register', async (req, res) => {
         const email = sanitize.email(req.body.email);
         const password = req.body.password;
         const companyName = sanitize.trimString(req.body.companyName, 255);
+        const isBeta = req.body.isBeta === true || req.body.isBeta === 'true';
 
         if (!email) {
             return res.status(400).json({
@@ -51,7 +52,7 @@ router.post('/register', async (req, res) => {
         const role = (adminEmail && email === adminEmail) ? 'admin' : 'user';
 
         // Create user
-        const user = await userService.create(email, passwordHash, companyName, role);
+        const user = await userService.create(email, passwordHash, companyName, role, isBeta);
 
         // Notify owner of new signup (fire-and-forget — never block registration)
         if (role !== 'admin') {
@@ -59,12 +60,13 @@ router.post('/register', async (req, res) => {
             if (notifyEmail) {
                 gmailService.sendEmail({
                     to: notifyEmail,
-                    subject: `New Talos signup: ${companyName || email}`,
-                    html: `<p>A new company just signed up for Talos.</p>
+                    subject: `New Talos signup${isBeta ? ' 🧪 BETA' : ''}: ${companyName || email}`,
+                    html: `<p>A new company just signed up for Talos${isBeta ? ' via the <strong>beta page</strong>' : ''}.</p>
 <ul>
   <li><strong>Company:</strong> ${companyName || '(not provided)'}</li>
   <li><strong>Email:</strong> ${email}</li>
   <li><strong>User ID:</strong> ${user.id}</li>
+  <li><strong>Beta tester:</strong> ${isBeta ? 'Yes' : 'No'}</li>
   <li><strong>Time:</strong> ${new Date().toUTCString()}</li>
 </ul>`
                 }).catch(err => logger.warn('Signup notification email failed', { error: err.message }));

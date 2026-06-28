@@ -75,6 +75,7 @@ const db = require('./config/database');
         await db.query(`CREATE INDEX IF NOT EXISTS idx_candidates_applicant_email ON candidates(applicant_email)`);
         await db.query(`ALTER TABLE candidate_pipeline ADD COLUMN IF NOT EXISTS internal_notes TEXT`);
         await db.query(`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS indeed_apply_id VARCHAR(255)`);
+        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_beta BOOLEAN DEFAULT FALSE`);
         await db.query(`
             CREATE TABLE IF NOT EXISTS interview_notes (
                 id SERIAL PRIMARY KEY,
