@@ -9,6 +9,7 @@ const logger = require('../services/logger');
 const { analyzeResume, extractResumeText, recommendBestFitPosition } = require('../services/resumeAnalyzer');
 const { calculateTier, calculateStarRating, determineGiveThemAChance } = require('../services/scoringService');
 const { downloadResumeToTemp, isS3Key } = require('../config/s3');
+const { sendDisposition } = require('../services/indeedService');
 
 // Initialize Anthropic client for automated messaging
 const anthropic = new Anthropic({
@@ -239,6 +240,14 @@ router.put('/:id/status', async (req, res) => {
 
         const updated = await candidatePipelineService.updateStatus(pipelineId, status);
 
+        // Send disposition to Indeed if this candidate came from Indeed Apply (Step 9)
+        db.query(
+            'SELECT c.indeed_apply_id FROM candidate_pipeline cp JOIN candidates c ON cp.candidate_id = c.id WHERE cp.id = $1',
+            [pipelineId]
+        ).then(({ rows }) => {
+            if (rows[0]?.indeed_apply_id) sendDisposition(rows[0].indeed_apply_id, status);
+        }).catch(() => {});
+
         res.json({
             status: 'success',
             data: { pipeline: updated }
@@ -412,6 +421,14 @@ router.post('/:id/reject', async (req, res) => {
 
         // Update pipeline_status to 'rejected'
         await candidatePipelineService.updateStatus(pipelineId, 'rejected');
+
+        // Sync rejection disposition to Indeed if applicable (Step 9)
+        db.query(
+            'SELECT c.indeed_apply_id FROM candidate_pipeline cp JOIN candidates c ON cp.candidate_id = c.id WHERE cp.id = $1',
+            [pipelineId]
+        ).then(({ rows }) => {
+            if (rows[0]?.indeed_apply_id) sendDisposition(rows[0].indeed_apply_id, 'rejected');
+        }).catch(() => {});
 
         res.json({
             status: 'success',

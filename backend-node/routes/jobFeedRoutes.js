@@ -27,6 +27,7 @@ function buildIndeedApplyData(job) {
         ['indeed-apply-resume',        'required'],
         ['indeed-apply-phone',         'optional'],
         ['indeed-apply-coverletter',   'optional'],
+        ['indeed-apply-questions',     `${BASE_URL}/api/jobs/${job.id}/questions`],
     ];
     return params.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
 }
@@ -87,6 +88,69 @@ function mapJobType(jobType) {
     };
     return mapping[(jobType || '').toLowerCase()] || 'full-time';
 }
+
+// Default HVAC screener questions served to Indeed for every job (Step 4)
+const HVAC_SCREENER_QUESTIONS = [
+    {
+        id: 'hvac_experience',
+        type: 'text',
+        question: 'How many years of HVAC experience do you have?',
+        required: true,
+        format: 'integer'
+    },
+    {
+        id: 'epa608',
+        type: 'select',
+        question: 'Do you hold an EPA 608 certification?',
+        required: true,
+        options: [
+            { id: 'yes',         label: 'Yes' },
+            { id: 'in_progress', label: 'In progress' },
+            { id: 'no',          label: 'No' }
+        ]
+    },
+    {
+        id: 'drivers_license',
+        type: 'select',
+        question: 'Do you have a valid driver\'s license?',
+        required: true,
+        options: [
+            { id: 'yes', label: 'Yes' },
+            { id: 'no',  label: 'No' }
+        ]
+    },
+    {
+        id: 'overtime',
+        type: 'select',
+        question: 'Are you available to work overtime and weekends when needed?',
+        required: false,
+        options: [
+            { id: 'yes',     label: 'Yes' },
+            { id: 'limited', label: 'Limited availability' },
+            { id: 'no',      label: 'No' }
+        ]
+    },
+    {
+        id: 'confined_spaces',
+        type: 'select',
+        question: 'Are you comfortable working in attics, crawl spaces, and confined areas?',
+        required: false,
+        options: [
+            { id: 'yes', label: 'Yes' },
+            { id: 'no',  label: 'No' }
+        ]
+    }
+];
+
+/**
+ * GET /api/jobs/:id/questions
+ * Serves Indeed Apply screener questions for a job in Indeed's JSON format (Step 4).
+ * URL is included in the indeed-apply-questions feed parameter.
+ */
+router.get('/:id/questions', (req, res) => {
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.json(HVAC_SCREENER_QUESTIONS);
+});
 
 /**
  * GET /feed.xml - XML feed of all active jobs for job board aggregators
