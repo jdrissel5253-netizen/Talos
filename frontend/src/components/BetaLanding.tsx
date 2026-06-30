@@ -391,7 +391,7 @@ const BetaLanding: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="password">Create password</Label>
                   <Input
                     id="password"
                     name="password"
