@@ -276,7 +276,11 @@ const Login: React.FC = () => {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.message || (mode === 'login' ? 'Invalid email or password.' : 'Registration failed.'));
+        if (data.code === 'BETA_PENDING') {
+          setError('Your beta account is pending approval. You\'ll get an email from us once you\'re approved.');
+        } else {
+          setError(data.message || (mode === 'login' ? 'Invalid email or password.' : 'Registration failed.'));
+        }
         return;
       }
 

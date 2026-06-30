@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 const db = require('../config/database');
 const logger = require('../services/logger');
+const gmailService = require('../services/gmailService');
+const { userService } = require('../services/databaseService');
 const { analyzeResume, extractResumeText, extractCandidateNameOnly } = require('../services/resumeAnalyzer');
 const { candidateService } = require('../services/databaseService');
 const { calculateTier, calculateStarRating, determineGiveThemAChance } = require('../services/scoringService');
@@ -49,6 +51,8 @@ router.get('/users', async (req, res) => {
                 u.email,
                 u.company_name,
                 u.role,
+                u.is_beta,
+                u.is_approved,
                 u.created_at,
                 COUNT(DISTINCT j.id) FILTER (WHERE j.deleted_at IS NULL) AS job_count,
                 COUNT(DISTINCT cp.candidate_id) AS candidate_count,
@@ -56,7 +60,7 @@ router.get('/users', async (req, res) => {
             FROM users u
             LEFT JOIN jobs j ON j.user_id = u.id
             LEFT JOIN candidate_pipeline cp ON cp.job_id = j.id
-            GROUP BY u.id, u.email, u.company_name, u.role, u.created_at
+            GROUP BY u.id, u.email, u.company_name, u.role, u.is_beta, u.is_approved, u.created_at
             ORDER BY u.created_at DESC
         `);
         res.json({ status: 'success', data: result.rows });
@@ -94,6 +98,51 @@ router.get('/users/:id/jobs', async (req, res) => {
     } catch (error) {
         logger.error('Admin user jobs error', { error: error.message });
         res.status(500).json({ status: 'error', message: 'Failed to load user jobs' });
+    }
+});
+
+/**
+ * POST /api/admin/users/:id/approve
+ * Approve a beta user and send them their access email
+ */
+router.post('/users/:id/approve', async (req, res) => {
+    const userId = parseInt(req.params.id, 10);
+    if (!userId || userId < 1) {
+        return res.status(400).json({ status: 'error', message: 'Invalid user ID' });
+    }
+    try {
+        const user = await userService.approveBeta(userId);
+        if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
+
+        const frontendUrl = process.env.FRONTEND_URL || 'https://gotalos.io';
+        gmailService.sendEmail({
+            to: user.email,
+            subject: 'You\'re approved — welcome to Talos beta',
+            html: `
+<div style="font-family:sans-serif;max-width:560px;margin:0 auto;color:#1a1a1a">
+  <div style="background:#111318;padding:28px 32px;margin-bottom:24px">
+    <span style="color:#ffffff;font-size:20px;font-weight:700;letter-spacing:-0.5px">Talos</span>
+    <span style="color:#4ade80;font-size:20px;font-weight:700">.</span>
+  </div>
+  <div style="padding:0 32px 32px">
+    <h1 style="font-size:22px;font-weight:700;margin:0 0 8px">You're in${user.company_name ? ', ' + user.company_name : ''}.</h1>
+    <p style="color:#555;margin:0 0 24px">Your Talos beta account has been approved. You can now log in and start using the platform.</p>
+    <a href="${frontendUrl}/login"
+       style="display:inline-block;background:#4ade80;color:#111318;font-weight:700;font-size:14px;padding:12px 28px;text-decoration:none;letter-spacing:0.02em">
+      Log in to Talos →
+    </a>
+    <p style="margin:32px 0 0;font-size:13px;color:#888">
+      Questions? Reply to this email or reach us at <a href="mailto:jake@gotalos.io" style="color:#4ade80">jake@gotalos.io</a>.
+    </p>
+  </div>
+</div>`
+        }).catch(err => logger.warn('Beta approval email failed', { error: err.message }));
+
+        logger.info('Beta user approved', { userId, email: user.email });
+        res.json({ status: 'success', message: 'User approved and notified' });
+    } catch (error) {
+        logger.error('Beta approve error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to approve user' });
     }
 });
 

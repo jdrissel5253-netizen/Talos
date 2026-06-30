@@ -119,9 +119,19 @@ const sanitize = {
  */
 const userService = {
     async create(email, passwordHash, companyName = null, role = 'user', isBeta = false) {
+        // Beta users start as pending (is_approved=false); regular users get NULL (no gate)
+        const isApproved = isBeta ? false : null;
         const result = await db.query(
-            'INSERT INTO users (email, password_hash, company_name, role, is_beta) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [email, passwordHash, companyName, role, isBeta]
+            'INSERT INTO users (email, password_hash, company_name, role, is_beta, is_approved) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [email, passwordHash, companyName, role, isBeta, isApproved]
+        );
+        return result.rows[0];
+    },
+
+    async approveBeta(userId) {
+        const result = await db.query(
+            'UPDATE users SET is_approved = true WHERE id = $1 RETURNING *',
+            [userId]
         );
         return result.rows[0];
     },

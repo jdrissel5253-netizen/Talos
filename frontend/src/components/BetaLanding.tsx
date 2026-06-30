@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import { setToken } from '../utils/auth';
 import { config } from '../config';
 
 const FontImport = createGlobalStyle`
@@ -251,6 +250,42 @@ const LoginLink = styled.p`
   }
 `;
 
+const PendingCard = styled.div`
+  background: #1a1f2a;
+  border: 1px solid #232830;
+  padding: 3rem 2rem;
+  text-align: center;
+  max-width: 480px;
+  margin: 0 auto 6rem;
+  animation: ${fadeUp} 0.5s ease both;
+`;
+
+const PendingIcon = styled.div`
+  font-size: 2.5rem;
+  margin-bottom: 1.25rem;
+`;
+
+const PendingTitle = styled.h2`
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+  color: #ffffff;
+  margin-bottom: 0.75rem;
+`;
+
+const PendingText = styled.p`
+  font-size: 0.9rem;
+  color: #6e7d8e;
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+`;
+
+const PendingEmail = styled.p`
+  font-size: 0.82rem;
+  color: #4ade80;
+  margin-top: 1.5rem;
+`;
+
 const PERKS = [
   {
     title: 'Free during beta',
@@ -279,6 +314,7 @@ const BetaLanding: React.FC = () => {
   const [form, setForm] = useState({ companyName: '', email: '', password: '', confirmPassword: '' });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [submitted, setSubmitted] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -316,14 +352,38 @@ const BetaLanding: React.FC = () => {
         return;
       }
 
-      setToken(data.data.token);
-      navigate('/dashboard');
+      setSubmitted(true);
     } catch {
       setError('Unable to connect. Please check your internet connection.');
     } finally {
       setLoading(false);
     }
   };
+
+  if (submitted) {
+    return (
+      <>
+        <FontImport />
+        <Page>
+          <Hero>
+            <BetaPill>Early Access</BetaPill>
+            <Headline>You're on the list.</Headline>
+            <Subheadline>We'll review your account and be in touch shortly.</Subheadline>
+          </Hero>
+          <PendingCard>
+            <PendingIcon>✉️</PendingIcon>
+            <PendingTitle>Application received</PendingTitle>
+            <PendingText>
+              We manually review every beta application to make sure Talos is a good fit.
+              You'll get an email from us once your account is approved — usually within 24 hours.
+            </PendingText>
+            <PendingText>In the meantime, feel free to reply with any questions.</PendingText>
+            <PendingEmail>jake@gotalos.io</PendingEmail>
+          </PendingCard>
+        </Page>
+      </>
+    );
+  }
 
   return (
     <>
