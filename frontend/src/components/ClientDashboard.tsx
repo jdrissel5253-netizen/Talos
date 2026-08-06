@@ -815,6 +815,10 @@ const ClientDashboard: React.FC = () => {
   }, []);
 
   const activeJobs = jobs.filter(j => j.status !== 'deleted');
+  const step1Complete = profileComplete;
+  const step2Complete = activeJobs.length > 0;
+  const step3Complete = (stats?.total ?? 0) > 0;
+  const onboardingComplete = step1Complete && step2Complete && step3Complete;
   const needsAttention = activeJobs
     .filter(j => j.new_candidate_count > 0)
     .sort((a, b) => b.new_candidate_count - a.new_candidate_count);
@@ -965,7 +969,7 @@ const ClientDashboard: React.FC = () => {
               )}
 
               {/* ── Get Started (new users only) ── */}
-              {!loading && activeJobs.length === 0 && (
+              {!loading && !onboardingComplete && (
                 <GetStartedCard>
                   <GetStartedHeading>Welcome to Talos — let's get you set up</GetStartedHeading>
                   <GetStartedSub>Three steps to start receiving and ranking HVAC applicants.</GetStartedSub>
@@ -984,28 +988,53 @@ const ClientDashboard: React.FC = () => {
                         <StepBtn onClick={() => navigate('/account')}>Complete Profile →</StepBtn>
                       )}
                     </StepRow>
-                    <StepRow state="active">
-                      <StepIcon state="active">2</StepIcon>
+                    <StepRow state={step2Complete ? 'done' : 'active'}>
+                      <StepIcon state={step2Complete ? 'done' : 'active'}>{step2Complete ? '✓' : 2}</StepIcon>
                       <StepText>
-                        <StepTitle state="active">Create your first job posting</StepTitle>
-                        <StepDesc>Set up a position — Talos generates a public application link automatically.</StepDesc>
+                        <StepTitle state={step2Complete ? 'done' : 'active'}>Create your first job posting</StepTitle>
+                        <StepDesc>
+                          {step2Complete
+                            ? 'Job posted — Talos generated your public application link.'
+                            : 'Set up a position — Talos generates a public application link automatically.'}
+                        </StepDesc>
                       </StepText>
-                      <StepBtn onClick={() => navigate('/jobs-management?new=true')}>Create Job →</StepBtn>
+                      <StepBtn onClick={() => navigate('/jobs-management?new=true')}>
+                        {step2Complete ? 'Create Another →' : 'Create Job →'}
+                      </StepBtn>
                     </StepRow>
-                    <StepRow state="locked">
-                      <StepIcon state="locked">3</StepIcon>
+                    <StepRow state={!step2Complete ? 'locked' : step3Complete ? 'done' : 'active'}>
+                      <StepIcon state={!step2Complete ? 'locked' : step3Complete ? 'done' : 'active'}>
+                        {step3Complete ? '✓' : 3}
+                      </StepIcon>
                       <StepText>
-                        <StepTitle state="locked">Share your link &amp; review applicants</StepTitle>
-                        <StepDesc>Create a job first — your shareable link, a QR code, and one-click share buttons will appear at the top of the job detail panel. Where HVAC owners actually get applicants from it:</StepDesc>
-                        <StepHintList>
-                          <StepHintPill>Facebook trade groups</StepHintPill>
-                          <StepHintPill>Your website's careers page</StepHintPill>
-                          <StepHintPill>QR code on truck wraps</StepHintPill>
-                          <StepHintPill>Text referrals directly</StepHintPill>
-                          <StepHintPill>Johnstone / Ferguson counters</StepHintPill>
-                          <StepHintPill>Trade school placement offices</StepHintPill>
-                        </StepHintList>
+                        <StepTitle state={!step2Complete ? 'locked' : step3Complete ? 'done' : 'active'}>
+                          Share your link &amp; review applicants
+                        </StepTitle>
+                        {!step2Complete ? (
+                          <StepDesc>Create a job first — your shareable link, a QR code, and one-click share buttons will appear at the top of the job detail panel.</StepDesc>
+                        ) : step3Complete ? (
+                          <StepDesc>
+                            {stats?.total} applicant{stats?.total === 1 ? '' : 's'} in your pipeline so far. Keep sharing to keep them coming.
+                          </StepDesc>
+                        ) : (
+                          <>
+                            <StepDesc>Your link, QR code, and share buttons are ready at the top of the job detail panel. Where HVAC owners actually get applicants from it:</StepDesc>
+                            <StepHintList>
+                              <StepHintPill>Facebook trade groups</StepHintPill>
+                              <StepHintPill>Your website's careers page</StepHintPill>
+                              <StepHintPill>QR code on truck wraps</StepHintPill>
+                              <StepHintPill>Text referrals directly</StepHintPill>
+                              <StepHintPill>Johnstone / Ferguson counters</StepHintPill>
+                              <StepHintPill>Trade school placement offices</StepHintPill>
+                            </StepHintList>
+                          </>
+                        )}
                       </StepText>
+                      {step2Complete && (
+                        <StepBtn onClick={() => navigate('/jobs-management')}>
+                          {step3Complete ? 'Review Applicants →' : 'Go to Job →'}
+                        </StepBtn>
+                      )}
                     </StepRow>
                   </StepList>
                 </GetStartedCard>
