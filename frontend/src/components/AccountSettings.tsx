@@ -293,6 +293,61 @@ const Msg = styled.div<{ error?: boolean }>`
   color: ${p => p.error ? '#f87171' : '#4ade80'};
 `;
 
+/* ── Team ── */
+const TeamRow = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0;
+  border-bottom: 1px solid #232830;
+  &:last-child { border-bottom: none; }
+`;
+
+const TeamEmail = styled.div`
+  font-size: 0.85rem;
+  color: #c8d3e0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+`;
+
+const TeamMeta = styled.div`
+  font-size: 0.72rem;
+  color: #4a5568;
+  flex-shrink: 0;
+`;
+
+const RemoveTeamButton = styled.button`
+  background: transparent;
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6e7d8e;
+  cursor: pointer;
+  flex-shrink: 0;
+  &:hover { color: #f87171; }
+  &:disabled { opacity: 0.5; cursor: not-allowed; }
+`;
+
+const InviteRow = styled.form`
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1rem;
+
+  @media (max-width: 480px) { flex-direction: column; }
+`;
+
+const InviteInput = styled(Input)`
+  margin-bottom: 0;
+  flex: 1;
+`;
+
+const EmptyTeamNote = styled.div`
+  font-size: 0.8rem;
+  color: #4a5568;
+`;
+
 /* ── Support card ── */
 const SupportCard = styled.div`
   background: #161b24;
@@ -368,6 +423,26 @@ const AccountSettings: React.FC = () => {
   const [pwMsg, setPwMsg] = useState<{ text: string; error: boolean } | null>(null);
   const [pwLoading, setPwLoading] = useState(false);
 
+  const [isOwner, setIsOwner] = useState(true);
+  const [teamMembers, setTeamMembers] = useState<{ id: number; email: string; createdAt: string }[]>([]);
+  const [pendingInvites, setPendingInvites] = useState<{ id: number; email: string; expiresAt: string }[]>([]);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteMsg, setInviteMsg] = useState<{ text: string; error: boolean } | null>(null);
+  const [inviteLoading, setInviteLoading] = useState(false);
+
+  const loadTeam = () => {
+    fetch(`${config.apiUrl}/api/auth/team`, { headers: getAuthHeaders() })
+      .then(r => r.json())
+      .then(data => {
+        if (data.status === 'success') {
+          setIsOwner(data.data.isOwner);
+          setTeamMembers(data.data.members || []);
+          setPendingInvites(data.data.pendingInvites || []);
+        }
+      })
+      .catch(() => {});
+  };
+
   useEffect(() => {
     fetch(`${config.apiUrl}/api/auth/me`, { headers: getAuthHeaders() })
       .then(r => r.json())
@@ -382,7 +457,51 @@ const AccountSettings: React.FC = () => {
         }
       })
       .catch(() => {});
+    loadTeam();
   }, []);
+
+  const sendInvite = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setInviteMsg(null);
+    setInviteLoading(true);
+    try {
+      const res = await fetch(`${config.apiUrl}/api/auth/invite`, {
+        method: 'POST',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: inviteEmail }),
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setInviteMsg({ text: 'Invite sent.', error: false });
+        setInviteEmail('');
+        loadTeam();
+      } else {
+        setInviteMsg({ text: data.message || 'Failed to send invite.', error: true });
+      }
+    } catch {
+      setInviteMsg({ text: 'Could not connect to server.', error: true });
+    } finally {
+      setInviteLoading(false);
+    }
+  };
+
+  const removeMember = async (id: number) => {
+    setInviteMsg(null);
+    try {
+      const res = await fetch(`${config.apiUrl}/api/auth/team/${id}`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        loadTeam();
+      } else {
+        setInviteMsg({ text: data.message || 'Failed to remove teammate.', error: true });
+      }
+    } catch {
+      setInviteMsg({ text: 'Could not connect to server.', error: true });
+    }
+  };
 
   const uploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -566,6 +685,48 @@ const AccountSettings: React.FC = () => {
             </Button>
             {profileMsg && <Msg error={profileMsg.error}>{profileMsg.text}</Msg>}
           </form>
+        </Section>
+
+        <Section>
+          <SectionTitle>Team</SectionTitle>
+          {isOwner ? (
+            <>
+              {teamMembers.length === 0 && pendingInvites.length === 0 ? (
+                <EmptyTeamNote>No teammates yet. Invite one below — they'll see the same jobs, candidates, and pipeline as you.</EmptyTeamNote>
+              ) : (
+                <>
+                  {teamMembers.map(m => (
+                    <TeamRow key={m.id}>
+                      <TeamEmail>{m.email}</TeamEmail>
+                      <TeamMeta>Joined {formatMemberSince(m.createdAt)}</TeamMeta>
+                      <RemoveTeamButton onClick={() => removeMember(m.id)}>Remove</RemoveTeamButton>
+                    </TeamRow>
+                  ))}
+                  {pendingInvites.map(i => (
+                    <TeamRow key={`invite-${i.id}`}>
+                      <TeamEmail>{i.email}</TeamEmail>
+                      <TeamMeta>Invite pending</TeamMeta>
+                    </TeamRow>
+                  ))}
+                </>
+              )}
+              <InviteRow onSubmit={sendInvite}>
+                <InviteInput
+                  type="email"
+                  value={inviteEmail}
+                  onChange={e => setInviteEmail(e.target.value)}
+                  placeholder="teammate@company.com"
+                  required
+                />
+                <Button type="submit" disabled={inviteLoading}>
+                  {inviteLoading ? 'Sending...' : 'Invite'}
+                </Button>
+              </InviteRow>
+              {inviteMsg && <Msg error={inviteMsg.error}>{inviteMsg.text}</Msg>}
+            </>
+          ) : (
+            <EmptyTeamNote>You're part of a shared team account. Only the account owner can invite or remove teammates.</EmptyTeamNote>
+          )}
         </Section>
 
         <Section>

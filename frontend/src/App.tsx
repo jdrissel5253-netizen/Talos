@@ -32,6 +32,7 @@ const PublicJobList = lazy(() => import('./components/PublicJobList'));
 const CandidateProfile = lazy(() => import('./components/CandidateProfile'));
 const ForgotPassword = lazy(() => import('./components/ForgotPassword'));
 const ResetPassword = lazy(() => import('./components/ResetPassword'));
+const AcceptInvite = lazy(() => import('./components/AcceptInvite'));
 const AccountSettings = lazy(() => import('./components/AccountSettings'));
 const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/TermsOfService'));
@@ -151,6 +152,7 @@ function AppLayout() {
               <Route path="/hvac-insights" element={<HVACInsights />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/accept-invite" element={<AcceptInvite />} />
               <Route path="/privacy" element={<PrivacyPolicy />} />
               <Route path="/terms" element={<TermsOfService />} />
               <Route path="/pricing" element={<Pricing />} />

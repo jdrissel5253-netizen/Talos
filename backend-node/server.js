@@ -100,6 +100,22 @@ const db = require('./config/database');
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
             )
         `);
+        // Teammate accounts share the inviting owner's jobs/candidates/pipeline data.
+        // NULL means the row is itself an account owner.
+        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS parent_user_id INTEGER REFERENCES users(id) ON DELETE CASCADE`);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_users_parent_user_id ON users(parent_user_id)`);
+        await db.query(`
+            CREATE TABLE IF NOT EXISTS team_invites (
+                id SERIAL PRIMARY KEY,
+                owner_user_id INTEGER NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+                email VARCHAR(255) NOT NULL,
+                token_hash VARCHAR(255) NOT NULL,
+                expires_at TIMESTAMPTZ NOT NULL,
+                accepted_at TIMESTAMPTZ,
+                created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+            )
+        `);
+        await db.query(`CREATE INDEX IF NOT EXISTS idx_team_invites_owner_user_id ON team_invites(owner_user_id)`);
     } catch (err) {
         logger.error('Database startup warning', { error: err.message });
     }

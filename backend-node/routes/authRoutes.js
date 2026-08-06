@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const multer = require('multer');
 const path = require('path');
-const { userService, sanitize } = require('../services/databaseService');
+const { userService, teamInviteService, sanitize } = require('../services/databaseService');
 const logger = require('../services/logger');
 const gmailService = require('../services/gmailService');
 const { uploadLogo, deleteLogo, keyFromUrl } = require('../config/logoS3');
@@ -130,9 +130,9 @@ router.post('/register', async (req, res) => {
             }).catch(err => logger.warn('Welcome email failed', { error: err.message }));
         }
 
-        // Generate JWT token
+        // Generate JWT token — a freshly registered account always owns itself
         const token = jwt.sign(
-            { userId: user.id, email: user.email, role: user.role },
+            { userId: user.id, email: user.email, role: user.role, accountId: user.id },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
@@ -197,9 +197,12 @@ router.post('/login', async (req, res) => {
         const loginAdminEmail = process.env.ADMIN_EMAIL ? process.env.ADMIN_EMAIL.toLowerCase() : null;
         const effectiveRole = (loginAdminEmail && user.email === loginAdminEmail) ? 'admin' : (user.role || 'user');
 
+        // A teammate's account shares the inviting owner's jobs/candidates/pipeline data
+        const accountId = user.parent_user_id || user.id;
+
         // Generate JWT token
         const token = jwt.sign(
-            { userId: user.id, email: user.email, role: effectiveRole },
+            { userId: user.id, email: user.email, role: effectiveRole, accountId },
             JWT_SECRET,
             { expiresIn: JWT_EXPIRES_IN }
         );
@@ -213,7 +216,8 @@ router.post('/login', async (req, res) => {
                     id: user.id,
                     email: user.email,
                     companyName: user.company_name,
-                    role: effectiveRole
+                    role: effectiveRole,
+                    isTeamMember: accountId !== user.id
                 }
             }
         });
@@ -273,7 +277,23 @@ router.get('/me', authenticateToken, async (req, res) => {
     try {
         const user = await userService.findById(req.user.userId);
         if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
-        res.json({ status: 'success', data: { id: user.id, email: user.email, companyName: user.company_name, role: user.role, createdAt: user.created_at, schedulingLink: user.scheduling_link || '', logoUrl: user.logo_url || '', serviceArea: user.service_area || '' } });
+        // Company-facing fields (name/logo/scheduling/service area) live on the account
+        // owner's row — every teammate's public job postings show the same branding.
+        const account = req.user.accountId === user.id ? user : await userService.findById(req.user.accountId);
+        res.json({
+            status: 'success',
+            data: {
+                id: user.id,
+                email: user.email,
+                companyName: account?.company_name,
+                role: user.role,
+                createdAt: user.created_at,
+                schedulingLink: account?.scheduling_link || '',
+                logoUrl: account?.logo_url || '',
+                serviceArea: account?.service_area || '',
+                isTeamMember: req.user.accountId !== user.id
+            }
+        });
     } catch (error) {
         logger.error('Get profile error', { error: error.message });
         res.status(500).json({ status: 'error', message: 'Failed to load profile' });
@@ -288,7 +308,8 @@ router.put('/profile', authenticateToken, async (req, res) => {
         const companyName = sanitize.trimString(req.body.companyName, 255);
         const schedulingLink = sanitize.trimString(req.body.schedulingLink, 500);
         const serviceArea = sanitize.trimString(req.body.serviceArea, 255);
-        const user = await userService.updateProfile(req.user.userId, { companyName, schedulingLink, serviceArea });
+        // Company profile is shared account-wide, so it's stored on the owner's row
+        const user = await userService.updateProfile(req.user.accountId, { companyName, schedulingLink, serviceArea });
         res.json({ status: 'success', data: { companyName: user.company_name, schedulingLink: user.scheduling_link || '', logoUrl: user.logo_url || '', serviceArea: user.service_area || '' } });
     } catch (error) {
         logger.error('Update profile error', { error: error.message });
@@ -305,9 +326,9 @@ router.post('/logo', authenticateToken, logoUpload.single('logo'), async (req, r
             return res.status(400).json({ status: 'error', message: 'No logo file uploaded' });
         }
 
-        const existing = await userService.findById(req.user.userId);
-        const { url } = await uploadLogo(req.file.buffer, req.file.originalname, req.file.mimetype, req.user.userId);
-        const user = await userService.updateLogo(req.user.userId, url);
+        const existing = await userService.findById(req.user.accountId);
+        const { url } = await uploadLogo(req.file.buffer, req.file.originalname, req.file.mimetype, req.user.accountId);
+        const user = await userService.updateLogo(req.user.accountId, url);
 
         const oldKey = keyFromUrl(existing?.logo_url);
         if (oldKey) deleteLogo(oldKey).catch(err => logger.warn('Failed to clean up old logo', { error: err.message }));
@@ -324,10 +345,10 @@ router.post('/logo', authenticateToken, logoUpload.single('logo'), async (req, r
  */
 router.delete('/logo', authenticateToken, async (req, res) => {
     try {
-        const existing = await userService.findById(req.user.userId);
+        const existing = await userService.findById(req.user.accountId);
         const oldKey = keyFromUrl(existing?.logo_url);
 
-        const user = await userService.updateLogo(req.user.userId, null);
+        const user = await userService.updateLogo(req.user.accountId, null);
         if (oldKey) deleteLogo(oldKey).catch(err => logger.warn('Failed to clean up old logo', { error: err.message }));
 
         res.json({ status: 'success', data: { logoUrl: user.logo_url || '' } });
@@ -423,6 +444,152 @@ router.post('/reset-password', async (req, res) => {
     } catch (error) {
         logger.error('Reset password error', { error: error.message });
         res.status(500).json({ status: 'error', message: 'Failed to reset password.' });
+    }
+});
+
+/**
+ * GET /api/auth/team
+ * List teammates + pending invites sharing this account's data.
+ * Available to the owner and to invited members (read-only for members).
+ */
+router.get('/team', authenticateToken, async (req, res) => {
+    try {
+        const isOwner = req.user.userId === req.user.accountId;
+        const [members, pendingInvites] = await Promise.all([
+            userService.findTeamMembers(req.user.accountId),
+            isOwner ? teamInviteService.findPendingByOwner(req.user.accountId) : Promise.resolve([])
+        ]);
+        res.json({
+            status: 'success',
+            data: {
+                isOwner,
+                members: members.map(m => ({ id: m.id, email: m.email, createdAt: m.created_at })),
+                pendingInvites: pendingInvites.map(i => ({ id: i.id, email: i.email, expiresAt: i.expires_at }))
+            }
+        });
+    } catch (error) {
+        logger.error('List team error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to load team' });
+    }
+});
+
+/**
+ * POST /api/auth/invite
+ * Owner invites a teammate by email — they'll share all of the owner's jobs/candidates/pipeline.
+ */
+router.post('/invite', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.userId !== req.user.accountId) {
+            return res.status(403).json({ status: 'error', message: 'Only the account owner can invite teammates' });
+        }
+
+        const email = sanitize.email(req.body.email);
+        if (!email) {
+            return res.status(400).json({ status: 'error', message: 'A valid email address is required' });
+        }
+
+        const existingUser = await userService.findByEmail(email);
+        if (existingUser) {
+            return res.status(400).json({ status: 'error', message: 'A user with this email already exists' });
+        }
+
+        const owner = await userService.findById(req.user.accountId);
+
+        const rawToken = crypto.randomBytes(32).toString('hex');
+        const tokenHash = crypto.createHash('sha256').update(rawToken).digest('hex');
+        const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+        await teamInviteService.create(req.user.accountId, email, tokenHash, expiresAt);
+
+        const frontendUrl = process.env.FRONTEND_URL || 'https://gotalos.io';
+        const inviteLink = `${frontendUrl}/accept-invite?token=${rawToken}`;
+
+        gmailService.sendEmail({
+            to: email,
+            subject: `${owner?.company_name || 'A Talos team'} invited you to join Talos`,
+            html: `<p>${owner?.company_name || owner?.email || 'A Talos user'} invited you to join their team on Talos.</p>
+<p><a href="${inviteLink}">Click here to accept the invite and set your password</a></p>
+<p>This link expires in 7 days. If you weren't expecting this, you can ignore this email.</p>`
+        }).catch(err => logger.warn('Invite email failed', { error: err.message }));
+
+        logger.info('Team invite sent', { ownerId: req.user.accountId, email });
+        res.json({ status: 'success', message: 'Invite sent' });
+    } catch (error) {
+        logger.error('Invite error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to send invite' });
+    }
+});
+
+/**
+ * POST /api/auth/accept-invite
+ * Accept a team invite — creates the teammate's login and logs them in.
+ */
+router.post('/accept-invite', async (req, res) => {
+    try {
+        const { token, password } = req.body;
+
+        if (!token || !password || password.length < 8) {
+            return res.status(400).json({ status: 'error', message: 'Token and a password of at least 8 characters are required.' });
+        }
+
+        const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+        const invite = await teamInviteService.findByTokenHash(tokenHash);
+
+        if (!invite) {
+            return res.status(400).json({ status: 'error', message: 'This invite link is invalid or has expired.' });
+        }
+
+        const existingUser = await userService.findByEmail(invite.email);
+        if (existingUser) {
+            return res.status(400).json({ status: 'error', message: 'A user with this email already exists' });
+        }
+
+        const passwordHash = await bcrypt.hash(password, 10);
+        const user = await userService.createTeamMember(invite.email, passwordHash, invite.owner_user_id);
+        await teamInviteService.markAccepted(invite.id);
+
+        const token2 = jwt.sign(
+            { userId: user.id, email: user.email, role: user.role, accountId: invite.owner_user_id },
+            JWT_SECRET,
+            { expiresIn: JWT_EXPIRES_IN }
+        );
+
+        logger.info('Team invite accepted', { userId: user.id, ownerId: invite.owner_user_id });
+        res.status(201).json({
+            status: 'success',
+            message: 'Invite accepted',
+            data: {
+                token: token2,
+                user: { id: user.id, email: user.email, role: user.role, isTeamMember: true }
+            }
+        });
+    } catch (error) {
+        logger.error('Accept invite error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to accept invite.' });
+    }
+});
+
+/**
+ * DELETE /api/auth/team/:id
+ * Owner removes a teammate's access.
+ */
+router.delete('/team/:id', authenticateToken, async (req, res) => {
+    try {
+        if (req.user.userId !== req.user.accountId) {
+            return res.status(403).json({ status: 'error', message: 'Only the account owner can remove teammates' });
+        }
+        const memberId = sanitize.positiveInt(req.params.id);
+        if (!memberId) {
+            return res.status(400).json({ status: 'error', message: 'Invalid teammate ID' });
+        }
+        const removed = await userService.removeTeamMember(memberId, req.user.accountId);
+        if (!removed) {
+            return res.status(404).json({ status: 'error', message: 'Teammate not found' });
+        }
+        res.json({ status: 'success', message: 'Teammate removed' });
+    } catch (error) {
+        logger.error('Remove teammate error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to remove teammate' });
     }
 });
 

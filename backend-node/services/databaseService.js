@@ -187,6 +187,68 @@ const userService = {
             'UPDATE users SET password_hash = $1 WHERE id = $2',
             [newPasswordHash, userId]
         );
+    },
+
+    async findTeamMembers(ownerUserId) {
+        const result = await db.query(
+            'SELECT id, email, created_at FROM users WHERE parent_user_id = $1 ORDER BY created_at ASC',
+            [ownerUserId]
+        );
+        return result.rows;
+    },
+
+    async createTeamMember(email, passwordHash, ownerUserId) {
+        const result = await db.query(
+            'INSERT INTO users (email, password_hash, parent_user_id, role) VALUES ($1, $2, $3, $4) RETURNING *',
+            [email, passwordHash, ownerUserId, 'user']
+        );
+        return result.rows[0];
+    },
+
+    async removeTeamMember(memberId, ownerUserId) {
+        const result = await db.query(
+            'DELETE FROM users WHERE id = $1 AND parent_user_id = $2 RETURNING id',
+            [memberId, ownerUserId]
+        );
+        return result.rows[0];
+    }
+};
+
+/**
+ * Team invite operations — an owner account inviting a teammate to share its data.
+ */
+const teamInviteService = {
+    async create(ownerUserId, email, tokenHash, expiresAt) {
+        // One live invite per (owner, email) at a time
+        await db.query(
+            'DELETE FROM team_invites WHERE owner_user_id = $1 AND email = $2 AND accepted_at IS NULL',
+            [ownerUserId, email]
+        );
+        const result = await db.query(
+            'INSERT INTO team_invites (owner_user_id, email, token_hash, expires_at) VALUES ($1, $2, $3, $4) RETURNING *',
+            [ownerUserId, email, tokenHash, expiresAt]
+        );
+        return result.rows[0];
+    },
+
+    async findByTokenHash(tokenHash) {
+        const result = await db.query(
+            'SELECT * FROM team_invites WHERE token_hash = $1 AND accepted_at IS NULL AND expires_at > NOW()',
+            [tokenHash]
+        );
+        return result.rows[0];
+    },
+
+    async markAccepted(inviteId) {
+        await db.query('UPDATE team_invites SET accepted_at = NOW() WHERE id = $1', [inviteId]);
+    },
+
+    async findPendingByOwner(ownerUserId) {
+        const result = await db.query(
+            'SELECT id, email, expires_at, created_at FROM team_invites WHERE owner_user_id = $1 AND accepted_at IS NULL AND expires_at > NOW() ORDER BY created_at DESC',
+            [ownerUserId]
+        );
+        return result.rows;
     }
 };
 
@@ -1407,6 +1469,7 @@ async function initializeDatabase() {
 
 module.exports = {
     userService,
+    teamInviteService,
     batchService,
     candidateService,
     analysisService,

@@ -213,7 +213,7 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
             });
         }
 
-        const userId = req.user.userId;
+        const userId = req.user.accountId;
         const jobId = req.body.job_id ? sanitize.positiveInt(req.body.job_id) : null;
 
         // If a specific job is selected, pull its details for the analysis
@@ -376,7 +376,7 @@ router.post('/upload-batch', upload.array('resumes', 20), async (req, res) => {
             return res.status(400).json({ status: 'error', message: 'No resume files uploaded' });
         }
 
-        const userId = req.user.userId;
+        const userId = req.user.accountId;
         const jobId = req.body.job_id ? sanitize.positiveInt(req.body.job_id) : null;
 
         // If a specific job is selected, pull its details for the analysis
@@ -437,7 +437,7 @@ router.get('/batch-status/:batchId', async (req, res) => {
         if (!batchId) return res.status(400).json({ status: 'error', message: 'Invalid batch ID' });
 
         const batch = await batchService.findById(batchId);
-        if (!batch || batch.user_id !== req.user.userId) {
+        if (!batch || batch.user_id !== req.user.accountId) {
             return res.status(404).json({ status: 'error', message: 'Batch not found' });
         }
 

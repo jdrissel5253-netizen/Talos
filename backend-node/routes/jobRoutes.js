@@ -16,11 +16,11 @@ const anthropic = new Anthropic({
  */
 router.get('/', async (req, res) => {
     try {
-        const { userId, role } = req.user;
+        const { accountId, role } = req.user;
 
         const jobs = role === 'admin'
             ? await jobService.findAll()
-            : await jobService.findByUserId(userId);
+            : await jobService.findByUserId(accountId);
 
         res.set('Cache-Control', 'no-store');
         res.json({
@@ -88,8 +88,8 @@ router.get('/:id', async (req, res) => {
             });
         }
 
-        // Non-admins can only access their own jobs
-        if (req.user.role !== 'admin' && job.user_id !== req.user.userId) {
+        // Non-admins can only access jobs belonging to their account
+        if (req.user.role !== 'admin' && job.user_id !== req.user.accountId) {
             return res.status(403).json({
                 status: 'error',
                 message: 'Access denied'
@@ -120,7 +120,7 @@ router.get('/:id', async (req, res) => {
  */
 router.post('/', async (req, res) => {
     try {
-        const userId = req.user.userId;
+        const userId = req.user.accountId;
 
         const title = sanitize.trimString(req.body.title, 255);
         if (!title) {
@@ -231,20 +231,20 @@ router.put('/:id', async (req, res) => {
             });
         }
 
-        const userId = req.user.userId;
-        const role = req.user.role;
+        const { userId, accountId, role } = req.user;
 
-        // Non-admins can only update their own jobs
+        // Non-admins can only update jobs belonging to their account
         if (role !== 'admin') {
             const existing = await jobService.findById(jobId);
             if (!existing) {
                 return res.status(404).json({ status: 'error', message: 'Job not found' });
             }
-            if (existing.user_id !== userId) {
+            if (existing.user_id !== accountId) {
                 return res.status(403).json({ status: 'error', message: 'Access denied' });
             }
         }
 
+        // Audit log attributes the change to the actual teammate who made it
         const job = await jobService.update(jobId, updates, userId);
 
         res.json({
@@ -307,20 +307,20 @@ router.delete('/:id', async (req, res) => {
         if (!jobId) {
             return res.status(400).json({ status: 'error', message: 'Invalid job ID' });
         }
-        const userId = req.user.userId;
-        const role = req.user.role;
+        const { userId, accountId, role } = req.user;
 
-        // Non-admins can only delete their own jobs
+        // Non-admins can only delete jobs belonging to their account
         if (role !== 'admin') {
             const existing = await jobService.findById(jobId);
             if (!existing) {
                 return res.status(404).json({ status: 'error', message: 'Job not found' });
             }
-            if (existing.user_id !== userId) {
+            if (existing.user_id !== accountId) {
                 return res.status(403).json({ status: 'error', message: 'Access denied' });
             }
         }
 
+        // Audit log attributes the change to the actual teammate who made it
         await jobService.delete(jobId, userId);
 
         res.json({

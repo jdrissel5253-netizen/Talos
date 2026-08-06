@@ -18,7 +18,7 @@ const anthropic = new Anthropic({
 async function assertPipelineOwner(pipelineId, user) {
     if (user.role === 'admin') return;
     const ownerUserId = await candidatePipelineService.getPipelineJobUserId(pipelineId);
-    if (ownerUserId === null || ownerUserId !== user.userId) {
+    if (ownerUserId === null || ownerUserId !== user.accountId) {
         const err = new Error('Access denied');
         err.statusCode = 403;
         throw err;
@@ -60,7 +60,7 @@ router.get('/talent-pool', async (req, res) => {
         const parsedMinScore = minScore ? sanitize.nonNegativeNumber(minScore) : undefined;
         const parsedMaxScore = maxScore ? sanitize.nonNegativeNumber(maxScore) : undefined;
 
-        const userId = req.user.role === 'admin' ? undefined : req.user.userId;
+        const userId = req.user.role === 'admin' ? undefined : req.user.accountId;
 
         const talentPool = await candidatePipelineService.getTalentPool({
             userId,
@@ -104,7 +104,7 @@ router.get('/talent-pool/stats', async (req, res) => {
     try {
         const { status } = req.query;
         const validStatuses = ['new', 'approved', 'contacted', 'backup', 'rejected'];
-        const userId = req.user.role === 'admin' ? null : req.user.userId;
+        const userId = req.user.role === 'admin' ? null : req.user.accountId;
         const stats = await candidatePipelineService.getTalentPoolStats(
             userId,
             status ? sanitize.enumValue(status, validStatuses) : null
@@ -269,7 +269,7 @@ router.post('/bulk-update', async (req, res) => {
         }
 
         if (req.user.role !== 'admin') {
-            const owned = await candidatePipelineService.verifyPipelineOwnership(candidatePipelineIds, req.user.userId);
+            const owned = await candidatePipelineService.verifyPipelineOwnership(candidatePipelineIds, req.user.accountId);
             if (!owned) {
                 return res.status(403).json({ status: 'error', message: 'Access denied' });
             }
@@ -741,7 +741,7 @@ router.post('/:id/evaluate-for-job', async (req, res) => {
         if (!job) {
             return res.status(404).json({ status: 'error', message: 'Target job not found' });
         }
-        if (req.user.role !== 'admin' && job.user_id !== req.user.userId) {
+        if (req.user.role !== 'admin' && job.user_id !== req.user.accountId) {
             const err = new Error('Access denied');
             err.statusCode = 403;
             throw err;
