@@ -447,6 +447,7 @@ const ShareSection = styled.div`
     margin-top: 1.25rem;
     padding-top: 1.25rem;
     border-top: 1px solid rgba(255, 255, 255, 0.06);
+    scroll-margin-top: 100px;
 `;
 
 const ShareLayout = styled.div`
