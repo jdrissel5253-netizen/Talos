@@ -1031,7 +1031,7 @@ const ClientDashboard: React.FC = () => {
                         )}
                       </StepText>
                       {step2Complete && (
-                        <StepBtn onClick={() => navigate('/jobs-management')}>
+                        <StepBtn onClick={() => navigate(`/jobs-management/${activeJobs[0].id}#share-link`)}>
                           {step3Complete ? 'Review Applicants →' : 'Go to Job →'}
                         </StepBtn>
                       )}

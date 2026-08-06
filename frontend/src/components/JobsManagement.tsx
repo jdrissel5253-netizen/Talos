@@ -1064,6 +1064,17 @@ const JobsManagement: React.FC = () => {
     };
 
     const [shareQrDataUrl, setShareQrDataUrl] = useState<string | null>(null);
+    const shareSectionRef = useRef<HTMLDivElement>(null);
+
+    // Deep link from the onboarding checklist: jump straight to the share ideas
+    useEffect(() => {
+        if (window.location.hash !== '#share-link' || !selectedJob) return;
+        setJobDetailsExpanded(true);
+        const t = setTimeout(() => {
+            shareSectionRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 150);
+        return () => clearTimeout(t);
+    }, [selectedJob?.id]);
 
     useEffect(() => {
         if (!selectedJob) { setShareQrDataUrl(null); return; }
@@ -1746,7 +1757,7 @@ const JobsManagement: React.FC = () => {
                                     </DeleteButton>
                                 </JobActionsRow>
 
-                                <ShareSection>
+                                <ShareSection ref={shareSectionRef}>
                                     <h3 style={{ color: '#4ade80', marginBottom: '0.9rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
                                         Where to Share This Link
                                     </h3>
