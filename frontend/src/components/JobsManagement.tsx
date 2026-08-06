@@ -3,7 +3,8 @@ import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink, LayoutGrid, LayoutList, Minimize2, ChevronDown, ZoomOut, ZoomIn, Settings, Edit2, Pause, Play, Trash2 } from 'lucide-react';
+import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink, LayoutGrid, LayoutList, Minimize2, ChevronDown, ZoomOut, ZoomIn, Settings, Edit2, Pause, Play, Trash2, Facebook, MessageCircle, QrCode as QrCodeIcon, Truck, Store, GraduationCap, Globe, Download } from 'lucide-react';
+import QRCode from 'qrcode';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
 import AddJobForm from './AddJobForm';
@@ -439,6 +440,113 @@ const DeleteButton = styled.button`
     &:hover {
         background: rgba(239, 68, 68, 0.08);
         border-color: rgba(239, 68, 68, 0.5);
+    }
+`;
+
+const ShareSection = styled.div`
+    margin-top: 1.25rem;
+    padding-top: 1.25rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.06);
+`;
+
+const ShareLayout = styled.div`
+    display: flex;
+    gap: 1.5rem;
+    align-items: flex-start;
+
+    @media (max-width: 640px) {
+        flex-direction: column;
+    }
+`;
+
+const ShareList = styled.ul`
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    flex: 1;
+    min-width: 0;
+`;
+
+const ShareListItem = styled.li`
+    display: flex;
+    align-items: flex-start;
+    gap: 0.65rem;
+    padding: 0.5rem 0;
+    font-size: 0.83rem;
+    color: #a3a3a3;
+    line-height: 1.4;
+
+    strong {
+        color: #e5e5e5;
+        font-weight: 600;
+    }
+`;
+
+const ShareIconWrap = styled.div`
+    flex-shrink: 0;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    background: rgba(74, 222, 128, 0.1);
+    color: #4ade80;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.05rem;
+`;
+
+const QRBox = styled.div`
+    flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+`;
+
+const QRImage = styled.img`
+    width: 140px;
+    height: 140px;
+    border-radius: 6px;
+    background: #fff;
+    padding: 8px;
+`;
+
+const QRDownloadLink = styled.a`
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: #4ade80;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-decoration: none;
+    border-bottom: 1px solid rgba(74,222,128,0.3);
+`;
+
+const ShareActionsRow = styled.div`
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1rem;
+`;
+
+const ShareActionButton = styled.a`
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: rgba(255,255,255,0.05);
+    color: #a3a3a3;
+    border: 1px solid rgba(255,255,255,0.09);
+    padding: 0.5rem 1.125rem;
+    border-radius: 6px;
+    font-weight: 600;
+    font-size: 0.8125rem;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.15s ease;
+
+    &:hover {
+        background: rgba(255,255,255,0.09);
+        color: #e5e5e5;
     }
 `;
 
@@ -943,14 +1051,26 @@ const JobsManagement: React.FC = () => {
         }
     };
 
-    const copyApplyLink = (job: Job) => {
+    const getApplyUrl = (job: Job) => {
         const baseUrl = window.location.origin;
-        const applyUrl = `${baseUrl}/apply?job=${job.id}&title=${encodeURIComponent(job.title)}`;
-        navigator.clipboard.writeText(applyUrl).then(() => {
+        return `${baseUrl}/apply?job=${job.id}&title=${encodeURIComponent(job.title)}`;
+    };
+
+    const copyApplyLink = (job: Job) => {
+        navigator.clipboard.writeText(getApplyUrl(job)).then(() => {
             setCopiedJobId(job.id);
             setTimeout(() => setCopiedJobId(null), 2000);
         });
     };
+
+    const [shareQrDataUrl, setShareQrDataUrl] = useState<string | null>(null);
+
+    useEffect(() => {
+        if (!selectedJob) { setShareQrDataUrl(null); return; }
+        QRCode.toDataURL(getApplyUrl(selectedJob), { width: 220, margin: 1, color: { dark: '#000000', light: '#ffffff' } })
+            .then(setShareQrDataUrl)
+            .catch(() => setShareQrDataUrl(null));
+    }, [selectedJob?.id, selectedJob?.title]);
 
     // Load jobs on mount
     useEffect(() => {
@@ -1625,6 +1745,67 @@ const JobsManagement: React.FC = () => {
                                         <X size={16} /> Delete Job
                                     </DeleteButton>
                                 </JobActionsRow>
+
+                                <ShareSection>
+                                    <h3 style={{ color: '#4ade80', marginBottom: '0.9rem', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.12em' }}>
+                                        Where to Share This Link
+                                    </h3>
+                                    <ShareLayout>
+                                        <ShareList>
+                                            <ShareListItem>
+                                                <ShareIconWrap><Facebook size={14} /></ShareIconWrap>
+                                                <span><strong>Facebook local trade or classifieds groups</strong> — post the link with a quick "we're hiring" line, not just the URL.</span>
+                                            </ShareListItem>
+                                            <ShareListItem>
+                                                <ShareIconWrap><Globe size={14} /></ShareIconWrap>
+                                                <span><strong>Your own website's Careers or Contact page</strong> — add it as an "Apply Now" link.</span>
+                                            </ShareListItem>
+                                            <ShareListItem>
+                                                <ShareIconWrap><QrCodeIcon size={14} /></ShareIconWrap>
+                                                <span><strong>The QR code</strong> — print it on truck wraps, yard signs, business cards, and at the shop counter.</span>
+                                            </ShareListItem>
+                                            <ShareListItem>
+                                                <ShareIconWrap><MessageCircle size={14} /></ShareIconWrap>
+                                                <span><strong>Text it directly</strong> — to referrals, past customers, and techs who've asked about work before.</span>
+                                            </ShareListItem>
+                                            <ShareListItem>
+                                                <ShareIconWrap><Store size={14} /></ShareIconWrap>
+                                                <span><strong>Supply house counters</strong> — Johnstone Supply, Ferguson — ask about posting a flyer or QR code on their bulletin board.</span>
+                                            </ShareListItem>
+                                            <ShareListItem>
+                                                <ShareIconWrap><GraduationCap size={14} /></ShareIconWrap>
+                                                <span><strong>Local trade school placement offices</strong> — HVAC programs place grads regularly; call the placement coordinator directly.</span>
+                                            </ShareListItem>
+                                        </ShareList>
+
+                                        {shareQrDataUrl && (
+                                            <QRBox>
+                                                <QRImage src={shareQrDataUrl} alt="QR code linking to the application form" />
+                                                <QRDownloadLink
+                                                    href={shareQrDataUrl}
+                                                    download={`${selectedJob.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-apply-qr.png`}
+                                                >
+                                                    <Download size={12} /> Download QR
+                                                </QRDownloadLink>
+                                            </QRBox>
+                                        )}
+                                    </ShareLayout>
+
+                                    <ShareActionsRow>
+                                        <ShareActionButton
+                                            href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getApplyUrl(selectedJob))}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                        >
+                                            <Facebook size={16} /> Share to Facebook
+                                        </ShareActionButton>
+                                        <ShareActionButton
+                                            href={`sms:?&body=${encodeURIComponent(`We're hiring — apply here: ${getApplyUrl(selectedJob)}`)}`}
+                                        >
+                                            <MessageCircle size={16} /> Text This Link
+                                        </ShareActionButton>
+                                    </ShareActionsRow>
+                                </ShareSection>
                                 </JobDetailsWrapper>
                                 )}
                             </JobDetailsCard>
