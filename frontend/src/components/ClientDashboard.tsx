@@ -670,6 +670,24 @@ const StepDesc = styled.div`
   margin-top: 0.15rem;
 `;
 
+const StepHintList = styled.div`
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+`;
+
+const StepHintPill = styled.span`
+  font-size: 0.64rem;
+  font-family: 'JetBrains Mono', monospace;
+  color: #8a94a6;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.07);
+  border-radius: 4px;
+  padding: 0.2rem 0.5rem;
+  white-space: nowrap;
+`;
+
 const StepBtn = styled.button`
   background: #4ade80;
   border: none;
@@ -978,7 +996,15 @@ const ClientDashboard: React.FC = () => {
                       <StepIcon state="locked">3</StepIcon>
                       <StepText>
                         <StepTitle state="locked">Share your link &amp; review applicants</StepTitle>
-                        <StepDesc>Create a job first — your shareable application link will appear at the top of the job detail panel.</StepDesc>
+                        <StepDesc>Create a job first — your shareable link, a QR code, and one-click share buttons will appear at the top of the job detail panel. Where HVAC owners actually get applicants from it:</StepDesc>
+                        <StepHintList>
+                          <StepHintPill>Facebook trade groups</StepHintPill>
+                          <StepHintPill>Your website's careers page</StepHintPill>
+                          <StepHintPill>QR code on truck wraps</StepHintPill>
+                          <StepHintPill>Text referrals directly</StepHintPill>
+                          <StepHintPill>Johnstone / Ferguson counters</StepHintPill>
+                          <StepHintPill>Trade school placement offices</StepHintPill>
+                        </StepHintList>
                       </StepText>
                     </StepRow>
                   </StepList>
