@@ -8,6 +8,8 @@ interface Job {
     id: number;
     title: string;
     company_name: string;
+    company_logo_url?: string;
+    company_service_area?: string;
     description: string;
     location: string;
     city: string;
@@ -100,10 +102,40 @@ const CompanyName = styled.h2`
     font-size: 1.1rem;
     color: #4ade80;
     font-weight: 600;
-    margin-bottom: 1rem;
 
     @media (min-width: 480px) {
         font-size: 1.25rem;
+    }
+`;
+
+const CompanyRow = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    margin-bottom: 1rem;
+`;
+
+const CompanyMeta = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+`;
+
+const CompanyServiceArea = styled.span`
+    font-size: 0.8rem;
+    color: #8a94a6;
+`;
+
+const CompanyLogo = styled.img`
+    width: 40px;
+    height: 40px;
+    border-radius: 6px;
+    object-fit: cover;
+    flex-shrink: 0;
+
+    @media (min-width: 480px) {
+        width: 48px;
+        height: 48px;
     }
 `;
 
@@ -650,7 +682,13 @@ const PublicJobDetail: React.FC = () => {
                 <JobCard>
                     <JobHeader>
                         <JobTitle>{job.title}</JobTitle>
-                        <CompanyName>{job.company_name || 'Company'}</CompanyName>
+                        <CompanyRow>
+                            {job.company_logo_url && <CompanyLogo src={job.company_logo_url} alt={`${job.company_name || 'Company'} logo`} />}
+                            <CompanyMeta>
+                                <CompanyName>{job.company_name || 'Company'}</CompanyName>
+                                {job.company_service_area && <CompanyServiceArea>Serving {job.company_service_area}</CompanyServiceArea>}
+                            </CompanyMeta>
+                        </CompanyRow>
                         <MetaInfo>
                             <MetaItem>
                                 <span role="img" aria-label="location">📍</span> {location}

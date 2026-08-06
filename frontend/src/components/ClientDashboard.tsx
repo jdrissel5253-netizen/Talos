@@ -769,6 +769,7 @@ const ClientDashboard: React.FC = () => {
   const [stats, setStats]             = useState<Stats | null>(null);
   const [topCandidates, setTopCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading]         = useState(true);
+  const [profileComplete, setProfileComplete] = useState(false);
 
   useEffect(() => {
     // Clear stale state immediately so a previous user's data never shows
@@ -783,10 +784,15 @@ const ClientDashboard: React.FC = () => {
       fetch(`${base}/api/jobs`,                                                   { headers }).then(r => r.json()),
       fetch(`${base}/api/pipeline/talent-pool/stats`,                             { headers }).then(r => r.json()),
       fetch(`${base}/api/pipeline/talent-pool?limit=100&sortBy=score&sortOrder=desc`, { headers }).then(r => r.json()),
-    ]).then(([jobsRes, statsRes, candidatesRes]) => {
+      fetch(`${base}/api/auth/me`,                                                 { headers }).then(r => r.json()),
+    ]).then(([jobsRes, statsRes, candidatesRes, meRes]) => {
       if (jobsRes.status === 'success')        setJobs(jobsRes.data.jobs ?? []);
       if (statsRes.status === 'success')       setStats(statsRes.data);
       if (candidatesRes.status === 'success')  setTopCandidates(candidatesRes.data.candidates ?? []);
+      if (meRes.status === 'success') {
+        const { companyName, logoUrl, serviceArea } = meRes.data;
+        setProfileComplete(!!(companyName && logoUrl && serviceArea));
+      }
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
@@ -946,12 +952,19 @@ const ClientDashboard: React.FC = () => {
                   <GetStartedHeading>Welcome to Talos — let's get you set up</GetStartedHeading>
                   <GetStartedSub>Three steps to start receiving and ranking HVAC applicants.</GetStartedSub>
                   <StepList>
-                    <StepRow state="done">
-                      <StepIcon state="done">✓</StepIcon>
+                    <StepRow state={profileComplete ? 'done' : 'active'}>
+                      <StepIcon state={profileComplete ? 'done' : 'active'}>{profileComplete ? '✓' : 1}</StepIcon>
                       <StepText>
-                        <StepTitle state="done">Create your account</StepTitle>
-                        <StepDesc>You're in. Your company profile is ready.</StepDesc>
+                        <StepTitle state={profileComplete ? 'done' : 'active'}>Complete your company profile</StepTitle>
+                        <StepDesc>
+                          {profileComplete
+                            ? "Your company name, logo, and service area are all set."
+                            : 'Add your company name, logo, and service area — candidates see these on your public application link before they\'ll trust it enough to upload a resume.'}
+                        </StepDesc>
                       </StepText>
+                      {!profileComplete && (
+                        <StepBtn onClick={() => navigate('/account')}>Complete Profile →</StepBtn>
+                      )}
                     </StepRow>
                     <StepRow state="active">
                       <StepIcon state="active">2</StepIcon>

@@ -78,6 +78,46 @@ const Avatar = styled.div`
   color: #4ade80;
   flex-shrink: 0;
   letter-spacing: -0.02em;
+  overflow: hidden;
+
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+`;
+
+const AvatarActions = styled.div`
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+`;
+
+const LogoButton = styled.label`
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #8a9ab0;
+  border: 1px solid #2a3040;
+  padding: 0.35rem 0.8rem;
+  cursor: pointer;
+  text-align: center;
+  transition: all 0.15s ease;
+
+  &:hover { border-color: #4ade80; color: #4ade80; }
+
+  input { display: none; }
+`;
+
+const RemoveLogoButton = styled.button`
+  background: transparent;
+  border: none;
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #6e7d8e;
+  cursor: pointer;
+  padding: 0.15rem 0;
+
+  &:hover { color: #f87171; }
 `;
 
 const AvatarInfo = styled.div`
@@ -315,6 +355,10 @@ const AccountSettings: React.FC = () => {
   const [companyName, setCompanyName] = useState('');
   const [schedulingLink, setSchedulingLink] = useState('');
   const [createdAt, setCreatedAt] = useState('');
+  const [logoUrl, setLogoUrl] = useState('');
+  const [serviceArea, setServiceArea] = useState('');
+  const [logoLoading, setLogoLoading] = useState(false);
+  const [logoMsg, setLogoMsg] = useState<{ text: string; error: boolean } | null>(null);
   const [profileMsg, setProfileMsg] = useState<{ text: string; error: boolean } | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
 
@@ -333,10 +377,61 @@ const AccountSettings: React.FC = () => {
           setCompanyName(data.data.companyName || '');
           setSchedulingLink(data.data.schedulingLink || '');
           setCreatedAt(data.data.createdAt || '');
+          setLogoUrl(data.data.logoUrl || '');
+          setServiceArea(data.data.serviceArea || '');
         }
       })
       .catch(() => {});
   }, []);
+
+  const uploadLogo = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    e.target.value = '';
+    if (!file) return;
+
+    setLogoLoading(true);
+    setLogoMsg(null);
+    try {
+      const formData = new FormData();
+      formData.append('logo', file);
+      const res = await fetch(`${config.apiUrl}/api/auth/logo`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setLogoUrl(data.data.logoUrl);
+      } else {
+        setLogoMsg({ text: data.message || 'Failed to upload logo.', error: true });
+      }
+    } catch {
+      setLogoMsg({ text: 'Could not connect to server.', error: true });
+    } finally {
+      setLogoLoading(false);
+    }
+  };
+
+  const removeLogo = async () => {
+    setLogoLoading(true);
+    setLogoMsg(null);
+    try {
+      const res = await fetch(`${config.apiUrl}/api/auth/logo`, {
+        method: 'DELETE',
+        headers: getAuthHeaders(),
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setLogoUrl('');
+      } else {
+        setLogoMsg({ text: data.message || 'Failed to remove logo.', error: true });
+      }
+    } catch {
+      setLogoMsg({ text: 'Could not connect to server.', error: true });
+    } finally {
+      setLogoLoading(false);
+    }
+  };
 
   const saveProfile = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -346,7 +441,7 @@ const AccountSettings: React.FC = () => {
       const res = await fetch(`${config.apiUrl}/api/auth/profile`, {
         method: 'PUT',
         headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
-        body: JSON.stringify({ companyName, schedulingLink }),
+        body: JSON.stringify({ companyName, schedulingLink, serviceArea }),
       });
       const data = await res.json();
       setProfileMsg({ text: data.status === 'success' ? 'Company name updated.' : (data.message || 'Update failed.'), error: data.status !== 'success' });
@@ -403,7 +498,7 @@ const AccountSettings: React.FC = () => {
         </TopRow>
 
         <AvatarCard>
-          <Avatar>{initials}</Avatar>
+          <Avatar>{logoUrl ? <img src={logoUrl} alt={`${displayName} logo`} /> : initials}</Avatar>
           <AvatarInfo>
             <AvatarName>{displayName}</AvatarName>
             <AvatarEmail>{email}</AvatarEmail>
@@ -412,7 +507,15 @@ const AccountSettings: React.FC = () => {
               <PlanBadge>Professional</PlanBadge>
             </BadgeRow>
           </AvatarInfo>
+          <AvatarActions>
+            <LogoButton>
+              {logoLoading ? 'Uploading...' : logoUrl ? 'Change logo' : 'Upload logo'}
+              <input type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" onChange={uploadLogo} disabled={logoLoading} />
+            </LogoButton>
+            {logoUrl && <RemoveLogoButton onClick={removeLogo} disabled={logoLoading}>Remove</RemoveLogoButton>}
+          </AvatarActions>
         </AvatarCard>
+        {logoMsg && <Msg error={logoMsg.error}>{logoMsg.text}</Msg>}
 
         <InfoStrip>
           <InfoItem>
@@ -441,6 +544,14 @@ const AccountSettings: React.FC = () => {
               value={companyName}
               onChange={e => setCompanyName(e.target.value)}
               placeholder="Your company name"
+            />
+            <Label htmlFor="service-area">Service area</Label>
+            <Input
+              id="service-area"
+              type="text"
+              value={serviceArea}
+              onChange={e => setServiceArea(e.target.value)}
+              placeholder="e.g. Greater Dallas-Fort Worth"
             />
             <Label htmlFor="scheduling-link">Scheduling link</Label>
             <Input

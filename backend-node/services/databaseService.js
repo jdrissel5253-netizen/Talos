@@ -166,10 +166,18 @@ const userService = {
         );
     },
 
-    async updateProfile(userId, { companyName, schedulingLink }) {
+    async updateProfile(userId, { companyName, schedulingLink, serviceArea }) {
         const result = await db.query(
-            'UPDATE users SET company_name = $1, scheduling_link = $2 WHERE id = $3 RETURNING id, email, company_name, scheduling_link, role',
-            [companyName, schedulingLink ?? null, userId]
+            'UPDATE users SET company_name = $1, scheduling_link = $2, service_area = $3 WHERE id = $4 RETURNING id, email, company_name, scheduling_link, logo_url, service_area, role',
+            [companyName, schedulingLink ?? null, serviceArea ?? null, userId]
+        );
+        return result.rows[0];
+    },
+
+    async updateLogo(userId, logoUrl) {
+        const result = await db.query(
+            'UPDATE users SET logo_url = $1 WHERE id = $2 RETURNING id, email, company_name, logo_url, role',
+            [logoUrl, userId]
         );
         return result.rows[0];
     },
@@ -602,15 +610,17 @@ const jobService = {
      */
     async findActiveForFeed() {
         const result = await db.query(`
-            SELECT id, title, company_name, description, ai_generated_description,
-                   location, city, zip_code, job_location_type, job_type, position_type,
-                   salary_min, salary_max, pay_range_min, pay_range_max, pay_type,
-                   benefits, key_responsibilities, qualifications_certifications,
-                   education_requirements, required_years_experience, created_at, valid_through
-            FROM jobs
-            WHERE status = 'active' AND deleted_at IS NULL
-              AND (valid_through IS NULL OR valid_through >= CURRENT_DATE)
-            ORDER BY created_at DESC
+            SELECT j.id, j.title, j.company_name, j.description, j.ai_generated_description,
+                   j.location, j.city, j.zip_code, j.job_location_type, j.job_type, j.position_type,
+                   j.salary_min, j.salary_max, j.pay_range_min, j.pay_range_max, j.pay_type,
+                   j.benefits, j.key_responsibilities, j.qualifications_certifications,
+                   j.education_requirements, j.required_years_experience, j.created_at, j.valid_through,
+                   u.logo_url AS company_logo_url, u.service_area AS company_service_area
+            FROM jobs j
+            JOIN users u ON u.id = j.user_id
+            WHERE j.status = 'active' AND j.deleted_at IS NULL
+              AND (j.valid_through IS NULL OR j.valid_through >= CURRENT_DATE)
+            ORDER BY j.created_at DESC
         `);
         return result.rows;
     },
@@ -621,14 +631,16 @@ const jobService = {
      */
     async findActiveById(id) {
         const result = await db.query(`
-            SELECT id, title, company_name, description, ai_generated_description,
-                   location, city, zip_code, job_location_type, job_type, position_type,
-                   salary_min, salary_max, pay_range_min, pay_range_max, pay_type,
-                   benefits, key_responsibilities, qualifications_certifications,
-                   education_requirements, required_years_experience, created_at, valid_through
-            FROM jobs
-            WHERE id = $1 AND status = 'active' AND deleted_at IS NULL
-              AND (valid_through IS NULL OR valid_through >= CURRENT_DATE)
+            SELECT j.id, j.title, j.company_name, j.description, j.ai_generated_description,
+                   j.location, j.city, j.zip_code, j.job_location_type, j.job_type, j.position_type,
+                   j.salary_min, j.salary_max, j.pay_range_min, j.pay_range_max, j.pay_type,
+                   j.benefits, j.key_responsibilities, j.qualifications_certifications,
+                   j.education_requirements, j.required_years_experience, j.created_at, j.valid_through,
+                   u.logo_url AS company_logo_url, u.service_area AS company_service_area
+            FROM jobs j
+            JOIN users u ON u.id = j.user_id
+            WHERE j.id = $1 AND j.status = 'active' AND j.deleted_at IS NULL
+              AND (j.valid_through IS NULL OR j.valid_through >= CURRENT_DATE)
         `, [id]);
         return result.rows[0];
     }

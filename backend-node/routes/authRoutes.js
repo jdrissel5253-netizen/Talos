@@ -2,11 +2,28 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
+const multer = require('multer');
+const path = require('path');
 const { userService, sanitize } = require('../services/databaseService');
 const logger = require('../services/logger');
 const gmailService = require('../services/gmailService');
+const { uploadLogo, deleteLogo, keyFromUrl } = require('../config/logoS3');
 
 const router = express.Router();
+
+const logoUpload = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: 2 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/svg+xml'];
+        const allowedExtensions = ['.png', '.jpg', '.jpeg', '.webp', '.svg'];
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (allowedMimeTypes.includes(file.mimetype) && allowedExtensions.includes(ext)) {
+            return cb(null, true);
+        }
+        cb(new Error('Only PNG, JPG, WEBP, or SVG images are allowed'));
+    }
+});
 
 const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = '7d';
@@ -256,7 +273,7 @@ router.get('/me', authenticateToken, async (req, res) => {
     try {
         const user = await userService.findById(req.user.userId);
         if (!user) return res.status(404).json({ status: 'error', message: 'User not found' });
-        res.json({ status: 'success', data: { id: user.id, email: user.email, companyName: user.company_name, role: user.role, createdAt: user.created_at, schedulingLink: user.scheduling_link || '' } });
+        res.json({ status: 'success', data: { id: user.id, email: user.email, companyName: user.company_name, role: user.role, createdAt: user.created_at, schedulingLink: user.scheduling_link || '', logoUrl: user.logo_url || '', serviceArea: user.service_area || '' } });
     } catch (error) {
         logger.error('Get profile error', { error: error.message });
         res.status(500).json({ status: 'error', message: 'Failed to load profile' });
@@ -270,11 +287,53 @@ router.put('/profile', authenticateToken, async (req, res) => {
     try {
         const companyName = sanitize.trimString(req.body.companyName, 255);
         const schedulingLink = sanitize.trimString(req.body.schedulingLink, 500);
-        const user = await userService.updateProfile(req.user.userId, { companyName, schedulingLink });
-        res.json({ status: 'success', data: { companyName: user.company_name, schedulingLink: user.scheduling_link || '' } });
+        const serviceArea = sanitize.trimString(req.body.serviceArea, 255);
+        const user = await userService.updateProfile(req.user.userId, { companyName, schedulingLink, serviceArea });
+        res.json({ status: 'success', data: { companyName: user.company_name, schedulingLink: user.scheduling_link || '', logoUrl: user.logo_url || '', serviceArea: user.service_area || '' } });
     } catch (error) {
         logger.error('Update profile error', { error: error.message });
         res.status(500).json({ status: 'error', message: 'Failed to update profile' });
+    }
+});
+
+/**
+ * POST /api/auth/logo
+ */
+router.post('/logo', authenticateToken, logoUpload.single('logo'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ status: 'error', message: 'No logo file uploaded' });
+        }
+
+        const existing = await userService.findById(req.user.userId);
+        const { url } = await uploadLogo(req.file.buffer, req.file.originalname, req.file.mimetype, req.user.userId);
+        const user = await userService.updateLogo(req.user.userId, url);
+
+        const oldKey = keyFromUrl(existing?.logo_url);
+        if (oldKey) deleteLogo(oldKey).catch(err => logger.warn('Failed to clean up old logo', { error: err.message }));
+
+        res.json({ status: 'success', data: { logoUrl: user.logo_url } });
+    } catch (error) {
+        logger.error('Logo upload error', { error: error.message });
+        res.status(400).json({ status: 'error', message: error.message || 'Failed to upload logo' });
+    }
+});
+
+/**
+ * DELETE /api/auth/logo
+ */
+router.delete('/logo', authenticateToken, async (req, res) => {
+    try {
+        const existing = await userService.findById(req.user.userId);
+        const oldKey = keyFromUrl(existing?.logo_url);
+
+        const user = await userService.updateLogo(req.user.userId, null);
+        if (oldKey) deleteLogo(oldKey).catch(err => logger.warn('Failed to clean up old logo', { error: err.message }));
+
+        res.json({ status: 'success', data: { logoUrl: user.logo_url || '' } });
+    } catch (error) {
+        logger.error('Logo delete error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to remove logo' });
     }
 });
 
