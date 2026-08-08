@@ -245,12 +245,26 @@ const authenticateToken = (req, res, next) => {
         });
     }
 
-    jwt.verify(token, JWT_SECRET, (err, user) => {
+    jwt.verify(token, JWT_SECRET, async (err, user) => {
         if (err) {
             return res.status(401).json({
                 status: 'error',
                 message: 'Invalid or expired token'
             });
+        }
+        try {
+            // A removed teammate (or deleted owner) still holds a validly-signed,
+            // unexpired token — confirm the row wasn't deleted out from under it.
+            const dbUser = await userService.findById(user.userId);
+            if (!dbUser) {
+                return res.status(401).json({
+                    status: 'error',
+                    message: 'Invalid or expired token'
+                });
+            }
+        } catch (error) {
+            logger.error('Auth existence check failed', { error: error.message });
+            return res.status(500).json({ status: 'error', message: 'Authentication check failed' });
         }
         req.user = user;
         next();

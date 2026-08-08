@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import { Briefcase, Users, Star, CheckCircle, AlertCircle, UserCheck, ChevronRight, TrendingUp, MapPin, Clock, Eye, LayoutGrid, Files } from 'lucide-react';
-import { getAuthHeaders } from '../utils/auth';
+import { getAuthHeaders, handleUnauthorized } from '../utils/auth';
 import { config as appConfig } from '../config';
 
 const FontImport = createGlobalStyle`
@@ -799,11 +799,15 @@ const ClientDashboard: React.FC = () => {
     const headers = { ...getAuthHeaders(), 'Content-Type': 'application/json' };
     const base = appConfig.apiUrl;
     Promise.all([
-      fetch(`${base}/api/jobs`,                                                   { headers }).then(r => r.json()),
-      fetch(`${base}/api/pipeline/talent-pool/stats`,                             { headers }).then(r => r.json()),
-      fetch(`${base}/api/pipeline/talent-pool?limit=100&sortBy=score&sortOrder=desc`, { headers }).then(r => r.json()),
-      fetch(`${base}/api/auth/me`,                                                 { headers }).then(r => r.json()),
-    ]).then(([jobsRes, statsRes, candidatesRes, meRes]) => {
+      fetch(`${base}/api/jobs`,                                                   { headers }),
+      fetch(`${base}/api/pipeline/talent-pool/stats`,                             { headers }),
+      fetch(`${base}/api/pipeline/talent-pool?limit=100&sortBy=score&sortOrder=desc`, { headers }),
+      fetch(`${base}/api/auth/me`,                                                 { headers }),
+    ]).then(async (responses) => {
+      // A stale/revoked token now comes back as 401 on every route — bounce to
+      // login instead of quietly rendering an empty dashboard for a dead account.
+      if (responses.some(r => handleUnauthorized(r))) return;
+      const [jobsRes, statsRes, candidatesRes, meRes] = await Promise.all(responses.map(r => r.json()));
       if (jobsRes.status === 'success')        setJobs(jobsRes.data.jobs ?? []);
       if (statsRes.status === 'success')       setStats(statsRes.data);
       if (candidatesRes.status === 'success')  setTopCandidates(candidatesRes.data.candidates ?? []);
