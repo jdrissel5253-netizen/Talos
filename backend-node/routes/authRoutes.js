@@ -307,6 +307,7 @@ router.get('/me', authenticateToken, async (req, res) => {
                 serviceArea: account?.service_area || '',
                 deliverabilityConfirmedAt: account?.deliverability_confirmed_at || null,
                 onboardingBannerDismissedAt: account?.onboarding_banner_dismissed_at || null,
+                shareLinkConfirmedAt: account?.share_link_confirmed_at || null,
                 isTeamMember: req.user.accountId !== user.id
             }
         });
@@ -392,6 +393,21 @@ router.post('/dismiss-onboarding-banner', authenticateToken, async (req, res) =>
     } catch (error) {
         logger.error('Dismiss onboarding banner error', { error: error.message });
         res.status(500).json({ status: 'error', message: 'Failed to dismiss' });
+    }
+});
+
+/**
+ * POST /api/auth/confirm-share-link
+ * User copied or shared their job's application link at least once —
+ * marks the "access your shareable link" onboarding step done.
+ */
+router.post('/confirm-share-link', authenticateToken, async (req, res) => {
+    try {
+        const user = await userService.confirmShareLinkAccessed(req.user.accountId);
+        res.json({ status: 'success', data: { shareLinkConfirmedAt: user.share_link_confirmed_at } });
+    } catch (error) {
+        logger.error('Confirm share link error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to confirm' });
     }
 });
 

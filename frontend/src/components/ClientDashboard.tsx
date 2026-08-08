@@ -839,6 +839,7 @@ const ClientDashboard: React.FC = () => {
   const [sendingTestEmail, setSendingTestEmail] = useState(false);
   const [confirmingDeliverability, setConfirmingDeliverability] = useState(false);
   const [bannerDismissedAt, setBannerDismissedAt] = useState<string | null>(null);
+  const [shareLinkConfirmedAt, setShareLinkConfirmedAt] = useState<string | null>(null);
 
   useEffect(() => {
     // Clear stale state immediately so a previous user's data never shows
@@ -863,10 +864,11 @@ const ClientDashboard: React.FC = () => {
       if (statsRes.status === 'success')       setStats(statsRes.data);
       if (candidatesRes.status === 'success')  setTopCandidates(candidatesRes.data.candidates ?? []);
       if (meRes.status === 'success') {
-        const { companyName, logoUrl, serviceArea, deliverabilityConfirmedAt, onboardingBannerDismissedAt } = meRes.data;
+        const { companyName, logoUrl, serviceArea, deliverabilityConfirmedAt, onboardingBannerDismissedAt, shareLinkConfirmedAt } = meRes.data;
         setProfileComplete(!!(companyName && logoUrl && serviceArea));
         setDeliverabilityConfirmedAt(deliverabilityConfirmedAt || null);
         setBannerDismissedAt(onboardingBannerDismissedAt || null);
+        setShareLinkConfirmedAt(shareLinkConfirmedAt || null);
       }
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
@@ -915,7 +917,7 @@ const ClientDashboard: React.FC = () => {
   const step1Complete = profileComplete;
   const step2Complete = !!deliverabilityConfirmedAt;
   const step3Complete = activeJobs.length > 0;
-  const step4Complete = (stats?.total ?? 0) > 0;
+  const step4Complete = !!shareLinkConfirmedAt;
   const onboardingComplete = step1Complete && step2Complete && step3Complete && step4Complete;
   const needsAttention = activeJobs
     .filter(j => j.new_candidate_count > 0)
@@ -1128,13 +1130,13 @@ const ClientDashboard: React.FC = () => {
                       </StepIcon>
                       <StepText>
                         <StepTitle state={!step3Complete ? 'locked' : step4Complete ? 'done' : 'active'}>
-                          Share your link &amp; review applicants
+                          Access your shareable link
                         </StepTitle>
                         {!step3Complete ? (
                           <StepDesc>Create a job first — your shareable link, a QR code, and one-click share buttons will appear at the top of the job detail panel.</StepDesc>
                         ) : step4Complete ? (
                           <StepDesc>
-                            {stats?.total} applicant{stats?.total === 1 ? '' : 's'} in your pipeline so far. Keep sharing to keep them coming.
+                            {stats?.total ? `${stats.total} applicant${stats.total === 1 ? '' : 's'} in your pipeline so far. ` : ''}Your link, QR code, and share buttons are always available from the job detail panel.
                           </StepDesc>
                         ) : (
                           <>
@@ -1152,7 +1154,7 @@ const ClientDashboard: React.FC = () => {
                       </StepText>
                       {step3Complete && (
                         <StepBtn onClick={() => navigate(`/jobs-management/${activeJobs[0].id}#share-link`)}>
-                          {step4Complete ? 'Review Applicants →' : 'Go to Job →'}
+                          {(stats?.total ?? 0) > 0 ? 'Review Applicants →' : 'Go to Job →'}
                         </StepBtn>
                       )}
                     </StepRow>

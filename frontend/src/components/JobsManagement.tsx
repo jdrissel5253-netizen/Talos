@@ -1057,10 +1057,18 @@ const JobsManagement: React.FC = () => {
         return `${baseUrl}/apply?job=${job.id}&title=${encodeURIComponent(job.title)}`;
     };
 
+    const confirmShareLinkAccessed = () => {
+        fetch(`${config.apiUrl}/api/auth/confirm-share-link`, {
+            method: 'POST',
+            headers: getAuthHeaders(),
+        }).catch(() => {});
+    };
+
     const copyApplyLink = (job: Job) => {
         navigator.clipboard.writeText(getApplyUrl(job)).then(() => {
             setCopiedJobId(job.id);
             setTimeout(() => setCopiedJobId(null), 2000);
+            confirmShareLinkAccessed();
         });
     };
 
@@ -1796,6 +1804,7 @@ const JobsManagement: React.FC = () => {
                                                 <QRDownloadLink
                                                     href={shareQrDataUrl}
                                                     download={`${selectedJob.title.replace(/[^a-z0-9]+/gi, '-').toLowerCase()}-apply-qr.png`}
+                                                    onClick={confirmShareLinkAccessed}
                                                 >
                                                     <Download size={12} /> Download QR
                                                 </QRDownloadLink>
@@ -1808,11 +1817,13 @@ const JobsManagement: React.FC = () => {
                                             href={`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(getApplyUrl(selectedJob))}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
+                                            onClick={confirmShareLinkAccessed}
                                         >
                                             <Facebook size={16} /> Share to Facebook
                                         </ShareActionButton>
                                         <ShareActionButton
                                             href={`sms:?&body=${encodeURIComponent(`We're hiring — apply here: ${getApplyUrl(selectedJob)}`)}`}
+                                            onClick={confirmShareLinkAccessed}
                                         >
                                             <MessageCircle size={16} /> Text This Link
                                         </ShareActionButton>

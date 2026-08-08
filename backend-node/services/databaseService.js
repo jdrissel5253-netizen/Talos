@@ -198,6 +198,16 @@ const userService = {
         return result.rows[0];
     },
 
+    async confirmShareLinkAccessed(userId) {
+        const result = await db.query(
+            `UPDATE users SET share_link_confirmed_at = NOW()
+             WHERE id = $1 AND share_link_confirmed_at IS NULL
+             RETURNING id, email, share_link_confirmed_at`,
+            [userId]
+        );
+        return result.rows[0] || await this.findById(userId);
+    },
+
     async updatePassword(userId, newPasswordHash) {
         await db.query(
             'UPDATE users SET password_hash = $1 WHERE id = $2',
