@@ -305,6 +305,7 @@ router.get('/me', authenticateToken, async (req, res) => {
                 schedulingLink: account?.scheduling_link || '',
                 logoUrl: account?.logo_url || '',
                 serviceArea: account?.service_area || '',
+                deliverabilityConfirmedAt: account?.deliverability_confirmed_at || null,
                 isTeamMember: req.user.accountId !== user.id
             }
         });
@@ -328,6 +329,53 @@ router.put('/profile', authenticateToken, async (req, res) => {
     } catch (error) {
         logger.error('Update profile error', { error: error.message });
         res.status(500).json({ status: 'error', message: 'Failed to update profile' });
+    }
+});
+
+/**
+ * POST /api/auth/send-test-email
+ * Sends a real Talos alert-style email to the account's inbox so employers can
+ * confirm it doesn't land in spam before they're relying on it for real applicants.
+ */
+router.post('/send-test-email', authenticateToken, async (req, res) => {
+    try {
+        const account = await userService.findById(req.user.accountId);
+        if (!account?.email) {
+            return res.status(404).json({ status: 'error', message: 'Account email not found' });
+        }
+
+        await gmailService.sendEmail({
+            to: account.email,
+            subject: 'Test alert — this is what a Talos applicant notification looks like',
+            html: `<p>This is a test email from Talos.</p>
+<p>When a strong applicant applies to one of your jobs, you'll get an email that looks like this one — sent from <strong>jake@gotalos.io</strong>.</p>
+<p>If this landed in your Spam or Junk folder, mark it "Not Junk" and add <strong>jake@gotalos.io</strong> to your safe senders list so real applicant alerts always reach your inbox:</p>
+<ul>
+  <li><strong>Outlook / Microsoft 365:</strong> Settings → Mail → Junk email → Safe senders and domains → add jake@gotalos.io</li>
+  <li><strong>Gmail:</strong> Open the email, click the three-dot menu → "Add jake@gotalos.io to Contacts list" (or drag it out of Spam into your inbox)</li>
+</ul>
+<p>Once you've found this email, go back to Talos and confirm you got it.</p>`
+        });
+
+        logger.info('Deliverability test email sent', { accountId: req.user.accountId, to: account.email });
+        res.json({ status: 'success' });
+    } catch (error) {
+        logger.error('Send test email error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to send test email' });
+    }
+});
+
+/**
+ * POST /api/auth/confirm-deliverability
+ * User confirms they received the test email — marks the onboarding step done.
+ */
+router.post('/confirm-deliverability', authenticateToken, async (req, res) => {
+    try {
+        const user = await userService.confirmDeliverability(req.user.accountId);
+        res.json({ status: 'success', data: { deliverabilityConfirmedAt: user.deliverability_confirmed_at } });
+    } catch (error) {
+        logger.error('Confirm deliverability error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to confirm' });
     }
 });
 

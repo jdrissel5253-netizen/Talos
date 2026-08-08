@@ -788,6 +788,10 @@ const ClientDashboard: React.FC = () => {
   const [topCandidates, setTopCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading]         = useState(true);
   const [profileComplete, setProfileComplete] = useState(false);
+  const [deliverabilityConfirmedAt, setDeliverabilityConfirmedAt] = useState<string | null>(null);
+  const [testEmailSent, setTestEmailSent] = useState(false);
+  const [sendingTestEmail, setSendingTestEmail] = useState(false);
+  const [confirmingDeliverability, setConfirmingDeliverability] = useState(false);
 
   useEffect(() => {
     // Clear stale state immediately so a previous user's data never shows
@@ -812,17 +816,47 @@ const ClientDashboard: React.FC = () => {
       if (statsRes.status === 'success')       setStats(statsRes.data);
       if (candidatesRes.status === 'success')  setTopCandidates(candidatesRes.data.candidates ?? []);
       if (meRes.status === 'success') {
-        const { companyName, logoUrl, serviceArea } = meRes.data;
+        const { companyName, logoUrl, serviceArea, deliverabilityConfirmedAt } = meRes.data;
         setProfileComplete(!!(companyName && logoUrl && serviceArea));
+        setDeliverabilityConfirmedAt(deliverabilityConfirmedAt || null);
       }
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
 
+  const sendTestEmail = async () => {
+    setSendingTestEmail(true);
+    try {
+      const res = await fetch(`${appConfig.apiUrl}/api/auth/send-test-email`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      const data = await res.json();
+      if (data.status === 'success') setTestEmailSent(true);
+    } catch {} finally {
+      setSendingTestEmail(false);
+    }
+  };
+
+  const confirmDeliverability = async () => {
+    setConfirmingDeliverability(true);
+    try {
+      const res = await fetch(`${appConfig.apiUrl}/api/auth/confirm-deliverability`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      const data = await res.json();
+      if (data.status === 'success') setDeliverabilityConfirmedAt(data.data.deliverabilityConfirmedAt);
+    } catch {} finally {
+      setConfirmingDeliverability(false);
+    }
+  };
+
   const activeJobs = jobs.filter(j => j.status !== 'deleted');
   const step1Complete = profileComplete;
-  const step2Complete = activeJobs.length > 0;
-  const step3Complete = (stats?.total ?? 0) > 0;
-  const onboardingComplete = step1Complete && step2Complete && step3Complete;
+  const step2Complete = !!deliverabilityConfirmedAt;
+  const step3Complete = activeJobs.length > 0;
+  const step4Complete = (stats?.total ?? 0) > 0;
+  const onboardingComplete = step1Complete && step2Complete && step3Complete && step4Complete;
   const needsAttention = activeJobs
     .filter(j => j.new_candidate_count > 0)
     .sort((a, b) => b.new_candidate_count - a.new_candidate_count);
@@ -976,7 +1010,7 @@ const ClientDashboard: React.FC = () => {
               {!loading && !onboardingComplete && (
                 <GetStartedCard>
                   <GetStartedHeading>Welcome to Talos — let's get you set up</GetStartedHeading>
-                  <GetStartedSub>Three steps to start receiving and ranking HVAC applicants.</GetStartedSub>
+                  <GetStartedSub>Four steps to start receiving and ranking HVAC applicants.</GetStartedSub>
                   <StepList>
                     <StepRow state={profileComplete ? 'done' : 'active'}>
                       <StepIcon state={profileComplete ? 'done' : 'active'}>{profileComplete ? '✓' : 1}</StepIcon>
@@ -995,28 +1029,50 @@ const ClientDashboard: React.FC = () => {
                     <StepRow state={step2Complete ? 'done' : 'active'}>
                       <StepIcon state={step2Complete ? 'done' : 'active'}>{step2Complete ? '✓' : 2}</StepIcon>
                       <StepText>
-                        <StepTitle state={step2Complete ? 'done' : 'active'}>Create your first job posting</StepTitle>
+                        <StepTitle state={step2Complete ? 'done' : 'active'}>Confirm you're getting applicant alerts</StepTitle>
                         <StepDesc>
-                          {step2Complete
+                          {step2Complete ? (
+                            'Confirmed — applicant alerts will reach your inbox.'
+                          ) : testEmailSent ? (
+                            <>Check your inbox — and your Spam/Junk folder — for an email from <strong>jake@gotalos.io</strong>. On Outlook or Microsoft 365, add it to your safe senders list (Settings → Mail → Junk email → Safe senders and domains) so it doesn't happen again.</>
+                          ) : (
+                            "Talos emails land in spam more often than they should, especially on Outlook and Microsoft 365. Send yourself a real alert now so you don't miss a great applicant later."
+                          )}
+                        </StepDesc>
+                      </StepText>
+                      {!step2Complete && (
+                        testEmailSent ? (
+                          <StepBtn onClick={confirmDeliverability}>{confirmingDeliverability ? 'Confirming…' : 'I got it →'}</StepBtn>
+                        ) : (
+                          <StepBtn onClick={sendTestEmail}>{sendingTestEmail ? 'Sending…' : 'Send Test Email →'}</StepBtn>
+                        )
+                      )}
+                    </StepRow>
+                    <StepRow state={step3Complete ? 'done' : 'active'}>
+                      <StepIcon state={step3Complete ? 'done' : 'active'}>{step3Complete ? '✓' : 3}</StepIcon>
+                      <StepText>
+                        <StepTitle state={step3Complete ? 'done' : 'active'}>Create your first job posting</StepTitle>
+                        <StepDesc>
+                          {step3Complete
                             ? 'Job posted — Talos generated your public application link.'
                             : 'Set up a position — Talos generates a public application link automatically.'}
                         </StepDesc>
                       </StepText>
                       <StepBtn onClick={() => navigate('/jobs-management?new=true')}>
-                        {step2Complete ? 'Create Another →' : 'Create Job →'}
+                        {step3Complete ? 'Create Another →' : 'Create Job →'}
                       </StepBtn>
                     </StepRow>
-                    <StepRow state={!step2Complete ? 'locked' : step3Complete ? 'done' : 'active'}>
-                      <StepIcon state={!step2Complete ? 'locked' : step3Complete ? 'done' : 'active'}>
-                        {step3Complete ? '✓' : 3}
+                    <StepRow state={!step3Complete ? 'locked' : step4Complete ? 'done' : 'active'}>
+                      <StepIcon state={!step3Complete ? 'locked' : step4Complete ? 'done' : 'active'}>
+                        {step4Complete ? '✓' : 4}
                       </StepIcon>
                       <StepText>
-                        <StepTitle state={!step2Complete ? 'locked' : step3Complete ? 'done' : 'active'}>
+                        <StepTitle state={!step3Complete ? 'locked' : step4Complete ? 'done' : 'active'}>
                           Share your link &amp; review applicants
                         </StepTitle>
-                        {!step2Complete ? (
+                        {!step3Complete ? (
                           <StepDesc>Create a job first — your shareable link, a QR code, and one-click share buttons will appear at the top of the job detail panel.</StepDesc>
-                        ) : step3Complete ? (
+                        ) : step4Complete ? (
                           <StepDesc>
                             {stats?.total} applicant{stats?.total === 1 ? '' : 's'} in your pipeline so far. Keep sharing to keep them coming.
                           </StepDesc>
@@ -1034,9 +1090,9 @@ const ClientDashboard: React.FC = () => {
                           </>
                         )}
                       </StepText>
-                      {step2Complete && (
+                      {step3Complete && (
                         <StepBtn onClick={() => navigate(`/jobs-management/${activeJobs[0].id}#share-link`)}>
-                          {step3Complete ? 'Review Applicants →' : 'Go to Job →'}
+                          {step4Complete ? 'Review Applicants →' : 'Go to Job →'}
                         </StepBtn>
                       )}
                     </StepRow>

@@ -182,6 +182,14 @@ const userService = {
         return result.rows[0];
     },
 
+    async confirmDeliverability(userId) {
+        const result = await db.query(
+            'UPDATE users SET deliverability_confirmed_at = NOW() WHERE id = $1 RETURNING id, email, deliverability_confirmed_at',
+            [userId]
+        );
+        return result.rows[0];
+    },
+
     async updatePassword(userId, newPasswordHash) {
         await db.query(
             'UPDATE users SET password_hash = $1 WHERE id = $2',
