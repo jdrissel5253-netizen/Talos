@@ -306,6 +306,7 @@ router.get('/me', authenticateToken, async (req, res) => {
                 logoUrl: account?.logo_url || '',
                 serviceArea: account?.service_area || '',
                 deliverabilityConfirmedAt: account?.deliverability_confirmed_at || null,
+                onboardingBannerDismissedAt: account?.onboarding_banner_dismissed_at || null,
                 isTeamMember: req.user.accountId !== user.id
             }
         });
@@ -376,6 +377,21 @@ router.post('/confirm-deliverability', authenticateToken, async (req, res) => {
     } catch (error) {
         logger.error('Confirm deliverability error', { error: error.message });
         res.status(500).json({ status: 'error', message: 'Failed to confirm' });
+    }
+});
+
+/**
+ * POST /api/auth/dismiss-onboarding-banner
+ * User closed the one-time "you're all set" banner shown after onboarding
+ * completes — never show it again for this account.
+ */
+router.post('/dismiss-onboarding-banner', authenticateToken, async (req, res) => {
+    try {
+        const user = await userService.dismissOnboardingBanner(req.user.accountId);
+        res.json({ status: 'success', data: { onboardingBannerDismissedAt: user.onboarding_banner_dismissed_at } });
+    } catch (error) {
+        logger.error('Dismiss onboarding banner error', { error: error.message });
+        res.status(500).json({ status: 'error', message: 'Failed to dismiss' });
     }
 });
 

@@ -72,6 +72,7 @@ const db = require('./config/database');
         await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS logo_url VARCHAR(500)`);
         await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS service_area VARCHAR(255)`);
         await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS deliverability_confirmed_at TIMESTAMPTZ`);
+        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_banner_dismissed_at TIMESTAMPTZ`);
         await db.query(`ALTER TABLE jobs ADD COLUMN IF NOT EXISTS job_label VARCHAR(100)`);
         await db.query(`ALTER TABLE jobs ADD COLUMN IF NOT EXISTS deleted_at TIMESTAMPTZ DEFAULT NULL`);
         await db.query(`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS applicant_email VARCHAR(255)`);

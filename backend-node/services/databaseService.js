@@ -190,6 +190,14 @@ const userService = {
         return result.rows[0];
     },
 
+    async dismissOnboardingBanner(userId) {
+        const result = await db.query(
+            'UPDATE users SET onboarding_banner_dismissed_at = NOW() WHERE id = $1 RETURNING id, email, onboarding_banner_dismissed_at',
+            [userId]
+        );
+        return result.rows[0];
+    },
+
     async updatePassword(userId, newPasswordHash) {
         await db.query(
             'UPDATE users SET password_hash = $1 WHERE id = $2',

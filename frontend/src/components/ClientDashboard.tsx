@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import { Briefcase, Users, Star, CheckCircle, AlertCircle, UserCheck, ChevronRight, TrendingUp, MapPin, Clock, Eye, LayoutGrid, Files } from 'lucide-react';
+import { Briefcase, Users, Star, CheckCircle, AlertCircle, UserCheck, ChevronRight, TrendingUp, MapPin, Clock, Eye, LayoutGrid, Files, X } from 'lucide-react';
 import { getAuthHeaders, handleUnauthorized } from '../utils/auth';
 import { config as appConfig } from '../config';
 
@@ -704,6 +704,52 @@ const StepBtn = styled.button`
   &:hover { background: #6ee89a; }
 `;
 
+const AllSetBanner = styled.div`
+  border: 1px solid #2a3a2a;
+  background: linear-gradient(135deg, #111a14 0%, #111318 100%);
+  margin-bottom: 2rem;
+  padding: 1.5rem 2.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+
+  @media (max-width: 600px) { padding: 1.25rem 1.5rem; flex-direction: column; align-items: flex-start; }
+`;
+
+const AllSetHeading = styled.h2`
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+`;
+
+const AllSetSub = styled.p`
+  font-size: 0.78rem;
+  color: #6e7d8e;
+`;
+
+const AllSetCloseBtn = styled.button`
+  background: transparent;
+  border: 1px solid #2a3a2a;
+  color: #6e7d8e;
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border-radius: 4px;
+  transition: border-color 0.15s ease, color 0.15s ease;
+
+  &:hover { border-color: #4ade80; color: #4ade80; }
+`;
+
 const EmptyCell = styled.div`
   padding: 3rem 1.5rem;
   text-align: center;
@@ -792,6 +838,7 @@ const ClientDashboard: React.FC = () => {
   const [testEmailSent, setTestEmailSent] = useState(false);
   const [sendingTestEmail, setSendingTestEmail] = useState(false);
   const [confirmingDeliverability, setConfirmingDeliverability] = useState(false);
+  const [bannerDismissedAt, setBannerDismissedAt] = useState<string | null>(null);
 
   useEffect(() => {
     // Clear stale state immediately so a previous user's data never shows
@@ -816,9 +863,10 @@ const ClientDashboard: React.FC = () => {
       if (statsRes.status === 'success')       setStats(statsRes.data);
       if (candidatesRes.status === 'success')  setTopCandidates(candidatesRes.data.candidates ?? []);
       if (meRes.status === 'success') {
-        const { companyName, logoUrl, serviceArea, deliverabilityConfirmedAt } = meRes.data;
+        const { companyName, logoUrl, serviceArea, deliverabilityConfirmedAt, onboardingBannerDismissedAt } = meRes.data;
         setProfileComplete(!!(companyName && logoUrl && serviceArea));
         setDeliverabilityConfirmedAt(deliverabilityConfirmedAt || null);
+        setBannerDismissedAt(onboardingBannerDismissedAt || null);
       }
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
@@ -849,6 +897,18 @@ const ClientDashboard: React.FC = () => {
     } catch {} finally {
       setConfirmingDeliverability(false);
     }
+  };
+
+  const dismissBanner = async () => {
+    setBannerDismissedAt(new Date().toISOString());
+    try {
+      const res = await fetch(`${appConfig.apiUrl}/api/auth/dismiss-onboarding-banner`, {
+        method: 'POST',
+        headers: getAuthHeaders(),
+      });
+      const data = await res.json();
+      if (data.status === 'success') setBannerDismissedAt(data.data.onboardingBannerDismissedAt);
+    } catch {}
   };
 
   const activeJobs = jobs.filter(j => j.status !== 'deleted');
@@ -1098,6 +1158,19 @@ const ClientDashboard: React.FC = () => {
                     </StepRow>
                   </StepList>
                 </GetStartedCard>
+              )}
+
+              {/* ── You're all set (shown once, after onboarding completes) ── */}
+              {!loading && onboardingComplete && !bannerDismissedAt && (
+                <AllSetBanner>
+                  <div>
+                    <AllSetHeading><CheckCircle size={16} color="#4ade80" /> You're all set</AllSetHeading>
+                    <AllSetSub>Your profile is complete, alerts are confirmed, and your first job is live. New applicants will show up right here as they come in.</AllSetSub>
+                  </div>
+                  <AllSetCloseBtn onClick={dismissBanner} aria-label="Dismiss">
+                    <X size={14} />
+                  </AllSetCloseBtn>
+                </AllSetBanner>
               )}
 
               {/* ── Jobs ── */}
