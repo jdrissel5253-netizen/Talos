@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
+import { ChevronDown } from 'lucide-react';
 import { getAuthHeaders } from '../utils/auth';
 import { config as appConfig } from '../config';
 
@@ -27,6 +28,38 @@ const GetStartedSub = styled.p`
   font-size: 0.78rem;
   color: #6e7d8e;
   margin-bottom: 1.75rem;
+`;
+
+const HeaderRow = styled.button`
+  all: unset;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  cursor: pointer;
+`;
+
+const HeaderTitle = styled.span`
+  font-size: 1rem;
+  font-weight: 600;
+  color: #ffffff;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+`;
+
+const StepCount = styled.span`
+  font-size: 0.72rem;
+  color: #6e7d8e;
+  font-weight: 500;
+`;
+
+const Chevron = styled(ChevronDown)<{ $expanded: boolean }>`
+  color: #6e7d8e;
+  flex-shrink: 0;
+  transition: transform 0.15s ease;
+  transform: rotate(${p => p.$expanded ? '180deg' : '0deg'});
 `;
 
 const StepList = styled.div`
@@ -130,6 +163,9 @@ interface OnboardingChecklistProps {
   /** Reports loading/completion state up to the parent (e.g. so the dashboard
    *  knows when to show its "you're all set" banner). */
   onStatusChange?: (status: { loading: boolean; complete: boolean }) => void;
+  /** If true, only the heading + progress count show by default; clicking it
+   *  expands/collapses the full step list. Collapsed by default. */
+  collapsible?: boolean;
 }
 
 const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({
@@ -137,9 +173,11 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({
   subheading = 'Four steps to start receiving and ranking HVAC applicants.',
   showWhenComplete = false,
   onStatusChange,
+  collapsible = false,
 }) => {
   const navigate = useNavigate();
 
+  const [expanded, setExpanded] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeJobs, setActiveJobs] = useState<JobLite[]>([]);
   const [applicantTotal, setApplicantTotal] = useState(0);
@@ -216,10 +254,24 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({
 
   if (loading || (complete && !showWhenComplete)) return null;
 
+  const doneCount = [step1Complete, step2Complete, step3Complete, step4Complete].filter(Boolean).length;
+  const showBody = !collapsible || expanded;
+
   return (
     <GetStartedCard>
-      <GetStartedHeading>{heading}</GetStartedHeading>
-      <GetStartedSub>{subheading}</GetStartedSub>
+      {collapsible ? (
+        <HeaderRow type="button" onClick={() => setExpanded(e => !e)} style={{ marginBottom: showBody ? '0.35rem' : 0 }}>
+          <HeaderTitle>
+            {heading}
+            <StepCount>{doneCount}/4 complete</StepCount>
+          </HeaderTitle>
+          <Chevron size={18} $expanded={expanded} />
+        </HeaderRow>
+      ) : (
+        <GetStartedHeading>{heading}</GetStartedHeading>
+      )}
+      {showBody && <GetStartedSub>{subheading}</GetStartedSub>}
+      {showBody && (
       <StepList>
         <StepRow state={profileComplete ? 'done' : 'active'}>
           <StepIcon state={profileComplete ? 'done' : 'active'}>{profileComplete ? '✓' : 1}</StepIcon>
@@ -309,6 +361,7 @@ const OnboardingChecklist: React.FC<OnboardingChecklistProps> = ({
           )}
         </StepRow>
       </StepList>
+      )}
     </GetStartedCard>
   );
 };

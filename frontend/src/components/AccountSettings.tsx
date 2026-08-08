@@ -653,9 +653,10 @@ const AccountSettings: React.FC = () => {
         </InfoStrip>
 
         <OnboardingChecklist
-          heading="Getting Started"
+          heading="Onboarding Steps"
           subheading="Revisit any step below any time."
           showWhenComplete
+          collapsible
         />
 
         <Section>
