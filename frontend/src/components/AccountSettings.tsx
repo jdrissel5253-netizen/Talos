@@ -3,6 +3,7 @@ import styled from 'styled-components';
 import { useNavigate } from 'react-router-dom';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
+import OnboardingChecklist from './OnboardingChecklist';
 
 const Page = styled.div`
   min-height: 100vh;
@@ -650,6 +651,12 @@ const AccountSettings: React.FC = () => {
             <InfoValue>Talos Hiring</InfoValue>
           </InfoItem>
         </InfoStrip>
+
+        <OnboardingChecklist
+          heading="Getting Started"
+          subheading="Revisit any step below any time."
+          showWhenComplete
+        />
 
         <Section>
           <SectionTitle>Profile</SectionTitle>

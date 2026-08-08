@@ -4,6 +4,7 @@ import styled, { createGlobalStyle, keyframes } from 'styled-components';
 import { Briefcase, Users, Star, CheckCircle, AlertCircle, UserCheck, ChevronRight, TrendingUp, MapPin, Clock, Eye, LayoutGrid, Files, X } from 'lucide-react';
 import { getAuthHeaders, handleUnauthorized } from '../utils/auth';
 import { config as appConfig } from '../config';
+import OnboardingChecklist from './OnboardingChecklist';
 
 const FontImport = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -595,114 +596,7 @@ const CandidateScore = styled.span`
 
 // ─── empty / loading ──────────────────────────────────────────────────────────
 
-// ─── get started checklist ────────────────────────────────────────────────────
-
-const GetStartedCard = styled.div`
-  border: 1px solid #2a3a2a;
-  background: linear-gradient(135deg, #111a14 0%, #111318 100%);
-  margin-bottom: 2rem;
-  padding: 2rem 2.5rem;
-
-  @media (max-width: 600px) { padding: 1.5rem; }
-`;
-
-const GetStartedHeading = styled.h2`
-  font-size: 1rem;
-  font-weight: 600;
-  color: #ffffff;
-  letter-spacing: -0.02em;
-  margin-bottom: 0.35rem;
-`;
-
-const GetStartedSub = styled.p`
-  font-size: 0.78rem;
-  color: #6e7d8e;
-  margin-bottom: 1.75rem;
-`;
-
-const StepList = styled.div`
-  display: flex;
-  flex-direction: column;
-  gap: 0;
-`;
-
-const StepRow = styled.div<{ state: 'done' | 'active' | 'locked' }>`
-  display: grid;
-  grid-template-columns: 36px 1fr auto;
-  align-items: center;
-  gap: 1rem;
-  padding: 1rem 0;
-  border-bottom: 1px solid #1e2330;
-  opacity: ${p => p.state === 'locked' ? 0.4 : 1};
-
-  &:last-child { border-bottom: none; }
-`;
-
-const StepIcon = styled.div<{ state: 'done' | 'active' | 'locked' }>`
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 0.7rem;
-  font-weight: 600;
-  flex-shrink: 0;
-  background: ${p => p.state === 'done' ? 'rgba(74,222,128,0.12)' : p.state === 'active' ? 'rgba(74,222,128,0.08)' : '#1a1f2a'};
-  border: 1px solid ${p => p.state === 'done' ? '#4ade80' : p.state === 'active' ? 'rgba(74,222,128,0.4)' : '#232830'};
-  color: ${p => p.state === 'done' ? '#4ade80' : p.state === 'active' ? '#4ade80' : '#6e7d8e'};
-`;
-
-const StepText = styled.div``;
-
-const StepTitle = styled.div<{ state: 'done' | 'active' | 'locked' }>`
-  font-size: 0.85rem;
-  font-weight: 600;
-  color: ${p => p.state === 'done' ? '#6e7d8e' : '#e0e0e0'};
-  text-decoration: ${p => p.state === 'done' ? 'line-through' : 'none'};
-  letter-spacing: -0.01em;
-`;
-
-const StepDesc = styled.div`
-  font-size: 0.72rem;
-  color: #6e7d8e;
-  margin-top: 0.15rem;
-`;
-
-const StepHintList = styled.div`
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
-  margin-top: 0.5rem;
-`;
-
-const StepHintPill = styled.span`
-  font-size: 0.64rem;
-  font-family: 'JetBrains Mono', monospace;
-  color: #8a94a6;
-  background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.07);
-  border-radius: 4px;
-  padding: 0.2rem 0.5rem;
-  white-space: nowrap;
-`;
-
-const StepBtn = styled.button`
-  background: #4ade80;
-  border: none;
-  color: #000;
-  font-family: 'Sora', sans-serif;
-  font-size: 0.72rem;
-  font-weight: 700;
-  padding: 0.45rem 1rem;
-  cursor: pointer;
-  white-space: nowrap;
-  clip-path: polygon(0 0, calc(100% - 5px) 0, 100% 5px, 100% 100%, 5px 100%, 0 calc(100% - 5px));
-  transition: background 0.15s ease;
-
-  &:hover { background: #6ee89a; }
-`;
+// ─── you're all set banner ────────────────────────────────────────────────────
 
 const AllSetBanner = styled.div`
   border: 1px solid #2a3a2a;
@@ -833,13 +727,9 @@ const ClientDashboard: React.FC = () => {
   const [stats, setStats]             = useState<Stats | null>(null);
   const [topCandidates, setTopCandidates] = useState<Candidate[]>([]);
   const [loading, setLoading]         = useState(true);
-  const [profileComplete, setProfileComplete] = useState(false);
-  const [deliverabilityConfirmedAt, setDeliverabilityConfirmedAt] = useState<string | null>(null);
-  const [testEmailSent, setTestEmailSent] = useState(false);
-  const [sendingTestEmail, setSendingTestEmail] = useState(false);
-  const [confirmingDeliverability, setConfirmingDeliverability] = useState(false);
   const [bannerDismissedAt, setBannerDismissedAt] = useState<string | null>(null);
-  const [shareLinkConfirmedAt, setShareLinkConfirmedAt] = useState<string | null>(null);
+  const [onboardingLoading, setOnboardingLoading] = useState(true);
+  const [onboardingComplete, setOnboardingComplete] = useState(false);
 
   useEffect(() => {
     // Clear stale state immediately so a previous user's data never shows
@@ -864,42 +754,10 @@ const ClientDashboard: React.FC = () => {
       if (statsRes.status === 'success')       setStats(statsRes.data);
       if (candidatesRes.status === 'success')  setTopCandidates(candidatesRes.data.candidates ?? []);
       if (meRes.status === 'success') {
-        const { companyName, logoUrl, serviceArea, deliverabilityConfirmedAt, onboardingBannerDismissedAt, shareLinkConfirmedAt } = meRes.data;
-        setProfileComplete(!!(companyName && logoUrl && serviceArea));
-        setDeliverabilityConfirmedAt(deliverabilityConfirmedAt || null);
-        setBannerDismissedAt(onboardingBannerDismissedAt || null);
-        setShareLinkConfirmedAt(shareLinkConfirmedAt || null);
+        setBannerDismissedAt(meRes.data.onboardingBannerDismissedAt || null);
       }
     }).catch(() => {}).finally(() => setLoading(false));
   }, []);
-
-  const sendTestEmail = async () => {
-    setSendingTestEmail(true);
-    try {
-      const res = await fetch(`${appConfig.apiUrl}/api/auth/send-test-email`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-      });
-      const data = await res.json();
-      if (data.status === 'success') setTestEmailSent(true);
-    } catch {} finally {
-      setSendingTestEmail(false);
-    }
-  };
-
-  const confirmDeliverability = async () => {
-    setConfirmingDeliverability(true);
-    try {
-      const res = await fetch(`${appConfig.apiUrl}/api/auth/confirm-deliverability`, {
-        method: 'POST',
-        headers: getAuthHeaders(),
-      });
-      const data = await res.json();
-      if (data.status === 'success') setDeliverabilityConfirmedAt(data.data.deliverabilityConfirmedAt);
-    } catch {} finally {
-      setConfirmingDeliverability(false);
-    }
-  };
 
   const dismissBanner = async () => {
     setBannerDismissedAt(new Date().toISOString());
@@ -914,11 +772,6 @@ const ClientDashboard: React.FC = () => {
   };
 
   const activeJobs = jobs.filter(j => j.status !== 'deleted');
-  const step1Complete = profileComplete;
-  const step2Complete = !!deliverabilityConfirmedAt;
-  const step3Complete = activeJobs.length > 0;
-  const step4Complete = !!shareLinkConfirmedAt;
-  const onboardingComplete = step1Complete && step2Complete && step3Complete && step4Complete;
   const needsAttention = activeJobs
     .filter(j => j.new_candidate_count > 0)
     .sort((a, b) => b.new_candidate_count - a.new_candidate_count);
@@ -1069,101 +922,17 @@ const ClientDashboard: React.FC = () => {
               )}
 
               {/* ── Get Started (new users only) ── */}
-              {!loading && !onboardingComplete && (
-                <GetStartedCard>
-                  <GetStartedHeading>Welcome to Talos — let's get you set up</GetStartedHeading>
-                  <GetStartedSub>Four steps to start receiving and ranking HVAC applicants.</GetStartedSub>
-                  <StepList>
-                    <StepRow state={profileComplete ? 'done' : 'active'}>
-                      <StepIcon state={profileComplete ? 'done' : 'active'}>{profileComplete ? '✓' : 1}</StepIcon>
-                      <StepText>
-                        <StepTitle state={profileComplete ? 'done' : 'active'}>Complete your company profile</StepTitle>
-                        <StepDesc>
-                          {profileComplete
-                            ? "Your company name, logo, and service area are all set."
-                            : 'Add your company name, logo, and service area — candidates see these on your public application link before they\'ll trust it enough to upload a resume.'}
-                        </StepDesc>
-                      </StepText>
-                      {!profileComplete && (
-                        <StepBtn onClick={() => navigate('/account')}>Complete Profile →</StepBtn>
-                      )}
-                    </StepRow>
-                    <StepRow state={step2Complete ? 'done' : 'active'}>
-                      <StepIcon state={step2Complete ? 'done' : 'active'}>{step2Complete ? '✓' : 2}</StepIcon>
-                      <StepText>
-                        <StepTitle state={step2Complete ? 'done' : 'active'}>Confirm you're getting applicant alerts</StepTitle>
-                        <StepDesc>
-                          {step2Complete ? (
-                            'Confirmed — applicant alerts will reach your inbox.'
-                          ) : testEmailSent ? (
-                            <>Check your inbox — and your Spam/Junk folder — for an email from <strong>jake@gotalos.io</strong>. On Outlook or Microsoft 365, add it to your safe senders list (Settings → Mail → Junk email → Safe senders and domains) so it doesn't happen again.</>
-                          ) : (
-                            "Talos emails land in spam more often than they should, especially on Outlook and Microsoft 365. Send yourself a real alert now so you don't miss a great applicant later."
-                          )}
-                        </StepDesc>
-                      </StepText>
-                      {!step2Complete && (
-                        testEmailSent ? (
-                          <StepBtn onClick={confirmDeliverability}>{confirmingDeliverability ? 'Confirming…' : 'I got it →'}</StepBtn>
-                        ) : (
-                          <StepBtn onClick={sendTestEmail}>{sendingTestEmail ? 'Sending…' : 'Send Test Email →'}</StepBtn>
-                        )
-                      )}
-                    </StepRow>
-                    <StepRow state={step3Complete ? 'done' : 'active'}>
-                      <StepIcon state={step3Complete ? 'done' : 'active'}>{step3Complete ? '✓' : 3}</StepIcon>
-                      <StepText>
-                        <StepTitle state={step3Complete ? 'done' : 'active'}>Create your first job posting</StepTitle>
-                        <StepDesc>
-                          {step3Complete
-                            ? 'Job posted — Talos generated your public application link.'
-                            : 'Set up a position — Talos generates a public application link automatically.'}
-                        </StepDesc>
-                      </StepText>
-                      <StepBtn onClick={() => navigate('/jobs-management?new=true')}>
-                        {step3Complete ? 'Create Another →' : 'Create Job →'}
-                      </StepBtn>
-                    </StepRow>
-                    <StepRow state={!step3Complete ? 'locked' : step4Complete ? 'done' : 'active'}>
-                      <StepIcon state={!step3Complete ? 'locked' : step4Complete ? 'done' : 'active'}>
-                        {step4Complete ? '✓' : 4}
-                      </StepIcon>
-                      <StepText>
-                        <StepTitle state={!step3Complete ? 'locked' : step4Complete ? 'done' : 'active'}>
-                          Access your shareable link
-                        </StepTitle>
-                        {!step3Complete ? (
-                          <StepDesc>Create a job first — your shareable link, a QR code, and one-click share buttons will appear at the top of the job detail panel.</StepDesc>
-                        ) : step4Complete ? (
-                          <StepDesc>
-                            {stats?.total ? `${stats.total} applicant${stats.total === 1 ? '' : 's'} in your pipeline so far. ` : ''}Your link, QR code, and share buttons are always available from the job detail panel.
-                          </StepDesc>
-                        ) : (
-                          <>
-                            <StepDesc>Your link, QR code, and share buttons are ready at the top of the job detail panel. Where HVAC owners actually get applicants from it:</StepDesc>
-                            <StepHintList>
-                              <StepHintPill>Facebook trade groups</StepHintPill>
-                              <StepHintPill>Your website's careers page</StepHintPill>
-                              <StepHintPill>QR code on truck wraps</StepHintPill>
-                              <StepHintPill>Text referrals directly</StepHintPill>
-                              <StepHintPill>Johnstone / Ferguson counters</StepHintPill>
-                              <StepHintPill>Trade school placement offices</StepHintPill>
-                            </StepHintList>
-                          </>
-                        )}
-                      </StepText>
-                      {step3Complete && (
-                        <StepBtn onClick={() => navigate(`/jobs-management/${activeJobs[0].id}#share-link`)}>
-                          {(stats?.total ?? 0) > 0 ? 'Review Applicants →' : 'Go to Job →'}
-                        </StepBtn>
-                      )}
-                    </StepRow>
-                  </StepList>
-                </GetStartedCard>
+              {!loading && (
+                <OnboardingChecklist
+                  onStatusChange={({ loading, complete }) => {
+                    setOnboardingLoading(loading);
+                    setOnboardingComplete(complete);
+                  }}
+                />
               )}
 
               {/* ── You're all set (shown once, after onboarding completes) ── */}
-              {!loading && onboardingComplete && !bannerDismissedAt && (
+              {!loading && !onboardingLoading && onboardingComplete && !bannerDismissedAt && (
                 <AllSetBanner>
                   <div>
                     <AllSetHeading><CheckCircle size={16} color="#4ade80" /> You're all set</AllSetHeading>
