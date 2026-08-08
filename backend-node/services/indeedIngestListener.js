@@ -5,6 +5,8 @@ const logger = require('./logger');
 const REGION = process.env.AWS_REGION || 'us-east-1';
 const QUEUE_URL = process.env.INDEED_INGEST_QUEUE_URL
     || 'https://sqs.us-east-1.amazonaws.com/387904338435/talos-indeed-ingest-queue';
+const RAW_BUCKET = process.env.INDEED_RAW_BUCKET || 'talos-indeed-raw-387904338435';
+const RAW_KEY_PREFIX = process.env.INDEED_RAW_KEY_PREFIX || 'raw/';
 
 const sqs = new SQSClient({ region: REGION });
 const s3 = new S3Client({ region: REGION });
@@ -27,23 +29,30 @@ async function handleMessage(message) {
     // Envelope recipients (SMTP RCPT TO), not the To: header — a forwarding
     // rule on the customer's side can make those diverge.
     const recipients = notification.receipt?.recipients || notification.mail?.destination || [];
-    const action = notification.receipt?.action;
 
+    // With multiple actions on one receipt rule (ours: S3 then SNS), the
+    // notification's receipt.action describes whichever action published
+    // the notification (the SNS action itself) — not the earlier S3 write.
+    // The S3 object is keyed by SES's own mail.messageId instead.
     let sizeBytes = null;
-    if (action?.bucketName && action?.objectKey) {
+    const messageId = notification.mail?.messageId;
+    const s3Key = messageId ? `${RAW_KEY_PREFIX}${messageId}` : null;
+    if (s3Key) {
         try {
-            const head = await s3.send(new HeadObjectCommand({ Bucket: action.bucketName, Key: action.objectKey }));
+            const head = await s3.send(new HeadObjectCommand({ Bucket: RAW_BUCKET, Key: s3Key }));
             sizeBytes = head.ContentLength;
         } catch (err) {
-            logger.warn('Indeed ingest: could not read raw message size from S3', { error: err.message, key: action.objectKey });
+            logger.warn('Indeed ingest: could not read raw message size from S3', { error: err.message, key: s3Key });
         }
+    } else {
+        logger.warn('Indeed ingest: notification had no mail.messageId, cannot locate S3 object');
     }
 
     logger.info('Indeed ingest: message received', {
         receivedAt: new Date().toISOString(),
         recipients,
         sizeBytes,
-        s3Key: action?.objectKey,
+        s3Key,
     });
 }
 
