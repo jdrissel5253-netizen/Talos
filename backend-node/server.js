@@ -396,6 +396,11 @@ cron.schedule('0 22 * * *', () => {
 }, { timezone: 'UTC' });
 logger.info('Daily digest cron scheduled', { time: '22:00 UTC (6 PM ET)' });
 
+// Indeed application email ingestion — long-polls SQS for SES notifications.
+// Phase 1: logs arrival only, no parsing or DB writes yet.
+const { startIndeedIngestListener } = require('./services/indeedIngestListener');
+startIndeedIngestListener();
+
 // Process-level error handlers
 process.on('uncaughtException', (err) => {
     logger.error('Uncaught exception', { error: err.message, stack: err.stack });
