@@ -256,6 +256,7 @@ router.post('/upload', upload.single('resume'), async (req, res) => {
 
         // Save analysis to database
         await candidateService.updateEmailIfMissing(candidate.id, analysis.extractedEmail);
+        await candidateService.updatePhoneIfMissing(candidate.id, analysis.extractedPhone);
         await candidateService.updateFullName(candidate.id, analysis.candidateName);
         await analysisService.create(candidate.id, analysis);
         await candidateService.updateStatus(candidate.id, 'completed');
@@ -324,6 +325,7 @@ async function processOneResume(candidateId, s3Key, filename, position, required
         try { fs.unlinkSync(tempPath); } catch (_) {}
     }
     await candidateService.updateEmailIfMissing(candidateId, analysis.extractedEmail);
+    await candidateService.updatePhoneIfMissing(candidateId, analysis.extractedPhone);
     await candidateService.updateFullName(candidateId, analysis.candidateName);
     await analysisService.create(candidateId, analysis);
     await candidateService.updateStatus(candidateId, 'completed');

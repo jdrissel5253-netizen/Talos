@@ -12,6 +12,7 @@ interface ContactRejectionModalProps {
     name: string;
     position: string;
     email?: string;
+    phone?: string;
   };
   initialMode: 'contact' | 'rejection';
   initialCommunicationType?: 'email' | 'sms';
@@ -119,6 +120,12 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
         throw new Error('Please enter a recipient email address');
       }
 
+      // Validate phone if sending SMS — there's no carrier integration, so we need
+      // a real number to hand off to the device's own texting app
+      if (communicationType === 'sms' && !candidate.phone) {
+        throw new Error('No phone number on file for this candidate');
+      }
+
       // Send message
       if (!template || !renderedMessage) {
         throw new Error('No template found for the selected options');
@@ -153,6 +160,11 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
       if (communicationType === 'email' && candidate.email) {
         const mailtoUrl = `mailto:${encodeURIComponent(candidate.email)}?subject=${encodeURIComponent(renderedMessage.subject || '')}&body=${encodeURIComponent(renderedMessage.body)}`;
         window.open(mailtoUrl, '_blank');
+      }
+
+      if (communicationType === 'sms' && candidate.phone) {
+        const smsUrl = `sms:${encodeURIComponent(candidate.phone)}?&body=${encodeURIComponent(renderedMessage.body)}`;
+        window.open(smsUrl, '_blank');
       }
 
       onSuccess();

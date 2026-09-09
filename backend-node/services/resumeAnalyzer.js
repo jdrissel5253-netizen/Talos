@@ -3940,6 +3940,10 @@ async function analyzeResume(filePath, position = 'HVAC Technician', requiredYea
       const emailMatch = resumeText.match(/\b[A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,}\b/);
       const regexEmail = emailMatch ? emailMatch[0].toLowerCase() : null;
 
+      // Regex fallback: extract a US-style phone number from raw text in case Claude misses it
+      const phoneMatch = resumeText.match(/(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/);
+      const regexPhone = phoneMatch ? phoneMatch[0].trim() : null;
+
       const jobLocationLine = jobLocation ? `Job Location: ${jobLocation}\n\n` : '';
 
       // Check if we're using the tiered framework for HVAC Service Technician, Lead HVAC Technician, Dispatcher, Administrative Assistant, Customer Service Rep, Apprentice, Bookkeeper, Warehouse Associate, Sales Rep, or Service Manager
@@ -4078,6 +4082,7 @@ Return your analysis in this EXACT JSON format:
   "recommendations": ["<recommendation 1>", "<recommendation 2>"],
   "hiringRecommendation": "<STRONG_YES (90+) | YES (80-89) | MAYBE (70-79) | PROBABLY_NOT (50-69) | NO (<50)>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }`;
       } else if (useWarehouseAssociateFramework) {
@@ -4202,6 +4207,7 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
   "recommendationSummary": "<2-3 sentence recommendation>",
   "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }`;
 
@@ -4335,6 +4341,7 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
   "recommendationSummary": "<2-3 sentence recommendation>",
   "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }`;
 
@@ -4457,6 +4464,7 @@ Now, analyze the resume and provide a JSON response EXACTLY matching this struct
   "recommendationSummary": "<2-3 sentence recommendation>",
   "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }`;
 
@@ -4566,6 +4574,7 @@ REQUIRED JSON OUTPUT FORMAT:
   "scoringMatrixRow": "<exact row from matrix that was used>",
   "scoringReasoning": "<brief explanation of why this score was chosen>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
@@ -4683,6 +4692,7 @@ REQUIRED JSON OUTPUT FORMAT:
   "scoringMatrixRow": "<exact row from matrix that was used>",
   "scoringReasoning": "<brief explanation of why this score was chosen>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
@@ -4824,6 +4834,7 @@ Provide your evaluation in the following JSON format:
   "recommendations": ["<3-5 specific recommendations for improvement>"],
   "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
@@ -4947,6 +4958,7 @@ STEP 9: VALIDATE YOUR ANSWER
   "recommendations": ["<3-5 specific recommendations for improvement>"],
   "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
@@ -5072,6 +5084,7 @@ STEP 9: VALIDATE YOUR ANSWER
   "recommendations": ["<3-5 specific recommendations for improvement>"],
   "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
@@ -5191,6 +5204,7 @@ STEP 9: VALIDATE YOUR ANSWER
   "recommendations": ["<3-5 specific recommendations for improvement>"],
   "hiringRecommendation": "<STRONG_YES (90-100)|YES (80-89)|MAYBE (50-79)|NO (20-49)|STRONG_NO (0-19)>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
@@ -5352,6 +5366,7 @@ REQUIRED JSON OUTPUT FORMAT:
   "scoringMatrixRow": "<exact row from matrix that was used>",
   "scoringReasoning": "<brief explanation of why this score was chosen, including competency evaluation>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
@@ -5505,6 +5520,7 @@ REQUIRED JSON OUTPUT FORMAT:
   "scoringMatrixRow": "<exact row from matrix that was used>",
   "scoringReasoning": "<brief explanation of why this score was chosen, including competency evaluation and how the leadership-first weighting rule was applied>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
@@ -5560,6 +5576,7 @@ Please analyze this resume for the ${positionCriteria.title} position and provid
   "recommendations": ["<3-5 specific recommendations for improvement>"],
   "hiringRecommendation": "<STRONG_YES|YES|MAYBE|NO|STRONG_NO>",
   "email": "<candidate's email address found in the resume, or null if not present>",
+  "phone": "<candidate's phone number found in the resume, or null if not present>",
   "candidateName": "<candidate's full first and last name exactly as it appears at the top of the resume, properly capitalized (e.g. 'Justin McClung'), or null if not found>"
 }
 
@@ -5624,6 +5641,8 @@ Provide thorough, honest, and actionable feedback specifically tailored to the $
       analysis.scoreOutOf10 = Math.round(analysis.overallScore / 10);
       // Prefer Claude's extracted email; fall back to regex result
       analysis.extractedEmail = analysis.email ? analysis.email.toLowerCase() : regexEmail;
+      // Prefer Claude's extracted phone; fall back to regex result
+      analysis.extractedPhone = (analysis.phone && String(analysis.phone).trim()) ? String(analysis.phone).trim() : regexPhone;
       // Normalize the extracted candidate name (empty/placeholder -> null)
       analysis.candidateName = (analysis.candidateName && String(analysis.candidateName).trim()) ? String(analysis.candidateName).trim() : null;
 

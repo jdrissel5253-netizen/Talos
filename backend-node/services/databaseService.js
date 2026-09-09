@@ -333,10 +333,10 @@ const batchService = {
  * Candidate operations
  */
 const candidateService = {
-    async create(batchId, filename, filePath, applicantEmail = null) {
+    async create(batchId, filename, filePath, applicantEmail = null, applicantPhone = null) {
         const result = await db.query(
-            'INSERT INTO candidates (batch_id, filename, file_path, status, applicant_email) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-            [batchId, filename, filePath, 'analyzing', applicantEmail]
+            'INSERT INTO candidates (batch_id, filename, file_path, status, applicant_email, applicant_phone) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+            [batchId, filename, filePath, 'analyzing', applicantEmail, applicantPhone]
         );
         return result.rows[0];
     },
@@ -384,6 +384,14 @@ const candidateService = {
         await db.query(
             'UPDATE candidates SET applicant_email = $1 WHERE id = $2 AND applicant_email IS NULL',
             [email, id]
+        );
+    },
+
+    async updatePhoneIfMissing(id, phone) {
+        if (!phone) return;
+        await db.query(
+            'UPDATE candidates SET applicant_phone = $1 WHERE id = $2 AND applicant_phone IS NULL',
+            [phone, id]
         );
     },
 
@@ -859,7 +867,7 @@ const candidatePipelineService = {
 
     async findByJobId(jobId, filters = {}) {
         let query = `
-            SELECT cp.*, c.filename, c.full_name, c.applicant_email as email, a.overall_score, a.score_out_of_10,
+            SELECT cp.*, c.filename, c.full_name, c.applicant_email as email, c.applicant_phone as phone, a.overall_score, a.score_out_of_10,
                    a.years_of_experience, a.certifications_found, a.hiring_recommendation
             FROM candidate_pipeline cp
             JOIN candidates c ON cp.candidate_id = c.id
@@ -1119,6 +1127,7 @@ const candidatePipelineService = {
                     c.full_name,
                     c.file_path,
                     c.applicant_email,
+                    c.applicant_phone,
                     c.status as candidate_status,
                     c.upload_date,
                     a.overall_score,
@@ -1421,6 +1430,7 @@ const candidatePipelineService = {
                 c.file_path,
                 c.upload_date,
                 c.applicant_email,
+                c.applicant_phone,
                 a.overall_score,
                 a.summary,
                 a.years_of_experience,

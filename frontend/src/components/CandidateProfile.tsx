@@ -618,6 +618,7 @@ interface Profile {
   filename: string;
   upload_date: string;
   applicant_email: string | null;
+  applicant_phone: string | null;
   overall_score: number;
   summary: string;
   years_of_experience: number;
@@ -653,6 +654,9 @@ const CandidateProfile: React.FC = () => {
   const [emailEditing, setEmailEditing] = useState(false);
   const [emailDraft, setEmailDraft] = useState('');
   const [emailSaving, setEmailSaving] = useState(false);
+  const [phoneEditing, setPhoneEditing] = useState(false);
+  const [phoneDraft, setPhoneDraft] = useState('');
+  const [phoneSaving, setPhoneSaving] = useState(false);
   const [nameEditing, setNameEditing] = useState(false);
   const [nameDraft, setNameDraft] = useState('');
   const [nameSaving, setNameSaving] = useState(false);
@@ -777,6 +781,24 @@ const CandidateProfile: React.FC = () => {
     }
   };
 
+  const handlePhoneSave = async () => {
+    if (!profile || phoneSaving) return;
+    setPhoneSaving(true);
+    try {
+      const res = await fetch(`${appConfig.apiUrl}/api/pipeline/${profile.pipeline_id}/phone`, {
+        method: 'PUT',
+        headers: { ...getAuthHeaders(), 'Content-Type': 'application/json' },
+        body: JSON.stringify({ phone: phoneDraft.trim() }),
+      });
+      if (res.ok) {
+        setProfile(p => p ? { ...p, applicant_phone: phoneDraft.trim() || null } : p);
+        setPhoneEditing(false);
+      }
+    } finally {
+      setPhoneSaving(false);
+    }
+  };
+
   const handleStatusChange = async (newStatus: string) => {
     if (!profile || statusUpdating) return;
     setStatusUpdating(true);
@@ -866,6 +888,7 @@ const CandidateProfile: React.FC = () => {
                   name: displayName,
                   position: profile.job_title,
                   email: profile.applicant_email ?? undefined,
+                  phone: profile.applicant_phone ?? undefined,
                 }}
                 initialMode={contactModal?.mode ?? 'contact'}
                 initialCommunicationType={contactModal?.commType ?? 'email'}
@@ -951,6 +974,37 @@ const CandidateProfile: React.FC = () => {
                           {profile.applicant_email || <span style={{ color: '#6e7d8e', fontStyle: 'italic' }}>Add email</span>}
                         </HeroContactValue>
                         <IconBtn onClick={() => { setEmailDraft(profile.applicant_email || ''); setEmailEditing(true); }} title="Edit email">
+                          <Pencil size={11} />
+                        </IconBtn>
+                      </HeroContactRow>
+                    )}
+                  </HeroContactSection>
+
+                  <HeroContactSection>
+                    <HeroContactLabel>Phone</HeroContactLabel>
+                    {phoneEditing ? (
+                      <HeroContactRow>
+                        <EmailInput
+                          autoFocus
+                          type="tel"
+                          value={phoneDraft}
+                          onChange={e => setPhoneDraft(e.target.value)}
+                          onKeyDown={e => { if (e.key === 'Enter') handlePhoneSave(); if (e.key === 'Escape') setPhoneEditing(false); }}
+                          placeholder="(555) 123-4567"
+                        />
+                        <IconBtn onClick={handlePhoneSave} disabled={phoneSaving} title="Save">
+                          <Check size={14} color="#4ade80" />
+                        </IconBtn>
+                        <IconBtn onClick={() => setPhoneEditing(false)} title="Cancel">
+                          <X size={14} color="#f87171" />
+                        </IconBtn>
+                      </HeroContactRow>
+                    ) : (
+                      <HeroContactRow>
+                        <HeroContactValue>
+                          {profile.applicant_phone || <span style={{ color: '#6e7d8e', fontStyle: 'italic' }}>Add phone</span>}
+                        </HeroContactValue>
+                        <IconBtn onClick={() => { setPhoneDraft(profile.applicant_phone || ''); setPhoneEditing(true); }} title="Edit phone">
                           <Pencil size={11} />
                         </IconBtn>
                       </HeroContactRow>

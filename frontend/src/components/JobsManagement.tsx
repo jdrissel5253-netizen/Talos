@@ -56,6 +56,7 @@ interface CandidatePipeline {
     filename: string;
     full_name?: string | null;
     email?: string;
+    phone?: string;
     overall_score: number;
     years_of_experience: number;
     certifications_found: string[];
@@ -977,7 +978,7 @@ const JobsManagement: React.FC = () => {
     const [editingJob, setEditingJob] = useState<Job | null>(null);
     const [loadingEditJob, setLoadingEditJob] = useState<number | null>(null);
     const [contactModalOpen, setContactModalOpen] = useState(false);
-    const [selectedCandidateForContact, setSelectedCandidateForContact] = useState<{ pipelineId: number; name: string; position: string; email?: string; } | null>(null);
+    const [selectedCandidateForContact, setSelectedCandidateForContact] = useState<{ pipelineId: number; name: string; position: string; email?: string; phone?: string; } | null>(null);
     const [contactMode, setContactMode] = useState<'contact' | 'rejection'>('contact');
     const [contactCommunicationType, setContactCommunicationType] = useState<'email' | 'sms'>('email');
     const [copiedJobId, setCopiedJobId] = useState<number | null>(null);
@@ -1321,7 +1322,8 @@ const JobsManagement: React.FC = () => {
             pipelineId: candidatePipelineId,
             name: candidateName,
             position: selectedJob?.title || 'Position',
-            email: candidate.email
+            email: candidate.email,
+            phone: candidate.phone
         });
 
         // Determine mode and communication type

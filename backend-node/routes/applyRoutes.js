@@ -98,7 +98,7 @@ router.post('/', (req, res, next) => {
         const s3Key = await uploadResume(req.file.buffer, req.file.originalname);
 
         // Create candidate record immediately (null batch_id for public applications)
-        const candidate = await candidateService.create(null, req.file.originalname, s3Key, email);
+        const candidate = await candidateService.create(null, req.file.originalname, s3Key, email, phone);
         logger.info('Candidate record created', { candidateId: candidate.id });
 
         // Return success immediately - don't wait for analysis

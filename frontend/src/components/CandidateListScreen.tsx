@@ -251,6 +251,7 @@ interface Candidate {
   filename: string;
   file_path: string;
   applicant_email?: string;
+  applicant_phone?: string;
   contacted_via: string | null;
   contacted_at: string | null;
   summary: string;
@@ -276,7 +277,7 @@ const CandidateListScreen: React.FC = () => {
     isOpen: boolean;
     mode: 'contact' | 'rejection';
     communicationType?: 'email' | 'sms';
-    candidate?: { pipelineId: number; name: string; position: string; email?: string };
+    candidate?: { pipelineId: number; name: string; position: string; email?: string; phone?: string };
   }>({ isOpen: false, mode: 'contact' });
 
   useEffect(() => {
@@ -359,7 +360,8 @@ const CandidateListScreen: React.FC = () => {
           pipelineId: candidate.pipeline_id,
           name: extractCandidateName(candidate.filename),
           position: position!,
-          email: candidate.applicant_email
+          email: candidate.applicant_email,
+          phone: candidate.applicant_phone
         }
       });
     }
@@ -380,7 +382,8 @@ const CandidateListScreen: React.FC = () => {
           pipelineId: candidate.pipeline_id,
           name: extractCandidateName(candidate.filename),
           position: position!,
-          email: candidate.applicant_email
+          email: candidate.applicant_email,
+          phone: candidate.applicant_phone
         }
       });
     }
@@ -397,7 +400,8 @@ const CandidateListScreen: React.FC = () => {
           pipelineId: candidate.pipeline_id,
           name: extractCandidateName(candidate.filename),
           position: position!,
-          email: candidate.applicant_email
+          email: candidate.applicant_email,
+          phone: candidate.applicant_phone
         }
       });
     }

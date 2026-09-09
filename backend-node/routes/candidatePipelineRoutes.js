@@ -192,6 +192,36 @@ router.put('/:id/email', async (req, res) => {
 });
 
 /**
+ * PUT /api/pipeline/:id/phone
+ * Update the applicant phone number for the candidate linked to this pipeline entry
+ */
+router.put('/:id/phone', async (req, res) => {
+    try {
+        const pipelineId = sanitize.positiveInt(req.params.id);
+        if (!pipelineId) return res.status(400).json({ status: 'error', message: 'Invalid pipeline ID' });
+
+        await assertPipelineOwner(pipelineId, req.user);
+
+        const phone = req.body.phone ? sanitize.phone(req.body.phone) : null;
+        if (req.body.phone && !phone) {
+            return res.status(400).json({ status: 'error', message: 'Please provide a valid phone number' });
+        }
+
+        await db.query(
+            `UPDATE candidates SET applicant_phone = $1
+             WHERE id = (SELECT candidate_id FROM candidate_pipeline WHERE id = $2)`,
+            [phone, pipelineId]
+        );
+
+        res.json({ status: 'success', data: { phone } });
+    } catch (error) {
+        logger.error('Error updating candidate phone', { error: error.message });
+        const code = error.statusCode || 500;
+        res.status(code).json({ status: 'error', message: code === 500 ? 'Failed to update phone' : error.message });
+    }
+});
+
+/**
  * PUT /api/pipeline/:id/name
  * Rename the candidate linked to this pipeline entry (sets a custom display name).
  * Passing an empty name clears the override and falls back to the resume filename.
@@ -376,7 +406,8 @@ router.post('/:id/message', async (req, res) => {
                 });
             }
         } else {
-            // For non-email (SMS), mark as sent immediately
+            // SMS has no carrier integration — the frontend hands the message off to the
+            // employer's own device via an sms: link, same as mailto: does for email
             await candidatePipelineService.updateCommunicationStatus(commLog.id, 'sent');
         }
 
