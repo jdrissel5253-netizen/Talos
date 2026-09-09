@@ -38,6 +38,8 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
   const [recipientEmail, setRecipientEmail] = useState('');
   const [sending, setSending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [messageSubject, setMessageSubject] = useState('');
+  const [messageBody, setMessageBody] = useState('');
 
   // Load scheduling link from account settings when modal opens
   useEffect(() => {
@@ -75,9 +77,20 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
     setCommunicationType(initialCommunicationType);
   }, [initialCommunicationType]);
 
+  // Re-draft the message whenever the template inputs change. The drafted text is then
+  // freely editable below — this only overwrites in-progress edits when the underlying
+  // template selection itself changes (mode, tone, nudge, interview type, etc).
+  useEffect(() => {
+    if (!isOpen) return;
+    const t = getTemplate(mode, tone, isNudge, mode === 'contact' ? interviewType : undefined, communicationType);
+    const rendered = t ? renderTemplate(t, candidate.name, candidate.position, schedulingLink) : null;
+    setMessageSubject(rendered?.subject || '');
+    setMessageBody(rendered?.body || '');
+  }, [isOpen, mode, tone, isNudge, interviewType, communicationType, candidate.name, candidate.position, schedulingLink]);
+
   if (!isOpen) return null;
 
-  // Get the current template
+  // Get the current template (used only to know whether one exists for this combination)
   const template = getTemplate(
     mode,
     tone,
@@ -85,11 +98,6 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
     mode === 'contact' ? interviewType : undefined,
     communicationType
   );
-
-  // Render the template with actual values
-  const renderedMessage = template
-    ? renderTemplate(template, candidate.name, candidate.position, schedulingLink)
-    : null;
 
   const handleSend = async () => {
     try {
@@ -127,8 +135,8 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
       }
 
       // Send message
-      if (!template || !renderedMessage) {
-        throw new Error('No template found for the selected options');
+      if (!template || !messageBody.trim()) {
+        throw new Error('Message cannot be empty');
       }
 
       const response = await fetch(
@@ -138,8 +146,8 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
           headers: { 'Content-Type': 'application/json', ...getAuthHeaders() },
           body: JSON.stringify({
             communicationType,
-            messageContent: renderedMessage.body,
-            messageSubject: renderedMessage.subject,
+            messageContent: messageBody,
+            messageSubject,
             category: mode,
             templateType: mode === 'contact' ? interviewType : undefined,
             templateTone: tone,
@@ -158,12 +166,12 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
       }
 
       if (communicationType === 'email' && candidate.email) {
-        const mailtoUrl = `mailto:${encodeURIComponent(candidate.email)}?subject=${encodeURIComponent(renderedMessage.subject || '')}&body=${encodeURIComponent(renderedMessage.body)}`;
+        const mailtoUrl = `mailto:${encodeURIComponent(candidate.email)}?subject=${encodeURIComponent(messageSubject || '')}&body=${encodeURIComponent(messageBody)}`;
         window.open(mailtoUrl, '_blank');
       }
 
       if (communicationType === 'sms' && candidate.phone) {
-        const smsUrl = `sms:${encodeURIComponent(candidate.phone)}?&body=${encodeURIComponent(renderedMessage.body)}`;
+        const smsUrl = `sms:${encodeURIComponent(candidate.phone)}?&body=${encodeURIComponent(messageBody)}`;
         window.open(smsUrl, '_blank');
       }
 
@@ -312,22 +320,32 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
             </FormRow>
           )}
 
-          {/* Message Preview */}
-          {!silentRejection && renderedMessage && (
+          {/* Message Preview — freely editable before sending */}
+          {!silentRejection && template && (
             <PreviewSection>
-              <PreviewLabel>Message Preview</PreviewLabel>
-              {renderedMessage.subject && (
+              <PreviewLabel>Message (editable)</PreviewLabel>
+              {communicationType === 'email' && (
                 <PreviewSubject>
-                  <strong>Subject:</strong> {renderedMessage.subject}
+                  <strong>Subject:</strong>
+                  <Input
+                    type="text"
+                    value={messageSubject}
+                    onChange={(e) => setMessageSubject(e.target.value)}
+                    style={{ marginTop: '6px' }}
+                  />
                 </PreviewSubject>
               )}
-              <PreviewBody>{renderedMessage.body}</PreviewBody>
+              <PreviewBody
+                value={messageBody}
+                onChange={(e) => setMessageBody(e.target.value)}
+                rows={6}
+              />
               {communicationType === 'sms' && (
                 <CharacterCount>
-                  {renderedMessage.body.length} characters
-                  {renderedMessage.body.length > 160 && (
+                  {messageBody.length} characters
+                  {messageBody.length > 160 && (
                     <span style={{ color: '#fca5a5', marginLeft: '8px' }}>
-                      (Will be sent as {Math.ceil(renderedMessage.body.length / 160)} messages)
+                      (Will be sent as {Math.ceil(messageBody.length / 160)} messages)
                     </span>
                   )}
                 </CharacterCount>
@@ -588,11 +606,29 @@ const PreviewSubject = styled.div`
   }
 `;
 
-const PreviewBody = styled.div`
+const PreviewBody = styled.textarea`
+  width: 100%;
+  min-height: 120px;
+  resize: vertical;
+  padding: 10px 12px;
+  border-radius: 6px;
+  border: 1px solid #2a2a2a;
+  background: #111114;
   font-size: 14px;
   color: #e5e7eb;
   line-height: 1.6;
   white-space: pre-wrap;
+  font-family: inherit;
+  transition: all 0.2s;
+
+  &:hover {
+    border-color: #3a3a3a;
+  }
+
+  &:focus {
+    outline: none;
+    border-color: #3b82f6;
+  }
 `;
 
 const CharacterCount = styled.div`
