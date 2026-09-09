@@ -341,8 +341,13 @@ const ContactRejectionModal: React.FC<ContactRejectionModalProps> = ({
           {/* Candidate Info */}
           <CandidateInfo>
             <strong>Candidate:</strong> {candidate.name} | <strong>Position:</strong> {candidate.position}
-            {candidate.email && (
+            {communicationType === 'email' && candidate.email && (
               <> | <strong>To:</strong> {candidate.email}</>
+            )}
+            {communicationType === 'sms' && (
+              candidate.phone
+                ? <> | <strong>To:</strong> {candidate.phone}</>
+                : <> | <strong style={{ color: '#fca5a5' }}>No phone number on file</strong></>
             )}
           </CandidateInfo>
         </ModalBody>
