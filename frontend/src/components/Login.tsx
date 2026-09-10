@@ -288,7 +288,7 @@ const Login: React.FC = () => {
       }
 
       setToken(data.data.token);
-      navigate(data.data.user.role === 'admin' ? '/' : '/dashboard');
+      navigate('/dashboard');
     } catch (err) {
       setError('Unable to connect. Please check your internet connection.');
     } finally {
