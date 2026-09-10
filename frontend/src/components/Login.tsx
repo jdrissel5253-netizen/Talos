@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import styled from 'styled-components';
 import DemoModal from './DemoModal';
 import { config } from '../config';
@@ -214,7 +214,10 @@ const ModeToggle = styled.p`
 
 const Login: React.FC = () => {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [searchParams] = useSearchParams();
+  const [mode, setMode] = useState<'login' | 'register'>(
+    searchParams.get('mode') === 'register' ? 'register' : 'login'
+  );
   const [formData, setFormData] = useState({
     email: '',
     password: '',
