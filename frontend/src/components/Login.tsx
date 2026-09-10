@@ -248,6 +248,10 @@ const Login: React.FC = () => {
     }
 
     if (mode === 'register') {
+      if (!formData.companyName.trim()) {
+        setError('Please enter your company name.');
+        return;
+      }
       if (formData.password.length < 8) {
         setError('Password must be at least 8 characters.');
         return;
@@ -327,7 +331,8 @@ const Login: React.FC = () => {
                   name="companyName"
                   value={formData.companyName}
                   onChange={handleInputChange}
-                  placeholder="Optional"
+                  placeholder="Your company name"
+                  required
                 />
               </FormGroup>
             )}
