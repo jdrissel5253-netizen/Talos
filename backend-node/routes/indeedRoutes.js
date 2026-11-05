@@ -10,19 +10,50 @@ const logger = require('../services/logger');
 const INDEED_API_TOKEN     = process.env.INDEED_API_TOKEN || '';
 const INDEED_CLIENT_SECRET = process.env.INDEED_CLIENT_SECRET || '';
 
+const MAX_RESUME_BYTES = 10 * 1024 * 1024;
+const RESUME_FETCH_TIMEOUT_MS = 15000;
+
 /**
- * Verify the X-Indeed-Signature header using HMAC-SHA256.
- * No-ops until INDEED_CLIENT_SECRET is set.
- * TODO: switch to raw-body middleware once credentials arrive for exact byte-level matching.
+ * Verify the X-Indeed-Signature header: base64 HMAC-SHA256 of the exact raw
+ * request bytes (captured by bodyParser's `verify` hook in server.js).
+ * Fails closed — callers must reject the request before this is reached if
+ * INDEED_CLIENT_SECRET is unset.
  */
 function verifyIndeedSignature(rawBody, signatureHeader) {
-    if (!INDEED_CLIENT_SECRET) return true;
-    if (!signatureHeader) return false;
-    const expected = crypto
-        .createHmac('sha256', INDEED_CLIENT_SECRET)
-        .update(rawBody)
-        .digest('base64');
-    return crypto.timingSafeEqual(Buffer.from(signatureHeader), Buffer.from(expected));
+    if (!INDEED_CLIENT_SECRET || !rawBody || typeof signatureHeader !== 'string') return false;
+    const expected = Buffer.from(
+        crypto.createHmac('sha256', INDEED_CLIENT_SECRET).update(rawBody).digest('base64')
+    );
+    const received = Buffer.from(signatureHeader.trim());
+    // timingSafeEqual throws on length mismatch, so check length first
+    return received.length === expected.length && crypto.timingSafeEqual(received, expected);
+}
+
+/**
+ * Only download resumes from Indeed-owned hosts over HTTPS. Prevents the
+ * webhook from being used to make the server fetch arbitrary/internal URLs
+ * (e.g. the EC2 instance metadata endpoint).
+ */
+function isAllowedResumeUrl(rawUrl) {
+    let url;
+    try { url = new URL(rawUrl); } catch { return false; }
+    if (url.protocol !== 'https:') return false;
+    if (url.username || url.password || url.port) return false;
+    const host = url.hostname.toLowerCase();
+    return host === 'indeed.com' || host.endsWith('.indeed.com');
+}
+
+async function downloadResume(rawUrl) {
+    const response = await fetch(rawUrl, {
+        redirect: 'error', // a redirect could bounce us off the allowlisted host
+        signal: AbortSignal.timeout(RESUME_FETCH_TIMEOUT_MS),
+    });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const declared = Number(response.headers.get('content-length') || 0);
+    if (declared > MAX_RESUME_BYTES) throw new Error('resume exceeds size limit');
+    const buf = Buffer.from(await response.arrayBuffer());
+    if (buf.length > MAX_RESUME_BYTES) throw new Error('resume exceeds size limit');
+    return buf;
 }
 
 /**
@@ -49,18 +80,22 @@ router.get('/health', (req, res) => {
  *                 resumeFileName, coverletter
  */
 router.post('/apply', async (req, res) => {
+    // Authenticate before acknowledging. Until Indeed credentials are
+    // configured the endpoint is disabled rather than open.
+    if (!INDEED_CLIENT_SECRET) {
+        logger.warn('Indeed webhook: rejected — INDEED_CLIENT_SECRET not configured');
+        return res.status(503).json({ status: 'error', message: 'Integration not configured' });
+    }
+    if (!verifyIndeedSignature(req.rawBody, req.headers['x-indeed-signature'])) {
+        logger.warn('Indeed webhook: invalid signature — request rejected', { ip: req.ip });
+        return res.status(401).json({ status: 'error', message: 'Invalid signature' });
+    }
+
     // Respond immediately — Indeed requires a fast acknowledgement
     res.status(200).json({ status: 'received' });
 
     try {
         const payload = req.body;
-
-        // Signature check (no-op until INDEED_CLIENT_SECRET is set)
-        const rawBody = JSON.stringify(payload);
-        if (!verifyIndeedSignature(rawBody, req.headers['x-indeed-signature'])) {
-            logger.warn('Indeed webhook: invalid signature — request rejected');
-            return;
-        }
 
         const name = payload.applicantName
             || [payload.firstName, payload.lastName].filter(Boolean).join(' ')
@@ -91,12 +126,16 @@ router.post('/apply', async (req, res) => {
             fileBuffer = Buffer.from(payload.resumeBase64, 'base64');
             fileName   = payload.resumeFileName || `indeed_${Date.now()}.pdf`;
         } else if (payload.resumefileURL) {
-            const response = await fetch(payload.resumefileURL);
-            if (!response.ok) {
-                logger.error('Indeed webhook: failed to download resume', { url: payload.resumefileURL });
+            if (!isAllowedResumeUrl(payload.resumefileURL)) {
+                logger.warn('Indeed webhook: resume URL not on allowlist — skipped', { url: String(payload.resumefileURL).slice(0, 200) });
                 return;
             }
-            fileBuffer = Buffer.from(await response.arrayBuffer());
+            try {
+                fileBuffer = await downloadResume(payload.resumefileURL);
+            } catch (err) {
+                logger.error('Indeed webhook: failed to download resume', { url: payload.resumefileURL, error: err.message });
+                return;
+            }
             fileName   = payload.resumeFileName || `indeed_${Date.now()}.pdf`;
         } else {
             logger.warn('Indeed webhook: no resume in payload', { email, jobId });

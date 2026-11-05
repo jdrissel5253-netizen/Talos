@@ -226,7 +226,11 @@ app.use(cors({
         ]
         : 'http://localhost:3000'
 }));
-app.use(bodyParser.json({ limit: '10mb' }));
+app.use(bodyParser.json({
+    limit: '10mb',
+    // Keep the exact request bytes for webhook signature verification (Indeed Apply)
+    verify: (req, res, buf) => { req.rawBody = buf; }
+}));
 app.use(bodyParser.urlencoded({ extended: true, limit: '10mb' }));
 
 // Routes
