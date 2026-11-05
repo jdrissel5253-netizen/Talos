@@ -6,6 +6,32 @@ const logger = require('../services/logger');
 // Public base URL for job links
 const BASE_URL = process.env.BASE_URL || 'https://gotalos.io';
 
+// Indeed Apply API token — set this once received from Indeed partner portal
+const INDEED_API_TOKEN = process.env.INDEED_API_TOKEN || '';
+
+/**
+ * Build URL-encoded Indeed Apply parameter string for the XML feed.
+ * indeed-apply-postUrl points to the Step 5 webhook endpoint (/api/indeed/apply).
+ */
+function buildIndeedApplyData(job) {
+    const jobUrl = `${BASE_URL}/jobs/${job.id}`;
+    const location = [job.city, job.state].filter(Boolean).join(', ') || job.location || '';
+    const params = [
+        ['indeed-apply-apiToken',      INDEED_API_TOKEN],
+        ['indeed-apply-jobId',         String(job.id)],
+        ['indeed-apply-jobTitle',      (job.title || '').slice(0, 50)],
+        ['indeed-apply-jobCompanyName',(job.company_name || '').slice(0, 50)],
+        ['indeed-apply-jobLocation',   location.slice(0, 50)],
+        ['indeed-apply-postUrl',       `${BASE_URL}/api/indeed/apply`],
+        ['indeed-apply-jobUrl',        jobUrl],
+        ['indeed-apply-resume',        'required'],
+        ['indeed-apply-phone',         'optional'],
+        ['indeed-apply-coverletter',   'optional'],
+        ['indeed-apply-questions',     `${BASE_URL}/api/jobs/${job.id}/questions`],
+    ];
+    return params.map(([k, v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`).join('&');
+}
+
 /**
  * Escape XML special characters
  */
@@ -63,6 +89,69 @@ function mapJobType(jobType) {
     return mapping[(jobType || '').toLowerCase()] || 'full-time';
 }
 
+// Default HVAC screener questions served to Indeed for every job (Step 4)
+const HVAC_SCREENER_QUESTIONS = [
+    {
+        id: 'hvac_experience',
+        type: 'text',
+        question: 'How many years of HVAC experience do you have?',
+        required: true,
+        format: 'integer'
+    },
+    {
+        id: 'epa608',
+        type: 'select',
+        question: 'Do you hold an EPA 608 certification?',
+        required: true,
+        options: [
+            { id: 'yes',         label: 'Yes' },
+            { id: 'in_progress', label: 'In progress' },
+            { id: 'no',          label: 'No' }
+        ]
+    },
+    {
+        id: 'drivers_license',
+        type: 'select',
+        question: 'Do you have a valid driver\'s license?',
+        required: true,
+        options: [
+            { id: 'yes', label: 'Yes' },
+            { id: 'no',  label: 'No' }
+        ]
+    },
+    {
+        id: 'overtime',
+        type: 'select',
+        question: 'Are you available to work overtime and weekends when needed?',
+        required: false,
+        options: [
+            { id: 'yes',     label: 'Yes' },
+            { id: 'limited', label: 'Limited availability' },
+            { id: 'no',      label: 'No' }
+        ]
+    },
+    {
+        id: 'confined_spaces',
+        type: 'select',
+        question: 'Are you comfortable working in attics, crawl spaces, and confined areas?',
+        required: false,
+        options: [
+            { id: 'yes', label: 'Yes' },
+            { id: 'no',  label: 'No' }
+        ]
+    }
+];
+
+/**
+ * GET /api/jobs/:id/questions
+ * Serves Indeed Apply screener questions for a job in Indeed's JSON format (Step 4).
+ * URL is included in the indeed-apply-questions feed parameter.
+ */
+router.get('/:id/questions', (req, res) => {
+    res.set('Cache-Control', 'public, max-age=3600');
+    res.json(HVAC_SCREENER_QUESTIONS);
+});
+
 /**
  * GET /feed.xml - XML feed of all active jobs for job board aggregators
  * Compatible with Indeed, Jooble, Adzuna, Talent.com, etc.
@@ -85,6 +174,10 @@ router.get('/feed.xml', async (req, res) => {
             const salary = formatSalary(job);
             const jobType = mapJobType(job.job_type);
 
+            const indeedApplyBlock = INDEED_API_TOKEN
+                ? `\n    <indeed-apply-data><![CDATA[${buildIndeedApplyData(job)}]]></indeed-apply-data>`
+                : '';
+
             xml += `  <job>
     <title>${escapeXml(job.title)}</title>
     <date>${formatDate(job.created_at)}</date>
@@ -96,7 +189,7 @@ router.get('/feed.xml', async (req, res) => {
     <description><![CDATA[${job.description || job.ai_generated_description || ''}]]></description>
     <salary>${escapeXml(salary)}</salary>
     <jobtype>${escapeXml(jobType)}</jobtype>
-    ${job.valid_through ? `<validthrough>${formatDate(job.valid_through)}</validthrough>` : ''}
+    ${job.valid_through ? `<validthrough>${formatDate(job.valid_through)}</validthrough>` : ''}${indeedApplyBlock}
   </job>
 `;
         }

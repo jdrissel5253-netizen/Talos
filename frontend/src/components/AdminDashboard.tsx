@@ -262,6 +262,8 @@ interface UserRow {
   email: string;
   company_name: string | null;
   role: string | null;
+  is_beta: boolean;
+  is_approved: boolean | null;
   created_at: string;
   job_count: string;
   candidate_count: string;
@@ -287,6 +289,7 @@ const AdminDashboard: React.FC = () => {
   const [expandedUser, setExpandedUser] = useState<number | null>(null);
   const [userJobs, setUserJobs] = useState<Record<number, JobRow[]>>({});
   const [togglingRole, setTogglingRole] = useState<number | null>(null);
+  const [approvingUser, setApprovingUser] = useState<number | null>(null);
 
   useEffect(() => {
     if (!isAdmin()) {
@@ -338,6 +341,21 @@ const AdminDashboard: React.FC = () => {
     }
   };
 
+  const approveBeta = async (userId: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!window.confirm('Approve this beta user? They will receive an email with login access.')) return;
+    setApprovingUser(userId);
+    try {
+      const headers = { ...getAuthHeaders(), 'Content-Type': 'application/json' };
+      const res = await fetch(`${appConfig.apiUrl}/api/admin/users/${userId}/approve`, { method: 'POST', headers });
+      if ((await res.json()).status === 'success') {
+        setUsers(prev => prev.map(u => u.id === userId ? { ...u, is_approved: true } : u));
+      }
+    } finally {
+      setApprovingUser(null);
+    }
+  };
+
   const fmt = (iso: string) => new Date(iso).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
 
   return (
@@ -384,6 +402,60 @@ const AdminDashboard: React.FC = () => {
                 <StatLabel>Avg Applicants / Co.</StatLabel>
               </StatCard>
             </StatsGrid>
+
+            {users.some(u => u.is_beta && !u.is_approved) && (
+              <>
+                <SectionTitle style={{ color: '#4ade80' }}>Beta Signups — Pending Approval</SectionTitle>
+                <Table style={{ marginBottom: '2.5rem' }}>
+                  <TableHeader>
+                    <ColHead>Company / Email</ColHead>
+                    <HideMobile><ColHead>Signed Up</ColHead></HideMobile>
+                    <ColHead>Status</ColHead>
+                    <ColHead>Action</ColHead>
+                    <span /><span />
+                  </TableHeader>
+                  {users.filter(u => u.is_beta && !u.is_approved).map(user => (
+                    <TableRow key={user.id} style={{ cursor: 'default' }}>
+                      <div style={{ overflow: 'hidden' }}>
+                        <Cell style={{ display: 'block', color: '#ffffff', fontWeight: 600 }}>
+                          {user.company_name || <span style={{ color: '#4e5d6e', fontStyle: 'italic' }}>No company name</span>}
+                        </Cell>
+                        <Cell style={{ fontSize: '0.7rem', color: '#6e7d8e', marginTop: 2, display: 'block' }}>
+                          {user.email}
+                        </Cell>
+                      </div>
+                      <HideMobile>
+                        <CellMono>{fmt(user.created_at)}</CellMono>
+                      </HideMobile>
+                      <Cell>
+                        <span style={{ fontSize: '0.62rem', fontWeight: 600, letterSpacing: '0.08em', padding: '0.2rem 0.6rem', color: '#fbbf24', background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.2)' }}>
+                          PENDING
+                        </span>
+                      </Cell>
+                      <Cell>
+                        <button
+                          onClick={(e) => approveBeta(user.id, e)}
+                          disabled={approvingUser === user.id}
+                          style={{
+                            background: '#4ade80',
+                            border: 'none',
+                            color: '#000',
+                            fontSize: '0.7rem',
+                            fontWeight: 700,
+                            padding: '0.35rem 0.85rem',
+                            cursor: approvingUser === user.id ? 'not-allowed' : 'pointer',
+                            opacity: approvingUser === user.id ? 0.5 : 1,
+                          }}
+                        >
+                          {approvingUser === user.id ? '…' : 'Approve'}
+                        </button>
+                      </Cell>
+                      <span /><span />
+                    </TableRow>
+                  ))}
+                </Table>
+              </>
+            )}
 
             <SectionTitle>Companies</SectionTitle>
             <Table>

@@ -80,6 +80,9 @@ const db = require('./config/database');
         await db.query(`CREATE INDEX IF NOT EXISTS idx_candidates_applicant_email ON candidates(applicant_email)`);
         await db.query(`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS applicant_phone VARCHAR(50)`);
         await db.query(`ALTER TABLE candidate_pipeline ADD COLUMN IF NOT EXISTS internal_notes TEXT`);
+        await db.query(`ALTER TABLE candidates ADD COLUMN IF NOT EXISTS indeed_apply_id VARCHAR(255)`);
+        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_beta BOOLEAN DEFAULT FALSE`);
+        await db.query(`ALTER TABLE users ADD COLUMN IF NOT EXISTS is_approved BOOLEAN DEFAULT NULL`);
         await db.query(`
             CREATE TABLE IF NOT EXISTS interview_notes (
                 id SERIAL PRIMARY KEY,
@@ -234,6 +237,7 @@ const jobRoutes = require('./routes/jobRoutes');
 const jobFeedRoutes = require('./routes/jobFeedRoutes');
 const candidatePipelineRoutes = require('./routes/candidatePipelineRoutes');
 const applyRoutes = require('./routes/applyRoutes');
+const indeedRoutes = require('./routes/indeedRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 // Root route
@@ -257,6 +261,7 @@ app.use('/api/pipeline', authenticateToken, candidatePipelineRoutes);
 app.use('/api/auth', authLimiter, authRoutes);
 app.use('/api/auth/google', authLimiter, googleAuthRoutes);
 app.use('/api/apply', publicApplyLimiter, applyRoutes);
+app.use('/api/indeed', publicApplyLimiter, indeedRoutes);
 app.use('/api/admin', authenticateToken, requireAdmin, adminRoutes);
 app.get('/api/health', async (req, res) => {
     let dbStatus = 'unknown';
