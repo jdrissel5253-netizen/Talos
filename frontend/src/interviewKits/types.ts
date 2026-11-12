@@ -35,6 +35,8 @@ export interface KitQuestion {
   /** Interviewer guidance specific to this question. */
   guidance?: string;
   details?: QuestionDetail[];
+  /** Custom interviews: where this question was picked from. */
+  source?: ItemRef;
 }
 
 export interface KitSection {
@@ -61,8 +63,10 @@ export interface KitExtraSection {
 
 export interface InterviewKit {
   id: string;
+  /** true for a custom interview's own question snapshot (not a real kit). */
+  custom?: boolean;
   title: string;
-  type: KitType;
+  type: KitType | 'custom';
   /** Job titles this kit applies to (matches jobs.position_type values). */
   roles: string[];
   /** Levels covered, as named by the source document. */
@@ -110,7 +114,7 @@ export interface ResultSection {
 /** Scoring result. Always a recommendation: a person makes the decision. */
 export interface InterviewResult {
   rulesVersion: number;
-  engine: 'leveled' | 'gated';
+  engine: 'leveled' | 'gated' | 'custom';
   recommendationOnly: true;
   outcome: { label: string; key?: string; levelsPassed?: number } | null;
   incompleteReason: string | null;
@@ -119,12 +123,15 @@ export interface InterviewResult {
   redFlags: { count: number; guidance: string | null };
   skillProfile: { area: string; score: number; max: number; answered: number; total: number }[] | null;
   notes: string[];
+  /** Custom interviews only: total of the questions that were scored. */
+  total?: { score: number; max: number; answered: number; scorable: number };
 }
 
-export type KitRef = Pick<InterviewKit, 'id' | 'title' | 'version' | 'status' | 'type'>;
+export type KitRef = Pick<InterviewKit, 'id' | 'title' | 'version' | 'status' | 'type' | 'custom'>;
 
 export interface Interview {
   id: number;
+  kind: 'kit' | 'custom';
   pipelineId: number;
   status: InterviewStatus;
   mode: InterviewMode;
@@ -142,3 +149,43 @@ export interface Interview {
 export interface InterviewWithKit extends Interview {
   kit: InterviewKit;
 }
+
+// ─── custom interviews ─────────────────────────────────────────────────────────
+
+/** A reference to one question: from a kit, or from the company's own bank. */
+export type ItemRef =
+  | { source: 'kit'; kitId: string; key: string }
+  | { source: 'company'; id: number };
+
+/** A picked question as shown in the builder (no answer keys). */
+export type PickedItem = ItemRef & {
+  prompt: string | null;
+  sourceLabel: string | null;
+  /** The question no longer exists (deleted, or the kit was re-uploaded). */
+  missing?: boolean;
+};
+
+export interface CompanyQuestion {
+  id: number;
+  prompt: string;
+  goodAnswer: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface QuestionSetSummary {
+  id: number;
+  name: string;
+  itemCount: number;
+  updatedAt: string;
+}
+
+export interface QuestionSet {
+  id: number;
+  name: string;
+  updatedAt: string;
+  items: PickedItem[];
+}
+
+export const refKey = (r: ItemRef) => (r.source === 'kit' ? `k:${r.kitId}:${r.key}` : `c:${r.id}`);
+export const toRef = (r: ItemRef): ItemRef => (r.source === 'kit' ? { source: 'kit', kitId: r.kitId, key: r.key } : { source: 'company', id: r.id });

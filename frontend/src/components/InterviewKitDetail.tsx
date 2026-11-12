@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import styled from 'styled-components';
-import { ArrowLeft, AlertTriangle, ShieldAlert, BookOpen } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, ShieldAlert, BookOpen, ListPlus } from 'lucide-react';
 import { fetchKit, KIT_TYPE_LABELS, STATUS_LABELS } from '../interviewKits/api';
 import { InterviewKit } from '../interviewKits/types';
 import {
-  FontImport, Page, TopBar, TopBarTitle, Inner, GhostButton, Badge, Card, CardHeader,
+  FontImport, Page, TopBar, TopBarTitle, Inner, GhostButton, PrimaryButton, Badge, Card, CardHeader,
   CardTitle, CardBody, Mono, CenterMsg,
 } from '../interviewKits/styles';
 
@@ -184,6 +184,11 @@ const InterviewKitDetail: React.FC = () => {
             <ArrowLeft size={13} /> Interview Kits
           </GhostButton>
           <TopBarTitle>{kit?.title ?? 'Interview Kit'}</TopBarTitle>
+          {kit && (
+            <PrimaryButton style={{ marginLeft: 'auto' }} onClick={() => navigate(`/interview-kits/sets/new?kit=${encodeURIComponent(kit.id)}`)}>
+              <ListPlus size={14} /> Build a set from this kit
+            </PrimaryButton>
+          )}
         </TopBar>
 
         <Inner $narrow>
@@ -314,7 +319,10 @@ const InterviewKitDetail: React.FC = () => {
                 </Card>
               ))}
 
-              <Meta>To run this kit, open a candidate's profile and choose Start interview.</Meta>
+              <Meta>
+                To run this kit, open a candidate's profile and choose Start interview. To ask only some
+                of these questions, use Build a set from this kit.
+              </Meta>
             </>
           )}
         </Inner>

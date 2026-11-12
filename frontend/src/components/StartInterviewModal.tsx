@@ -1,11 +1,11 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { css } from 'styled-components';
-import { X, Phone, Users, ClipboardList } from 'lucide-react';
+import { X, Phone, Users, ListPlus, ChevronRight, PlayCircle } from 'lucide-react';
 import {
-  ApiError, createInterview, fetchInterviews, fetchKits, KIT_TYPE_LABELS, STATUS_LABELS,
+  ApiError, createInterview, fetchInterviews, fetchKits, fetchSets, KIT_TYPE_LABELS, MODE_LABELS, STATUS_LABELS,
 } from '../interviewKits/api';
-import { Interview, InterviewKitSummary, InterviewMode } from '../interviewKits/types';
+import { Interview, InterviewKitSummary, InterviewMode, QuestionSetSummary } from '../interviewKits/types';
 import { Badge, PrimaryButton, GhostButton, Label, Mono, clipCorners } from '../interviewKits/styles';
 
 const Overlay = styled.div`
@@ -81,11 +81,51 @@ const GroupLabel = styled(Label)`
   margin-top: 0.25rem;
 `;
 
-const KitList = styled.div`
+const List = styled.div`
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
   margin-bottom: 1.25rem;
+`;
+
+const BuildOption = styled.button`
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  background: rgba(74,222,128,0.06);
+  border: 1px solid rgba(74,222,128,0.45);
+  padding: 0.9rem 1rem;
+  margin-bottom: 1.25rem;
+  cursor: pointer;
+  font-family: 'Sora', sans-serif;
+  color: #c8d0dc;
+  ${clipCorners}
+
+  &:hover { border-color: #4ade80; background: rgba(74,222,128,0.1); }
+
+  div { flex: 1; display: flex; flex-direction: column; gap: 0.2rem; }
+  strong { font-size: 0.9rem; color: #ffffff; }
+  span { font-size: 0.76rem; line-height: 1.5; color: #8a9ab0; }
+`;
+
+const LinkRow = styled.button`
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-align: left;
+  background: #111318;
+  border: 1px solid #2a3040;
+  padding: 0.75rem 0.9rem;
+  cursor: pointer;
+  font-family: 'Sora', sans-serif;
+  color: #c8d0dc;
+
+  &:hover { border-color: #4ade80; }
+
+  div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+  strong { font-size: 0.86rem; font-weight: 600; color: #ffffff; }
 `;
 
 const KitOption = styled.button<{ $selected: boolean }>`
@@ -114,6 +154,13 @@ const Row = styled.div`
   flex-wrap: wrap;
   align-items: center;
   gap: 0.4rem;
+`;
+
+const Hint = styled.p`
+  font-size: 0.76rem;
+  line-height: 1.5;
+  color: #6e7d8e;
+  margin: -0.15rem 0 0.6rem;
 `;
 
 const ModeRow = styled.div`
@@ -160,13 +207,18 @@ interface Props {
   jobTitle: string;
 }
 
+/**
+ * Three ways to interview: resume one in progress, pick your own questions
+ * (optionally from a saved set), or run a full scored kit.
+ */
 const StartInterviewModal: React.FC<Props> = ({ isOpen, onClose, pipelineId, jobTitle }) => {
   const navigate = useNavigate();
   const [kits, setKits] = useState<InterviewKitSummary[] | null>(null);
+  const [sets, setSets] = useState<QuestionSetSummary[]>([]);
+  const [inProgress, setInProgress] = useState<Interview[]>([]);
   const [error, setError] = useState(false);
   const [kitId, setKitId] = useState<string | null>(null);
   const [mode, setMode] = useState<InterviewMode | null>(null);
-  const [inProgress, setInProgress] = useState<Map<string, Interview>>(new Map());
   const [starting, setStarting] = useState(false);
   const [startError, setStartError] = useState<string | null>(null);
 
@@ -175,14 +227,12 @@ const StartInterviewModal: React.FC<Props> = ({ isOpen, onClose, pipelineId, job
     let cancelled = false;
     setError(false);
     setStartError(null);
-    Promise.all([fetchKits(), fetchInterviews(pipelineId)])
-      .then(([k, interviews]) => {
+    Promise.all([fetchKits(), fetchInterviews(pipelineId), fetchSets()])
+      .then(([k, interviews, s]) => {
         if (cancelled) return;
         setKits(k);
-        // Most recent in-progress interview per kit (the list is newest first).
-        const open = new Map<string, Interview>();
-        interviews.forEach(iv => { if (iv.status === 'in_progress' && !open.has(iv.kit.id)) open.set(iv.kit.id, iv); });
-        setInProgress(open);
+        setSets(s);
+        setInProgress(interviews.filter(iv => iv.status === 'in_progress'));
       })
       .catch(() => { if (!cancelled) setError(true); });
     return () => { cancelled = true; };
@@ -195,44 +245,28 @@ const StartInterviewModal: React.FC<Props> = ({ isOpen, onClose, pipelineId, job
     return () => window.removeEventListener('keydown', onKey);
   }, [isOpen, onClose]);
 
-  const { suggested, others } = useMemo(() => {
+  // Kits for this job's role first.
+  const orderedKits = useMemo(() => {
     const all = kits ?? [];
-    return {
-      suggested: all.filter(k => k.roles.includes(jobTitle)),
-      others: all.filter(k => !k.roles.includes(jobTitle)),
-    };
+    return [...all.filter(k => k.roles.includes(jobTitle)), ...all.filter(k => !k.roles.includes(jobTitle))];
   }, [kits, jobTitle]);
 
   if (!isOpen) return null;
 
-  const resumable = kitId ? inProgress.get(kitId) : undefined;
+  const go = (path: string) => { onClose(); navigate(path); };
 
   const start = async () => {
-    if (!kitId) return;
-    if (resumable) { navigate(`/candidates/${pipelineId}/interviews/${resumable.id}`); return; }
-    if (!mode) return;
+    if (!kitId || !mode) return;
     setStarting(true);
     setStartError(null);
     try {
       const iv = await createInterview(pipelineId, kitId, mode);
-      navigate(`/candidates/${pipelineId}/interviews/${iv.id}`);
+      go(`/candidates/${pipelineId}/interviews/${iv.id}`);
     } catch (err) {
       setStartError(err instanceof ApiError ? err.message : 'Could not start the interview.');
       setStarting(false);
     }
   };
-
-  const renderKit = (k: InterviewKitSummary) => (
-    <KitOption key={k.id} $selected={kitId === k.id} onClick={() => setKitId(k.id)} aria-pressed={kitId === k.id}>
-      <KitName>{k.title}</KitName>
-      <Row>
-        <Badge $tone={k.status === 'reviewed' ? 'reviewed' : 'draft'}>{STATUS_LABELS[k.status] ?? k.status}</Badge>
-        <Badge>{KIT_TYPE_LABELS[k.type] ?? k.type}</Badge>
-        <Mono>{k.questionCount} questions</Mono>
-        {inProgress.has(k.id) && <Badge $tone="reviewed">In progress</Badge>}
-      </Row>
-    </KitOption>
-  );
 
   return (
     <Overlay onClick={onClose}>
@@ -243,46 +277,86 @@ const StartInterviewModal: React.FC<Props> = ({ isOpen, onClose, pipelineId, job
         </Head>
 
         <Body>
-          {error && <Empty><p>Could not load interview kits. Try again in a moment.</p></Empty>}
-          {!error && kits === null && <Empty><p>Loading kits...</p></Empty>}
-          {!error && kits !== null && kits.length === 0 && (
-            <Empty>
-              <ClipboardList size={26} color="#4ade80" />
-              <p>No interview kits are available yet. They'll appear here once they're loaded.</p>
-            </Empty>
-          )}
+          {error && <Empty><p>Could not load interview options. Try again in a moment.</p></Empty>}
+          {!error && kits === null && <Empty><p>Loading...</p></Empty>}
 
-          {!error && kits !== null && kits.length > 0 && (
+          {!error && kits !== null && (
             <>
-              {suggested.length > 0 && (
+              {inProgress.length > 0 && (
                 <>
-                  <GroupLabel>Suggested for {jobTitle}</GroupLabel>
-                  <KitList>{suggested.map(renderKit)}</KitList>
-                </>
-              )}
-              {others.length > 0 && (
-                <>
-                  <GroupLabel>{suggested.length > 0 ? 'Other kits' : 'Choose a kit'}</GroupLabel>
-                  <KitList>{others.map(renderKit)}</KitList>
+                  <GroupLabel>Pick up where you left off</GroupLabel>
+                  <List>
+                    {inProgress.map(iv => (
+                      <LinkRow key={iv.id} onClick={() => go(`/candidates/${pipelineId}/interviews/${iv.id}`)}>
+                        <PlayCircle size={16} color="#4ade80" />
+                        <div>
+                          <strong>{iv.kit.title}</strong>
+                          <Mono>In progress · {MODE_LABELS[iv.mode]}{iv.interviewerEmail ? ` · ${iv.interviewerEmail}` : ''}</Mono>
+                        </div>
+                        <ChevronRight size={15} color="#6e7d8e" />
+                      </LinkRow>
+                    ))}
+                  </List>
                 </>
               )}
 
-              {resumable ? (
-                <Empty style={{ padding: '0.5rem 0', textAlign: 'left' }}>
-                  <p>An interview with this kit is in progress. You'll pick up where it left off.</p>
-                </Empty>
-              ) : (
-              <>
-              <GroupLabel>Interview type</GroupLabel>
-              <ModeRow>
-                <ModeBtn $selected={mode === 'phone'} onClick={() => setMode('phone')} aria-pressed={mode === 'phone'}>
-                  <Phone size={15} /> Phone
-                </ModeBtn>
-                <ModeBtn $selected={mode === 'in_person'} onClick={() => setMode('in_person')} aria-pressed={mode === 'in_person'}>
-                  <Users size={15} /> In person
-                </ModeBtn>
-              </ModeRow>
-              </>
+              <BuildOption onClick={() => go(`/candidates/${pipelineId}/interviews/new`)}>
+                <ListPlus size={20} color="#4ade80" />
+                <div>
+                  <strong>Pick your own questions</strong>
+                  <span>Choose from any kit, add your own, then take notes as you go. Scores are optional.</span>
+                </div>
+                <ChevronRight size={16} color="#4ade80" />
+              </BuildOption>
+
+              {sets.length > 0 && (
+                <>
+                  <GroupLabel>Your saved question sets</GroupLabel>
+                  <List>
+                    {sets.map(set => (
+                      <LinkRow key={set.id} onClick={() => go(`/candidates/${pipelineId}/interviews/new?set=${set.id}`)}>
+                        <div>
+                          <strong>{set.name}</strong>
+                          <Mono>{set.itemCount} question{set.itemCount === 1 ? '' : 's'}</Mono>
+                        </div>
+                        <ChevronRight size={15} color="#6e7d8e" />
+                      </LinkRow>
+                    ))}
+                  </List>
+                </>
+              )}
+
+              {orderedKits.length > 0 && (
+                <>
+                  <GroupLabel>Full kit, scored</GroupLabel>
+                  <Hint>Every question in the kit, with the kit's level placement. Takes longer.</Hint>
+                  <List>
+                    {orderedKits.map(k => (
+                      <KitOption key={k.id} $selected={kitId === k.id} onClick={() => setKitId(k.id)} aria-pressed={kitId === k.id}>
+                        <KitName>{k.title}</KitName>
+                        <Row>
+                          <Badge $tone={k.status === 'reviewed' ? 'reviewed' : 'draft'}>{STATUS_LABELS[k.status] ?? k.status}</Badge>
+                          <Badge>{KIT_TYPE_LABELS[k.type] ?? k.type}</Badge>
+                          <Mono>{k.questionCount} questions</Mono>
+                          {k.roles.includes(jobTitle) && <Badge $tone="reviewed">For {jobTitle}</Badge>}
+                        </Row>
+                      </KitOption>
+                    ))}
+                  </List>
+                  {kitId && (
+                    <>
+                      <GroupLabel>Interview type</GroupLabel>
+                      <ModeRow>
+                        <ModeBtn $selected={mode === 'phone'} onClick={() => setMode('phone')} aria-pressed={mode === 'phone'}>
+                          <Phone size={15} /> Phone
+                        </ModeBtn>
+                        <ModeBtn $selected={mode === 'in_person'} onClick={() => setMode('in_person')} aria-pressed={mode === 'in_person'}>
+                          <Users size={15} /> In person
+                        </ModeBtn>
+                      </ModeRow>
+                    </>
+                  )}
+                </>
               )}
             </>
           )}
@@ -291,9 +365,11 @@ const StartInterviewModal: React.FC<Props> = ({ isOpen, onClose, pipelineId, job
         <Foot>
           {startError && <ErrorText>{startError}</ErrorText>}
           <GhostButton onClick={onClose}>Cancel</GhostButton>
-          <PrimaryButton onClick={start} disabled={!kitId || (!resumable && !mode) || starting}>
-            {starting ? 'Starting...' : resumable ? 'Resume interview' : 'Start interview'}
-          </PrimaryButton>
+          {kitId && (
+            <PrimaryButton onClick={start} disabled={!mode || starting}>
+              {starting ? 'Starting...' : 'Start full kit'}
+            </PrimaryButton>
+          )}
         </Foot>
       </Dialog>
     </Overlay>

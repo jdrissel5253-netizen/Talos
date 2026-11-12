@@ -68,6 +68,14 @@ interviewRouter.get('/', wrap(async (req, res) => {
 
 interviewRouter.post('/', wrap(async (req, res) => {
     const pipelineId = positiveInt(req.body?.pipelineId);
+    // Custom interview: hand-picked questions. Body: { pipelineId, mode, title?, items }
+    if (req.body?.items !== undefined) {
+        if (!pipelineId) return res.status(400).json({ status: 'error', message: 'pipelineId is required' });
+        const interview = await kits.createCustomInterview({
+            pipelineId, mode: req.body.mode, title: req.body.title, items: req.body.items, user: req.user,
+        });
+        return res.status(201).json({ status: 'success', data: { interview } });
+    }
     const kitSlug = typeof req.body?.kitId === 'string' ? req.body.kitId.slice(0, 100) : null;
     if (!pipelineId || !kitSlug) return res.status(400).json({ status: 'error', message: 'pipelineId and kitId are required' });
     const interview = await kits.createInterview({ pipelineId, kitSlug, mode: req.body.mode, user: req.user });
@@ -100,6 +108,65 @@ interviewRouter.delete('/:id', wrap(async (req, res) => {
     const id = positiveInt(req.params.id);
     if (!id) return res.status(404).json({ status: 'error', message: 'Interview not found' });
     await kits.discardInterview(id, req.user.accountId);
+    res.json({ status: 'success' });
+}));
+
+// ─── company question bank ───────────────────────────────────────────────────
+
+const questionRouter = express.Router();
+questionRouter.use(noStore);
+
+questionRouter.get('/', wrap(async (req, res) => {
+    res.json({ status: 'success', data: { questions: await kits.listCompanyQuestions(req.user.accountId) } });
+}));
+
+questionRouter.post('/', wrap(async (req, res) => {
+    const question = await kits.createCompanyQuestion(req.user, req.body);
+    res.status(201).json({ status: 'success', data: { question } });
+}));
+
+questionRouter.put('/:id', wrap(async (req, res) => {
+    const id = positiveInt(req.params.id);
+    if (!id) return res.status(404).json({ status: 'error', message: 'Question not found' });
+    res.json({ status: 'success', data: { question: await kits.updateCompanyQuestion(id, req.user.accountId, req.body) } });
+}));
+
+questionRouter.delete('/:id', wrap(async (req, res) => {
+    const id = positiveInt(req.params.id);
+    if (!id) return res.status(404).json({ status: 'error', message: 'Question not found' });
+    await kits.deleteCompanyQuestion(id, req.user.accountId);
+    res.json({ status: 'success' });
+}));
+
+// ─── saved question sets ─────────────────────────────────────────────────────
+
+const setRouter = express.Router();
+setRouter.use(noStore);
+
+setRouter.get('/', wrap(async (req, res) => {
+    res.json({ status: 'success', data: { sets: await kits.listSets(req.user.accountId) } });
+}));
+
+setRouter.post('/', wrap(async (req, res) => {
+    res.status(201).json({ status: 'success', data: { set: await kits.createSet(req.user, req.body) } });
+}));
+
+setRouter.get('/:id', wrap(async (req, res) => {
+    const id = positiveInt(req.params.id);
+    if (!id) return res.status(404).json({ status: 'error', message: 'Question set not found' });
+    res.json({ status: 'success', data: { set: await kits.getSet(id, req.user.accountId) } });
+}));
+
+setRouter.put('/:id', wrap(async (req, res) => {
+    const id = positiveInt(req.params.id);
+    if (!id) return res.status(404).json({ status: 'error', message: 'Question set not found' });
+    res.json({ status: 'success', data: { set: await kits.updateSet(id, req.user.accountId, req.body) } });
+}));
+
+setRouter.delete('/:id', wrap(async (req, res) => {
+    const id = positiveInt(req.params.id);
+    if (!id) return res.status(404).json({ status: 'error', message: 'Question set not found' });
+    await kits.deleteSet(id, req.user.accountId);
     res.json({ status: 'success' });
 }));
 
@@ -155,4 +222,4 @@ adminRouter.post('/:slug/upload', (req, res, next) => {
     });
 }));
 
-module.exports = { kitRouter, interviewRouter, adminRouter };
+module.exports = { kitRouter, interviewRouter, adminRouter, questionRouter, setRouter };

@@ -69,6 +69,39 @@ interface Props {
 }
 
 const InterviewResultPanel: React.FC<Props> = ({ result, live }) => {
+  if (result.engine === 'custom') {
+    const t = result.total ?? { score: 0, max: 0, answered: 0, scorable: 0 };
+    return (
+      <Card>
+        <CardHeader>
+          <Scale size={13} color="#4ade80" />
+          <CardTitle>{live ? 'Score so far' : 'Score'}</CardTitle>
+        </CardHeader>
+        <CardBody>
+          {t.answered > 0
+            ? <Outcome>{t.score} / {t.max} points</Outcome>
+            : <Outcome $pending>No scores</Outcome>}
+          <Sub>
+            {t.answered > 0
+              ? `${t.answered} of ${t.scorable} questions scored. Scores are optional; the total only counts scored questions.`
+              : 'Scores are optional. Your notes are saved with the interview either way.'}
+          </Sub>
+          <Rows>
+            {result.sections.filter(s => s.answered > 0).map(s => (
+              <Row key={s.key}>
+                <span>{s.title}<Mono> · {s.answered}/{s.total} scored</Mono></span>
+                <b>{s.score} / {s.answered * (s.total ? s.max / s.total : 0)}</b>
+              </Row>
+            ))}
+            {result.redFlags.count > 0 && (
+              <Row><span>Red flags</span><b>{result.redFlags.count}</b></Row>
+            )}
+          </Rows>
+        </CardBody>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>

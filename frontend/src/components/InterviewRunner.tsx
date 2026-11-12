@@ -296,8 +296,10 @@ const EMPTY_ANSWER: InterviewAnswer = { score: null, notes: '', redFlag: false }
 const SAVE_DELAY_MS = 600;
 const RETRY_DELAY_MS = 4000;
 
-function isAnswered(section: KitSection, a: InterviewAnswer | undefined): boolean {
+function isAnswered(section: KitSection, a: InterviewAnswer | undefined, custom?: boolean): boolean {
   if (!a) return false;
+  // Custom interviews: scores are optional, so notes or a flag count too.
+  if (custom) return a.score !== null || a.redFlag || a.notes.trim().length > 0;
   return section.scoreOptions ? a.score !== null : true; // unscored questions never block
 }
 
@@ -495,7 +497,7 @@ const InterviewRunner: React.FC = () => {
   // ── complete / discard ──
   const finish = async () => {
     if (!interview || !result) return;
-    const msg = result.allScored
+    const msg = result.allScored || kit?.custom
       ? 'Complete this interview? It will be saved to the application and locked.'
       : 'Some questions aren\'t scored. Complete anyway? It will be saved to the application and locked.';
     if (!window.confirm(msg)) return;
@@ -554,7 +556,7 @@ const InterviewRunner: React.FC = () => {
     );
   }
 
-  const answeredCount = flat.filter(f => isAnswered(f.section, answers[f.question.key])).length;
+  const answeredCount = flat.filter(f => isAnswered(f.section, answers[f.question.key], kit.custom)).length;
   const pct = flat.length ? Math.round((answeredCount / flat.length) * 100) : 0;
   const current = typeof step === 'number' ? flat[step] : null;
   const answer = current ? answers[current.question.key] ?? EMPTY_ANSWER : EMPTY_ANSWER;
@@ -588,12 +590,26 @@ const InterviewRunner: React.FC = () => {
           {step === 'intro' && (
             <>
               <SectionLabel>
-                <Badge $tone={kit.status === 'reviewed' ? 'reviewed' : 'draft'}>{STATUS_LABELS[kit.status] ?? kit.status}</Badge>
-                <Mono>v{kit.version} · {flat.length} questions</Mono>
+                {kit.custom
+                  ? <Mono>{flat.length} questions · scores optional</Mono>
+                  : <>
+                      <Badge $tone={kit.status === 'reviewed' ? 'reviewed' : 'draft'}>{STATUS_LABELS[kit.status] ?? kit.status}</Badge>
+                      <Mono>v{kit.version} · {flat.length} questions</Mono>
+                    </>}
               </SectionLabel>
               <Prompt>{kit.title}</Prompt>
 
-              {kit.status === 'draft_under_review' && (
+              {kit.custom && (
+                <Notice>
+                  <ListChecks size={15} color="#4ade80" />
+                  <span>
+                    One question at a time. Take notes as they answer; everything saves as you type. Scoring
+                    each question 0–2 is optional and adds up to a simple total.
+                  </span>
+                </Notice>
+              )}
+
+              {!kit.custom && kit.status === 'draft_under_review' && (
                 <Notice $tone="warn">
                   <AlertTriangle size={15} />
                   <span>This kit is a draft under review. Use it as a guide. A person makes the hiring decision.</span>
@@ -706,7 +722,7 @@ const InterviewRunner: React.FC = () => {
                 <ListChecks size={14} color="#4ade80" />
                 <SectionName>{locked ? 'Completed interview' : 'Review'}</SectionName>
                 <Mono>
-                  {answeredCount} of {flat.length} answered · v{kit.version}
+                  {answeredCount} of {flat.length} answered{kit.custom ? '' : ` · v${kit.version}`}
                   {interview.interviewerEmail ? ` · ${interview.interviewerEmail}` : ''}
                 </Mono>
               </SectionLabel>
@@ -744,7 +760,9 @@ const InterviewRunner: React.FC = () => {
                           <ReviewRow key={q.key} onClick={() => goTo(idx)}>
                             <Mono>{q.number}</Mono>
                             <p>{q.prompt}{a?.notes ? <><br /><Mono>{a.notes.length > 140 ? `${a.notes.slice(0, 140)}…` : a.notes}</Mono></> : null}</p>
-                            <ReviewScore $missing={scored && (a?.score ?? null) === null}>{label}</ReviewScore>
+                            <ReviewScore $missing={!kit.custom && scored && (a?.score ?? null) === null}>
+                              {kit.custom && scored && (a?.score ?? null) === null ? '—' : label}
+                            </ReviewScore>
                           </ReviewRow>
                         );
                       })}

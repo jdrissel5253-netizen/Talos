@@ -73,7 +73,7 @@ const CandidateInterviews: React.FC<{ pipelineId: number }> = ({ pipelineId }) =
     <Card>
       <CardHeader>
         <ClipboardList size={13} color="#8a9ab0" />
-        <CardTitle>Structured Interviews</CardTitle>
+        <CardTitle>Interviews</CardTitle>
       </CardHeader>
       <CardBody>
         {error && <Empty>Could not load interviews.</Empty>}
@@ -81,7 +81,13 @@ const CandidateInterviews: React.FC<{ pipelineId: number }> = ({ pipelineId }) =
         {interviews?.map(iv => {
           const done = iv.status === 'completed';
           const r = iv.result;
-          const scored = r.sections.filter(s => s.counted).map(s => `${s.title.split(':')[0]} ${s.score}/${s.max}`).join(' · ');
+          const custom = r.engine === 'custom';
+          const scored = custom ? '' : r.sections.filter(s => s.counted).map(s => `${s.title.split(':')[0]} ${s.score}/${s.max}`).join(' · ');
+          const summary = custom
+            ? (r.total && r.total.answered > 0
+                ? `${r.total.score} / ${r.total.max} points · ${r.total.answered} of ${r.total.scorable} scored`
+                : done ? 'Notes only (no scores)' : 'Not finished yet')
+            : r.outcome ? `Recommended: ${r.outcome.label}` : done ? 'No recommendation (not fully scored)' : 'Not finished yet';
           return (
             <Row key={iv.id} onClick={() => navigate(`/candidates/${pipelineId}/interviews/${iv.id}`)}>
               <div>
@@ -90,13 +96,11 @@ const CandidateInterviews: React.FC<{ pipelineId: number }> = ({ pipelineId }) =
                   <Badge $tone={done ? 'neutral' : 'reviewed'}>{done ? 'Completed' : 'In progress'}</Badge>
                   {r.redFlags.count > 0 && <Badge $tone="critical">{r.redFlags.count} red flag{r.redFlags.count === 1 ? '' : 's'}</Badge>}
                 </Title>
-                <OutcomeText $muted={!r.outcome}>
-                  {r.outcome ? `Recommended: ${r.outcome.label}` : done ? 'No recommendation (not fully scored)' : 'Not finished yet'}
-                </OutcomeText>
+                <OutcomeText $muted={custom ? !(r.total && r.total.answered > 0) : !r.outcome}>{summary}</OutcomeText>
                 <Mono>
                   {scored && `${scored} · `}
                   {fmt(iv.completedAt || iv.startedAt)} · {MODE_LABELS[iv.mode]}
-                  {iv.interviewerEmail ? ` · ${iv.interviewerEmail}` : ''} · v{iv.kit.version}
+                  {iv.interviewerEmail ? ` · ${iv.interviewerEmail}` : ''}{custom ? '' : ` · v${iv.kit.version}`}
                 </Mono>
               </div>
               <ChevronRight size={16} color="#6e7d8e" />

@@ -1,13 +1,67 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled from 'styled-components';
-import { ArrowLeft, ClipboardList, ChevronRight } from 'lucide-react';
-import { fetchKits, KIT_TYPE_LABELS, STATUS_LABELS } from '../interviewKits/api';
-import { InterviewKitSummary } from '../interviewKits/types';
+import { ArrowLeft, ClipboardList, ChevronRight, ListPlus } from 'lucide-react';
+import { fetchKits, fetchSets, KIT_TYPE_LABELS, STATUS_LABELS } from '../interviewKits/api';
+import { InterviewKitSummary, QuestionSetSummary } from '../interviewKits/types';
 import {
-  FontImport, Page, TopBar, TopBarTitle, Inner, GhostButton, Badge, Select, Label,
-  CenterMsg, EmptyState, clipCorners,
+  FontImport, Page, TopBar, TopBarTitle, Inner, GhostButton, PrimaryButton, Badge, Select, Label,
+  CenterMsg, EmptyState, Mono, clipCorners,
 } from '../interviewKits/styles';
+
+const SectionTitle = styled.h2`
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #8a9ab0;
+  margin: 0 0 0.75rem;
+`;
+
+const SetsHead = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 0.75rem;
+
+  h2 { margin: 0; }
+`;
+
+const SetGrid = styled.div`
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 0.75rem;
+  margin-bottom: 2.25rem;
+`;
+
+const SetCard = styled.button`
+  text-align: left;
+  background: #161a22;
+  border: 1px solid #232830;
+  padding: 0.9rem 1rem;
+  cursor: pointer;
+  font-family: 'Sora', sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  ${clipCorners}
+
+  &:hover { border-color: #4ade80; }
+
+  div { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+  strong { font-size: 0.88rem; font-weight: 600; color: #ffffff; }
+`;
+
+const SetsEmpty = styled.div`
+  border: 1px dashed #2a3040;
+  padding: 1.1rem 1.25rem;
+  font-size: 0.82rem;
+  line-height: 1.6;
+  color: #8a9ab0;
+  margin-bottom: 2.25rem;
+`;
 
 const Intro = styled.p`
   font-size: 0.85rem;
@@ -109,11 +163,16 @@ const InterviewKits: React.FC = () => {
   const [level, setLevel] = useState(ALL);
   const [type, setType] = useState(ALL);
 
+  const [sets, setSets] = useState<QuestionSetSummary[] | null>(null);
+
   useEffect(() => {
     let cancelled = false;
     fetchKits()
       .then(k => { if (!cancelled) setKits(k); })
       .catch(() => { if (!cancelled) setError(true); });
+    fetchSets()
+      .then(s => { if (!cancelled) setSets(s); })
+      .catch(() => { if (!cancelled) setSets([]); });
     return () => { cancelled = true; };
   }, []);
 
@@ -154,9 +213,37 @@ const InterviewKits: React.FC = () => {
 
         <Inner>
           <Intro>
-            Structured question banks and character assessments for HVAC roles. Every kit includes
-            answer keys and red flags, and every candidate gets the same questions in the same order.
+            Build your own interview by picking questions from any kit and adding your own, or run a
+            full kit with its scored level placement. Every kit question comes with an answer key.
           </Intro>
+
+          <SetsHead>
+            <SectionTitle>Your question sets</SectionTitle>
+            <PrimaryButton onClick={() => navigate('/interview-kits/sets/new')}>
+              <ListPlus size={14} /> Build a question set
+            </PrimaryButton>
+          </SetsHead>
+          {sets !== null && sets.length === 0 && (
+            <SetsEmpty>
+              Save the questions you ask most, like a 10-question phone screen, and start them from any
+              candidate's profile. Sets are shared with your team.
+            </SetsEmpty>
+          )}
+          {sets !== null && sets.length > 0 && (
+            <SetGrid>
+              {sets.map(s => (
+                <SetCard key={s.id} onClick={() => navigate(`/interview-kits/sets/${s.id}`)}>
+                  <div>
+                    <strong>{s.name}</strong>
+                    <Mono>{s.itemCount} question{s.itemCount === 1 ? '' : 's'}</Mono>
+                  </div>
+                  <ChevronRight size={14} color="#6e7d8e" />
+                </SetCard>
+              ))}
+            </SetGrid>
+          )}
+
+          <SectionTitle>Question banks</SectionTitle>
 
           {error && <CenterMsg>Could not load interview kits. Try again in a moment.</CenterMsg>}
           {!error && kits === null && <CenterMsg>Loading interview kits...</CenterMsg>}

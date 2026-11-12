@@ -253,7 +253,10 @@ const candidatePipelineRoutes = require('./routes/candidatePipelineRoutes');
 const applyRoutes = require('./routes/applyRoutes');
 const indeedRoutes = require('./routes/indeedRoutes');
 const adminRoutes = require('./routes/adminRoutes');
-const { kitRouter: interviewKitRoutes, interviewRouter: interviewRoutes, adminRouter: adminInterviewKitRoutes } = require('./routes/interviewKitRoutes');
+const {
+    kitRouter: interviewKitRoutes, interviewRouter: interviewRoutes, adminRouter: adminInterviewKitRoutes,
+    questionRouter: interviewQuestionRoutes, setRouter: interviewSetRoutes,
+} = require('./routes/interviewKitRoutes');
 
 // Root route
 app.get('/', (req, res) => {
@@ -273,6 +276,8 @@ app.use('/api/jobs', authenticateToken, jobRoutes);
 app.use('/api/pipeline', authenticateToken, candidatePipelineRoutes);
 app.use('/api/interview-kits', authenticateToken, interviewKitRoutes);
 app.use('/api/interviews', authenticateToken, interviewRoutes);
+app.use('/api/interview-questions', authenticateToken, interviewQuestionRoutes);
+app.use('/api/interview-sets', authenticateToken, interviewSetRoutes);
 // Must be mounted before the generic /api/admin router.
 app.use('/api/admin/interview-kits', authenticateToken, requireAdmin, adminInterviewKitRoutes);
 

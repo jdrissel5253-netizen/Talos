@@ -194,4 +194,38 @@ function scoreInterview(rules, content, answers = {}) {
     };
 }
 
-module.exports = { scoreInterview, sectionStats, RULES_VERSION };
+/**
+ * Custom interviews (hand-picked questions): scores are optional, and the
+ * result is a plain total. No level placement, because the kits' placement
+ * rules only hold when every question in a level is asked.
+ */
+function scoreCustom(content, answers = {}) {
+    const sections = content.sections.map(s => ({
+        ...sectionStats(s, answers), passMark: 0, passed: null, counted: true,
+    }));
+    const scorable = content.sections.filter(s => s.scoreOptions);
+    const scorableCount = scorable.reduce((n, s) => n + s.questions.length, 0);
+    const answered = sections.reduce((n, s) => n + s.answered, 0);
+    const score = sections.reduce((n, s) => n + s.score, 0);
+    const maxAnswered = scorable.reduce((n, s) => n + s.questions
+        .filter(q => validScore(s, answers[q.key]) !== null).length * maxOption(s), 0);
+    const redFlags = content.sections
+        .reduce((n, s) => n + s.questions.filter(q => answers[q.key]?.redFlag === true).length, 0);
+
+    return {
+        rulesVersion: RULES_VERSION,
+        engine: 'custom',
+        recommendationOnly: true,
+        outcome: null,
+        incompleteReason: null,
+        allScored: answered === scorableCount,
+        sections,
+        redFlags: { count: redFlags, guidance: null },
+        skillProfile: null,
+        notes: [],
+        // score out of the max for the questions actually scored (scores are optional).
+        total: { score, max: maxAnswered, answered, scorable: scorableCount },
+    };
+}
+
+module.exports = { scoreInterview, scoreCustom, sectionStats, RULES_VERSION };

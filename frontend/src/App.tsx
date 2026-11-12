@@ -41,6 +41,7 @@ const Pricing = lazy(() => import('./components/Pricing'));
 const InterviewKits = lazy(() => import('./components/InterviewKits'));
 const InterviewKitDetail = lazy(() => import('./components/InterviewKitDetail'));
 const InterviewRunner = lazy(() => import('./components/InterviewRunner'));
+const InterviewBuilder = lazy(() => import('./components/InterviewBuilder'));
 const BetaLanding = lazy(() => import('./components/BetaLanding'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -171,8 +172,11 @@ function AppLayout() {
               <Route path="/talent-pool/candidates" element={<ProtectedRoute><CandidateListScreen /></ProtectedRoute>} />
               <Route path="/talent-pool-manager" element={<ProtectedRoute><TalentPoolManager /></ProtectedRoute>} />
               <Route path="/candidates/:pipelineId" element={<ProtectedRoute><CandidateProfile /></ProtectedRoute>} />
+              <Route path="/candidates/:pipelineId/interviews/new" element={<ProtectedRoute><InterviewBuilder /></ProtectedRoute>} />
               <Route path="/candidates/:pipelineId/interviews/:interviewId" element={<ProtectedRoute><InterviewRunner /></ProtectedRoute>} />
               <Route path="/interview-kits" element={<ProtectedRoute><InterviewKits /></ProtectedRoute>} />
+              <Route path="/interview-kits/sets/new" element={<ProtectedRoute><InterviewBuilder /></ProtectedRoute>} />
+              <Route path="/interview-kits/sets/:setId" element={<ProtectedRoute><InterviewBuilder /></ProtectedRoute>} />
               <Route path="/interview-kits/:kitId" element={<ProtectedRoute><InterviewKitDetail /></ProtectedRoute>} />
               <Route path="/account" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />

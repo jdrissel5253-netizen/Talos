@@ -1,6 +1,9 @@
 import { config } from '../config';
 import { getAuthHeaders, handleUnauthorized } from '../utils/auth';
-import { Interview, InterviewAnswer, InterviewKit, InterviewKitSummary, InterviewMode, InterviewWithKit } from './types';
+import {
+  CompanyQuestion, Interview, InterviewAnswer, InterviewKit, InterviewKitSummary, InterviewMode, InterviewWithKit,
+  ItemRef, QuestionSet, QuestionSetSummary,
+} from './types';
 
 // Kit content (questions and answer keys) comes only from the authenticated
 // API. It is never bundled into the frontend: the JS bundle is public.
@@ -70,6 +73,13 @@ export async function createInterview(pipelineId: number, kitId: string, mode: I
   })).interview;
 }
 
+export async function createCustomInterview(pipelineId: number, mode: InterviewMode, title: string, items: ItemRef[]): Promise<InterviewWithKit> {
+  return (await request<{ interview: InterviewWithKit }>('/api/interviews', {
+    method: 'POST',
+    body: JSON.stringify({ pipelineId, mode, title, items }),
+  })).interview;
+}
+
 export async function fetchInterview(id: number): Promise<InterviewWithKit> {
   return (await request<{ interview: InterviewWithKit }>(`/api/interviews/${id}`)).interview;
 }
@@ -94,6 +104,56 @@ export async function completeInterview(id: number): Promise<InterviewWithKit> {
 
 export async function discardInterview(id: number): Promise<void> {
   await request(`/api/interviews/${id}`, { method: 'DELETE' });
+}
+
+// ─── company question bank ───────────────────────────────────────────────────
+
+export async function fetchCompanyQuestions(): Promise<CompanyQuestion[]> {
+  return (await request<{ questions: CompanyQuestion[] }>('/api/interview-questions')).questions;
+}
+
+export async function createCompanyQuestion(prompt: string, goodAnswer: string): Promise<CompanyQuestion> {
+  return (await request<{ question: CompanyQuestion }>('/api/interview-questions', {
+    method: 'POST',
+    body: JSON.stringify({ prompt, goodAnswer: goodAnswer || null }),
+  })).question;
+}
+
+export async function updateCompanyQuestion(id: number, prompt: string, goodAnswer: string): Promise<CompanyQuestion> {
+  return (await request<{ question: CompanyQuestion }>(`/api/interview-questions/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify({ prompt, goodAnswer: goodAnswer || null }),
+  })).question;
+}
+
+export async function deleteCompanyQuestion(id: number): Promise<void> {
+  await request(`/api/interview-questions/${id}`, { method: 'DELETE' });
+}
+
+// ─── saved question sets ─────────────────────────────────────────────────────
+
+export async function fetchSets(): Promise<QuestionSetSummary[]> {
+  try {
+    return (await request<{ sets: QuestionSetSummary[] }>('/api/interview-sets')).sets;
+  } catch (err) {
+    if (err instanceof ApiError && err.status === 404) return [];
+    throw err;
+  }
+}
+
+export async function fetchSet(id: number): Promise<QuestionSet> {
+  return (await request<{ set: QuestionSet }>(`/api/interview-sets/${id}`)).set;
+}
+
+export async function saveSet(id: number | null, name: string, items: ItemRef[]): Promise<QuestionSet> {
+  return (await request<{ set: QuestionSet }>(id ? `/api/interview-sets/${id}` : '/api/interview-sets', {
+    method: id ? 'PUT' : 'POST',
+    body: JSON.stringify({ name, items }),
+  })).set;
+}
+
+export async function deleteSet(id: number): Promise<void> {
+  await request(`/api/interview-sets/${id}`, { method: 'DELETE' });
 }
 
 // ─── admin ───────────────────────────────────────────────────────────────────
