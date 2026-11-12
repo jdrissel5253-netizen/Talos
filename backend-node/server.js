@@ -126,6 +126,16 @@ const db = require('./config/database');
     } catch (err) {
         logger.error('Database startup warning', { error: err.message });
     }
+
+    // Versioned migrations (also run by the EB deploy hook; already-applied
+    // files are skipped), then shared interview kit metadata.
+    try {
+        const { runVersionedMigrations } = require('./database/migrations/runVersioned');
+        await runVersionedMigrations(db.pool, logger);
+        await require('./services/interviewKits/kitService').syncDefinitions();
+    } catch (err) {
+        logger.error('Versioned migration / interview kit sync failed', { error: err.message });
+    }
 })();
 
 // Security middleware
@@ -243,6 +253,7 @@ const candidatePipelineRoutes = require('./routes/candidatePipelineRoutes');
 const applyRoutes = require('./routes/applyRoutes');
 const indeedRoutes = require('./routes/indeedRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const { kitRouter: interviewKitRoutes, interviewRouter: interviewRoutes, adminRouter: adminInterviewKitRoutes } = require('./routes/interviewKitRoutes');
 
 // Root route
 app.get('/', (req, res) => {
@@ -260,6 +271,10 @@ app.use('/api/jobs', feedLimiter, jobFeedRoutes);
 app.use('/api/resume', authenticateToken, resumeRoutes);
 app.use('/api/jobs', authenticateToken, jobRoutes);
 app.use('/api/pipeline', authenticateToken, candidatePipelineRoutes);
+app.use('/api/interview-kits', authenticateToken, interviewKitRoutes);
+app.use('/api/interviews', authenticateToken, interviewRoutes);
+// Must be mounted before the generic /api/admin router.
+app.use('/api/admin/interview-kits', authenticateToken, requireAdmin, adminInterviewKitRoutes);
 
 // Public routes (no auth required, stricter rate limits)
 app.use('/api/auth', authLimiter, authRoutes);

@@ -1,11 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import { ArrowLeft, User, Briefcase, Star, Shield, AlertTriangle, Award, Phone, Mail, MapPin, Calendar, Clock, FileText, Smartphone, XCircle, Pencil, Check, X, MessageSquare, Trash2, Plus } from 'lucide-react';
+import { ArrowLeft, User, Briefcase, Star, Shield, AlertTriangle, Award, Phone, Mail, MapPin, Calendar, Clock, FileText, Smartphone, XCircle, Pencil, Check, X, MessageSquare, Trash2, Plus, ClipboardList } from 'lucide-react';
 import { getAuthHeaders } from '../utils/auth';
 import { config as appConfig } from '../config';
 import ResumeFileModal from './ResumeFileModal';
 import ContactRejectionModal from './ContactRejectionModal';
+import StartInterviewModal from './StartInterviewModal';
+import CandidateInterviews from './CandidateInterviews';
 
 const FontImport = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -666,6 +668,7 @@ const CandidateProfile: React.FC = () => {
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
   const [editNoteDraft, setEditNoteDraft] = useState('');
   const [noteSaving, setNoteSaving] = useState(false);
+  const [interviewModalOpen, setInterviewModalOpen] = useState(false);
 
   useEffect(() => {
     fetch(`${appConfig.apiUrl}/api/auth/me`, { headers: getAuthHeaders() })
@@ -840,6 +843,10 @@ const CandidateProfile: React.FC = () => {
             <>
               {/* ── Action Bar ── */}
               <ActionBar>
+                <ActionBtn onClick={() => setInterviewModalOpen(true)}
+                  style={{ borderColor: 'rgba(74,222,128,0.35)', color: '#4ade80' }}>
+                  <ClipboardList size={13} /> Start Interview
+                </ActionBtn>
                 <ActionBtn onClick={() => setResumeOpen(true)}>
                   <FileText size={13} /> View Resume
                 </ActionBtn>
@@ -879,6 +886,13 @@ const CandidateProfile: React.FC = () => {
                   <option value="rejected">Rejected</option>
                 </StatusSelect>
               </ActionBar>
+
+              <StartInterviewModal
+                isOpen={interviewModalOpen}
+                onClose={() => setInterviewModalOpen(false)}
+                pipelineId={profile.pipeline_id}
+                jobTitle={profile.job_title}
+              />
 
               <ContactRejectionModal
                 isOpen={contactModal !== null}
@@ -1020,6 +1034,8 @@ const CandidateProfile: React.FC = () => {
                   <TierBadge tier={profile.tier}>{profile.tier.toUpperCase()} TIER</TierBadge>
                 </HeroRight>
               </Hero>
+
+              <CandidateInterviews pipelineId={profile.pipeline_id} />
 
               {/* ── Interview Notes ── */}
               <Card>

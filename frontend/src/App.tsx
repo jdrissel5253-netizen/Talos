@@ -38,6 +38,9 @@ const PrivacyPolicy = lazy(() => import('./components/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./components/TermsOfService'));
 const AdminDashboard = lazy(() => import('./components/AdminDashboard'));
 const Pricing = lazy(() => import('./components/Pricing'));
+const InterviewKits = lazy(() => import('./components/InterviewKits'));
+const InterviewKitDetail = lazy(() => import('./components/InterviewKitDetail'));
+const InterviewRunner = lazy(() => import('./components/InterviewRunner'));
 const BetaLanding = lazy(() => import('./components/BetaLanding'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -168,6 +171,9 @@ function AppLayout() {
               <Route path="/talent-pool/candidates" element={<ProtectedRoute><CandidateListScreen /></ProtectedRoute>} />
               <Route path="/talent-pool-manager" element={<ProtectedRoute><TalentPoolManager /></ProtectedRoute>} />
               <Route path="/candidates/:pipelineId" element={<ProtectedRoute><CandidateProfile /></ProtectedRoute>} />
+              <Route path="/candidates/:pipelineId/interviews/:interviewId" element={<ProtectedRoute><InterviewRunner /></ProtectedRoute>} />
+              <Route path="/interview-kits" element={<ProtectedRoute><InterviewKits /></ProtectedRoute>} />
+              <Route path="/interview-kits/:kitId" element={<ProtectedRoute><InterviewKitDetail /></ProtectedRoute>} />
               <Route path="/account" element={<ProtectedRoute><AccountSettings /></ProtectedRoute>} />
               <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
             </Routes>

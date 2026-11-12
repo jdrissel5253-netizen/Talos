@@ -376,6 +376,13 @@ async function runMigrations() {
             }
         }
 
+        // Versioned migrations (database/migrations/versioned/*.sql), each applied once.
+        // A failure here fails the deploy rather than leaving a half-applied schema.
+        console.log('\nRunning versioned migrations...');
+        const { runVersionedMigrations } = require('./runVersioned');
+        const applied = await runVersionedMigrations(pool, { info: (m) => console.log(`  ✓ ${m}`) });
+        if (applied.length === 0) console.log('  ✓ Already up to date');
+
         console.log('\n🎉 All migrations completed successfully!');
 
         // Verify tables exist

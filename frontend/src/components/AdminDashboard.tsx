@@ -4,6 +4,7 @@ import styled, { keyframes } from 'styled-components';
 import { Users, Briefcase, UserCheck, TrendingUp, ChevronDown, ChevronRight, ExternalLink } from 'lucide-react';
 import { getAuthHeaders, isAdmin } from '../utils/auth';
 import { config as appConfig } from '../config';
+import AdminInterviewKits from './AdminInterviewKits';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(12px); }
@@ -547,6 +548,9 @@ const AdminDashboard: React.FC = () => {
                 <CenterMsg>No companies signed up yet.</CenterMsg>
               )}
             </Table>
+
+            <SectionTitle style={{ marginTop: '2.5rem' }}>Interview Kit Content</SectionTitle>
+            <AdminInterviewKits />
           </>
         )}
       </Inner>
