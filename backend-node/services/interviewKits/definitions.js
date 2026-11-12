@@ -59,7 +59,7 @@ const DEFINITIONS = [
     },
     {
         slug: 'service-technician',
-        title: 'Service Technician Question Bank',
+        title: 'Residential Service Technician Question Bank',
         docTitle: /^(Residential )?Service Technician Question Bank/i,
         type: 'technical',
         roles: ['HVAC Service Technician', 'HVAC Technician'],
