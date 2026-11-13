@@ -159,8 +159,8 @@ const DEFINITIONS = [
     },
     {
         slug: 'lead-technician',
-        title: 'Lead Technician Assessment',
-        docTitle: /^Lead Technician Assessment/i,
+        title: 'Lead Residential Technician Assessment',
+        docTitle: /^Lead (Residential )?Technician Assessment/i,
         type: 'technical',
         roles: ['Lead HVAC Technician'],
         levels: ['Lead'],
