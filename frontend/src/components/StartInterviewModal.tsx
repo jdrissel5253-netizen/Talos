@@ -303,8 +303,8 @@ const StartInterviewModal: React.FC<Props> = ({ isOpen, onClose, pipelineId, job
               <BuildOption onClick={() => go(`/candidates/${pipelineId}/interviews/new`)}>
                 <ListPlus size={20} color="#4ade80" />
                 <div>
-                  <strong>Pick your own questions</strong>
-                  <span>Choose from any kit, add your own, then take notes as you go. Scores are optional.</span>
+                  <strong>Pick your own questions (recommended)</strong>
+                  <span>Most interviews only need about 10 questions. Choose them from any kit, add your own, and take notes as you go. Scores are optional.</span>
                 </div>
                 <ChevronRight size={16} color="#4ade80" />
               </BuildOption>
@@ -329,7 +329,7 @@ const StartInterviewModal: React.FC<Props> = ({ isOpen, onClose, pipelineId, job
               {orderedKits.length > 0 && (
                 <>
                   <GroupLabel>Full kit, scored</GroupLabel>
-                  <Hint>Every question in the kit, with the kit's level placement. Takes longer.</Hint>
+                  <Hint>Asks every question in the kit (25–37), which is usually too long for one interview. Use it when you need the kit's level placement.</Hint>
                   <List>
                     {orderedKits.map(k => (
                       <KitOption key={k.id} $selected={kitId === k.id} onClick={() => setKitId(k.id)} aria-pressed={kitId === k.id}>

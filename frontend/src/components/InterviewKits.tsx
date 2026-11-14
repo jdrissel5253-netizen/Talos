@@ -213,8 +213,9 @@ const InterviewKits: React.FC = () => {
 
         <Inner>
           <Intro>
-            Build your own interview by picking questions from any kit and adding your own, or run a
-            full kit with its scored level placement. Every kit question comes with an answer key.
+            Most interviews only need about 10 questions. Build your own by picking from any kit and
+            adding your own, then save it as a set your team can reuse. Full kits (25–37 questions)
+            are there when you need a scored level placement. Every kit question comes with an answer key.
           </Intro>
 
           <SetsHead>

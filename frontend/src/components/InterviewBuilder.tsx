@@ -242,8 +242,8 @@ const InterviewBuilder: React.FC = () => {
             <>
               <Hint>
                 {startMode
-                  ? 'Pick the questions you want to ask, from any kit or your own bank, and put them in order. You can score each one 0–2 if you like; scores are optional and add up to a simple total.'
-                  : 'Pick questions from any kit or your own bank and put them in order. Saved sets are shared with your team and can be started from any candidate\'s profile.'}
+                  ? 'Pick the questions you want to ask, from any kit or your own bank, and put them in order. About 10 questions is plenty for one interview. You can score each one 0–2 if you like; scores are optional and add up to a simple total.'
+                  : 'Pick questions from any kit or your own bank and put them in order. About 10 questions is plenty for one interview. Saved sets are shared with your team and can be started from any candidate\'s profile.'}
               </Hint>
 
               <Inputs>
