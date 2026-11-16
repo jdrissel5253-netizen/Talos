@@ -5,6 +5,7 @@ import { Users, Briefcase, UserCheck, TrendingUp, ChevronDown, ChevronRight, Ext
 import { getAuthHeaders, isAdmin } from '../utils/auth';
 import { config as appConfig } from '../config';
 import AdminInterviewKits from './AdminInterviewKits';
+import AdminScorecards from './AdminScorecards';
 
 const fadeUp = keyframes`
   from { opacity: 0; transform: translateY(12px); }
@@ -551,6 +552,9 @@ const AdminDashboard: React.FC = () => {
 
             <SectionTitle style={{ marginTop: '2.5rem' }}>Interview Kit Content</SectionTitle>
             <AdminInterviewKits />
+
+            <SectionTitle style={{ marginTop: '2.5rem' }}>Ride-Along Scorecards</SectionTitle>
+            <AdminScorecards />
           </>
         )}
       </Inner>

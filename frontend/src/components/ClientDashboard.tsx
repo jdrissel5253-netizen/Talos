@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import styled, { createGlobalStyle, keyframes } from 'styled-components';
-import { Briefcase, Users, Star, CheckCircle, AlertCircle, UserCheck, ChevronRight, TrendingUp, MapPin, Clock, Eye, LayoutGrid, Files, X, ClipboardList } from 'lucide-react';
+import { Briefcase, Users, Star, CheckCircle, AlertCircle, UserCheck, ChevronRight, TrendingUp, MapPin, Clock, Eye, LayoutGrid, Files, X, ClipboardList, ClipboardCheck } from 'lucide-react';
 import { getAuthHeaders, handleUnauthorized } from '../utils/auth';
 import { config as appConfig } from '../config';
 import OnboardingChecklist from './OnboardingChecklist';
@@ -807,6 +807,9 @@ const ClientDashboard: React.FC = () => {
             </NavPill>
             <NavPill onClick={() => navigate('/interview-kits')}>
               <ClipboardList size={13} /> Interview Kits
+            </NavPill>
+            <NavPill onClick={() => navigate('/ride-along')}>
+              <ClipboardCheck size={13} /> Ride-Alongs
             </NavPill>
             <NavPillPrimary onClick={() => navigate('/jobs-management')}>
               <Eye size={13} /> View Pipeline

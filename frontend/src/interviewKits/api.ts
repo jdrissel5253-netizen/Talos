@@ -24,7 +24,7 @@ function isJson(res: Response): boolean {
   return (res.headers.get('content-type') || '').includes('application/json');
 }
 
-async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
+export async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const headers: Record<string, string> = { ...getAuthHeaders() };
   if (init.body && !(init.body instanceof FormData)) headers['Content-Type'] = 'application/json';
   const res = await fetch(`${config.apiUrl}${path}`, { ...init, headers: { ...headers, ...(init.headers as Record<string, string>) } });

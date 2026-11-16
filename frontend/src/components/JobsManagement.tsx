@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import styled from 'styled-components';
 
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink, LayoutGrid, LayoutList, Minimize2, ChevronDown, ZoomOut, ZoomIn, Settings, Edit2, Pause, Play, Trash2, Facebook, MessageCircle, QrCode as QrCodeIcon, Truck, Store, GraduationCap, Globe, Download } from 'lucide-react';
+import { Star, CheckCircle, AlertCircle, XCircle, Check, ThumbsUp, X, MapPin, Briefcase, Car, Mail, Smartphone, Calendar, FileText, Link, Copy, User, ExternalLink, LayoutGrid, LayoutList, Minimize2, ChevronDown, ZoomOut, ZoomIn, Settings, Edit2, Pause, Play, Trash2, Facebook, MessageCircle, QrCode as QrCodeIcon, Truck, Store, GraduationCap, Globe, Download, ClipboardCheck } from 'lucide-react';
 import QRCode from 'qrcode';
 import { config } from '../config';
 import { getAuthHeaders } from '../utils/auth';
@@ -1661,6 +1661,14 @@ const JobsManagement: React.FC = () => {
                                         <ContentSubtitle>Candidate Pipeline</ContentSubtitle>
                                     </div>
                                     <div style={{ display: 'flex', gap: '0.35rem' }}>
+                                        <ViewToggleBtn
+                                            active={false}
+                                            onClick={() => navigate(`/ride-along/compare/${selectedJob.id}`)}
+                                            title="Compare candidates' ride-along scores"
+                                            style={{ gap: '0.35rem', fontSize: '0.72rem', fontWeight: 600, color: '#8a9ab0' }}
+                                        >
+                                            <ClipboardCheck size={16} /> Ride-alongs
+                                        </ViewToggleBtn>
                                         {candidates.length > 0 && (
                                             <>
                                                 <ViewToggleBtn active={viewMode === 'cards'} onClick={() => setViewMode('cards')} title="Card view">

@@ -257,6 +257,10 @@ const {
     kitRouter: interviewKitRoutes, interviewRouter: interviewRoutes, adminRouter: adminInterviewKitRoutes,
     questionRouter: interviewQuestionRoutes, setRouter: interviewSetRoutes,
 } = require('./routes/interviewKitRoutes');
+const {
+    scorecardRouter: scorecardRoutes, taskRouter: scorecardTaskRoutes,
+    evaluationRouter: evaluationRoutes, adminRouter: adminScorecardRoutes,
+} = require('./routes/rideAlongRoutes');
 
 // Root route
 app.get('/', (req, res) => {
@@ -278,8 +282,12 @@ app.use('/api/interview-kits', authenticateToken, interviewKitRoutes);
 app.use('/api/interviews', authenticateToken, interviewRoutes);
 app.use('/api/interview-questions', authenticateToken, interviewQuestionRoutes);
 app.use('/api/interview-sets', authenticateToken, interviewSetRoutes);
+app.use('/api/scorecards', authenticateToken, scorecardRoutes);
+app.use('/api/scorecard-tasks', authenticateToken, scorecardTaskRoutes);
+app.use('/api/evaluations', authenticateToken, evaluationRoutes);
 // Must be mounted before the generic /api/admin router.
 app.use('/api/admin/interview-kits', authenticateToken, requireAdmin, adminInterviewKitRoutes);
+app.use('/api/admin/scorecards', authenticateToken, requireAdmin, adminScorecardRoutes);
 
 // Public routes (no auth required, stricter rate limits)
 app.use('/api/auth', authLimiter, authRoutes);

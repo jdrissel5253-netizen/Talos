@@ -8,6 +8,7 @@ import ResumeFileModal from './ResumeFileModal';
 import ContactRejectionModal from './ContactRejectionModal';
 import StartInterviewModal from './StartInterviewModal';
 import CandidateInterviews from './CandidateInterviews';
+import CandidateRideAlongs from './CandidateRideAlongs';
 
 const FontImport = createGlobalStyle`
   @import url('https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
@@ -1036,6 +1037,7 @@ const CandidateProfile: React.FC = () => {
               </Hero>
 
               <CandidateInterviews pipelineId={profile.pipeline_id} />
+              <CandidateRideAlongs pipelineId={profile.pipeline_id} />
 
               {/* ── Interview Notes ── */}
               <Card>

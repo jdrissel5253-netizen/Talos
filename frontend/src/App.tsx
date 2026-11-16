@@ -42,6 +42,10 @@ const InterviewKits = lazy(() => import('./components/InterviewKits'));
 const InterviewKitDetail = lazy(() => import('./components/InterviewKitDetail'));
 const InterviewRunner = lazy(() => import('./components/InterviewRunner'));
 const InterviewBuilder = lazy(() => import('./components/InterviewBuilder'));
+const RideAlongHome = lazy(() => import('./components/RideAlongHome'));
+const RideAlongScorer = lazy(() => import('./components/RideAlongScorer'));
+const RideAlongCompare = lazy(() => import('./components/RideAlongCompare'));
+const ScorecardSettings = lazy(() => import('./components/ScorecardSettings'));
 const BetaLanding = lazy(() => import('./components/BetaLanding'));
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -174,6 +178,10 @@ function AppLayout() {
               <Route path="/candidates/:pipelineId" element={<ProtectedRoute><CandidateProfile /></ProtectedRoute>} />
               <Route path="/candidates/:pipelineId/interviews/new" element={<ProtectedRoute><InterviewBuilder /></ProtectedRoute>} />
               <Route path="/candidates/:pipelineId/interviews/:interviewId" element={<ProtectedRoute><InterviewRunner /></ProtectedRoute>} />
+              <Route path="/ride-along" element={<ProtectedRoute><RideAlongHome /></ProtectedRoute>} />
+              <Route path="/ride-along/compare/:jobId" element={<ProtectedRoute><RideAlongCompare /></ProtectedRoute>} />
+              <Route path="/ride-along/:evaluationId" element={<ProtectedRoute><RideAlongScorer /></ProtectedRoute>} />
+              <Route path="/scorecards/:slug" element={<ProtectedRoute><ScorecardSettings /></ProtectedRoute>} />
               <Route path="/interview-kits" element={<ProtectedRoute><InterviewKits /></ProtectedRoute>} />
               <Route path="/interview-kits/sets/new" element={<ProtectedRoute><InterviewBuilder /></ProtectedRoute>} />
               <Route path="/interview-kits/sets/:setId" element={<ProtectedRoute><InterviewBuilder /></ProtectedRoute>} />

@@ -274,6 +274,7 @@ const Header: React.FC = () => {
             <>
               {isAdmin() && <LoginButton onClick={() => navigate('/admin')}>Admin</LoginButton>}
               <LoginButton onClick={() => navigate('/interview-kits')}>Interview Kits</LoginButton>
+              <LoginButton onClick={() => navigate('/ride-along')}>Ride-Alongs</LoginButton>
               <LoginButton onClick={() => navigate('/account')}>Account</LoginButton>
               <LoginButton onClick={() => { clearToken(); navigate('/login'); }}>Logout</LoginButton>
             </>
@@ -312,6 +313,7 @@ const Header: React.FC = () => {
             <>
               {isAdmin() && <LoginButton onClick={() => { navigate('/admin'); closeMobile(); }}>Admin</LoginButton>}
               <LoginButton onClick={() => { navigate('/interview-kits'); closeMobile(); }}>Interview Kits</LoginButton>
+              <LoginButton onClick={() => { navigate('/ride-along'); closeMobile(); }}>Ride-Alongs</LoginButton>
               <LoginButton onClick={() => { navigate('/account'); closeMobile(); }}>Account</LoginButton>
               <LoginButton onClick={() => { clearToken(); navigate('/login'); closeMobile(); }}>Logout</LoginButton>
             </>
