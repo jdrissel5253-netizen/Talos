@@ -6,6 +6,7 @@
  */
 const crypto = require('crypto');
 const mammoth = require('mammoth');
+const { SCALE_FROM_DOC } = require('./definitions');
 
 // ─── HTML → blocks ───────────────────────────────────────────────────────────
 
@@ -160,10 +161,12 @@ function buildQuestionSection(spec, docSection, errors) {
         });
     });
 
-    // Numbering must run 1..n with no gaps or repeats.
+    // Numbering must run first..n with no gaps or repeats. Most kits restart
+    // at 1 in each section; character kits number straight through (1-9).
+    const first = spec.firstNumber || 1;
     questions.forEach((q, i) => {
-        if (Number(q.number) !== i + 1) {
-            errors.push(`"${docSection.heading}" questions should be numbered 1 to ${questions.length}; found ${q.number} in position ${i + 1}.`);
+        if (Number(q.number) !== first + i) {
+            errors.push(`"${docSection.heading}" questions should be numbered ${first} to ${first + questions.length - 1}; found ${q.number} in position ${i + 1}.`);
         }
     });
     if (spec.questionCount && questions.length !== spec.questionCount) {
@@ -184,6 +187,91 @@ function buildQuestionSection(spec, docSection, errors) {
     };
 }
 
+// ─── character kits ──────────────────────────────────────────────────────────
+// Layout: "How to use this", "How to run and score it" (scale + result tables),
+// "Part 1..3" question tables, "Scorecard and guardrails", and an internal
+// "Sources and open items" section that is never shown to companies.
+
+const isTable = b => b.type === 'table';
+const headerIs = (b, ...names) => isTable(b) && b.rows[0] &&
+    names.every((n, i) => (b.rows[0][i] || '').trim().toLowerCase() === n);
+
+/** Critical questions are not used, so any sentence about them is dropped. */
+function withoutCritical(text) {
+    if (/^Critical questions?\b/i.test(text)) return '';
+    return text.split(/(?<=[.!?])\s+/).filter(sentence => !/critical/i.test(sentence)).join(' ').trim();
+}
+
+/** Reads the 0-3 "Score / What it means" table into score options. */
+function readScoreScale(section, errors) {
+    const table = section && section.blocks.find(b => headerIs(b, 'score', 'what it means'));
+    if (!table) {
+        errors.push('"How to run and score it" needs a "Score / What it means" table.');
+        return null;
+    }
+    const options = table.rows.slice(1).map(([value, description]) => ({
+        value: Number((value || '').trim()),
+        label: (value || '').trim(),
+        description: withoutCritical((description || '').trim()),
+    })).sort((a, b) => a.value - b.value);
+    const values = options.map(o => o.value).join(',');
+    if (values !== '0,1,2,3') {
+        errors.push(`The score table should list scores 0, 1, 2 and 3 (found ${values || 'none'}).`);
+        return null;
+    }
+    return options;
+}
+
+/** The document's scorecard table must agree with the kit's scoring rules. */
+function checkScorecard(section, definition, errors) {
+    const table = section && section.blocks.find(b => headerIs(b, 'part', 'questions', 'max', 'minimum'));
+    if (!table) {
+        errors.push('"Scorecard and guardrails" needs a "Part / Questions / Max / Minimum" table.');
+        return;
+    }
+    const partRows = table.rows.slice(1).filter(r => !/^total$/i.test((r[0] || '').trim()));
+    definition.scoring.parts.forEach((part, i) => {
+        const docMin = Number((partRows[i]?.[3] || '').trim());
+        if (docMin !== part.min) {
+            errors.push(`The scorecard lists a minimum of ${partRows[i]?.[3] || 'nothing'} for part ${i + 1}; Talos scores this kit with ${part.min}. Ask for the scoring rules to be updated before uploading.`);
+        }
+    });
+}
+
+function characterContent(definition, sections, errors) {
+    const find = re => sections.find(s => re.test(s.heading));
+    const howTo = find(/^How to use/i);
+    const howToRun = find(/^How to run/i);
+    const scorecard = find(/^Scorecard/i);
+
+    const scale = readScoreScale(howToRun, errors);
+    if (scorecard) checkScorecard(scorecard, definition, errors);
+    else errors.push('Missing "Scorecard and guardrails" section.');
+
+    const textLines = (section, skip) => (section ? section.blocks : [])
+        .filter(b => b.type !== 'h' && !isTable(b))
+        .map(lineText)
+        .filter(t => !skip.test(t))
+        .map(withoutCritical)
+        .filter(Boolean);
+
+    const { strongMark, checkMark, parts } = definition.scoring;
+    const max = definition.sections.reduce((n, s) => n + s.questionCount * 3, 0);
+    const resultLine = `Result: Strong is ${strongMark}-${max} with every part at its minimum. ` +
+        `Check closely is ${checkMark}-${strongMark - 1}, or ${strongMark}+ with a part below its minimum. ` +
+        `Not ready is under ${checkMark}. Part minimums: ${parts.map((p, i) => `Part ${i + 1}: ${p.min}`).join(', ')}.`;
+
+    const howToLines = textLines(howTo, /^$/);
+    return {
+        scale,
+        summary: howToLines[0] || null,
+        howToUse: [...howToLines.slice(1), resultLine, ...textLines(howToRun, /^Part minimums\b/i)],
+        // The scorecard itself is computed by Talos; keep only the rules.
+        guardrails: textLines(scorecard, /^(☐|Result:|Complete one scorecard)/i),
+        omit: [howTo, howToRun, scorecard, find(/^Sources\b/i)].filter(Boolean).map(s => s.heading),
+    };
+}
+
 /**
  * @returns {{ content: object|null, errors: string[], sha256: string|null }}
  */
@@ -201,10 +289,15 @@ function buildKitContent(blocks, definition) {
 
     const howTo = sections.find(s => /^How to use/i.test(s.heading));
     const howToLines = howTo ? howTo.blocks.filter(b => b.type !== 'h').map(lineText) : [];
+    const character = definition.layout === 'character' ? characterContent(definition, sections, errors) : null;
 
-    const usedHeadings = new Set(howTo ? [howTo.heading] : []);
+    const usedHeadings = new Set(character ? character.omit : howTo ? [howTo.heading] : []);
     const outSections = [];
-    for (const spec of definition.sections) {
+    for (const rawSpec of definition.sections) {
+        const spec = rawSpec.scoreOptions === SCALE_FROM_DOC
+            ? { ...rawSpec, scoreOptions: character && character.scale }
+            : rawSpec;
+        if (rawSpec.scoreOptions === SCALE_FROM_DOC && !spec.scoreOptions) continue; // scale error already reported
         const docSection = sections.find(s => spec.heading.test(s.heading));
         if (!docSection) {
             errors.push(`Missing section matching "${spec.heading.source.replace(/^\^|\\b$/g, '')}".`);
@@ -212,6 +305,10 @@ function buildKitContent(blocks, definition) {
         }
         usedHeadings.add(docSection.heading);
         const built = buildQuestionSection(spec, docSection, errors);
+        if (built && character) {
+            built.notes = built.notes.map(withoutCritical).filter(Boolean);
+            if (built.description) built.description = withoutCritical(built.description);
+        }
         if (built) outSections.push(built);
     }
 
@@ -228,9 +325,9 @@ function buildKitContent(blocks, definition) {
     const content = {
         title: title,
         versionDate,
-        summary: howToLines[0] || null,
-        howToUse: howToLines.slice(1),
-        guardrails: [],
+        summary: character ? character.summary : howToLines[0] || null,
+        howToUse: character ? character.howToUse : howToLines.slice(1),
+        guardrails: character ? character.guardrails : [],
         sections: outSections,
         extraSections,
     };

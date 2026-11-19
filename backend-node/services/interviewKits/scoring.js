@@ -163,9 +163,49 @@ function scoreGated(rules, content, answers) {
     return result(p2.score < rules.second.passMark ? 'development' : 'readyNow', { incompleteReason: null });
 }
 
+// ─── character (trait) assessments ───────────────────────────────────────────
+// Every question is scored 0-3. "Strong: 22-27, every part at its minimum."
+// "Check closely: 16-21, or 22+ with a part below its minimum." "Not ready:
+// Under 16." Critical questions are not used.
+
+function scoreTrait(rules, content, answers) {
+    const notes = [];
+    const sections = rules.parts.map(part => {
+        const section = content.sections.find(s => s.key === part.section);
+        if (!section) return null;
+        const st = sectionStats(section, answers);
+        return { ...st, passMark: part.min, passed: st.answered === st.total ? st.score >= part.min : null, counted: true };
+    }).filter(Boolean);
+
+    const score = sections.reduce((n, s) => n + s.score, 0);
+    const max = sections.reduce((n, s) => n + s.max, 0);
+    const answered = sections.reduce((n, s) => n + s.answered, 0);
+    const scorable = sections.reduce((n, s) => n + s.total, 0);
+    const total = { score, max, answered, scorable };
+
+    if (sections.length !== rules.parts.length) {
+        return { outcome: null, incompleteReason: 'This kit version is missing a scored part.', sections, notes, total };
+    }
+    if (answered < scorable) {
+        const left = scorable - answered;
+        return { outcome: null, incompleteReason: `${left} question${left === 1 ? '' : 's'} still to score.`, sections, notes, total };
+    }
+
+    const belowMin = sections.filter(s => s.score < s.passMark);
+    let key;
+    if (score < rules.checkMark) key = 'notReady';
+    else if (score >= rules.strongMark && belowMin.length === 0) key = 'strong';
+    else key = 'check';
+
+    if (key !== 'notReady') {
+        belowMin.forEach(s => notes.push(`${s.title} is below its minimum (${s.score} of ${s.max}; needs ${s.passMark}).`));
+    }
+    return { outcome: { key, label: rules.outcomes[key] }, incompleteReason: null, sections, notes, total };
+}
+
 // ─── entry point ─────────────────────────────────────────────────────────────
 
-const ENGINES = { leveled: scoreLeveled, gated: scoreGated };
+const ENGINES = { leveled: scoreLeveled, gated: scoreGated, trait: scoreTrait };
 
 function scoreInterview(rules, content, answers = {}) {
     const engine = ENGINES[rules.engine];
@@ -191,6 +231,7 @@ function scoreInterview(rules, content, answers = {}) {
         },
         skillProfile: skillProfile(rules, content, answers),
         notes: core.notes,
+        ...(core.total && { total: core.total }),
     };
 }
 

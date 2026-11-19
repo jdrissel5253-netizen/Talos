@@ -111,3 +111,103 @@ describe('docx parser: rejects documents that do not match the kit', () => {
         }
     });
 });
+
+// ─── character kits ──────────────────────────────────────────────────────────
+
+const charTable = (from, n, { mark = () => '' } = {}) =>
+    `<table>${row('#', 'Question', 'Strong answer', 'Red flags')}${
+        Array.from({ length: n }, (_, i) => row(`${from + i}${mark(from + i)}`, `Prompt ${from + i}`, `Key ${from + i}`, `Flag ${from + i}`)).join('')
+    }</table>`;
+
+function characterDoc({
+    title = 'Field Character &amp; Self-Sufficiency Assessment',
+    counts = [2, 4, 3],
+    minimums = [4, 7, 5],
+    scale = [3, 2, 1, 0],
+    part2From,
+} = {}) {
+    const mark = (n) => ([1, 2, 8].includes(n) ? ' Critical' : '');
+    const starts = [1, 1 + counts[0], 1 + counts[0] + counts[1]];
+    if (part2From) starts[1] = part2From;
+    return `<h1>${title}</h1><p>Nov 3, 2026 · @Someone</p>
+<h2>How to use this</h2><p>Summary line.</p><ul><li>Who takes it: placeholder.</li></ul>
+<h2>How to run and score it</h2><p>A candidate needs 22 points and no critical 0 to earn a Strong result. These cut lines are starting points.</p><ul><li>Ask every candidate the same questions.</li></ul>
+<table>${row('Score', 'What it means')}${scale.map(v => row(String(v), `Meaning ${v}`)).join('')}</table>
+<p>Critical questions: 1, 2 and 8. A 0 on any of these means Not ready.</p>
+<table>${row('Result', 'Score needed', 'Next step')}${row('Strong', '22-27', 'Next')}</table>
+<p>Part minimums: Part 1: 4 of 6.</p>
+<h2>Part 1: Honesty and integrity</h2><p>Part 1 description.</p>${charTable(starts[0], counts[0], { mark })}
+<h2>Part 2: Reliability and accountability</h2>${charTable(starts[1], counts[1], { mark })}<p>Score Question 3 on timing.</p>
+<h2>Part 3: Self-sufficiency and resourcefulness</h2>${charTable(starts[2], counts[2], { mark })}
+<h2>Scorecard and guardrails</h2><p>Complete one scorecard for each candidate.</p>
+<table>${row('Part', 'Questions', 'Max', 'Minimum', 'Score')}${minimums.map((m, i) => row(`Part ${i + 1}`, '-', '-', String(m), '')).join('')}${row('Total', '1-9', '27', '', '')}</table>
+<ul><li>☐ Job requirements check completed</li><li>☐ No critical 0 on Questions 1, 2 or 8</li></ul>
+<p>Result: Strong / Check closely / Not ready</p><p>Do not ask about health.</p>
+<h2>Sources and open items</h2><p>Internal note with a person's name.</p>`;
+}
+
+describe('docx parser: character kits', () => {
+    test('parses continuous 1-9 numbering into three 0-3 parts', () => {
+        const { content, errors } = parse(characterDoc(), 'field-character');
+        expect(errors).toEqual([]);
+        expect(content.sections.map(s => s.questions.map(q => q.key))).toEqual([
+            ['P1.Q1', 'P1.Q2'], ['P2.Q3', 'P2.Q4', 'P2.Q5', 'P2.Q6'], ['P3.Q7', 'P3.Q8', 'P3.Q9'],
+        ]);
+        for (const s of content.sections) {
+            expect(s.scoreOptions.map(o => o.value)).toEqual([0, 1, 2, 3]);
+            expect(s.scoreOptions[3].description).toBe('Meaning 3');
+        }
+        expect(content.sections[0].questions[0]).toMatchObject({ number: '1', prompt: 'Prompt 1', answerKey: 'Key 1', redFlags: 'Flag 1' });
+    });
+
+    test('drops critical-question rules, scorecard boxes and the internal sources section', () => {
+        const { content } = parse(characterDoc(), 'field-character');
+        const all = JSON.stringify(content);
+        expect(all).not.toMatch(/critical/i);
+        expect(all).not.toMatch(/Internal note/);
+        expect(all).not.toMatch(/☐/);
+        expect(content.extraSections).toEqual([]);
+        expect(content.summary).toBe('Summary line.');
+        expect(content.howToUse).toEqual(expect.arrayContaining([
+            'These cut lines are starting points.',
+            'Ask every candidate the same questions.',
+            expect.stringMatching(/^Result: Strong is 22-27/),
+        ]));
+        expect(content.howToUse.some(l => /^Part minimums/.test(l))).toBe(false);
+        expect(content.guardrails).toEqual(['Do not ask about health.']);
+        expect(content.sections[1].notes).toEqual(['Score Question 3 on timing.']);
+    });
+
+    test('apprentice layout is 3 + 3 + 3', () => {
+        const { content, errors } = parse(characterDoc({
+            title: 'Apprentice &amp; Green Candidate Character Assessment', counts: [3, 3, 3], minimums: [5, 5, 5],
+        }), 'apprentice-character');
+        expect(errors).toEqual([]);
+        expect(content.sections.map(s => s.questions[0].key)).toEqual(['P1.Q1', 'P2.Q4', 'P3.Q7']);
+    });
+
+    test('office and experienced office titles go to their own kits', () => {
+        const office = characterDoc({ title: 'Office Character &amp; Self-Sufficiency Assessment' });
+        const experienced = characterDoc({ title: 'Experienced Office Character  Self-Sufficiency Assessment' });
+        expect(parse(office, 'office-character').errors).toEqual([]);
+        expect(parse(experienced, 'experienced-office-character').errors).toEqual([]);
+        expect(parse(experienced, 'office-character').errors.join(' ')).toMatch(/Upload it to the matching kit/);
+        expect(parse(office, 'field-character').errors.join(' ')).toMatch(/Upload it to the matching kit/);
+    });
+
+    test('rejects a scorecard whose minimums disagree with the scoring rules', () => {
+        const { content, errors } = parse(characterDoc({ minimums: [4, 8, 5] }), 'field-character');
+        expect(content).toBeNull();
+        expect(errors.join(' ')).toMatch(/minimum of 8 for part 2; Talos scores this kit with 7/);
+    });
+
+    test('rejects a score table that is not 0-3', () => {
+        const { errors } = parse(characterDoc({ scale: [2, 1, 0] }), 'field-character');
+        expect(errors.join(' ')).toMatch(/scores 0, 1, 2 and 3/);
+    });
+
+    test('rejects numbering that restarts in each part', () => {
+        const { errors } = parse(characterDoc({ part2From: 1 }), 'field-character');
+        expect(errors.join(' ')).toMatch(/numbered 3 to 6; found 1/);
+    });
+});

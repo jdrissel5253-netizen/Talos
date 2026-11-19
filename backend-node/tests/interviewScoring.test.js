@@ -15,7 +15,11 @@ const levels = (l1, l2, l3) => ({
 describe('definitions', () => {
     test('every definition has a known engine and placements/outcomes', () => {
         for (const d of DEFINITIONS) {
-            expect(['leveled', 'gated']).toContain(d.scoring.engine);
+            expect(['leveled', 'gated', 'trait']).toContain(d.scoring.engine);
+            if (d.scoring.engine === 'trait') {
+                expect(Object.keys(d.scoring.outcomes).sort()).toEqual(['check', 'notReady', 'strong']);
+                expect(d.scoring.parts.map(p => p.section)).toEqual(d.sections.map(s => s.key));
+            }
             if (d.scoring.engine === 'leveled') expect(d.scoring.placements).toHaveLength(d.scoring.levels.length + 1);
             if (d.scoring.engine === 'gated') expect(Object.keys(d.scoring.outcomes).sort()).toEqual(['development', 'notReady', 'readyNow']);
         }
@@ -166,5 +170,82 @@ describe('results are recommendations only', () => {
             expect(r.recommendationOnly).toBe(true);
             expect(JSON.stringify(r)).not.toMatch(/pipeline_status|rejected/);
         }
+    });
+});
+
+// ─── character kits (trait engine) ───────────────────────────────────────────
+
+// Field / office layout: Part 1 Q1-2, Part 2 Q3-6, Part 3 Q7-9.
+const fieldParts = (p1, p2, p3) => ({
+    ...sectionAnswers('P1', p1, 1),
+    ...sectionAnswers('P2', p2, 3),
+    ...sectionAnswers('P3', p3, 7),
+});
+
+describe('character kits', () => {
+    const CHARACTER = ['field-character', 'office-character', 'experienced-office-character', 'apprentice-character'];
+
+    test('all four are character kits with nine questions and 27 points', () => {
+        for (const slug of CHARACTER) {
+            const d = getDefinition(slug);
+            expect(d.type).toBe('character');
+            const keys = syntheticContent(slug).sections.flatMap(s => s.questions.map(q => q.key));
+            expect(keys).toHaveLength(9);
+            expect(keys.map(k => Number(k.split('.Q')[1]))).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+            const r = score(slug, Object.fromEntries(keys.map(k => [k, { score: 3 }])));
+            expect(r.total).toEqual({ score: 27, max: 27, answered: 9, scorable: 9 });
+            expect(r.outcome.key).toBe('strong');
+        }
+    });
+
+    test('no recommendation until every question is scored', () => {
+        const r = score('field-character', fieldParts([3, 3], [3, 3, 3, 3], [3, 3, null]));
+        expect(r.outcome).toBeNull();
+        expect(r.incompleteReason).toMatch(/1 question still to score/);
+        expect(r.total.score).toBe(24);
+    });
+
+    test('22+ with every part at its minimum is Strong', () => {
+        // 4 + 9 + 9 = 22, Part 1 exactly at its minimum of 4.
+        const r = score('field-character', fieldParts([2, 2], [3, 3, 3, 0], [3, 3, 3]));
+        expect(r.total.score).toBe(22);
+        expect(r.outcome.key).toBe('strong');
+        expect(r.sections.every(s => s.passed)).toBe(true);
+    });
+
+    test('22+ with a part below its minimum is Check closely, with a note', () => {
+        // Part 1: 3 of 6 (min 4). Total 3 + 12 + 9 = 24.
+        const r = score('field-character', fieldParts([3, 0], [3, 3, 3, 3], [3, 3, 3]));
+        expect(r.total.score).toBe(24);
+        expect(r.outcome.key).toBe('check');
+        expect(r.notes.join(' ')).toMatch(/below its minimum \(3 of 6; needs 4\)/);
+    });
+
+    test('16-21 is Check closely; under 16 is Not ready', () => {
+        expect(score('field-character', fieldParts([2, 2], [2, 2, 2, 2], [2, 2, 0])).outcome.key).toBe('check'); // 16
+        const r = score('field-character', fieldParts([2, 2], [2, 2, 2, 2], [1, 1, 1])); // 15
+        expect(r.total.score).toBe(15);
+        expect(r.outcome.key).toBe('notReady');
+        expect(r.notes).toEqual([]);
+    });
+
+    test('a 0 on a question the documents call critical is just a 0', () => {
+        // Q1 = 0; total 3 + 12 + 9 = 24 but Part 1 is under 4 → Check closely, not Not ready.
+        const r = score('office-character', fieldParts([0, 3], [3, 3, 3, 3], [3, 3, 3]));
+        expect(r.outcome.key).toBe('check');
+    });
+
+    test('apprentice kit: three questions per part, minimum 5 in each', () => {
+        const ans = { ...sectionAnswers('P1', [3, 3, 3], 1), ...sectionAnswers('P2', [2, 2, 0], 4), ...sectionAnswers('P3', [3, 3, 3], 7) };
+        const r = score('apprentice-character', ans);
+        expect(r.total.score).toBe(22);
+        expect(r.outcome.key).toBe('check'); // Part 2 is 4, under 5
+        expect(r.outcome.label).toMatch(/shadow day/);
+    });
+
+    test('a score outside 0-3 is ignored', () => {
+        const ans = fieldParts([3, 3], [3, 3, 3, 3], [3, 3, 3]);
+        ans['P3.Q9'] = { score: 7 };
+        expect(score('field-character', ans).outcome).toBeNull();
     });
 });

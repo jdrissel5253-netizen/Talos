@@ -126,6 +126,7 @@ const InterviewResultPanel: React.FC<Props> = ({ result, live }) => {
                 {s.title}
                 {s.answered < s.total && s.answered > 0 && <Mono> · {s.answered}/{s.total} scored</Mono>}
                 {!s.counted && <Mono> · not counted</Mono>}
+                {result.engine === 'trait' && <Mono> · min {s.passMark}</Mono>}
               </span>
               <b>
                 {s.score} / {s.max}
@@ -133,6 +134,12 @@ const InterviewResultPanel: React.FC<Props> = ({ result, live }) => {
               </b>
             </Row>
           ))}
+          {result.engine === 'trait' && result.total && (
+            <Row>
+              <span>Total</span>
+              <b>{result.total.score} / {result.total.max}</b>
+            </Row>
+          )}
           {result.redFlags.count > 0 || result.redFlags.guidance ? (
             <Row>
               <span>BS-detector red flags</span>

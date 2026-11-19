@@ -23,6 +23,42 @@ const levelSections = (count = 10) => [
     { key: 'L3', heading: /^Level 3\b/i, scoreOptions: ZERO_TO_TWO, questionCount: count },
 ];
 
+// Character kits print their own 0-3 scale ("Score / What it means" table in
+// "How to run and score it"); the parser reads it from the document.
+const SCALE_FROM_DOC = 'fromDoc';
+
+// Character kits number questions 1-9 straight through the three parts.
+const traitSections = (counts) => {
+    let first = 1;
+    return counts.map((count, i) => {
+        const spec = { key: `P${i + 1}`, heading: new RegExp(`^Part ${i + 1}\\b`, 'i'), scoreOptions: SCALE_FROM_DOC, questionCount: count, firstNumber: first };
+        first += count;
+        return spec;
+    });
+};
+
+// Shared by the four character kits: "A candidate needs at least 22 of 27
+// points [and] the minimum in each part ... to earn a Strong result."
+// Check closely: "16-21, or 22+ with a part below its minimum". Not ready:
+// "Under 16". The documents' critical-question rule is deliberately not used
+// (critical questions were removed from every kit on 2026-11-12).
+const traitScoring = (minimums, outcomes) => ({
+    engine: 'trait',
+    parts: minimums.map((min, i) => ({ section: `P${i + 1}`, min })),
+    strongMark: 22,
+    checkMark: 16,
+    outcomes,
+    redFlagSection: null,
+    skillProfile: null,
+});
+
+const FIELD_ROLES = [
+    'HVAC Service Technician', 'Preventative Maintenance Technician', 'HVAC Technician',
+    'Lead HVAC Technician', 'HVAC Installer', 'Lead HVAC Installer', 'Maintenance Technician',
+    'Commercial Service Technician', 'Commercial Lead Technician',
+];
+const OFFICE_ROLES = ['HVAC Dispatcher', 'Administrative Assistant', 'Customer Service Representative', 'Bookkeeper'];
+
 const BS_SECTION = { key: 'BS', heading: /^BS-detector/i, scoreOptions: null, minQuestions: 1 };
 
 // Expand "L1 Q1–3, Q8–9" style lists by hand into explicit keys.
@@ -230,6 +266,68 @@ const DEFINITIONS = [
             ],
         },
     },
+    {
+        slug: 'field-character',
+        title: 'Field Character & Self-Sufficiency Assessment',
+        docTitle: /^Field Character (&|and) Self-Sufficiency Assessment/i,
+        type: 'character',
+        layout: 'character',
+        // "Field finalists with at least one year of paid field experience."
+        roles: FIELD_ROLES,
+        levels: ['1+ years in the field'],
+        sections: traitSections([2, 4, 3]),
+        scoring: traitScoring([4, 7, 5], {
+            strong: 'Strong. Move to the ride-along.',
+            check: 'Check closely. Probe the weak part in reference checks and the ride-along.',
+            notReady: 'Not ready. Do not advance.',
+        }),
+    },
+    {
+        slug: 'office-character',
+        title: 'Office Character & Self-Sufficiency Assessment',
+        docTitle: /^Office Character (&|and) Self-Sufficiency Assessment/i,
+        type: 'character',
+        layout: 'character',
+        roles: OFFICE_ROLES,
+        levels: ['Any experience'],
+        sections: traitSections([2, 4, 3]),
+        scoring: traitScoring([4, 7, 5], {
+            strong: 'Strong. Move to reference checks.',
+            check: 'Check closely. Probe the weak part in reference checks.',
+            notReady: 'Not ready. Do not advance.',
+        }),
+    },
+    {
+        slug: 'experienced-office-character',
+        title: 'Experienced Office Character & Self-Sufficiency Assessment',
+        docTitle: /^Experienced Office Character (&|and)? ?Self-Sufficiency Assessment/i,
+        type: 'character',
+        layout: 'character',
+        roles: OFFICE_ROLES,
+        levels: ['Prior office experience'],
+        sections: traitSections([2, 4, 3]),
+        scoring: traitScoring([4, 7, 5], {
+            strong: 'Strong. Move to reference checks.',
+            check: 'Check closely. Probe the weak part in reference checks.',
+            notReady: 'Not ready. Do not advance.',
+        }),
+    },
+    {
+        slug: 'apprentice-character',
+        title: 'Apprentice & Green Candidate Character Assessment',
+        docTitle: /^Apprentice (&|and) Green Candidate Character Assessment/i,
+        type: 'character',
+        layout: 'character',
+        // "Apprentice candidates and anyone with under one year of paid field experience."
+        roles: ['Apprentice'],
+        levels: ['Under 1 year in the field'],
+        sections: traitSections([3, 3, 3]),
+        scoring: traitScoring([5, 5, 5], {
+            strong: 'Strong. Move to a shadow day or working interview.',
+            check: 'Check closely. Probe the weak part in reference checks and the shadow day.',
+            notReady: 'Not ready. Do not advance.',
+        }),
+    },
 ];
 
 const BY_SLUG = new Map(DEFINITIONS.map(d => [d.slug, d]));
@@ -238,4 +336,4 @@ function getDefinition(slug) {
     return BY_SLUG.get(slug) || null;
 }
 
-module.exports = { DEFINITIONS, getDefinition, ZERO_TO_TWO };
+module.exports = { DEFINITIONS, getDefinition, ZERO_TO_TWO, SCALE_FROM_DOC };

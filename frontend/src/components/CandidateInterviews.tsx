@@ -82,7 +82,8 @@ const CandidateInterviews: React.FC<{ pipelineId: number }> = ({ pipelineId }) =
           const done = iv.status === 'completed';
           const r = iv.result;
           const custom = r.engine === 'custom';
-          const scored = custom ? '' : r.sections.filter(s => s.counted).map(s => `${s.title.split(':')[0]} ${s.score}/${s.max}`).join(' · ');
+          const parts = custom ? '' : r.sections.filter(s => s.counted).map(s => `${s.title.split(':')[0]} ${s.score}/${s.max}`).join(' · ');
+          const scored = r.engine === 'trait' && r.total ? `Total ${r.total.score}/${r.total.max} · ${parts}` : parts;
           const summary = custom
             ? (r.total && r.total.answered > 0
                 ? `${r.total.score} / ${r.total.max} points · ${r.total.answered} of ${r.total.scorable} scored`

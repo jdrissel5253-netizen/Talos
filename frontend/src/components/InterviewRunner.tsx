@@ -658,7 +658,7 @@ const InterviewRunner: React.FC = () => {
                   {showKey ? (
                     <KeyPanel>
                       {current.question.answerKey && (
-                        <div><KeyLabel>{current.section.scoreOptions ? 'Answer key' : 'Honest answer'}</KeyLabel><KeyText>{current.question.answerKey}</KeyText></div>
+                        <div><KeyLabel>{!current.section.scoreOptions ? 'Honest answer' : kit.type === 'character' ? 'Strong answer' : 'Answer key'}</KeyLabel><KeyText>{current.question.answerKey}</KeyText></div>
                       )}
                       {current.question.details?.map((d, i) => (
                         <div key={i}><KeyLabel>{d.label}</KeyLabel><KeyText>{d.text}</KeyText></div>

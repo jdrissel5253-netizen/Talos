@@ -1,7 +1,10 @@
 // Synthetic kit content for tests. Built from the definitions' structure only:
 // every question/answer string is a placeholder. Real kit content never goes
 // in this repo (it's public).
-const { getDefinition } = require('../../services/interviewKits/definitions');
+const { getDefinition, SCALE_FROM_DOC } = require('../../services/interviewKits/definitions');
+
+// Character kits read their 0-3 scale from the document.
+const ZERO_TO_THREE = [0, 1, 2, 3].map(value => ({ value, label: String(value), description: `placeholder ${value}` }));
 
 function syntheticContent(slug, { bsCount = 5 } = {}) {
     const def = getDefinition(slug);
@@ -12,12 +15,13 @@ function syntheticContent(slug, { bsCount = 5 } = {}) {
             return {
                 key: spec.key,
                 title: `${spec.key} section`,
-                scoreOptions: spec.scoreOptions || null,
+                scoreOptions: spec.scoreOptions === SCALE_FROM_DOC ? ZERO_TO_THREE : spec.scoreOptions || null,
                 questions: Array.from({ length: count }, (_, i) => {
-                    const key = `${spec.key}.Q${i + 1}`;
+                    const n = (spec.firstNumber || 1) + i;
+                    const key = `${spec.key}.Q${n}`;
                     return {
                         key,
-                        number: String(i + 1),
+                        number: String(n),
                         prompt: `placeholder prompt ${key}`,
                         answerKey: `placeholder key ${key}`,
                     };
@@ -27,11 +31,11 @@ function syntheticContent(slug, { bsCount = 5 } = {}) {
     };
 }
 
-/** Answers giving `scores[i]` to question i+1 of a section (null = unscored). */
-function sectionAnswers(sectionKey, scores) {
+/** Answers giving `scores[i]` to question first+i of a section (null = unscored). */
+function sectionAnswers(sectionKey, scores, first = 1) {
     const out = {};
     scores.forEach((s, i) => {
-        if (s !== null && s !== undefined) out[`${sectionKey}.Q${i + 1}`] = { score: s, notes: '', redFlag: false };
+        if (s !== null && s !== undefined) out[`${sectionKey}.Q${first + i}`] = { score: s, notes: '', redFlag: false };
     });
     return out;
 }

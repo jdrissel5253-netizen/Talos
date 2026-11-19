@@ -114,7 +114,7 @@ export interface ResultSection {
 /** Scoring result. Always a recommendation: a person makes the decision. */
 export interface InterviewResult {
   rulesVersion: number;
-  engine: 'leveled' | 'gated' | 'custom';
+  engine: 'leveled' | 'gated' | 'trait' | 'custom';
   recommendationOnly: true;
   outcome: { label: string; key?: string; levelsPassed?: number } | null;
   incompleteReason: string | null;
@@ -123,7 +123,7 @@ export interface InterviewResult {
   redFlags: { count: number; guidance: string | null };
   skillProfile: { area: string; score: number; max: number; answered: number; total: number }[] | null;
   notes: string[];
-  /** Custom interviews only: total of the questions that were scored. */
+  /** Custom interviews: total of the questions that were scored. Character (trait) kits: the 0-27 total. */
   total?: { score: number; max: number; answered: number; scorable: number };
 }
 
