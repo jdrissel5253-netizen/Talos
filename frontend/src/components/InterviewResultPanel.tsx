@@ -134,6 +134,21 @@ const InterviewResultPanel: React.FC<Props> = ({ result, live }) => {
               </b>
             </Row>
           ))}
+          {result.aptitude && (
+            <>
+              <Row>
+                <span>Written (Sections 1–3)</span>
+                <b>{result.aptitude.written.score} / {result.aptitude.written.max}</b>
+              </Row>
+              <Row>
+                <span>
+                  Work habits
+                  {result.aptitude.habits.source === 'character' && <Mono> · from character interview</Mono>}
+                </span>
+                <b>{result.aptitude.habits.score} / {result.aptitude.habits.max}</b>
+              </Row>
+            </>
+          )}
           {result.engine === 'trait' && result.total && (
             <Row>
               <span>Total</span>
@@ -142,7 +157,7 @@ const InterviewResultPanel: React.FC<Props> = ({ result, live }) => {
           )}
           {result.redFlags.count > 0 || result.redFlags.guidance ? (
             <Row>
-              <span>BS-detector red flags</span>
+              <span>{result.engine === 'aptitude' ? 'Job reality answers to discuss' : 'BS-detector red flags'}</span>
               <b>{result.redFlags.count}</b>
             </Row>
           ) : null}
@@ -153,7 +168,10 @@ const InterviewResultPanel: React.FC<Props> = ({ result, live }) => {
           <Callout $tone="warn">
             <Flag size={14} />
             <span>
-              <b>Kit guidance for {result.redFlags.count} red flag{result.redFlags.count === 1 ? '' : 's'}:</b>{' '}
+              <b>
+                Kit guidance for {result.redFlags.count}{' '}
+                {result.engine === 'aptitude' ? `answer${result.redFlags.count === 1 ? '' : 's'} to discuss` : `red flag${result.redFlags.count === 1 ? '' : 's'}`}:
+              </b>{' '}
               {result.redFlags.guidance} This is not applied to the result automatically.
             </span>
           </Callout>

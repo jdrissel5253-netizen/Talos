@@ -83,7 +83,9 @@ const CandidateInterviews: React.FC<{ pipelineId: number }> = ({ pipelineId }) =
           const r = iv.result;
           const custom = r.engine === 'custom';
           const parts = custom ? '' : r.sections.filter(s => s.counted).map(s => `${s.title.split(':')[0]} ${s.score}/${s.max}`).join(' · ');
-          const scored = r.engine === 'trait' && r.total ? `Total ${r.total.score}/${r.total.max} · ${parts}` : parts;
+          const scored = r.engine === 'trait' && r.total ? `Total ${r.total.score}/${r.total.max} · ${parts}`
+            : r.aptitude ? `Written ${r.aptitude.written.score}/${r.aptitude.written.max} · Work habits ${r.aptitude.habits.score}/${r.aptitude.habits.max}`
+            : parts;
           const summary = custom
             ? (r.total && r.total.answered > 0
                 ? `${r.total.score} / ${r.total.max} points · ${r.total.answered} of ${r.total.scorable} scored`
@@ -95,7 +97,11 @@ const CandidateInterviews: React.FC<{ pipelineId: number }> = ({ pipelineId }) =
                 <Title>
                   <strong>{iv.kit.title}</strong>
                   <Badge $tone={done ? 'neutral' : 'reviewed'}>{done ? 'Completed' : 'In progress'}</Badge>
-                  {r.redFlags.count > 0 && <Badge $tone="critical">{r.redFlags.count} red flag{r.redFlags.count === 1 ? '' : 's'}</Badge>}
+                  {r.redFlags.count > 0 && (
+                    <Badge $tone="critical">
+                      {r.redFlags.count} {r.engine === 'aptitude' ? 'to discuss' : `red flag${r.redFlags.count === 1 ? '' : 's'}`}
+                    </Badge>
+                  )}
                 </Title>
                 <OutcomeText $muted={custom ? !(r.total && r.total.answered > 0) : !r.outcome}>{summary}</OutcomeText>
                 <Mono>

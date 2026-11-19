@@ -211,3 +211,52 @@ describe('docx parser: character kits', () => {
         expect(errors.join(' ')).toMatch(/numbered 3 to 6; found 1/);
     });
 });
+
+// ─── apprentice aptitude ─────────────────────────────────────────────────────
+
+function aptitudeDoc({ s5Header = ['What to tell them', 'What you’re listening for'] } = {}) {
+    const ans = (n) => `<table>${row('#', 'Question', 'Answer')}${Array.from({ length: n }, (_, i) => row(String(i + 1), `Prompt ${i + 1}`, `Answer ${i + 1}`)).join('')}</table>`;
+    return `<h1>Apprentice Aptitude Assessment</h1><p>Oct 28, 2026 · @Someone</p>
+<h2>How to use this</h2><p>Summary.</p><p>How to run it:</p><ul><li>Sections 1-3 are written.</li></ul>
+<h2>Section 1: Mechanical reasoning</h2><p>Written. 1 point each.</p>${ans(5)}
+<h2>Section 2: Job math</h2><p>Written.</p>${ans(5)}
+<h2>Section 3: Follow the procedure</h2><p>Procedure card: Replacing a filter</p><ul><li>Step one</li><li>Step two</li></ul>${ans(5)}
+<h2>Section 4: Work habits and coachability</h2><p>Conversation.</p>${qTable(5)}<p>Guardrail note.</p>
+<h2>Section 5: Job reality check</h2><p>Not scored.</p><table>${row(...s5Header)}${row('Heat. Attics.', 'Understands it.')}${row('Lifting.', 'Physical side.')}</table><p>Heat plan note.</p>
+<h2>Section 6: Trade curiosity (optional, not scored)</h2><table>${row('Question', 'A curious candidate might say')}${row('What does an AC do?', 'Moves heat.')}</table>
+<h2>Scoring</h2><table>${row('Result', 'Outcome', 'What it means')}${row('8+ and 10+', 'Strong', 'Hire')}</table>`;
+}
+
+describe('docx parser: apprentice aptitude', () => {
+    test('parses written, conversation and unnumbered checklist sections', () => {
+        const { content, errors } = parse(aptitudeDoc(), 'apprentice-aptitude');
+        expect(errors).toEqual([]);
+        expect(content.sections.map(s => s.key)).toEqual(['S1', 'S2', 'S3', 'S4', 'S5', 'S6']);
+        expect(content.sections[0].questions[0]).toMatchObject({ key: 'S1.Q1', answerKey: 'Answer 1' });
+        expect(content.sections[0].scoreOptions.map(o => o.value)).toEqual([0, 1]);
+        expect(content.sections[3].scoreOptions.map(o => o.value)).toEqual([0, 1, 2]);
+        expect(content.sections[2].description).toMatch(/Procedure card[\s\S]*Step one[\s\S]*Step two/);
+        const s5 = content.sections[4];
+        expect(s5).toMatchObject({ scoreOptions: null, flag: 'discuss', notes: ['Heat plan note.'] });
+        expect(s5.questions).toEqual([
+            { key: 'S5.Q1', number: '1', prompt: 'Heat. Attics.', answerKey: 'Understands it.' },
+            { key: 'S5.Q2', number: '2', prompt: 'Lifting.', answerKey: 'Physical side.' },
+        ]);
+        expect(content.sections[5]).toMatchObject({ flag: false });
+        expect(content.sections[5].questions[0]).toMatchObject({ prompt: 'What does an AC do?', answerKey: 'Moves heat.' });
+        expect(content.extraSections).toEqual([]); // Scoring is computed, not shown
+    });
+
+    test('only the tape question gets half credit', () => {
+        const { content } = parse(aptitudeDoc(), 'apprentice-aptitude');
+        const s2 = content.sections[1];
+        expect(s2.questions[0].scoreOptions.map(o => o.value)).toEqual([0, 0.5, 1]);
+        expect(s2.questions.slice(1).every(q => !q.scoreOptions)).toBe(true);
+        expect(content.sections[0].questions.every(q => !q.scoreOptions)).toBe(true);
+    });
+
+    test('a straight apostrophe in the checklist header works too', () => {
+        const html = aptitudeDoc({ s5Header: ['What to tell them', "What you're listening for"] });
+        expect(parse(html, 'apprentice-aptitude').errors).toEqual([]);
+    });
+});

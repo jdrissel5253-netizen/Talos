@@ -59,6 +59,24 @@ const FIELD_ROLES = [
 ];
 const OFFICE_ROLES = ['HVAC Dispatcher', 'Administrative Assistant', 'Customer Service Representative', 'Bookkeeper'];
 
+// Apprentice Aptitude Assessment, Sections 1-3: "1 point each".
+const ZERO_OR_ONE = [
+    { value: 0, label: '0', description: 'Wrong' },
+    { value: 1, label: '1', description: 'Right' },
+];
+// Section 2, Q1 (tape reading): "Half credit if they're off by 1/16."
+const ZERO_HALF_ONE = [
+    { value: 0, label: '0', description: "Can't read the fractions" },
+    { value: 0.5, label: '½', description: 'Off by 1/16' },
+    { value: 1, label: '1', description: 'Exact' },
+];
+// Section 4: "Score each 0 (red flag), 1 (partly there) or 2 (strong)".
+const WORK_HABITS = [
+    { value: 0, label: '0', description: 'Red flag' },
+    { value: 1, label: '1', description: 'Partly there' },
+    { value: 2, label: '2', description: 'Strong' },
+];
+
 const BS_SECTION = { key: 'BS', heading: /^BS-detector/i, scoreOptions: null, minQuestions: 1 };
 
 // Expand "L1 Q1–3, Q8–9" style lists by hand into explicit keys.
@@ -327,6 +345,57 @@ const DEFINITIONS = [
             check: 'Check closely. Probe the weak part in reference checks and the shadow day.',
             notReady: 'Not ready. Do not advance.',
         }),
+    },
+    {
+        slug: 'apprentice-aptitude',
+        title: 'Apprentice Aptitude Assessment',
+        docTitle: /^Apprentice Aptitude Assessment/i,
+        type: 'aptitude',
+        roles: ['Apprentice'],
+        levels: ['Under 1 year in the field'],
+        sections: [
+            { key: 'S1', heading: /^Section 1\b/i, scoreOptions: ZERO_OR_ONE, questionCount: 5, columns: { answerKey: ['answer'] } },
+            {
+                key: 'S2', heading: /^Section 2\b/i, scoreOptions: ZERO_OR_ONE, questionCount: 5, columns: { answerKey: ['answer'] },
+                questionScoreOptions: { 1: ZERO_HALF_ONE },
+            },
+            { key: 'S3', heading: /^Section 3\b/i, scoreOptions: ZERO_OR_ONE, questionCount: 5, columns: { answerKey: ['answer'] } },
+            { key: 'S4', heading: /^Section 4\b/i, scoreOptions: WORK_HABITS, questionCount: 5 },
+            // Not scored. The interviewer marks any "no" to discuss before deciding.
+            {
+                key: 'S5', heading: /^Section 5\b/i, scoreOptions: null, minQuestions: 1, autoNumber: true, flag: 'discuss',
+                columns: { prompt: ['what to tell them'], answerKey: ["what you're listening for", 'what you’re listening for'] },
+            },
+            {
+                key: 'S6', heading: /^Section 6\b/i, scoreOptions: null, minQuestions: 1, autoNumber: true, flag: false,
+                columns: { answerKey: ['a curious candidate might say'] },
+            },
+        ],
+        scoring: {
+            engine: 'aptitude',
+            written: ['S1', 'S2', 'S3'],
+            habits: 'S4',
+            // "Work habits 8+ and written 10+" / "Work habits 6+ and written 6+" / otherwise.
+            strong: { habits: 8, written: 10 },
+            shot: { habits: 6, written: 6 },
+            outcomes: {
+                strong: 'Strong apprentice candidate. Hire if the reality check went fine. Pair them with a patient lead from day one.',
+                shot: 'Worth a shot with close supervision. The habits are there; the gaps can be taught.',
+                notFit: 'Not a fit right now. Habits are hard to coach. A very low written score usually means the basics need work before the field.',
+            },
+            // The Apprentice & Green Candidate Character Assessment "replaces
+            // Section 4. For that assessment's work habits score, use 8 for a
+            // Strong result, 6 for Check closely and 0 for Not ready." Used when
+            // the application already has a completed one.
+            habitsFromKit: { slug: 'apprentice-character', scores: { strong: 8, check: 6, notReady: 0 } },
+            redFlagSection: 'S5',
+            redFlagAdjustments: {
+                none: null,
+                one: 'Discuss this answer with the candidate before you decide.',
+                twoPlus: 'Discuss these answers with the candidate before you decide.',
+            },
+            skillProfile: null,
+        },
     },
 ];
 

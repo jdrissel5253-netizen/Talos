@@ -9,22 +9,29 @@
 
 const RULES_VERSION = 1;
 
-function maxOption(section) {
-    return section.scoreOptions ? Math.max(...section.scoreOptions.map(o => o.value)) : 0;
+/** A question's score options: its own scale if it has one, else its section's. */
+function optionsFor(section, question) {
+    if (!section.scoreOptions) return null;
+    return (question && question.scoreOptions) || section.scoreOptions;
 }
 
-/** A score counts only if it's one of the section's allowed values. */
-function validScore(section, answer) {
-    if (!section.scoreOptions || !answer || answer.score === null || answer.score === undefined) return null;
-    return section.scoreOptions.some(o => o.value === answer.score) ? answer.score : null;
+const maxOf = options => (options ? Math.max(...options.map(o => o.value)) : 0);
+
+/** A score counts only if it's one of the question's allowed values. */
+function validScore(section, answer, question) {
+    const options = optionsFor(section, question);
+    if (!options || !answer || answer.score === null || answer.score === undefined) return null;
+    return options.some(o => o.value === answer.score) ? answer.score : null;
 }
 
 function sectionStats(section, answers) {
     let score = 0;
     let answered = 0;
+    let max = 0;
     for (const q of section.questions) {
-        const s = validScore(section, answers[q.key]);
+        const s = validScore(section, answers[q.key], q);
         if (s !== null) { score += s; answered += 1; }
+        max += maxOf(optionsFor(section, q));
     }
     return {
         key: section.key,
@@ -32,7 +39,7 @@ function sectionStats(section, answers) {
         score,
         answered,
         total: section.questions.length,
-        max: section.questions.length * maxOption(section),
+        max,
     };
 }
 
@@ -57,8 +64,9 @@ function skillProfile(rules, content, answers) {
         for (const key of group.questions) {
             const section = sectionOf.get(key);
             if (!section) continue;
-            const s = validScore(section, answers[key]);
-            if (s !== null) { score += s; answered += 1; max += maxOption(section); }
+            const q = section.questions.find(x => x.key === key);
+            const s = validScore(section, answers[key], q);
+            if (s !== null) { score += s; answered += 1; max += maxOf(optionsFor(section, q)); }
         }
         return { area: group.area, score, max, answered, total: group.questions.length };
     });
@@ -203,18 +211,76 @@ function scoreTrait(rules, content, answers) {
     return { outcome: { key, label: rules.outcomes[key] }, incompleteReason: null, sections, notes, total };
 }
 
+// ─── apprentice aptitude ─────────────────────────────────────────────────────
+// "Written score (Sections 1-3): out of 15. Work habits score (Section 4): out
+// of 10." Strong: "Work habits 8+ and written 10+". Worth a shot: "Work habits
+// 6+ and written 6+". Not a fit: "Work habits under 6, or written under 6".
+// When the application has a completed apprentice character interview, its
+// result supplies the work habits score instead of Section 4 (8 / 6 / 0).
+
+function scoreAptitude(rules, content, answers, context = {}) {
+    const notes = [];
+    const find = key => content.sections.find(s => s.key === key);
+    const written = rules.written.map(find).filter(Boolean).map(s => ({ ...sectionStats(s, answers), counted: true }));
+    const habitsSection = find(rules.habits);
+    const habits = habitsSection ? { ...sectionStats(habitsSection, answers), counted: true } : null;
+
+    const character = context.habitsFromKit || null;
+    const fromCharacter = !!(character && rules.habitsFromKit && character.outcomeKey in rules.habitsFromKit.scores);
+    if (fromCharacter && habits) habits.counted = false;
+
+    const sections = [...written, ...(habits ? [habits] : [])].map(s => ({ ...s, passMark: 0, passed: null }));
+    const writtenScore = written.reduce((n, s) => n + s.score, 0);
+    const writtenMax = written.reduce((n, s) => n + s.max, 0);
+    const habitsScore = fromCharacter ? rules.habitsFromKit.scores[character.outcomeKey] : habits ? habits.score : 0;
+    const aptitude = {
+        written: { score: writtenScore, max: writtenMax },
+        habits: {
+            score: habitsScore,
+            max: habits ? habits.max : 10,
+            source: fromCharacter ? 'character' : 'section',
+            ...(fromCharacter && { interviewId: character.interviewId }),
+        },
+    };
+    if (fromCharacter) {
+        const label = character.outcomeLabel ? ` (${character.outcomeLabel.split('.')[0]})` : '';
+        notes.push(`Work habits score of ${habitsScore} comes from the completed ${character.title || 'character interview'}${label}. ${habits ? habits.title : 'Section 4'} isn't counted.`);
+    }
+
+    const result = (outcomeKey, incompleteReason) => ({
+        outcome: outcomeKey ? { key: outcomeKey, label: rules.outcomes[outcomeKey] } : null,
+        incompleteReason, sections, notes, aptitude,
+    });
+
+    if (written.length !== rules.written.length || (!habits && !fromCharacter)) {
+        return result(null, 'This kit version is missing a scored section.');
+    }
+    const required = fromCharacter ? written : [...written, habits];
+    const left = required.reduce((n, s) => n + (s.total - s.answered), 0);
+    if (left > 0) return result(null, `${left} question${left === 1 ? '' : 's'} still to score.`);
+
+    let key = 'notFit';
+    if (habitsScore >= rules.strong.habits && writtenScore >= rules.strong.written) key = 'strong';
+    else if (habitsScore >= rules.shot.habits && writtenScore >= rules.shot.written) key = 'shot';
+    return result(key, null);
+}
+
 // ─── entry point ─────────────────────────────────────────────────────────────
 
-const ENGINES = { leveled: scoreLeveled, gated: scoreGated, trait: scoreTrait };
+const ENGINES = { leveled: scoreLeveled, gated: scoreGated, trait: scoreTrait, aptitude: scoreAptitude };
 
-function scoreInterview(rules, content, answers = {}) {
+/**
+ * context: optional facts from outside this interview, e.g.
+ *   { habitsFromKit: { interviewId, title, outcomeKey, outcomeLabel } }
+ */
+function scoreInterview(rules, content, answers = {}, context = {}) {
     const engine = ENGINES[rules.engine];
     if (!engine) throw new Error(`Unknown scoring engine "${rules.engine}"`);
-    const core = engine(rules, content, answers);
+    const core = engine(rules, content, answers, context);
     const redFlags = rules.redFlagSection ? countRedFlags(content, rules.redFlagSection, answers) : 0;
     const allScored = content.sections
         .filter(s => s.scoreOptions)
-        .every(s => s.questions.every(q => validScore(s, answers[q.key]) !== null));
+        .every(s => s.questions.every(q => validScore(s, answers[q.key], q) !== null));
 
     return {
         rulesVersion: RULES_VERSION,
@@ -232,6 +298,7 @@ function scoreInterview(rules, content, answers = {}) {
         skillProfile: skillProfile(rules, content, answers),
         notes: core.notes,
         ...(core.total && { total: core.total }),
+        ...(core.aptitude && { aptitude: core.aptitude }),
     };
 }
 
@@ -249,7 +316,8 @@ function scoreCustom(content, answers = {}) {
     const answered = sections.reduce((n, s) => n + s.answered, 0);
     const score = sections.reduce((n, s) => n + s.score, 0);
     const maxAnswered = scorable.reduce((n, s) => n + s.questions
-        .filter(q => validScore(s, answers[q.key]) !== null).length * maxOption(s), 0);
+        .filter(q => validScore(s, answers[q.key], q) !== null)
+        .reduce((m, q) => m + maxOf(optionsFor(s, q)), 0), 0);
     const redFlags = content.sections
         .reduce((n, s) => n + s.questions.filter(q => answers[q.key]?.redFlag === true).length, 0);
 
@@ -269,4 +337,4 @@ function scoreCustom(content, answers = {}) {
     };
 }
 
-module.exports = { scoreInterview, scoreCustom, sectionStats, RULES_VERSION };
+module.exports = { scoreInterview, scoreCustom, sectionStats, optionsFor, RULES_VERSION };

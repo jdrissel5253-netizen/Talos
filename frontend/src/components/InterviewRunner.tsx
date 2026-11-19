@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import styled, { css } from 'styled-components';
 import {
   ArrowLeft, ChevronLeft, ChevronRight, ChevronDown, ChevronUp, Flag, Phone, Users,
-  ShieldAlert, AlertTriangle, CheckCircle2, ListChecks, Trash2,
+  ShieldAlert, AlertTriangle, CheckCircle2, ListChecks, Trash2, Info,
 } from 'lucide-react';
 import {
   ApiError, completeInterview, discardInterview, fetchInterview, saveInterviewProgress,
@@ -296,6 +296,13 @@ const EMPTY_ANSWER: InterviewAnswer = { score: null, notes: '', redFlag: false }
 const SAVE_DELAY_MS = 600;
 const RETRY_DELAY_MS = 4000;
 
+/** A question's score scale: its own if it has one, else its section's. */
+const optionsFor = (section: KitSection, question: { scoreOptions?: KitSection['scoreOptions'] }) =>
+  section.scoreOptions ? (question.scoreOptions ?? section.scoreOptions) : undefined;
+
+const scoreLabel = (section: KitSection, question: { scoreOptions?: KitSection['scoreOptions'] }, score: number) =>
+  optionsFor(section, question)?.find(o => o.value === score)?.label ?? String(score);
+
 function isAnswered(section: KitSection, a: InterviewAnswer | undefined, custom?: boolean): boolean {
   if (!a) return false;
   // Custom interviews: scores are optional, so notes or a flag count too.
@@ -560,6 +567,7 @@ const InterviewRunner: React.FC = () => {
   const pct = flat.length ? Math.round((answeredCount / flat.length) * 100) : 0;
   const current = typeof step === 'number' ? flat[step] : null;
   const answer = current ? answers[current.question.key] ?? EMPTY_ANSWER : EMPTY_ANSWER;
+  const currentOptions = current ? optionsFor(current.section, current.question) : undefined;
   const isLast = typeof step === 'number' && step === flat.length - 1;
 
   const saveLabel = locked
@@ -643,6 +651,21 @@ const InterviewRunner: React.FC = () => {
                 <Mono>Question {step + 1} of {flat.length}</Mono>
               </SectionLabel>
 
+              {kit.type === 'aptitude' && current.section.description && (
+                <Notice><Info size={15} /><span style={{ whiteSpace: 'pre-line' }}>{current.section.description}</span></Notice>
+              )}
+
+              {kit.type === 'aptitude' && interview?.result.aptitude?.habits.source === 'character'
+                && current.section.key === 'S4' && (
+                <Notice>
+                  <ListChecks size={15} color="#4ade80" />
+                  <span>
+                    You can skip this section. This candidate already has a completed character interview, so its
+                    result sets the work habits score ({interview.result.aptitude.habits.score} of 10).
+                  </span>
+                </Notice>
+              )}
+
               <Prompt>{current.question.prompt}</Prompt>
 
               {current.question.guidance && (
@@ -671,11 +694,11 @@ const InterviewRunner: React.FC = () => {
                 </>
               )}
 
-              {current.section.scoreOptions ? (
+              {currentOptions ? (
                 <>
                   <Label>Score</Label>
-                  <ScoreGrid $count={current.section.scoreOptions.length}>
-                    {current.section.scoreOptions.map(o => (
+                  <ScoreGrid $count={currentOptions.length}>
+                    {currentOptions.map(o => (
                       <ScoreBtn
                         key={o.value}
                         $selected={answer.score === o.value}
@@ -692,14 +715,19 @@ const InterviewRunner: React.FC = () => {
               ) : (
                 <>
                   <Label>Not scored</Label>
-                  <FlagBtn
-                    $on={answer.redFlag}
-                    aria-pressed={answer.redFlag}
-                    disabled={locked}
-                    onClick={() => updateAnswer(current.question.key, { redFlag: !answer.redFlag })}
-                  >
-                    <Flag size={16} /> {answer.redFlag ? 'Red flag marked' : 'Mark red flag'}
-                  </FlagBtn>
+                  {current.section.flag !== false && (
+                    <FlagBtn
+                      $on={answer.redFlag}
+                      aria-pressed={answer.redFlag}
+                      disabled={locked}
+                      onClick={() => updateAnswer(current.question.key, { redFlag: !answer.redFlag })}
+                    >
+                      <Flag size={16} />{' '}
+                      {current.section.flag === 'discuss'
+                        ? (answer.redFlag ? 'Marked to discuss before deciding' : 'They said no: discuss before deciding')
+                        : (answer.redFlag ? 'Red flag marked' : 'Mark red flag')}
+                    </FlagBtn>
+                  )}
                 </>
               )}
 
@@ -745,7 +773,6 @@ const InterviewRunner: React.FC = () => {
 
               {kit.sections.map(section => {
                 const scored = !!section.scoreOptions;
-                const max = scored ? Math.max(...section.scoreOptions!.map(o => o.value)) : 0;
                 return (
                   <Card key={section.key}>
                     <CardHeader><CardTitle>{section.title}</CardTitle></CardHeader>
@@ -753,9 +780,12 @@ const InterviewRunner: React.FC = () => {
                       {section.questions.map(q => {
                         const idx = flat.findIndex(f => f.question.key === q.key);
                         const a = answers[q.key];
+                        const opts = optionsFor(section, q);
+                        const max = opts ? Math.max(...opts.map(o => o.value)) : 0;
                         const label = scored
-                          ? (a?.score ?? null) === null ? 'Not scored' : `${a!.score} / ${max}`
-                          : a?.redFlag ? 'Red flag' : 'No flag';
+                          ? (a?.score ?? null) === null ? 'Not scored' : `${scoreLabel(section, q, a!.score!)} / ${max}`
+                          : section.flag === false ? (a?.notes ? 'Notes' : '—')
+                          : a?.redFlag ? (section.flag === 'discuss' ? 'Discuss' : 'Red flag') : 'No flag';
                         return (
                           <ReviewRow key={q.key} onClick={() => goTo(idx)}>
                             <Mono>{q.number}</Mono>

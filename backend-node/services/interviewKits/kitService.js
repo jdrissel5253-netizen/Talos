@@ -8,7 +8,7 @@
  */
 const db = require('../../config/database');
 const { DEFINITIONS, getDefinition, ZERO_TO_TWO } = require('./definitions');
-const { scoreInterview, scoreCustom } = require('./scoring');
+const { scoreInterview, scoreCustom, optionsFor } = require('./scoring');
 
 const MAX_NOTES = 5000;
 const MAX_ITEMS = 100;           // questions in one set / custom interview
@@ -222,14 +222,40 @@ function customKit(row) {
     };
 }
 
-function computeResult(row, kit) {
-    return isCustom(row)
-        ? scoreCustom(kit, row.answers || {})
-        : scoreInterview(rulesFor(kit), kit, row.answers || {});
+/**
+ * Facts from other interviews that a kit's scoring uses. The aptitude kit takes
+ * its work habits score from the application's latest completed apprentice
+ * character interview, when there is one.
+ */
+async function scoringContext(row, kit) {
+    if (isCustom(row) || row.status === 'completed') return {};
+    const from = rulesFor(kit).habitsFromKit;
+    if (!from) return {};
+    const { rows } = await db.query(
+        `SELECT i.id, i.result, k.title
+           FROM interviews i
+           JOIN interview_kit_versions v ON v.id = i.kit_version_id
+           JOIN interview_kits k ON k.id = v.kit_id
+          WHERE i.candidate_pipeline_id = $1 AND i.account_id = $2
+            AND i.status = 'completed' AND k.slug = $3
+          ORDER BY i.completed_at DESC
+          LIMIT 1`,
+        [row.candidate_pipeline_id, row.account_id, from.slug]
+    );
+    const r = rows[0];
+    const outcome = r && r.result && r.result.outcome;
+    if (!outcome || !outcome.key) return {};
+    return { habitsFromKit: { interviewId: r.id, title: r.title, outcomeKey: outcome.key, outcomeLabel: outcome.label } };
 }
 
-function shapeInterview(row, kit, { includeKit }) {
-    const live = row.status === 'completed' ? row.result : computeResult(row, kit);
+function computeResult(row, kit, context = {}) {
+    return isCustom(row)
+        ? scoreCustom(kit, row.answers || {})
+        : scoreInterview(rulesFor(kit), kit, row.answers || {}, context);
+}
+
+function shapeInterview(row, kit, { includeKit, context }) {
+    const live = row.status === 'completed' ? row.result : computeResult(row, kit, context);
     return {
         id: row.id,
         kind: isCustom(row) ? 'custom' : 'kit',
@@ -258,7 +284,7 @@ async function createInterview({ pipelineId, kitSlug, mode, user }) {
          RETURNING *`,
         [pipelineId, user.accountId, kit.versionId, user.userId, user.email || null, mode]
     );
-    return shapeInterview(rows[0], kit, { includeKit: true });
+    return shapeInterview(rows[0], kit, { includeKit: true, context: await scoringContext(rows[0], kit) });
 }
 
 async function listForPipeline(pipelineId, accountId) {
@@ -274,7 +300,8 @@ async function listForPipeline(pipelineId, accountId) {
     for (const row of rows) {
         if (isCustom(row)) { out.push(shapeInterview(row, customKit(row), { includeKit: false })); continue; }
         if (!kits.has(row.kit_version_id)) kits.set(row.kit_version_id, await getKitVersion(row.kit_version_id));
-        out.push(shapeInterview(row, kits.get(row.kit_version_id), { includeKit: false }));
+        const kit = kits.get(row.kit_version_id);
+        out.push(shapeInterview(row, kit, { includeKit: false, context: await scoringContext(row, kit) }));
     }
     return out;
 }
@@ -288,17 +315,18 @@ async function loadInterview(id, accountId) {
 
 async function getInterview(id, accountId) {
     const { row, kit } = await loadInterview(id, accountId);
-    return shapeInterview(row, kit, { includeKit: true });
+    return shapeInterview(row, kit, { includeKit: true, context: await scoringContext(row, kit) });
 }
 
 /** Validates one answer against the interview's own kit version. */
 function validateAnswer(kit, key, answer) {
     const section = kit.sections.find(s => s.questions.some(q => q.key === key));
     if (!section) throw new HttpError(400, 'Unknown question');
+    const options = optionsFor(section, section.questions.find(q => q.key === key));
     const out = { score: null, notes: '', redFlag: false };
     if (answer.score !== null && answer.score !== undefined) {
-        if (!section.scoreOptions) throw new HttpError(400, 'This question is not scored');
-        if (!section.scoreOptions.some(o => o.value === answer.score)) throw new HttpError(400, 'Invalid score');
+        if (!options) throw new HttpError(400, 'This question is not scored');
+        if (!options.some(o => o.value === answer.score)) throw new HttpError(400, 'Invalid score');
         out.score = answer.score;
     }
     if (answer.notes !== undefined) {
@@ -324,13 +352,13 @@ async function saveProgress(id, accountId, { key, answer, currentIndex }) {
         [JSON.stringify(answers), index, id, accountId]
     );
     if (!rows[0]) throw new HttpError(409, 'This interview is completed and locked');
-    return shapeInterview(rows[0], kit, { includeKit: false });
+    return shapeInterview(rows[0], kit, { includeKit: false, context: await scoringContext(rows[0], kit) });
 }
 
 async function completeInterview(id, accountId) {
     const { row, kit } = await loadInterview(id, accountId);
     if (row.status !== 'in_progress') throw new HttpError(409, 'This interview is already completed');
-    const result = computeResult(row, kit);
+    const result = computeResult(row, kit, await scoringContext(row, kit));
     const { rows } = await db.query(
         `UPDATE interviews SET status = 'completed', result = $1, completed_at = NOW(), updated_at = NOW()
           WHERE id = $2 AND account_id = $3 AND status = 'in_progress'
@@ -490,6 +518,7 @@ async function resolveItems(refs, accountId) {
                 ...(q.redFlags && { redFlags: q.redFlags }),
                 ...(q.guidance && { guidance: q.guidance }),
                 ...(q.details?.length && { details: q.details }),
+                ...(q.scoreOptions && { scoreOptions: q.scoreOptions }),
             },
         };
     });

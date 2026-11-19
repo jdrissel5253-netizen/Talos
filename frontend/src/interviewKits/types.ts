@@ -37,6 +37,8 @@ export interface KitQuestion {
   details?: QuestionDetail[];
   /** Custom interviews: where this question was picked from. */
   source?: ItemRef;
+  /** This question's own score scale (e.g. half credit), overriding its section's. */
+  scoreOptions?: ScoreOption[];
 }
 
 export interface KitSection {
@@ -49,6 +51,11 @@ export interface KitSection {
    */
   scoreOptions?: ScoreOption[];
   questions: KitQuestion[];
+  /**
+   * Unscored sections: what the flag button means. 'discuss' = an answer to
+   * talk through before deciding; false = no flag (notes only). Default: red flag.
+   */
+  flag?: 'discuss' | false;
   /** Usage notes the source document gives after the section's questions. */
   notes?: string[];
   /** Source-check notes (how answer keys were verified). */
@@ -114,7 +121,7 @@ export interface ResultSection {
 /** Scoring result. Always a recommendation: a person makes the decision. */
 export interface InterviewResult {
   rulesVersion: number;
-  engine: 'leveled' | 'gated' | 'trait' | 'custom';
+  engine: 'leveled' | 'gated' | 'trait' | 'aptitude' | 'custom';
   recommendationOnly: true;
   outcome: { label: string; key?: string; levelsPassed?: number } | null;
   incompleteReason: string | null;
@@ -123,6 +130,11 @@ export interface InterviewResult {
   redFlags: { count: number; guidance: string | null };
   skillProfile: { area: string; score: number; max: number; answered: number; total: number }[] | null;
   notes: string[];
+  /** Apprentice aptitude: the two scores its outcome is based on. */
+  aptitude?: {
+    written: { score: number; max: number };
+    habits: { score: number; max: number; source: 'section' | 'character'; interviewId?: number };
+  };
   /** Custom interviews: total of the questions that were scored. Character (trait) kits: the 0-27 total. */
   total?: { score: number; max: number; answered: number; scorable: number };
 }

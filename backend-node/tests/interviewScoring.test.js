@@ -15,7 +15,8 @@ const levels = (l1, l2, l3) => ({
 describe('definitions', () => {
     test('every definition has a known engine and placements/outcomes', () => {
         for (const d of DEFINITIONS) {
-            expect(['leveled', 'gated', 'trait']).toContain(d.scoring.engine);
+            expect(['leveled', 'gated', 'trait', 'aptitude']).toContain(d.scoring.engine);
+            if (d.scoring.engine === 'aptitude') expect(Object.keys(d.scoring.outcomes).sort()).toEqual(['notFit', 'shot', 'strong']);
             if (d.scoring.engine === 'trait') {
                 expect(Object.keys(d.scoring.outcomes).sort()).toEqual(['check', 'notReady', 'strong']);
                 expect(d.scoring.parts.map(p => p.section)).toEqual(d.sections.map(s => s.key));
@@ -247,5 +248,88 @@ describe('character kits', () => {
         const ans = fieldParts([3, 3], [3, 3, 3, 3], [3, 3, 3]);
         ans['P3.Q9'] = { score: 7 };
         expect(score('field-character', ans).outcome).toBeNull();
+    });
+});
+
+// ─── apprentice aptitude ─────────────────────────────────────────────────────
+
+describe('apprentice aptitude', () => {
+    const def = getDefinition('apprentice-aptitude');
+    const content = () => {
+        const c = syntheticContent('apprentice-aptitude');
+        // Section 2, Q1 has its own half-credit scale (set by the parser).
+        c.sections[1].questions[0].scoreOptions = def.sections[1].questionScoreOptions[1];
+        return c;
+    };
+    const run = (answers, context) => scoreInterview(def.scoring, content(), answers, context);
+    // written: S1-S3 scores; habits: S4 scores
+    const ans = (s1, s2, s3, s4) => ({
+        ...sectionAnswers('S1', s1), ...sectionAnswers('S2', s2), ...sectionAnswers('S3', s3),
+        ...(s4 && sectionAnswers('S4', s4)),
+    });
+    const char = (outcomeKey) => ({ habitsFromKit: { interviewId: 7, title: 'Apprentice & Green Candidate Character Assessment', outcomeKey, outcomeLabel: 'X. Y' } });
+
+    test('written is out of 15, work habits out of 10', () => {
+        const r = run(ans([1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [2, 2, 2, 2, 2]));
+        expect(r.aptitude.written).toEqual({ score: 15, max: 15 });
+        expect(r.aptitude.habits).toMatchObject({ score: 10, max: 10, source: 'section' });
+        expect(r.outcome.key).toBe('strong');
+    });
+
+    test('cut lines: habits 8+ and written 10+ strong; 6+ and 6+ worth a shot; else not a fit', () => {
+        const w = n => Array.from({ length: 15 }, (_, i) => (i < n ? 1 : 0));
+        const at = (written, habits) => {
+            const x = w(written);
+            const h = [0, 1, 2, 3, 4].map(i => Math.max(0, Math.min(2, habits - 2 * i)));
+            return run(ans(x.slice(0, 5), x.slice(5, 10), x.slice(10), h)).outcome.key;
+        };
+        expect(at(10, 8)).toBe('strong');
+        expect(at(9, 8)).toBe('shot');
+        expect(at(15, 7)).toBe('shot');
+        expect(at(6, 6)).toBe('shot');
+        expect(at(5, 10)).toBe('notFit');
+        expect(at(15, 5)).toBe('notFit');
+    });
+
+    test('half credit on the tape question only', () => {
+        const r = run(ans([1, 1, 1, 1, 1], [0.5, 1, 1, 1, 1], [1, 1, 1, 1, 0], [2, 2, 2, 2, 0]));
+        expect(r.aptitude.written.score).toBe(13.5);
+        const bad = run(ans([0.5, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [2, 2, 2, 2, 2]));
+        expect(bad.outcome).toBeNull(); // 0.5 isn't a valid score on S1.Q1
+    });
+
+    test('no recommendation until written and Section 4 are scored', () => {
+        const r = run(ans([1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]));
+        expect(r.outcome).toBeNull();
+        expect(r.incompleteReason).toMatch(/5 questions still to score/);
+    });
+
+    test('a completed apprentice character interview replaces Section 4 (8 / 6 / 0)', () => {
+        const written = ans([1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1]);
+        expect(run(written, char('strong')).outcome.key).toBe('strong');
+        expect(run(written, char('check')).outcome.key).toBe('shot');
+        const r = run(written, char('notReady'));
+        expect(r.outcome.key).toBe('notFit');
+        expect(r.aptitude.habits).toMatchObject({ score: 0, source: 'character', interviewId: 7 });
+        expect(r.notes.join(' ')).toMatch(/comes from the completed Apprentice & Green Candidate Character Assessment/);
+        expect(r.sections.find(s => s.key === 'S4').counted).toBe(false);
+    });
+
+    test('Section 4 answers are ignored when the character result is used', () => {
+        const r = run(ans([1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [0, 0, 0, 0, 0]), char('strong'));
+        expect(r.aptitude.habits.score).toBe(8);
+        expect(r.outcome.key).toBe('strong');
+    });
+
+    test('an unknown character outcome falls back to Section 4', () => {
+        const r = run(ans([1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [2, 2, 2, 2, 2]), char('somethingElse'));
+        expect(r.aptitude.habits.source).toBe('section');
+    });
+
+    test('job reality "no" answers are counted with guidance, never applied', () => {
+        const r = run({ ...ans([1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [1, 1, 1, 1, 1], [2, 2, 2, 2, 2]), ...redFlags(2, 'S5'), ...redFlags(1, 'S6') });
+        expect(r.redFlags.count).toBe(2);
+        expect(r.redFlags.guidance).toMatch(/Discuss these answers/);
+        expect(r.outcome.key).toBe('strong');
     });
 });

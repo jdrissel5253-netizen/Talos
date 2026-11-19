@@ -86,11 +86,12 @@ const COLUMN_ALIASES = {
     redFlags: ['red flags', 'red flag'],
 };
 
-function mapColumns(header) {
+function mapColumns(header, extra = {}) {
     const norm = header.map(h => h.toLowerCase().trim());
     const map = {};
     for (const [field, aliases] of Object.entries(COLUMN_ALIASES)) {
-        const idx = norm.findIndex(h => aliases.includes(h));
+        const all = [...aliases, ...(extra[field] || [])];
+        const idx = norm.findIndex(h => all.includes(h));
         if (idx >= 0) map[field] = idx;
     }
     // Any other column becomes a labelled detail (e.g. "What it catches").
@@ -126,15 +127,16 @@ function buildQuestionSection(spec, docSection, errors) {
     }
 
     const [header, ...rows] = tables[0].rows;
-    const cols = mapColumns(header || []);
-    if (cols.number === undefined || cols.prompt === undefined) {
+    const cols = mapColumns(header || [], spec.columns);
+    // Some tables have no "#" column (e.g. a job reality checklist): number rows in order.
+    if ((cols.number === undefined && !spec.autoNumber) || cols.prompt === undefined) {
         errors.push(`"${docSection.heading}" table needs "#" and "Question" columns.`);
         return null;
     }
 
     const questions = [];
     rows.forEach((cells, i) => {
-        const rawNum = (cells[cols.number] || '').trim();
+        const rawNum = cols.number === undefined ? String(i + 1) : (cells[cols.number] || '').trim();
         const numMatch = rawNum.match(/^(\d+)/);
         let prompt = (cells[cols.prompt] || '').trim();
         prompt = prompt.replace(CRITICAL_MARK, '').trim();
@@ -151,9 +153,12 @@ function buildQuestionSection(spec, docSection, errors) {
         const details = cols.details
             .map(c => ({ label: c.label, text: (cells[c.idx] || '').trim() }))
             .filter(d => d.text);
+        const ownOptions = spec.questionScoreOptions && spec.questionScoreOptions[Number(numMatch[1])];
         questions.push({
             key: `${spec.key}.Q${numMatch[1]}`,
             number: numMatch[1],
+            // A question can use its own scale (e.g. half credit on one question).
+            ...(ownOptions && { scoreOptions: ownOptions }),
             prompt,
             ...(answerKey && { answerKey }),
             ...(redFlags && { redFlags }),
@@ -181,6 +186,7 @@ function buildQuestionSection(spec, docSection, errors) {
         title: docSection.heading,
         ...(before.length && { description: before.join('\n\n') }),
         scoreOptions: spec.scoreOptions || null,
+        ...(spec.flag !== undefined && { flag: spec.flag }),
         questions,
         notes,
         sourceNotes,
